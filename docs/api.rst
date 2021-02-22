@@ -3,12 +3,9 @@ audbackend
 
 .. automodule:: audbackend
 
-A backend is an interface
-to a host
-that stores meta
-and media files
-of a database
-in a repository.
+A backend is a generic interface
+for storing and accessing files
+on a host.
 
 Currently the following backends
 are shipped with :mod:`audbackend`:
