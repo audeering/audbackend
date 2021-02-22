@@ -7,6 +7,14 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.2.0 (2021-02-22)
+--------------------------
+
+* Added: ``audbackend.FileSystem`` backend
+* Changed: rename package to ``audbackend``
+* Changed: include ``repository`` argument in the init methods of the backends
+
+
 Version 0.1.1 (2021-02-19)
 --------------------------
 
