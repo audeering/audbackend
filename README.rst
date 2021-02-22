@@ -1,7 +1,5 @@
-================
-audb-artifactory
-================
+==========
+audbackend
+==========
 
-Artifactory backend implementation for ``audb``.
-This allows ``audb`` to use repositories on Artifactory
-to store databases.
+Manage file storage on different backends.

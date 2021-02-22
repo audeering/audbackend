@@ -7,8 +7,6 @@ import pytest
 import audeer
 import audfactory
 
-import audb2
-
 
 pytest.ROOT = audeer.safe_path(
     os.path.join(
@@ -18,6 +16,7 @@ pytest.ROOT = audeer.safe_path(
 )
 
 pytest.ARTIFACTORY_HOST = 'https://artifactory.audeering.com/artifactory'
+pytest.FILE_SYSTEM_HOST = os.path.join(pytest.ROOT, 'repo')
 pytest.ID = audeer.uid()
 pytest.REPOSITORY_NAME = 'data-unittests-local'
 

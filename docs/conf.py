@@ -2,7 +2,7 @@ import configparser
 from datetime import date
 import os
 
-import audb_artifactory
+import audbackend
 
 
 config = configparser.ConfigParser()
@@ -12,7 +12,7 @@ config.read(os.path.join('..', 'setup.cfg'))
 author = config['metadata']['author']
 copyright = f'2021-{date.today().year} audEERING GmbH'
 project = config['metadata']['name']
-version = audb_artifactory.__version__
+version = audbackend.__version__
 title = f'{project} Documentation'
 
 

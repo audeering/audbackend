@@ -7,9 +7,9 @@ that need improvement, please create an issue_.
 Contributions are always welcome!
 
 .. _issue:
-    https://gitlab.audeering.com/tools/audb_artifactory/issues/new?issue%5BD=
+    https://gitlab.audeering.com/tools/audbackend/issues/new?issue%5BD=
 .. _merge request:
-    https://gitlab.audeering.com/tools/audb_artifactory/merge_requests/new
+    https://gitlab.audeering.com/tools/audbackend/merge_requests/new
 
 Development Installation
 ------------------------
@@ -17,12 +17,12 @@ Development Installation
 Instead of pip-installing the latest release from PyPI, you should get the
 newest development version from Gitlab_::
 
-    git clone git@srv-app-01.audeering.local:tools/audb_artifactory.git
-    cd audb_artifactory
+    git clone git@srv-app-01.audeering.local:tools/audbackend.git
+    cd audbackend
     # Use virutal environment
     pip install -r requirements.txt
 
-.. _Gitlab: https://gitlab.audeering.com/tools/audb_artifactory
+.. _Gitlab: https://gitlab.audeering.com/tools/audbackend
 
 This way, your installation always stays up-to-date, even if you pull new
 changes from the Gitlab repository.

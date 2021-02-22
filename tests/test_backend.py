@@ -1,11 +1,35 @@
+import hashlib
 import os
+import typing
 
 import pytest
 
+import audbackend
 import audeer
-from audb2.core.utils import md5
 
-import audb_artifactory
+
+def md5(
+        file: str,
+        chunk_size: int = 8192,
+) -> str:
+    r"""Create MD5 checksum."""
+    file = audeer.safe_path(file)
+    with open(file, 'rb') as fp:
+        hasher = hashlib.md5()
+        for chunk in md5_read_chunk(fp, chunk_size):
+            hasher.update(chunk)
+        return hasher.hexdigest()
+
+
+def md5_read_chunk(
+        fp: typing.IO,
+        chunk_size: int = 8192,
+):
+    while True:
+        data = fp.read(chunk_size)
+        if not data:
+            break
+        yield data
 
 
 @pytest.mark.parametrize(
@@ -31,9 +55,15 @@ import audb_artifactory
         ),
     ],
 )
-def test_archive(tmpdir, files, name, folder, version):
+@pytest.mark.parametrize(
+    'backend',
+    [
+        audbackend.FileSystem(pytest.FILE_SYSTEM_HOST),
+        audbackend.Artifactory(pytest.ARTIFACTORY_HOST),
+    ]
+)
+def test_archive(tmpdir, files, name, folder, version, backend):
 
-    backend = audb_artifactory.Artifactory(pytest.ARTIFACTORY_HOST)
     repository = pytest.REPOSITORY_NAME
 
     files_as_list = [files] if isinstance(files, str) else files
@@ -61,9 +91,34 @@ def test_archive(tmpdir, files, name, folder, version):
     ) == files_as_list
 
 
-def test_errors(tmpdir):
+@pytest.mark.parametrize(
+    'name, host, cls',
+    [
+        (
+            'file-system', pytest.FILE_SYSTEM_HOST, audbackend.FileSystem,
+        ),
+        (
+            'artifactory', pytest.ARTIFACTORY_HOST, audbackend.Artifactory,
+        ),
+        pytest.param(  # backend does not exist
+            'does-not-exist', '', None,
+            marks=pytest.mark.xfail(raises=ValueError)
+        )
+    ]
+)
+def test_create(name, host, cls):
+    assert isinstance(audbackend.create(name, host), cls)
 
-    backend = audb_artifactory.Artifactory(pytest.ARTIFACTORY_HOST)
+
+@pytest.mark.parametrize(
+    'backend',
+    [
+        audbackend.FileSystem(pytest.FILE_SYSTEM_HOST),
+        audbackend.Artifactory(pytest.ARTIFACTORY_HOST),
+    ]
+)
+def test_errors(tmpdir, backend):
+
     repository = pytest.REPOSITORY_NAME
 
     file_name = 'does-not-exist'
@@ -137,9 +192,15 @@ def test_errors(tmpdir):
         ),
     ],
 )
-def test_file(tmpdir, local_file, remote_file, version):
+@pytest.mark.parametrize(
+    'backend',
+    [
+        audbackend.FileSystem(pytest.FILE_SYSTEM_HOST),
+        audbackend.Artifactory(pytest.ARTIFACTORY_HOST),
+    ]
+)
+def test_file(tmpdir, local_file, remote_file, version, backend):
 
-    backend = audb_artifactory.Artifactory(pytest.ARTIFACTORY_HOST)
     repository = pytest.REPOSITORY_NAME
 
     local_file = os.path.join(tmpdir, local_file)
@@ -181,9 +242,15 @@ def test_file(tmpdir, local_file, remote_file, version):
         ['file.ext', os.path.join('path', 'to', 'file.ext')],
     ],
 )
-def test_glob(tmpdir, files):
+@pytest.mark.parametrize(
+    'backend',
+    [
+        audbackend.FileSystem(pytest.FILE_SYSTEM_HOST),
+        audbackend.Artifactory(pytest.ARTIFACTORY_HOST),
+    ]
+)
+def test_glob(tmpdir, files, backend):
 
-    backend = audb_artifactory.Artifactory(pytest.ARTIFACTORY_HOST)
     repository = pytest.REPOSITORY_NAME
 
     paths = []
@@ -206,6 +273,13 @@ def test_glob(tmpdir, files):
 
 
 @pytest.mark.parametrize(
+    'backend',
+    [
+        audbackend.FileSystem(pytest.FILE_SYSTEM_HOST),
+        audbackend.Artifactory(pytest.ARTIFACTORY_HOST),
+    ]
+)
+@pytest.mark.parametrize(
     'path',
     [
         'media/test1-12.344',
@@ -215,14 +289,19 @@ def test_glob(tmpdir, files):
         ),
     ]
 )
-def test_path(path):
-    backend = audb_artifactory.Artifactory(pytest.ARTIFACTORY_HOST)
+def test_path(backend, path):
     backend.path(path, None, pytest.REPOSITORY_NAME)
 
 
-def test_versions(tmpdir):
+@pytest.mark.parametrize(
+    'backend',
+    [
+        audbackend.FileSystem(pytest.FILE_SYSTEM_HOST),
+        audbackend.Artifactory(pytest.ARTIFACTORY_HOST),
+    ]
+)
+def test_versions(tmpdir, backend):
 
-    backend = audb_artifactory.Artifactory(pytest.ARTIFACTORY_HOST)
     repository = pytest.REPOSITORY_NAME
 
     file_name = 'db.yaml'
