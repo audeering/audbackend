@@ -2,6 +2,8 @@
 audbackend
 ==========
 
+|tests| |coverage| |docs| |python-versions| |license|
+
 Manage file storage on different backends.
 At the moment we support:
 
