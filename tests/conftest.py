@@ -33,10 +33,11 @@ def cleanup_session():
     yield
     if os.path.exists(pytest.ROOT):
         shutil.rmtree(pytest.ROOT)
-    url = audfactory.artifactory_path(
-        audfactory.server_url(
-            pytest.ID,
+    url = audfactory.path(
+        audfactory.url(
+            pytest.ARTIFACTORY_HOST,
             repository=pytest.REPOSITORY_NAME,
+            group_id=pytest.ID,
         ),
     )
     if url.exists():

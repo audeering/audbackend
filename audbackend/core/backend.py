@@ -488,10 +488,11 @@ class Artifactory(Backend):
             version: str,
     ) -> str:
         r"""File path on backend."""
-        server_url = audfactory.server_url(
+        server_url = audfactory.url(
+            self.host,
+            repository=self.repository,
             group_id=audfactory.path_to_group_id(folder),
             name=name,
-            repository=self.repository,
             version=version,
         )
         return f'{server_url}/{name}-{version}{ext}'
@@ -501,7 +502,7 @@ class Artifactory(Backend):
             path: str,
     ) -> bool:
         r"""Check if file exists on backend."""
-        return audfactory.artifactory_path(path).exists()
+        return audfactory.path(path).exists()
 
     def _get_file(
             self,
@@ -509,18 +510,18 @@ class Artifactory(Backend):
             dst_path: str,
     ):
         r"""Get file from backend."""
-        audfactory.download_artifact(src_path, dst_path, verbose=False)
+        audfactory.download(src_path, dst_path, verbose=False)
 
     def _glob(
             self,
             pattern: str,
     ) -> typing.List[str]:
         r"""Return matching files names."""
-        url = audfactory.server_url(
-            '',
+        url = audfactory.url(
+            self.host,
             repository=self.repository,
         )
-        path = audfactory.artifactory_path(url)
+        path = audfactory.path(url)
         try:
             result = [str(x) for x in path.glob(pattern)]
         except RuntimeError:  # pragma: no cover
@@ -533,14 +534,14 @@ class Artifactory(Backend):
             dst_path: str,
     ):
         r"""Put file to backend."""
-        audfactory.deploy_artifact(src_path, dst_path)
+        audfactory.deploy(src_path, dst_path)
 
     def _remove_file(
             self,
             path: str,
     ):
         r"""Remove file from backend."""
-        audfactory.artifactory_path(path).unlink()
+        audfactory.path(path).unlink()
 
     def _versions(
             self,
@@ -549,7 +550,7 @@ class Artifactory(Backend):
     ) -> typing.List[str]:
         r"""Versions of a file."""
         group_id = audfactory.path_to_group_id(folder)
-        return audfactory.versions(group_id, name, repository=self.repository)
+        return audfactory.versions(self.host, self.repository, group_id, name)
 
 
 class FileSystem(Backend):
