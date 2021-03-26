@@ -261,9 +261,8 @@ class Backend:
         Example:
             >>> backend = FileSystem('~/my-host', 'data')
             >>> path = backend.path('media/archive1.zip', '1.0.0')
-            >>> home = os.path.expanduser('~')
-            >>> path[len(home) + 1:]
-            'my-host/data/media/archive1/1.0.0/archive1-1.0.0.zip'
+            >>> os.path.basename(path)
+            'archive1-1.0.0.zip'
 
         """
         allowed_chars = re.compile(BACKEND_ALLOWED_CHARS)
@@ -619,6 +618,7 @@ class FileSystem(Backend):
             pattern: str,
     ) -> typing.List[str]:
         r"""Return matching files names."""
+        pattern = pattern.replace(self.sep, os.path.sep)
         root = os.path.join(self.host, self.repository)
         path = os.path.join(root, pattern)
         return [os.path.join(root, p) for p in glob.glob(path, recursive=True)]

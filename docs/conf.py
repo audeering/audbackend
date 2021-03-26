@@ -35,7 +35,6 @@ napoleon_use_ivar = True  # List of class attributes
 autodoc_inherit_docstrings = False  # disable docstring inheritance
 intersphinx_mapping = {
     'audeer': ('https://audeering.github.io/audeer/', None),
-    'audb2': ('http://tools.pp.audeering.com/audb2/', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
     'python': ('https://docs.python.org/3/', None),
 }
