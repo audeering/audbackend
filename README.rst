@@ -10,11 +10,10 @@ At the moment we support:
 * Artifactory_ with ``audbackend.Artifactory``
 * local file system with ``audbackend.FileSystem``
 
-Have a look at the installation_ and usage_ instructions.
+Have a look at the installation_ instructions.
 
 .. _Artifactory: https://jfrog.com/artifactory/
 .. _installation: https://audeering.github.io/audbackend/install.html
-.. _usage: https://audeering.github.io/audbackend/usage.html
 
 
 .. badges images and links:
