@@ -6,4 +6,5 @@ dist/
 .idea/
 venv/
 .coverage*
+coverage.xml
 __init__.pyc
