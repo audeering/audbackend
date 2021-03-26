@@ -618,6 +618,7 @@ class FileSystem(Backend):
             pattern: str,
     ) -> typing.List[str]:
         r"""Return matching files names."""
+        pattern = pattern.replace(self.sep, os.path.sep)
         root = os.path.join(self.host, self.repository)
         path = os.path.join(root, pattern)
         return [os.path.join(root, p) for p in glob.glob(path, recursive=True)]
