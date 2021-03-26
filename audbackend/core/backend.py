@@ -261,9 +261,8 @@ class Backend:
         Example:
             >>> backend = FileSystem('~/my-host', 'data')
             >>> path = backend.path('media/archive1.zip', '1.0.0')
-            >>> home = os.path.expanduser('~')
-            >>> path[len(home) + 1:]
-            'my-host/data/media/archive1/1.0.0/archive1-1.0.0.zip'
+            >>> os.path.basename(path)
+            'archive1-1.0.0.zip'
 
         """
         allowed_chars = re.compile(BACKEND_ALLOWED_CHARS)

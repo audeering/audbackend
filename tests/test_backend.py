@@ -48,7 +48,7 @@ def md5_read_chunk(
             '1.0.0',
         ),
         (
-            ['file.ext', os.path.join('dir', 'to', 'file.ext')],
+            ['file.ext', 'dir/to/file.ext'],
             'not-empty',
             'group',
             '1.0.0',
@@ -234,7 +234,7 @@ def test_file(tmpdir, local_file, remote_file, version, backend):
     'files',
     [
         [],
-        ['file.ext', os.path.join('path', 'to', 'file.ext')],
+        ['file.ext', 'path/to/file.ext'],
     ],
 )
 @pytest.mark.parametrize(
