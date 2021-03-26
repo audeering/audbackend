@@ -7,6 +7,14 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.3.1 (2021-03-26)
+--------------------------
+
+* Changed: adjust Python package keywords to ``artifactory``, ``filesystem``
+* Fixed: contribution section in documentation now provides correct links
+  and explains Artifactory server access for running tests
+
+
 Version 0.3.0 (2021-03-26)
 --------------------------
 
