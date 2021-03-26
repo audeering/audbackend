@@ -19,7 +19,7 @@ Have a look at the installation_ and usage_ instructions.
 .. |tests| image:: https://github.com/audeering/audbackend/workflows/Test/badge.svg
     :target: https://github.com/audeering/audbackend/actions?query=workflow%3ATest
     :alt: Test status
-.. |coverage| image:: https://codecov.io/gh/audeering/audbackend/branch/master/graph/badge.svg?token=LGV5O708V3
+.. |coverage| image:: https://codecov.io/gh/audeering/audbackend/branch/master/graph/badge.svg?token=pCTgGG7Sd1
     :target: https://codecov.io/gh/audeering/audbackend/
     :alt: code coverage
 .. |docs| image:: https://img.shields.io/pypi/v/audbackend?label=docs
