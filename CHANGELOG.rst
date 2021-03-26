@@ -7,6 +7,14 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.3.0 (2021-03-26)
+--------------------------
+
+* Added: open source release on Github
+* Changed: use ``audfactory`` >=1.0.0
+* Changed: use public Artifactory server for tests
+
+
 Version 0.2.0 (2021-02-22)
 --------------------------
 
