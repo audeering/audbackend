@@ -15,10 +15,10 @@ pytest.ROOT = audeer.safe_path(
     )
 )
 
-pytest.ARTIFACTORY_HOST = 'https://artifactory.audeering.com/artifactory'
+pytest.ARTIFACTORY_HOST = 'https://audeering.jfrog.io/artifactory'
 pytest.FILE_SYSTEM_HOST = os.path.join(pytest.ROOT, 'repo')
 pytest.ID = audeer.uid()
-pytest.REPOSITORY_NAME = 'data-unittests-local'
+pytest.REPOSITORY_NAME = 'unittests-public'
 
 
 @pytest.fixture(scope='session', autouse=True)
