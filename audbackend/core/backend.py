@@ -501,7 +501,11 @@ class Artifactory(Backend):
             path: str,
     ) -> bool:
         r"""Check if file exists on backend."""
-        return audfactory.path(path).exists()
+        try:
+            # Can lead to RuntimeError: 404 page not found
+            return audfactory.path(path).exists()
+        except RuntimeError:
+            return False
 
     def _get_file(
             self,
