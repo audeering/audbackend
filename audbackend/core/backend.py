@@ -504,7 +504,7 @@ class Artifactory(Backend):
         try:
             # Can lead to RuntimeError: 404 page not found
             return audfactory.path(path).exists()
-        except RuntimeError:
+        except RuntimeError:  # pragma: nocover
             return False
 
     def _get_file(
