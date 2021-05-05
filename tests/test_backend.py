@@ -347,6 +347,13 @@ def test_path(backend, path, version, ext, expected):
 
 
 @pytest.mark.parametrize(
+    'file_name, ext',
+    [
+        ('db.yaml', None),
+        ('file.tar.gz', 'tar.gz'),
+    ]
+)
+@pytest.mark.parametrize(
     'backend',
     [
         audbackend.FileSystem(
@@ -359,9 +366,8 @@ def test_path(backend, path, version, ext, expected):
         ),
     ]
 )
-def test_versions(tmpdir, backend):
+def test_versions(tmpdir, file_name, ext, backend):
 
-    file_name = 'db.yaml'
     local_file = os.path.join(tmpdir, file_name)
     with open(local_file, 'w'):
         pass
@@ -371,12 +377,12 @@ def test_versions(tmpdir, backend):
         file_name,
     )
 
-    assert not backend.versions(remote_file)
+    assert not backend.versions(remote_file, ext=ext)
     with pytest.raises(RuntimeError):
-        backend.latest_version(remote_file)
-    backend.put_file(local_file, remote_file, '1.0.0')
-    assert backend.versions(remote_file) == ['1.0.0']
-    assert backend.latest_version(remote_file) == '1.0.0'
-    backend.put_file(local_file, remote_file, '2.0.0')
-    assert backend.versions(remote_file) == ['1.0.0', '2.0.0']
-    assert backend.latest_version(remote_file) == '2.0.0'
+        backend.latest_version(remote_file, ext=ext)
+    backend.put_file(local_file, remote_file, '1.0.0', ext=ext)
+    assert backend.versions(remote_file, ext=ext) == ['1.0.0']
+    assert backend.latest_version(remote_file, ext=ext) == '1.0.0'
+    backend.put_file(local_file, remote_file, '2.0.0', ext=ext)
+    assert backend.versions(remote_file, ext=ext) == ['1.0.0', '2.0.0']
+    assert backend.latest_version(remote_file, ext=ext) == '2.0.0'

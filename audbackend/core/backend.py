@@ -217,11 +217,14 @@ class Backend:
     def latest_version(
             self,
             path: str,
+            *,
+            ext: str = None,
     ) -> str:
         r"""Latest version of a file.
 
         Args:
             path: relative path to file in repository
+            ext: file extension, if ``None`` uses characters after last dot
 
         Returns:
             version string
@@ -230,7 +233,7 @@ class Backend:
             RuntimeError: if file does not exist on backend
 
         """
-        vs = self.versions(path)
+        vs = self.versions(path, ext=ext)
         if not vs:
             raise RuntimeError(
                 f"Cannot find a version for "
@@ -269,6 +272,10 @@ class Backend:
 
         Returns:
             file path on backend
+
+        Raises:
+            ValueError: if ``path`` contains invalid character
+            ValueError: if ``path`` does not end on file extension
 
         Example:
             >>> backend = FileSystem('~/my-host', 'data')
@@ -472,18 +479,21 @@ class Backend:
     def versions(
             self,
             path: str,
+            *,
+            ext: str = None,
     ) -> typing.List[str]:
         r"""Versions of a file.
 
         Args:
             path: path to file on backend
+            ext: file extension, if ``None`` uses characters after last dot
 
         Returns:
             list of versions in ascending order
 
         """
         folder, file = self.split(path)
-        name = audeer.basename_wo_ext(file)
+        name = audeer.basename_wo_ext(file, ext=ext)
         vs = self._versions(folder, name)
         return audeer.sort_versions(vs)
 
