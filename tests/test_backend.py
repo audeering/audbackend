@@ -94,13 +94,19 @@ def test_archive(tmpdir, files, name, folder, version, backend):
     'name, host, cls',
     [
         (
-            'file-system', pytest.FILE_SYSTEM_HOST, audbackend.FileSystem,
+            'file-system',
+            pytest.FILE_SYSTEM_HOST,
+            audbackend.FileSystem,
         ),
         (
-            'artifactory', pytest.ARTIFACTORY_HOST, audbackend.Artifactory,
+            'artifactory',
+            pytest.ARTIFACTORY_HOST,
+            audbackend.Artifactory,
         ),
         pytest.param(  # backend does not exist
-            'does-not-exist', '', None,
+            'does-not-exist',
+            '',
+            None,
             marks=pytest.mark.xfail(raises=ValueError)
         )
     ]
@@ -171,22 +177,31 @@ def test_errors(tmpdir, backend):
 
 
 @pytest.mark.parametrize(
-    'local_file, remote_file, version',
+    'local_file, remote_file, version, ext',
     [
         (
             'file.ext',
             'file.ext',
             '1.0.0',
+            None,
+        ),
+        (
+            'file.tar.gz',
+            'file.tar.gz',
+            '1.0.0',
+            'tar.gz',
         ),
         (
             os.path.join('dir', 'to', 'file.ext'),
             'dir/to/file.ext',
             '1.0.0',
+            None,
         ),
         (
             os.path.join('dir', 'to', 'file.ext'),
-            'alias',
+            'alias.ext',
             '1.0.0',
+            None,
         ),
     ],
 )
@@ -203,7 +218,7 @@ def test_errors(tmpdir, backend):
         ),
     ]
 )
-def test_file(tmpdir, local_file, remote_file, version, backend):
+def test_file(tmpdir, local_file, remote_file, version, ext, backend):
 
     local_file = os.path.join(tmpdir, local_file)
     audeer.mkdir(os.path.dirname(local_file))
@@ -216,18 +231,29 @@ def test_file(tmpdir, local_file, remote_file, version, backend):
         remote_file,
     )
 
-    assert not backend.exists(remote_file, version)
-    path_backend = backend.put_file(local_file, remote_file, version)
+    assert not backend.exists(remote_file, version, ext=ext)
+    path_backend = backend.put_file(local_file, remote_file, version, ext=ext)
     # operation will be skipped
-    assert backend.put_file(local_file, remote_file, version) == path_backend
-    assert backend.exists(remote_file, version)
+    assert backend.put_file(
+        local_file,
+        remote_file,
+        version,
+        ext=ext,
+    ) == path_backend
+    assert backend.exists(remote_file, version, ext=ext)
 
-    backend.get_file(remote_file, local_file, version)
+    backend.get_file(remote_file, local_file, version, ext=ext)
     assert os.path.exists(local_file)
-    assert backend.checksum(remote_file, version) == md5(local_file)
+    assert backend.checksum(remote_file, version, ext=ext) == md5(local_file)
 
-    assert backend.remove_file(remote_file, version) == path_backend
-    assert not backend.exists(remote_file, version)
+    assert backend.remove_file(remote_file, version, ext=ext) == path_backend
+    assert not backend.exists(remote_file, version, ext=ext)
+
+    if ext is None:
+        _, ext = os.path.splitext(local_file)
+    else:
+        ext = '.' + ext
+    assert path_backend.endswith(ext)
 
 
 @pytest.mark.parametrize(
@@ -285,17 +311,39 @@ def test_glob(tmpdir, files, backend):
     ]
 )
 @pytest.mark.parametrize(
-    'path',
+    'path, version, ext, expected',
     [
-        'media/test1-12.344',
+        ('media/test1-12.344', '1.0.0', None, 'test1-12-1.0.0.344'),
+        ('media/test.tar', '1.0.0', None, 'test-1.0.0.tar'),
+        ('media/test.tar', '1.0.0', 'tar', 'test-1.0.0.tar'),
+        ('media/test.tar.gz', '1.0.0', None, 'test.tar-1.0.0.gz'),
+        ('media/test.tar.gz', '1.0.0', 'tar.gz', 'test-1.0.0.tar.gz'),
         pytest.param(
-            r'media\test1',
+            r'media\test',
+            None,
+            None,
+            None,
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+        pytest.param(
+            r'media\test.tar.gz',
+            None,
+            'gz.tar',
+            None,
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+        pytest.param(
+            r'media\test.tar.gz',
+            None,
+            '.tar.gz',
+            None,
             marks=pytest.mark.xfail(raises=ValueError),
         ),
     ]
 )
-def test_path(backend, path):
-    backend.path(path, None)
+def test_path(backend, path, version, ext, expected):
+    path = backend.path(path, version, ext=ext)
+    assert os.path.basename(path) == expected
 
 
 @pytest.mark.parametrize(

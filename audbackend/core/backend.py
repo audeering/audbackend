@@ -46,12 +46,15 @@ class Backend:
             self,
             path: str,
             version: str,
+            *,
+            ext: str = None,
     ) -> str:
         r"""Get MD5 checksum for file on backend.
 
         Args:
             path: path to file on backend
             version: version string
+            ext: file extension, if ``None`` uses characters after last dot
 
         Returns:
             MD5 checksum
@@ -60,7 +63,7 @@ class Backend:
             FileNotFoundError: if file does not exist on backend
 
         """
-        backend_path = self.path(path, version)
+        backend_path = self.path(path, version, ext=ext)
 
         if not self._exists(backend_path):
             raise FileNotFoundError(
@@ -80,18 +83,21 @@ class Backend:
             self,
             path: str,
             version: str,
+            *,
+            ext: str = None,
     ) -> bool:
         r"""Check if file exists on backend.
 
         Args:
             path: path to file on backend
             version: version string
+            ext: file extension, if ``None`` uses characters after last dot
 
         Returns:
             ``True`` if file exists
 
         """
-        path = self.path(path, version)
+        path = self.path(path, version, ext=ext)
         return self._exists(path)
 
     def get_archive(
@@ -138,6 +144,8 @@ class Backend:
             src_path: str,
             dst_path: str,
             version: str,
+            *,
+            ext: str = None,
     ):
         r"""Get file from backend.
 
@@ -145,6 +153,7 @@ class Backend:
             src_path: path to file on backend
             dst_path: destination path to local file
             version: version string
+            ext: file extension, if ``None`` uses characters after last dot
 
         Returns:
             full path to local file
@@ -153,7 +162,7 @@ class Backend:
             FileNotFoundError: if file does not exist on backend
 
         """
-        src_path = self.path(src_path, version)
+        src_path = self.path(src_path, version, ext=ext)
         if not self._exists(src_path):
             raise FileNotFoundError(
                 errno.ENOENT, os.strerror(errno.ENOENT), src_path,
@@ -244,6 +253,8 @@ class Backend:
             self,
             path: str,
             version: str,
+            *,
+            ext: str = None,
     ) -> str:
         r"""File path on backend.
 
@@ -254,6 +265,7 @@ class Backend:
         Args:
             path: relative path to file in repository
             version: version string
+            ext: file extension, if ``None`` uses characters after last dot
 
         Returns:
             file path on backend
@@ -263,6 +275,13 @@ class Backend:
             >>> path = backend.path('media/archive1.zip', '1.0.0')
             >>> os.path.basename(path)
             'archive1-1.0.0.zip'
+            >>> path = backend.path(
+            ...     'media/archive1.tar.gz',
+            ...     '1.0.0',
+            ...     ext='tar.gz',
+            ... )
+            >>> os.path.basename(path)
+            'archive1-1.0.0.tar.gz'
 
         """
         allowed_chars = re.compile(BACKEND_ALLOWED_CHARS)
@@ -272,7 +291,16 @@ class Backend:
                 f"allowed characters are '{BACKEND_ALLOWED_CHARS}'."
             )
         folder, file = self.split(path)
-        name, ext = os.path.splitext(file)
+        if ext is None:
+            name, ext = os.path.splitext(file)
+        else:
+            ext = '.' + ext
+            if not path.endswith(ext):
+                raise ValueError(
+                    f"Invalid path name '{path}', "
+                    f"does not end on '{ext}'."
+                )
+            name = file[:-len(ext)]
         return self._path(folder, name, ext, version)
 
     def put_archive(
@@ -336,6 +364,8 @@ class Backend:
             src_path: str,
             dst_path: str,
             version: str,
+            *,
+            ext: str = None,
     ):
         r"""Put file on backend.
 
@@ -347,6 +377,7 @@ class Backend:
             src_path: path to local file
             dst_path: path to file on backend
             version: version string
+            ext: file extension, if ``None`` uses characters after last dot
 
         Returns:
             file path on backend
@@ -360,7 +391,7 @@ class Backend:
                 errno.ENOENT, os.strerror(errno.ENOENT), src_path,
             )
 
-        dst_path = self.path(dst_path, version)
+        dst_path = self.path(dst_path, version, ext=ext)
 
         # skip if file with same checksum exists on backend
         skip = self._exists(dst_path) and \
@@ -381,12 +412,15 @@ class Backend:
             self,
             path: str,
             version: str,
+            *,
+            ext: str = None,
     ) -> str:
         r"""Remove file from backend.
 
         Args:
             path: path to file on backend
             version: version string
+            ext: file extension, if ``None`` uses characters after last dot
 
         Returns:
             path of removed file on backend
@@ -395,7 +429,7 @@ class Backend:
             FileNotFoundError: if file does not exist on backend
 
         """
-        path = self.path(path, version)
+        path = self.path(path, version, ext=ext)
         if not self._exists(path):
             raise FileNotFoundError(
                 errno.ENOENT, os.strerror(errno.ENOENT), path,
