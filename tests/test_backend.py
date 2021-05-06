@@ -322,6 +322,7 @@ def test_glob(tmpdir, files, backend):
         ('media/test.tar.gz', '1.0.0', 'tar.gz', 'test-1.0.0.tar.gz'),
         ('media/test.tar.gz', '1.0.0', '.tar.gz', 'test-1.0.0.tar.gz'),
         ('media/test.1.2.3', '1.0.0', '1.2.3', 'test-1.0.0.1.2.3'),
+        ('media/test.1.2.3', '1.0.0', '', 'test.1.2.3-1.0.0'),
         pytest.param(  # invalid character
             r'media\test',
             '1.0.0',
