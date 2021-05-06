@@ -301,7 +301,8 @@ class Backend:
         if ext is None:
             name, ext = os.path.splitext(file)
         else:
-            ext = '.' + ext
+            if not ext.startswith('.'):
+                ext = '.' + ext
             if not path.endswith(ext):
                 raise ValueError(
                     f"Invalid path name '{path}', "

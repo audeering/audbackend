@@ -313,29 +313,26 @@ def test_glob(tmpdir, files, backend):
 @pytest.mark.parametrize(
     'path, version, ext, expected',
     [
+        ('media/test', '1.0.0', None, 'test-1.0.0'),
         ('media/test1-12.344', '1.0.0', None, 'test1-12-1.0.0.344'),
         ('media/test.tar', '1.0.0', None, 'test-1.0.0.tar'),
         ('media/test.tar', '1.0.0', 'tar', 'test-1.0.0.tar'),
+        ('media/test.tar', '1.0.0', '.tar', 'test-1.0.0.tar'),
         ('media/test.tar.gz', '1.0.0', None, 'test.tar-1.0.0.gz'),
         ('media/test.tar.gz', '1.0.0', 'tar.gz', 'test-1.0.0.tar.gz'),
-        pytest.param(
+        ('media/test.tar.gz', '1.0.0', '.tar.gz', 'test-1.0.0.tar.gz'),
+        ('media/test.1.2.3', '1.0.0', '1.2.3', 'test-1.0.0.1.2.3'),
+        pytest.param(  # invalid character
             r'media\test',
             '1.0.0',
             None,
             None,
             marks=pytest.mark.xfail(raises=ValueError),
         ),
-        pytest.param(
+        pytest.param(  # invalid file extension
             r'media/test.tar.gz',
             '1.0.0',
             'gz.tar',
-            None,
-            marks=pytest.mark.xfail(raises=ValueError),
-        ),
-        pytest.param(
-            r'media/test.tar.gz',
-            '1.0.0',
-            '.tar.gz',
             None,
             marks=pytest.mark.xfail(raises=ValueError),
         ),
