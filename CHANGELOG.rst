@@ -7,6 +7,12 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.3.4 (2021-05-06)
+--------------------------
+
+* Added: support files without extension and file extensions with dot(s)
+
+
 Version 0.3.3 (2021-03-29)
 --------------------------
 
