@@ -300,6 +300,8 @@ class Backend:
         folder, file = self.split(path)
         if ext is None:
             name, ext = os.path.splitext(file)
+        elif ext == '':
+            name = file
         else:
             if not ext.startswith('.'):
                 ext = '.' + ext
