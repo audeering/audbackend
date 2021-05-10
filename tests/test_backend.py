@@ -314,7 +314,7 @@ def test_glob(tmpdir, files, pattern, folder, expected, backend):
         for x in expected
     ]
 
-    assert expected == backend.glob(pattern, folder=folder)
+    assert sorted(expected) == sorted(backend.glob(pattern, folder=folder))
 
 
 @pytest.mark.parametrize(
