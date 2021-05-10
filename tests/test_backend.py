@@ -266,16 +266,16 @@ def test_file(tmpdir, local_file, remote_file, version, ext, backend):
             [],
         ),
         (
-            ['file.ext', 'path/to/file.ext', 'no.match'],
+            ['file.ext', os.path.join('path', 'to', 'file.ext'), 'no.match'],
             f'{pytest.ID}/test_glob/**/*.ext',
             None,
-            ['file.ext', 'path/to/file.ext'],
+            ['file.ext', os.path.join('path', 'to', 'file.ext')],
         ),
         (
-            ['file.ext', 'path/to/file.ext'],
+            ['file.ext', os.path.join('path', 'to', 'file.ext')],
             '**/*.ext',
             f'{pytest.ID}/test_glob/path/to',
-            ['path/to/file.ext'],
+            [os.path.join('path', 'to', 'file.ext')],
         ),
     ],
 )
