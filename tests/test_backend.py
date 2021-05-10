@@ -257,10 +257,26 @@ def test_file(tmpdir, local_file, remote_file, version, ext, backend):
 
 
 @pytest.mark.parametrize(
-    'files',
+    'files, pattern, folder, expected',
     [
-        [],
-        ['file.ext', 'path/to/file.ext'],
+        (
+            [],
+            f'{pytest.ID}/test_glob/**/*.ext',
+            None,
+            [],
+        ),
+        (
+            ['file.ext', 'path/to/file.ext', 'no.match'],
+            f'{pytest.ID}/test_glob/**/*.ext',
+            None,
+            ['file.ext', 'path/to/file.ext'],
+        ),
+        (
+            ['file.ext', 'path/to/file.ext'],
+            '**/*.ext',
+            f'{pytest.ID}/test_glob/path/to',
+            ['path/to/file.ext'],
+        ),
     ],
 )
 @pytest.mark.parametrize(
@@ -276,7 +292,7 @@ def test_file(tmpdir, local_file, remote_file, version, ext, backend):
         ),
     ]
 )
-def test_glob(tmpdir, files, backend):
+def test_glob(tmpdir, files, pattern, folder, expected, backend):
 
     paths = []
     for file in files:
@@ -293,8 +309,12 @@ def test_glob(tmpdir, files, backend):
             backend.put_file(local_file, remote_file, '1.0.0')
         )
 
-    pattern = f'{pytest.ID}/test_glob/**/*.ext'
-    assert set(paths) == set(backend.glob(pattern))
+    expected = [
+        backend.path(backend.join(pytest.ID, 'test_glob', x), '1.0.0')
+        for x in expected
+    ]
+
+    assert expected == backend.glob(pattern, folder=folder)
 
 
 @pytest.mark.parametrize(

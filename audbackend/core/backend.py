@@ -176,6 +176,7 @@ class Backend:
     def _glob(
             self,
             pattern: str,
+            path: str,
     ) -> typing.List[str]:  # pragma: no cover
         r"""Return matching files names."""
         raise NotImplementedError()
@@ -183,6 +184,8 @@ class Backend:
     def glob(
             self,
             pattern: str,
+            *,
+            folder: str = None,
     ) -> typing.List[str]:
         r"""Return matching files names.
 
@@ -190,12 +193,13 @@ class Backend:
 
         Args:
             pattern: pattern string
+            folder: search under this folder
 
         Returns:
             matching files on backend
 
         """
-        return self._glob(pattern)
+        return self._glob(pattern, folder)
 
     def join(
             self,
@@ -565,11 +569,17 @@ class Artifactory(Backend):
     def _glob(
             self,
             pattern: str,
+            folder: typing.Optional[str],
     ) -> typing.List[str]:
         r"""Return matching files names."""
+        if folder is not None:
+            group_id = audfactory.path_to_group_id(folder)
+        else:
+            group_id = None
         url = audfactory.url(
             self.host,
             repository=self.repository,
+            group_id=group_id,
         )
         path = audfactory.path(url)
         try:
@@ -667,12 +677,16 @@ class FileSystem(Backend):
     def _glob(
             self,
             pattern: str,
+            folder: typing.Optional[str],
     ) -> typing.List[str]:
         r"""Return matching files names."""
+        if folder is None:
+            folder = ''
         pattern = pattern.replace(self.sep, os.path.sep)
         root = os.path.join(self.host, self.repository)
-        path = os.path.join(root, pattern)
-        return [os.path.join(root, p) for p in glob.glob(path, recursive=True)]
+        path = os.path.join(root, folder, pattern)
+        matches = glob.glob(path, recursive=True)
+        return [os.path.join(root, folder, match) for match in matches]
 
     def _put_file(
             self,
