@@ -176,7 +176,7 @@ class Backend:
     def _glob(
             self,
             pattern: str,
-            path: str,
+            folder: typing.Optional[str],
     ) -> typing.List[str]:  # pragma: no cover
         r"""Return matching files names."""
         raise NotImplementedError()
