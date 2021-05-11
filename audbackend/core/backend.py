@@ -683,6 +683,7 @@ class FileSystem(Backend):
         if folder is None:
             folder = ''
         pattern = pattern.replace(self.sep, os.path.sep)
+        folder = folder.replace(self.sep, os.path.sep)
         root = os.path.join(self.host, self.repository)
         path = os.path.join(root, folder, pattern)
         matches = glob.glob(path, recursive=True)
