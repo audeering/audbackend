@@ -269,13 +269,13 @@ def test_file(tmpdir, local_file, remote_file, version, ext, backend):
             ['file.ext', 'path/to/file.ext', 'no.match'],
             f'{pytest.ID}/test_glob/**/*.ext',
             None,
-            ['file.ext', os.path.join('path', 'to', 'file.ext')],
+            ['file.ext', 'path/to/file.ext'],
         ),
         (
             ['file.ext', 'path/to/file.ext'],
             '**/*.ext',
             f'{pytest.ID}/test_glob/path/to',
-            [os.path.join('path', 'to', 'file.ext')],
+            ['path/to/file.ext'],
         ),
     ],
 )
@@ -306,11 +306,22 @@ def test_glob(tmpdir, files, pattern, folder, expected, backend):
             file,
         )
         paths.append(
-            backend.put_file(local_file, remote_file, '1.0.0')
+            backend.put_file(
+                local_file,
+                remote_file,
+                '1.0.0',
+            )
         )
 
     expected = [
-        backend.path(backend.join(pytest.ID, 'test_glob', x), '1.0.0')
+        backend.path(
+            backend.join(
+                pytest.ID,
+                'test_glob',
+                *x.split(os.path.sep),
+            ),
+            '1.0.0',
+        )
         for x in expected
     ]
 
