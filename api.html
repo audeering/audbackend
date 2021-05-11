@@ -5,7 +5,8 @@
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>audbackend &mdash; audbackend Documentation</title>
@@ -30,6 +31,8 @@
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/audeering.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/audeering.css" type="text/css" />
   <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -67,7 +70,7 @@
             
             
               <div class="version">
-                0.3.4
+                0.3.5
               </div>
             
           
@@ -165,7 +168,7 @@
         
             
             
-              <a href="https://github.com/audeering/audbackend/blob/v0.3.4/docs/api.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/audeering/audbackend/blob/v0.3.5/docs/api.rst" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -179,18 +182,18 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-audbackend">
+  <section id="module-audbackend">
 <span id="audbackend"></span><h1>audbackend<a class="headerlink" href="#module-audbackend" title="Permalink to this headline">¶</a></h1>
 <p>A backend is a generic interface
 for storing and accessing files
 on a host.</p>
 <p>Currently the following backends
 are shipped with <a class="reference internal" href="#module-audbackend" title="audbackend"><code class="xref py py-mod docutils literal notranslate"><span class="pre">audbackend</span></code></a>:</p>
-<div class="section" id="artifactory">
+<section id="artifactory">
 <h2>Artifactory<a class="headerlink" href="#artifactory" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="audbackend.Artifactory">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">audbackend.</span></code><code class="sig-name descname"><span class="pre">Artifactory</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repository</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Artifactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Artifactory" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="audbackend.Artifactory">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">audbackend.</span></span><span class="sig-name descname"><span class="pre">Artifactory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repository</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Artifactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Artifactory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Artifactory backend.</p>
 <p>Stores files and archives on Artifactory.</p>
 <dl class="field-list simple">
@@ -203,12 +206,12 @@ are shipped with <a class="reference internal" href="#module-audbackend" title="
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="filesystem">
+</section>
+<section id="filesystem">
 <h2>FileSystem<a class="headerlink" href="#filesystem" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="audbackend.FileSystem">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">audbackend.</span></code><code class="sig-name descname"><span class="pre">FileSystem</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repository</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#FileSystem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.FileSystem" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="audbackend.FileSystem">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">audbackend.</span></span><span class="sig-name descname"><span class="pre">FileSystem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repository</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#FileSystem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.FileSystem" title="Permalink to this definition">¶</a></dt>
 <dd><p>File system backend.</p>
 <p>Stores files and archives on a file system.</p>
 <dl class="field-list simple">
@@ -224,12 +227,12 @@ are shipped with <a class="reference internal" href="#module-audbackend" title="
 <p>Users can implement their own
 backend by deriving from
 <a class="reference internal" href="#audbackend.Backend" title="audbackend.Backend"><code class="xref py py-class docutils literal notranslate"><span class="pre">audbackend.Backend</span></code></a>.</p>
-</div>
-<div class="section" id="backend">
+</section>
+<section id="backend">
 <h2>Backend<a class="headerlink" href="#backend" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="audbackend.Backend">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">audbackend.</span></code><code class="sig-name descname"><span class="pre">Backend</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repository</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="audbackend.Backend">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">audbackend.</span></span><span class="sig-name descname"><span class="pre">Backend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repository</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend" title="Permalink to this definition">¶</a></dt>
 <dd><p>Abstract backend.</p>
 <p>A backend stores files and archives.</p>
 <dl class="field-list simple">
@@ -241,8 +244,8 @@ backend by deriving from
 </dd>
 </dl>
 <dl class="py method">
-<dt id="audbackend.Backend.checksum">
-<code class="sig-name descname"><span class="pre">checksum</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.checksum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.checksum" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="audbackend.Backend.checksum">
+<span class="sig-name descname"><span class="pre">checksum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.checksum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.checksum" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get MD5 checksum for file on backend.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -265,8 +268,8 @@ backend by deriving from
 </dd></dl>
 
 <dl class="py method">
-<dt id="audbackend.Backend.exists">
-<code class="sig-name descname"><span class="pre">exists</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.exists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.exists" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="audbackend.Backend.exists">
+<span class="sig-name descname"><span class="pre">exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.exists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.exists" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if file exists on backend.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -286,8 +289,8 @@ backend by deriving from
 </dd></dl>
 
 <dl class="py method">
-<dt id="audbackend.Backend.get_archive">
-<code class="sig-name descname"><span class="pre">get_archive</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.get_archive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.get_archive" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="audbackend.Backend.get_archive">
+<span class="sig-name descname"><span class="pre">get_archive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.get_archive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.get_archive" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get archive from backend and extract.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -311,8 +314,8 @@ e.g. <code class="docutils literal notranslate"><span class="pre">media/archive1
 </dd></dl>
 
 <dl class="py method">
-<dt id="audbackend.Backend.get_file">
-<code class="sig-name descname"><span class="pre">get_file</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.get_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.get_file" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="audbackend.Backend.get_file">
+<span class="sig-name descname"><span class="pre">get_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.get_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.get_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get file from backend.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -333,13 +336,16 @@ e.g. <code class="docutils literal notranslate"><span class="pre">media/archive1
 </dd></dl>
 
 <dl class="py method">
-<dt id="audbackend.Backend.glob">
-<code class="sig-name descname"><span class="pre">glob</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pattern</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.glob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.glob" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="audbackend.Backend.glob">
+<span class="sig-name descname"><span class="pre">glob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pattern</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.glob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.glob" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return matching files names.</p>
 <p>Use <code class="docutils literal notranslate"><span class="pre">'**'</span></code> to scan into sub-directories.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>pattern</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – pattern string</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pattern</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – pattern string</p></li>
+<li><p><strong>folder</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.9)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – search under this folder</p></li>
+</ul>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</p>
@@ -351,14 +357,14 @@ e.g. <code class="docutils literal notranslate"><span class="pre">media/archive1
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="audbackend.Backend.host">
-<code class="sig-name descname"><span class="pre">host</span></code><a class="headerlink" href="#audbackend.Backend.host" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="audbackend.Backend.host">
+<span class="sig-name descname"><span class="pre">host</span></span><a class="headerlink" href="#audbackend.Backend.host" title="Permalink to this definition">¶</a></dt>
 <dd><p>Host path.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="audbackend.Backend.join">
-<code class="sig-name descname"><span class="pre">join</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">paths</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.join"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.join" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="audbackend.Backend.join">
+<span class="sig-name descname"><span class="pre">join</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">paths</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.join"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.join" title="Permalink to this definition">¶</a></dt>
 <dd><p>Join to path on backend.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -377,8 +383,8 @@ e.g. <code class="docutils literal notranslate"><span class="pre">media/archive1
 </dd></dl>
 
 <dl class="py method">
-<dt id="audbackend.Backend.latest_version">
-<code class="sig-name descname"><span class="pre">latest_version</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.latest_version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.latest_version" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="audbackend.Backend.latest_version">
+<span class="sig-name descname"><span class="pre">latest_version</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.latest_version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.latest_version" title="Permalink to this definition">¶</a></dt>
 <dd><p>Latest version of a file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -400,8 +406,8 @@ e.g. <code class="docutils literal notranslate"><span class="pre">media/archive1
 </dd></dl>
 
 <dl class="py method">
-<dt id="audbackend.Backend.path">
-<code class="sig-name descname"><span class="pre">path</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.path" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="audbackend.Backend.path">
+<span class="sig-name descname"><span class="pre">path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.path" title="Permalink to this definition">¶</a></dt>
 <dd><p>File path on backend.</p>
 <p>This converts a file path on the backend
 from the form it is presented to a user
@@ -444,8 +450,8 @@ to the actual path on the backend storage.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="audbackend.Backend.put_archive">
-<code class="sig-name descname"><span class="pre">put_archive</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.put_archive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.put_archive" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="audbackend.Backend.put_archive">
+<span class="sig-name descname"><span class="pre">put_archive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.put_archive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.put_archive" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create archive and put on backend.</p>
 <p>The operation is silently skipped,
 if an archive with the same checksum
@@ -475,8 +481,8 @@ e.g. <code class="docutils literal notranslate"><span class="pre">media/archive1
 </dd></dl>
 
 <dl class="py method">
-<dt id="audbackend.Backend.put_file">
-<code class="sig-name descname"><span class="pre">put_file</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.put_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.put_file" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="audbackend.Backend.put_file">
+<span class="sig-name descname"><span class="pre">put_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.put_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.put_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Put file on backend.</p>
 <p>The operation is silently skipped,
 if a file with the same checksum
@@ -500,8 +506,8 @@ already exists on the backend.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="audbackend.Backend.remove_file">
-<code class="sig-name descname"><span class="pre">remove_file</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.remove_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.remove_file" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="audbackend.Backend.remove_file">
+<span class="sig-name descname"><span class="pre">remove_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.remove_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.remove_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove file from backend.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -524,14 +530,14 @@ already exists on the backend.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="audbackend.Backend.repository">
-<code class="sig-name descname"><span class="pre">repository</span></code><a class="headerlink" href="#audbackend.Backend.repository" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="audbackend.Backend.repository">
+<span class="sig-name descname"><span class="pre">repository</span></span><a class="headerlink" href="#audbackend.Backend.repository" title="Permalink to this definition">¶</a></dt>
 <dd><p>Repository name.</p>
 </dd></dl>
 
-<dl class="py method">
-<dt id="audbackend.Backend.sep">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">sep</span></code><a class="headerlink" href="#audbackend.Backend.sep" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="audbackend.Backend.sep">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">sep</span></span><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><a class="headerlink" href="#audbackend.Backend.sep" title="Permalink to this definition">¶</a></dt>
 <dd><p>File separator on backend.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -541,8 +547,8 @@ already exists on the backend.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="audbackend.Backend.split">
-<code class="sig-name descname"><span class="pre">split</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.split"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.split" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="audbackend.Backend.split">
+<span class="sig-name descname"><span class="pre">split</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.split"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.split" title="Permalink to this definition">¶</a></dt>
 <dd><p>Split path on backend into folder and basename.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -558,8 +564,8 @@ already exists on the backend.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="audbackend.Backend.versions">
-<code class="sig-name descname"><span class="pre">versions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.versions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.versions" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="audbackend.Backend.versions">
+<span class="sig-name descname"><span class="pre">versions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Backend.versions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Backend.versions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Versions of a file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -579,12 +585,12 @@ already exists on the backend.</p>
 
 </dd></dl>
 
-</div>
-<div class="section" id="create">
+</section>
+<section id="create">
 <h2>create<a class="headerlink" href="#create" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
-<dt id="audbackend.create">
-<code class="sig-prename descclassname"><span class="pre">audbackend.</span></code><code class="sig-name descname"><span class="pre">create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repository</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#create"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="audbackend.create">
+<span class="sig-prename descclassname"><span class="pre">audbackend.</span></span><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repository</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#create"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create backend.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -595,7 +601,7 @@ already exists on the backend.</p>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Backend</span></code></p>
+<dd class="field-even"><p><a class="reference internal" href="#audbackend.Backend" title="audbackend.core.backend.Backend"><code class="xref py py-class docutils literal notranslate"><span class="pre">Backend</span></code></a></p>
 </dd>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>backend object</p>
@@ -606,12 +612,12 @@ already exists on the backend.</p>
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="md5">
+</section>
+<section id="md5">
 <h2>md5<a class="headerlink" href="#md5" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
-<dt id="audbackend.md5">
-<code class="sig-prename descclassname"><span class="pre">audbackend.</span></code><code class="sig-name descname"><span class="pre">md5</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8192</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/utils.html#md5"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.md5" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="audbackend.md5">
+<span class="sig-prename descclassname"><span class="pre">audbackend.</span></span><span class="sig-name descname"><span class="pre">md5</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8192</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/utils.html#md5"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.md5" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create MD5 checksum.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -620,12 +626,12 @@ already exists on the backend.</p>
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="register">
+</section>
+<section id="register">
 <h2>register<a class="headerlink" href="#register" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
-<dt id="audbackend.register">
-<code class="sig-prename descclassname"><span class="pre">audbackend.</span></code><code class="sig-name descname"><span class="pre">register</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cls</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#register"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.register" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="audbackend.register">
+<span class="sig-prename descclassname"><span class="pre">audbackend.</span></span><span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cls</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#register"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.register" title="Permalink to this definition">¶</a></dt>
 <dd><p>Register backend.</p>
 <p>If a backend with this name already exists,
 it will be overwritten.</p>
@@ -633,14 +639,14 @@ it will be overwritten.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – backend registry name</p></li>
-<li><p><strong>cls</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Backend</span></code>]) – backend class</p></li>
+<li><p><strong>cls</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[<a class="reference internal" href="#audbackend.Backend" title="audbackend.core.backend.Backend"><code class="xref py py-class docutils literal notranslate"><span class="pre">Backend</span></code></a>]) – backend class</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
@@ -665,7 +671,7 @@ it will be overwritten.</p>
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2021/05/06 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2021/05/11 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -697,6 +703,7 @@ it will be overwritten.</p>
     
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
