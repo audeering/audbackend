@@ -318,7 +318,7 @@ def test_glob(tmpdir, files, pattern, folder, expected, backend):
             backend.join(
                 pytest.ID,
                 'test_glob',
-                *x.split(os.path.sep),
+                *x.split(backend.sep),
             ),
             '1.0.0',
         )
