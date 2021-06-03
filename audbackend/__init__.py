@@ -1,10 +1,10 @@
-from audbackend.core.backend import (
-    Artifactory,
-    Backend,
+from audbackend.core.api import (
     create,
-    FileSystem,
     register,
 )
+from audbackend.core.artifactory import Artifactory
+from audbackend.core.backend import Backend
+from audbackend.core.filesystem import FileSystem
 from audbackend.core.utils import md5
 
 
