@@ -7,6 +7,13 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.3.6 (2021-06-17)
+--------------------------
+
+* Changed: link to ``audfactory`` documentation for Artifactory authentication
+* Changed: split up source code into several files
+
+
 Version 0.3.5 (2021-05-11)
 --------------------------
 
