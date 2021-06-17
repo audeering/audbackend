@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                0.3.5
+                0.3.6
               </div>
             
           
@@ -160,7 +160,7 @@
         
             
             
-              <a href="https://github.com/audeering/audbackend/blob/v0.3.5/docs/authentication.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/audeering/audbackend/blob/v0.3.6/docs/authentication.rst" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -176,17 +176,10 @@
             
   <section id="authentication">
 <h1>Authentication<a class="headerlink" href="#authentication" title="Permalink to this headline">¶</a></h1>
-<p>Users have to store their credentials in <code class="file docutils literal notranslate"><span class="pre">~/.artifactory_python.cfg</span></code>:</p>
-<div class="highlight-cfg notranslate"><div class="highlight"><pre><span></span><span class="k">[artifactory.audeering.com/artifactory]</span>
-<span class="na">username</span> <span class="o">=</span> <span class="s">MY_USERNAME</span>
-<span class="na">password</span> <span class="o">=</span> <span class="s">MY_API_KEY</span>
-</pre></div>
-</div>
-<p>Alternatively, they can export them as environment variables:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">ARTIFACTORY_USERNAME</span><span class="o">=</span><span class="s2">&quot;MY_USERNAME&quot;</span>
-<span class="nb">export</span> <span class="nv">ARTIFACTORY_API_KEY</span><span class="o">=</span><span class="s2">&quot;MY_API_KEY&quot;</span>
-</pre></div>
-</div>
+<p>To use the <a class="reference internal" href="api.html#audbackend.Artifactory" title="audbackend.Artifactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">audbackend.Artifactory</span></code></a> backend
+you might need to authenticate
+when communicating with the Artifactory server.
+See the <a class="reference external" href="https://audeering.github.io/audfactory/usage.html#authentication">guide on how to provide your credentials</a>.</p>
 </section>
 
 
@@ -212,7 +205,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2021/05/11 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2021/06/17 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>

@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                0.3.5
+                0.3.6
               </div>
             
           
@@ -168,7 +168,7 @@
         
             
             
-              <a href="https://github.com/audeering/audbackend/blob/v0.3.5/docs/api.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/audeering/audbackend/blob/v0.3.6/docs/api.rst" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -193,7 +193,7 @@ are shipped with <a class="reference internal" href="#module-audbackend" title="
 <h2>Artifactory<a class="headerlink" href="#artifactory" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="audbackend.Artifactory">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">audbackend.</span></span><span class="sig-name descname"><span class="pre">Artifactory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repository</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#Artifactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Artifactory" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">audbackend.</span></span><span class="sig-name descname"><span class="pre">Artifactory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repository</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/artifactory.html#Artifactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Artifactory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Artifactory backend.</p>
 <p>Stores files and archives on Artifactory.</p>
 <dl class="field-list simple">
@@ -211,7 +211,7 @@ are shipped with <a class="reference internal" href="#module-audbackend" title="
 <h2>FileSystem<a class="headerlink" href="#filesystem" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="audbackend.FileSystem">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">audbackend.</span></span><span class="sig-name descname"><span class="pre">FileSystem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repository</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#FileSystem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.FileSystem" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">audbackend.</span></span><span class="sig-name descname"><span class="pre">FileSystem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repository</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/filesystem.html#FileSystem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.FileSystem" title="Permalink to this definition">¶</a></dt>
 <dd><p>File system backend.</p>
 <p>Stores files and archives on a file system.</p>
 <dl class="field-list simple">
@@ -434,7 +434,8 @@ to the actual path on the backend storage.</p>
 </dd>
 </dl>
 <p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="n">FileSystem</span><span class="p">(</span><span class="s1">&#39;~/my-host&#39;</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">audbackend</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">FileSystem</span><span class="p">(</span><span class="s1">&#39;~/my-host&#39;</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">path</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="s1">&#39;media/archive1.zip&#39;</span><span class="p">,</span> <span class="s1">&#39;1.0.0&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 <span class="go">&#39;archive1-1.0.0.zip&#39;</span>
@@ -590,7 +591,7 @@ already exists on the backend.</p>
 <h2>create<a class="headerlink" href="#create" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="audbackend.create">
-<span class="sig-prename descclassname"><span class="pre">audbackend.</span></span><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repository</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#create"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.create" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">audbackend.</span></span><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repository</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/api.html#create"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create backend.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -631,7 +632,7 @@ already exists on the backend.</p>
 <h2>register<a class="headerlink" href="#register" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="audbackend.register">
-<span class="sig-prename descclassname"><span class="pre">audbackend.</span></span><span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cls</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/backend.html#register"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.register" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">audbackend.</span></span><span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cls</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/audbackend/core/api.html#register"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.register" title="Permalink to this definition">¶</a></dt>
 <dd><p>Register backend.</p>
 <p>If a backend with this name already exists,
 it will be overwritten.</p>
@@ -671,7 +672,7 @@ it will be overwritten.</p>
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2021/05/11 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2021/06/17 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
