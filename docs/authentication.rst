@@ -1,17 +1,9 @@
 Authentication
 ==============
 
-Users have to store their credentials in :file:`~/.artifactory_python.cfg`:
+To use the :class:`audbackend.Artifactory` backend
+you might need to authenticate
+when communicating with the Artifactory server.
+See the `guide on how to provide your credentials`_.
 
-.. code-block:: cfg
-
-    [artifactory.audeering.com/artifactory]
-    username = MY_USERNAME
-    password = MY_API_KEY
-
-Alternatively, they can export them as environment variables:
-
-.. code-block:: bash
-
-    export ARTIFACTORY_USERNAME="MY_USERNAME"
-    export ARTIFACTORY_API_KEY="MY_API_KEY"
+.. _guide on how to provide your credentials: https://audeering.github.io/audfactory/usage.html#authentication
