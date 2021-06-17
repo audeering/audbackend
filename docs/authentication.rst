@@ -22,7 +22,7 @@ Alternatively, export the credentials as environment variables:
     export ARTIFACTORY_API_KEY="MY_API_KEY"
 
 The environment variables will be applied to all servers.
-You might loose access to artifacts on servers
+You might lose access to artifacts on servers
 that are setup for anonymous access
 as it will always try to authenticate
 with the given username and password.
