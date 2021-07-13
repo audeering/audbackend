@@ -44,3 +44,9 @@ register
 --------
 
 .. autofunction:: register
+
+Repository
+----------
+
+.. autoclass:: Repository
+    :members:
