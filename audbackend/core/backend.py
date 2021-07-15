@@ -214,6 +214,7 @@ class Backend:
 
         """
         paths = [path] + [p for p in paths]
+        # skip part if '' or None
         paths = [path for path in paths if path]
         return self.sep.join(paths)
 

@@ -344,7 +344,7 @@ def test_glob(tmpdir, files, pattern, folder, expected, backend):
         (['', ''], ''),
         (['file'], 'file'),
         (['root', 'file'], 'root/file'),
-        (['', 'root', '', '', 'file', ''], 'root/file'),
+        (['', 'root', None, '', 'file', ''], 'root/file'),
     ]
 )
 def test_join(backend, paths, expected):
