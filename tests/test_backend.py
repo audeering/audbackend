@@ -335,6 +335,29 @@ def test_glob(tmpdir, files, pattern, folder, expected, backend):
             pytest.FILE_SYSTEM_HOST,
             pytest.REPOSITORY_NAME,
         ),
+    ]
+)
+@pytest.mark.parametrize(
+    'paths, expected',
+    [
+        ([''], ''),
+        (['', ''], ''),
+        (['file'], 'file'),
+        (['root', 'file'], 'root/file'),
+        (['', 'root', '', '', 'file', ''], 'root/file'),
+    ]
+)
+def test_join(backend, paths, expected):
+    assert backend.join(*paths) == expected
+
+
+@pytest.mark.parametrize(
+    'backend',
+    [
+        audbackend.FileSystem(
+            pytest.FILE_SYSTEM_HOST,
+            pytest.REPOSITORY_NAME,
+        ),
         audbackend.Artifactory(
             pytest.ARTIFACTORY_HOST,
             pytest.REPOSITORY_NAME,

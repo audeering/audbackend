@@ -213,7 +213,9 @@ class Backend:
             path joined by :attr:`Backend.sep`
 
         """
-        return self.sep.join([path] + [p for p in paths])
+        paths = [path] + [p for p in paths]
+        paths = [path for path in paths if path]
+        return self.sep.join(paths)
 
     def latest_version(
             self,
