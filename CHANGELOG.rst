@@ -7,6 +7,12 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.3.10 (2021-08-05)
+---------------------------
+
+* Added: ``audbackend.Backend.ls()``
+
+
 Version 0.3.9 (2021-07-22)
 --------------------------
 
