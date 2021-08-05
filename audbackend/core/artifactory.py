@@ -88,6 +88,18 @@ class Artifactory(Backend):
             result = []
         return result
 
+    def _ls(
+            self,
+            path: str,
+    ):
+        r"""List content of path."""
+        path = audfactory.url(
+            self.host,
+            repository=self.repository,
+            group_id=audfactory.path_to_group_id(path),
+        )
+        return [p.name for p in audfactory.path(path)]
+
     def _put_file(
             self,
             src_path: str,

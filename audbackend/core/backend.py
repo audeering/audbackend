@@ -243,6 +243,31 @@ class Backend:
             )
         return vs[-1]
 
+    def _ls(
+            self,
+            path: str,
+    ) -> typing.List:  # pragma: no cover
+        r"""List content of path."""
+        raise NotImplementedError()
+
+    def ls(
+            self,
+            path: str,
+    ) -> typing.List:
+        r"""List content of path.
+
+        Args:
+            path: relative path to folder in repository
+
+        Returns:
+            folder content
+
+        Raises:
+            RuntimeError: if ``path`` does not exist on backend
+
+        """
+        return sorted(self._ls(path))
+
     def _path(
             self,
             folder: str,
