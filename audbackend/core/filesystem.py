@@ -85,6 +85,18 @@ class FileSystem(Backend):
         matches = glob.glob(path, recursive=True)
         return [os.path.join(root, folder, match) for match in matches]
 
+    def _ls(
+            self,
+            path: str,
+    ):
+        r"""List content of path."""
+        path = os.path.join(
+            self.host,
+            self.repository,
+            path.replace(self.sep, os.path.sep),
+        )
+        return os.listdir(path)
+
     def _put_file(
             self,
             src_path: str,

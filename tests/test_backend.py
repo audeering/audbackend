@@ -329,6 +329,54 @@ def test_glob(tmpdir, files, pattern, folder, expected, backend):
 
 
 @pytest.mark.parametrize(
+    'path, content, expected_content',
+    [
+        (
+            'folder1',
+            ['file.txt', 'folder/abc.txt'],
+            ['file', 'folder'],
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    'backend',
+    [
+        audbackend.FileSystem(
+            pytest.FILE_SYSTEM_HOST,
+            pytest.REPOSITORY_NAME,
+        ),
+        audbackend.Artifactory(
+            pytest.ARTIFACTORY_HOST,
+            pytest.REPOSITORY_NAME,
+        ),
+    ]
+)
+def test_ls(tmpdir, path, content, expected_content, backend):
+
+    for file in content:
+        local_file = os.path.join(tmpdir, file)
+        audeer.mkdir(os.path.dirname(local_file))
+        with open(local_file, 'w'):
+            pass
+        backend_path = backend.join(
+            pytest.ID,
+            'test_ls',
+            path,
+        )
+        remote_file = backend.join(backend_path, file)
+        backend_file_path = backend.put_file(
+            local_file,
+            remote_file,
+            '1.0.0',
+        )
+        print('DEBUG: ', backend_file_path)
+
+    print('DEBUG: ', content)
+    print('DEBUG: ', backend.ls(backend_path))
+    assert backend.ls(backend_path) == expected_content
+
+
+@pytest.mark.parametrize(
     'backend',
     [
         audbackend.FileSystem(
