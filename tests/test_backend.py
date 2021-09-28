@@ -177,6 +177,36 @@ def test_errors(tmpdir, backend):
 
 
 @pytest.mark.parametrize(
+    'backend',
+    [
+        audbackend.FileSystem(
+            pytest.FILE_SYSTEM_HOST,
+            pytest.REPOSITORY_NAME,
+        ),
+        audbackend.Artifactory(
+            pytest.ARTIFACTORY_HOST,
+            pytest.REPOSITORY_NAME,
+        ),
+    ]
+)
+def test_exists(tmpdir, backend):
+    file = 'test.txt'
+    version = '1.0.0'
+    local_file = os.path.join(tmpdir, file)
+    audeer.mkdir(os.path.dirname(local_file))
+    with open(local_file, 'w'):
+        pass
+    remote_file = backend.join(
+        pytest.ID,
+        'test_exists',
+        file,
+    )
+    backend.put_file(local_file, remote_file, version)
+    assert backend.exists(remote_file, version)
+    assert not backend.exists('non-existing-file.txt', version)
+
+
+@pytest.mark.parametrize(
     'local_file, remote_file, version, ext',
     [
         (
@@ -277,6 +307,14 @@ def test_file(tmpdir, local_file, remote_file, version, ext, backend):
             f'{pytest.ID}/test_glob/path/to',
             ['path/to/file.ext'],
         ),
+        # Test nion-existing path on server
+        (
+            [],
+            f'{pytest.ID}/test_non-existing-path/**/*.ext',
+            None,
+            [],
+        ),
+
     ],
 )
 @pytest.mark.parametrize(
