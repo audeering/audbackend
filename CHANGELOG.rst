@@ -7,6 +7,12 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.3.11 (2021-09-28)
+---------------------------
+
+* Fixed: catch 403 Error for Artifactory backend paths
+
+
 Version 0.3.10 (2021-08-05)
 ---------------------------
 
