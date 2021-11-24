@@ -102,6 +102,8 @@ class Backend:
             src_path: str,
             dst_root: str,
             version: str,
+            *,
+            verbose: bool = False,
     ) -> typing.List[str]:
         r"""Get archive from backend and extract.
 
@@ -110,6 +112,7 @@ class Backend:
                 e.g. ``media/archive1``
             dst_root: local destination directory
             version: version string
+            verbose: show debug messages
 
         Returns:
             extracted files
@@ -125,13 +128,23 @@ class Backend:
                 tmp_root,
                 os.path.basename(remote_archive),
             )
-            self.get_file(remote_archive, local_archive, version)
-            return audeer.extract_archive(local_archive, dst_root)
+            self.get_file(
+                remote_archive,
+                local_archive,
+                version,
+                verbose=verbose,
+            )
+            return audeer.extract_archive(
+                local_archive,
+                dst_root,
+                verbose=verbose,
+            )
 
     def _get_file(
             self,
             src_path: str,
             dst_path: str,
+            verbose: bool,
     ) -> str:  # pragma: no cover
         r"""Get file from backend."""
         raise NotImplementedError()
@@ -143,6 +156,7 @@ class Backend:
             version: str,
             *,
             ext: str = None,
+            verbose: bool = False,
     ):
         r"""Get file from backend.
 
@@ -151,6 +165,7 @@ class Backend:
             dst_path: destination path to local file
             version: version string
             ext: file extension, if ``None`` uses characters after last dot
+            verbose: show debug messages
 
         Returns:
             full path to local file
@@ -168,7 +183,7 @@ class Backend:
         dst_path = audeer.safe_path(dst_path)
         audeer.mkdir(os.path.dirname(dst_path))
 
-        self._get_file(src_path, dst_path)
+        self._get_file(src_path, dst_path, verbose)
 
     def _glob(
             self,
@@ -349,6 +364,8 @@ class Backend:
             files: typing.Union[str, typing.Sequence[str]],
             dst_path: str,
             version: str,
+            *,
+            verbose: bool = False,
     ) -> str:
         r"""Create archive and put on backend.
 
@@ -364,6 +381,7 @@ class Backend:
             dst_path: path to archive on backend without extension,
                 e.g. ``media/archive1``
             version: version string
+            verbose: show debug messages
 
         Returns:
             archive path on backend
@@ -387,14 +405,23 @@ class Backend:
         with tempfile.TemporaryDirectory() as tmp:
             _, archive_name = self.split(dst_path)
             archive = os.path.join(tmp, f'{archive_name}-{version}.zip')
+            # TODO: pass verbose flag once
+            #  https://github.com/audeering/audeer/pull/49
+            #  is solved
             audeer.create_archive(src_root, files, archive)
             remote_archive = dst_path + '.zip'
-            return self.put_file(archive, remote_archive, version)
+            return self.put_file(
+                archive,
+                remote_archive,
+                version,
+                verbose=verbose,
+            )
 
     def _put_file(
             self,
             src_path: str,
             dst_path: str,
+            verbose: bool,
     ):  # pragma: no cover
         r"""Put file to backend."""
         raise NotImplementedError()
@@ -406,6 +433,7 @@ class Backend:
             version: str,
             *,
             ext: str = None,
+            verbose: bool = False,
     ):
         r"""Put file on backend.
 
@@ -418,6 +446,7 @@ class Backend:
             dst_path: path to file on backend
             version: version string
             ext: file extension, if ``None`` uses characters after last dot
+            verbose: show debug messages
 
         Returns:
             file path on backend
@@ -437,7 +466,7 @@ class Backend:
         skip = self._exists(dst_path) and \
             utils.md5(src_path) == self._checksum(dst_path)
         if not skip:
-            self._put_file(src_path, dst_path)
+            self._put_file(src_path, dst_path, verbose)
 
         return dst_path
 

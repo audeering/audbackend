@@ -66,9 +66,10 @@ class Artifactory(Backend):
             self,
             src_path: str,
             dst_path: str,
+            verbose: bool,
     ):
         r"""Get file from backend."""
-        audfactory.download(src_path, dst_path, verbose=False)
+        audfactory.download(src_path, dst_path, verbose=verbose)
 
     def _glob(
             self,
@@ -108,9 +109,10 @@ class Artifactory(Backend):
             self,
             src_path: str,
             dst_path: str,
+            verbose: bool,
     ):
         r"""Put file to backend."""
-        audfactory.deploy(src_path, dst_path)
+        audfactory.deploy(src_path, dst_path, verbose=verbose)
 
     def _remove_file(
             self,
