@@ -7,6 +7,16 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.3.12 (2021-09-28)
+---------------------------
+
+* Added: ``verbose`` argument to
+  ``Backend.get_archive()``,
+  ``Backend.get_file()``,
+  ``Backend.put_archive()``,
+  ``Backend.put_file()``
+
+
 Version 0.3.11 (2021-09-28)
 ---------------------------
 
