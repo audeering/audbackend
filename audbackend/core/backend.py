@@ -405,10 +405,12 @@ class Backend:
         with tempfile.TemporaryDirectory() as tmp:
             _, archive_name = self.split(dst_path)
             archive = os.path.join(tmp, f'{archive_name}-{version}.zip')
-            # TODO: pass verbose flag once
-            #  https://github.com/audeering/audeer/pull/49
-            #  is solved
-            audeer.create_archive(src_root, files, archive)
+            audeer.create_archive(
+                src_root,
+                files,
+                archive,
+                verbose=verbose,
+            )
             remote_archive = dst_path + '.zip'
             return self.put_file(
                 archive,
