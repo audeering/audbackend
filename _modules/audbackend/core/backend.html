@@ -56,7 +56,7 @@
 
           <a href="../../../index.html">
           
-            <img src="../../../_static/images/audeering.svg" class="logo" alt="audEERING"/>
+            <img src="../../../_static/images/audeering.png" class="logo" alt="audEERING"/>
           
           
             <span> audbackend</span>
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                0.3.11
+                0.3.12
               </div>
             
           
@@ -128,40 +128,14 @@
         
         <div class="rst-content">
         
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../../../index.html">Docs</a> &raquo;</li>
-        
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
           <li><a href="../../index.html">Module code</a> &raquo;</li>
-        
       <li>audbackend.core.backend</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -272,6 +246,8 @@
             <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">dst_root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="o">*</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get archive from backend and extract.</span>
 
@@ -280,6 +256,7 @@
 <span class="sd">                e.g. ``media/archive1``</span>
 <span class="sd">            dst_root: local destination directory</span>
 <span class="sd">            version: version string</span>
+<span class="sd">            verbose: show debug messages</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            extracted files</span>
@@ -295,13 +272,23 @@
                 <span class="n">tmp_root</span><span class="p">,</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">remote_archive</span><span class="p">),</span>
             <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span><span class="n">remote_archive</span><span class="p">,</span> <span class="n">local_archive</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">audeer</span><span class="o">.</span><span class="n">extract_archive</span><span class="p">(</span><span class="n">local_archive</span><span class="p">,</span> <span class="n">dst_root</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span>
+                <span class="n">remote_archive</span><span class="p">,</span>
+                <span class="n">local_archive</span><span class="p">,</span>
+                <span class="n">version</span><span class="p">,</span>
+                <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">audeer</span><span class="o">.</span><span class="n">extract_archive</span><span class="p">(</span>
+                <span class="n">local_archive</span><span class="p">,</span>
+                <span class="n">dst_root</span><span class="p">,</span>
+                <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+            <span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_get_file</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get file from backend.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
@@ -313,6 +300,7 @@
             <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="o">*</span><span class="p">,</span>
             <span class="n">ext</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get file from backend.</span>
 
@@ -321,6 +309,7 @@
 <span class="sd">            dst_path: destination path to local file</span>
 <span class="sd">            version: version string</span>
 <span class="sd">            ext: file extension, if ``None`` uses characters after last dot</span>
+<span class="sd">            verbose: show debug messages</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            full path to local file</span>
@@ -338,7 +327,7 @@
         <span class="n">dst_path</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">safe_path</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span>
         <span class="n">audeer</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">dst_path</span><span class="p">))</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_get_file</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_file</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_glob</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
@@ -519,6 +508,8 @@
             <span class="n">files</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span>
             <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="o">*</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Create archive and put on backend.</span>
 
@@ -534,6 +525,7 @@
 <span class="sd">            dst_path: path to archive on backend without extension,</span>
 <span class="sd">                e.g. ``media/archive1``</span>
 <span class="sd">            version: version string</span>
+<span class="sd">            verbose: show debug messages</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            archive path on backend</span>
@@ -557,14 +549,25 @@
         <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
             <span class="n">_</span><span class="p">,</span> <span class="n">archive_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span>
             <span class="n">archive</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">archive_name</span><span class="si">}</span><span class="s1">-</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s1">.zip&#39;</span><span class="p">)</span>
-            <span class="n">audeer</span><span class="o">.</span><span class="n">create_archive</span><span class="p">(</span><span class="n">src_root</span><span class="p">,</span> <span class="n">files</span><span class="p">,</span> <span class="n">archive</span><span class="p">)</span>
+            <span class="n">audeer</span><span class="o">.</span><span class="n">create_archive</span><span class="p">(</span>
+                <span class="n">src_root</span><span class="p">,</span>
+                <span class="n">files</span><span class="p">,</span>
+                <span class="n">archive</span><span class="p">,</span>
+                <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+            <span class="p">)</span>
             <span class="n">remote_archive</span> <span class="o">=</span> <span class="n">dst_path</span> <span class="o">+</span> <span class="s1">&#39;.zip&#39;</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">put_file</span><span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">remote_archive</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span></div>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">put_file</span><span class="p">(</span>
+                <span class="n">archive</span><span class="p">,</span>
+                <span class="n">remote_archive</span><span class="p">,</span>
+                <span class="n">version</span><span class="p">,</span>
+                <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+            <span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_put_file</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="p">):</span>  <span class="c1"># pragma: no cover</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Put file to backend.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
@@ -576,6 +579,7 @@
             <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="o">*</span><span class="p">,</span>
             <span class="n">ext</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Put file on backend.</span>
 
@@ -588,6 +592,7 @@
 <span class="sd">            dst_path: path to file on backend</span>
 <span class="sd">            version: version string</span>
 <span class="sd">            ext: file extension, if ``None`` uses characters after last dot</span>
+<span class="sd">            verbose: show debug messages</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            file path on backend</span>
@@ -607,7 +612,7 @@
         <span class="n">skip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exists</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span> <span class="ow">and</span> \
             <span class="n">utils</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checksum</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">skip</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_put_file</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_put_file</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">dst_path</span></div>
 
@@ -714,7 +719,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2021/09/28 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2021/11/25 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>

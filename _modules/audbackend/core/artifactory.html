@@ -56,7 +56,7 @@
 
           <a href="../../../index.html">
           
-            <img src="../../../_static/images/audeering.svg" class="logo" alt="audEERING"/>
+            <img src="../../../_static/images/audeering.png" class="logo" alt="audEERING"/>
           
           
             <span> audbackend</span>
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                0.3.11
+                0.3.12
               </div>
             
           
@@ -128,40 +128,14 @@
         
         <div class="rst-content">
         
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../../../index.html">Docs</a> &raquo;</li>
-        
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
           <li><a href="../../index.html">Module code</a> &raquo;</li>
-        
       <li>audbackend.core.artifactory</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -236,9 +210,10 @@
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get file from backend.&quot;&quot;&quot;</span>
-        <span class="n">audfactory</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">audfactory</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_glob</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
@@ -278,9 +253,10 @@
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Put file to backend.&quot;&quot;&quot;</span>
-        <span class="n">audfactory</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">)</span>
+        <span class="n">audfactory</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_remove_file</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
@@ -327,7 +303,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2021/09/28 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2021/11/25 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
