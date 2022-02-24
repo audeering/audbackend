@@ -1,15 +1,11 @@
 import errno
 import os
-import re
 import tempfile
 import typing
 
 import audeer
 
 from audbackend.core import utils
-
-
-BACKEND_ALLOWED_CHARS = '[A-Za-z0-9/._-]+'
 
 
 class Backend:
@@ -336,12 +332,7 @@ class Backend:
             'archive1-1.0.0.tar.gz'
 
         """
-        allowed_chars = re.compile(BACKEND_ALLOWED_CHARS)
-        if allowed_chars.fullmatch(path) is None:
-            raise ValueError(
-                f"Invalid path name '{path}', "
-                f"allowed characters are '{BACKEND_ALLOWED_CHARS}'."
-            )
+        utils.check_path_for_allowed_chars(path)
         folder, file = self.split(path)
         if ext is None:
             name, ext = os.path.splitext(file)
@@ -390,6 +381,7 @@ class Backend:
             FileNotFoundError: if one or more files do not exist
 
         """
+        utils.check_path_for_allowed_chars(dst_path)
         src_root = audeer.safe_path(src_root)
 
         if isinstance(files, str):

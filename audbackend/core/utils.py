@@ -1,7 +1,12 @@
 import hashlib
+import re
 import typing
 
 import audeer
+
+
+BACKEND_ALLOWED_CHARS = '[A-Za-z0-9/._-]+'
+BACKEND_ALLOWED_CHARS_COMPILED = re.compile(BACKEND_ALLOWED_CHARS)
 
 
 def md5(
@@ -26,3 +31,11 @@ def md5_read_chunk(
         if not data:
             break
         yield data
+
+
+def check_path_for_allowed_chars(path):
+    if BACKEND_ALLOWED_CHARS_COMPILED.fullmatch(path) is None:
+        raise ValueError(
+            f"Invalid path name '{path}', "
+            f"allowed characters are '{BACKEND_ALLOWED_CHARS}'."
+        )
