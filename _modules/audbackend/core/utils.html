@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                0.3.12
+                0.3.14
               </div>
             
           
@@ -143,9 +143,14 @@
             
   <h1>Source code for audbackend.core.utils</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">typing</span>
 
 <span class="kn">import</span> <span class="nn">audeer</span>
+
+
+<span class="n">BACKEND_ALLOWED_CHARS</span> <span class="o">=</span> <span class="s1">&#39;[A-Za-z0-9/._-]+&#39;</span>
+<span class="n">BACKEND_ALLOWED_CHARS_COMPILED</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">BACKEND_ALLOWED_CHARS</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="md5"><a class="viewcode-back" href="../../../api.html#audbackend.md5">[docs]</a><span class="k">def</span> <span class="nf">md5</span><span class="p">(</span>
@@ -170,6 +175,14 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span>
             <span class="k">break</span>
         <span class="k">yield</span> <span class="n">data</span>
+
+
+<span class="k">def</span> <span class="nf">check_path_for_allowed_chars</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">BACKEND_ALLOWED_CHARS_COMPILED</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Invalid path name &#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&#39;, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;allowed characters are &#39;</span><span class="si">{</span><span class="n">BACKEND_ALLOWED_CHARS</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
+        <span class="p">)</span>
 </pre></div>
 
            </div>
@@ -185,7 +198,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2021/11/25 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2022/02/24 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -193,7 +206,7 @@
   <div role="contentinfo">
     <p>
         
-      &copy; 2021-2021 audEERING GmbH
+      &copy; 2021-2022 audEERING GmbH
     </p>
   </div> 
 
