@@ -7,6 +7,13 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.3.14 (2022-02-24)
+---------------------------
+
+* Changed: check for path name before creating archive
+  in ``audbackend.Backend.put_archive()``
+
+
 Version 0.3.13 (2022-01-03)
 ---------------------------
 
