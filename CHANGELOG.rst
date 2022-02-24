@@ -8,7 +8,7 @@ and this project adheres to `Semantic Versioning`_.
 
 
 Version 0.3.13 (2022-01-03)
---------------------------
+---------------------------
 
 * Added: Python 3.9 support
 * Removed: Python 3.6 support
