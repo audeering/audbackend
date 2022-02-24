@@ -89,6 +89,9 @@ def test_archive(tmpdir, files, name, folder, version, backend):
 
     assert backend.get_archive(archive, tmpdir, version) == files_as_list
 
+    with pytest.raises(ValueError):
+        backend.put_archive(tmpdir, files, 'broken_name?', version)
+
 
 @pytest.mark.parametrize(
     'name, host, cls',

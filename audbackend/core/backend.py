@@ -381,7 +381,7 @@ class Backend:
             FileNotFoundError: if one or more files do not exist
 
         """
-        utils.check_path_for_allowed_chars(dst_path)
+        # utils.check_path_for_allowed_chars(dst_path)
         src_root = audeer.safe_path(src_root)
 
         if isinstance(files, str):
