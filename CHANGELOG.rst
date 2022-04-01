@@ -7,6 +7,14 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.3.15 (2022-04-01)
+---------------------------
+
+* Changed: depend on ``audfactory>=1.0.8``
+  to change a critical bug
+  when looking for available versions of an artifact
+
+
 Version 0.3.14 (2022-02-24)
 ---------------------------
 
