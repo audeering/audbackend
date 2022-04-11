@@ -141,7 +141,7 @@ class Backend:
             src_path: str,
             dst_path: str,
             verbose: bool,
-    ) -> str:  # pragma: no cover
+    ):  # pragma: no cover
         r"""Get file from backend."""
         raise NotImplementedError()
 
