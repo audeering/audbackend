@@ -405,16 +405,16 @@ def test_ls(tmpdir, path, content, expected_content, backend):
             path,
         )
         remote_file = backend.join(backend_path, file)
-        backend_file_path = backend.put_file(
+        backend.put_file(
             local_file,
             remote_file,
             '1.0.0',
         )
-        print('DEBUG: ', backend_file_path)
 
-    print('DEBUG: ', content)
-    print('DEBUG: ', backend.ls(backend_path))
     assert backend.ls(backend_path) == expected_content
+
+    with pytest.raises(FileNotFoundError):
+        backend.ls('does/not/exist')
 
 
 @pytest.mark.parametrize(
