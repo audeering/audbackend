@@ -31,23 +31,6 @@ class Artifactory(Backend):
         r"""MD5 checksum of file on backend."""
         return audfactory.checksum(path)
 
-    def _path(
-            self,
-            folder: str,
-            name: str,
-            ext: str,
-            version: str,
-    ) -> str:
-        r"""File path on backend."""
-        server_url = audfactory.url(
-            self.host,
-            repository=self.repository,
-            group_id=audfactory.path_to_group_id(folder),
-            name=name,
-            version=version,
-        )
-        return f'{server_url}/{name}-{version}{ext}'
-
     def _exists(
             self,
             path: str,
@@ -104,6 +87,18 @@ class Artifactory(Backend):
             group_id=audfactory.path_to_group_id(path),
         )
         return [p.name for p in audfactory.path(path)]
+
+    def _path(
+            self,
+            path: str,
+    ) -> str:
+        r"""File path on backend."""
+        url = audfactory.url(
+            self.host,
+            repository=self.repository,
+        )
+        url = f'{url}/{path}'
+        return url
 
     def _put_file(
             self,

@@ -284,10 +284,7 @@ class Backend:
 
     def _path(
             self,
-            folder: str,
-            name: str,
-            ext: str,
-            version: str,
+            path: str,
     ) -> str:  # pragma: no cover
         r"""File path on backend."""
         raise NotImplementedError()
@@ -334,6 +331,7 @@ class Backend:
         """
         utils.check_path_for_allowed_chars(path)
         folder, file = self.split(path)
+
         if ext is None:
             name, ext = os.path.splitext(file)
         elif ext == '':
@@ -347,7 +345,15 @@ class Backend:
                     f"does not end on '{ext}'."
                 )
             name = file[:-len(ext)]
-        return self._path(folder, name, ext, version)
+
+        path = self.join(
+            folder,
+            name,
+            version,
+            f'{name}-{version}{ext}',
+        )
+
+        return self._path(path)
 
     def put_archive(
             self,

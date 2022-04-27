@@ -33,28 +33,6 @@ class FileSystem(Backend):
         r"""MD5 checksum of file on backend."""
         return utils.md5(path)
 
-    def _path(
-            self,
-            folder: str,
-            name: str,
-            ext: str,
-            version: str,
-    ) -> str:
-        r"""File path on backend."""
-        path = os.path.join(
-            self.host,
-            self.repository,
-            folder.replace(self.sep, os.path.sep),
-            name,
-        )
-        if version is not None:
-            path = os.path.join(
-                path,
-                version,
-                f'{name}-{version}{ext}',
-            )
-        return path
-
     def _exists(
             self,
             path: str,
@@ -98,6 +76,18 @@ class FileSystem(Backend):
         )
         return os.listdir(path)
 
+    def _path(
+            self,
+            path: str,
+    ) -> str:
+        r"""File path on backend."""
+        path = os.path.join(
+            self.host,
+            self.repository,
+            path.replace(self.sep, os.path.sep),
+        )
+        return path
+
     def _put_file(
             self,
             src_path: str,
@@ -121,7 +111,8 @@ class FileSystem(Backend):
             name: str,
     ) -> typing.List[str]:
         r"""Versions of a file."""
-        root = self._path(folder, name, '', None)
+        root = self.join(folder, name)
+        root = self._path(root)
         vs = []
         if os.path.exists(root):
             vs = [
