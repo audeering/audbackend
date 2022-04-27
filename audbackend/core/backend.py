@@ -116,8 +116,8 @@ class Backend:
             >>> import audbackend
             >>> backend = audbackend.FileSystem('~/my-host', 'data')
             >>> path = backend.folder('a/dir')
-            >>> os.path.sep.join(path.split(os.path.sep)[-4:])
-            'my-host/data/a/dir'
+            >>> os.path.basename(path)
+            'dir'
 
         """
         utils.check_path_for_allowed_chars(path)
