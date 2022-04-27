@@ -93,6 +93,43 @@ class Backend:
         path = self.path(path, version, ext=ext)
         return self._exists(path)
 
+    def folder(
+            self,
+            path: str,
+    ) -> str:
+        r"""Folder path on backend.
+
+        This converts a folder path on the backend
+        from the form it is presented to a user
+        to the actual path on the backend storage.
+
+        Args:
+            path: relative path to folder in repository
+
+        Returns:
+            folder path on backend
+
+        Raises:
+            ValueError: if ``path`` contains invalid character
+
+        Example:
+            >>> import audbackend
+            >>> backend = audbackend.FileSystem('~/my-host', 'data')
+            >>> path = backend.folder('a/dir')
+            >>> backend.sep.join(path.split(backend.sep)[-4:])
+            'my-host/data/a/dir'
+
+        """
+        utils.check_path_for_allowed_chars(path)
+        return self._folder(path)
+
+    def _folder(
+            self,
+            path: str,
+    ) -> str:  # pragma: no cover
+        r"""Folder path on backend."""
+        raise NotImplementedError()
+
     def get_archive(
             self,
             src_path: str,
@@ -277,9 +314,14 @@ class Backend:
             folder content
 
         Raises:
-            RuntimeError: if ``path`` does not exist on backend
+            FileNotFoundError: if ``path`` does not exist on backend
 
         """
+        path = self.folder(path)
+        if not self._exists(path):
+            raise FileNotFoundError(
+                errno.ENOENT, os.strerror(errno.ENOENT), path,
+            )
         return sorted(self._ls(path))
 
     def _path(

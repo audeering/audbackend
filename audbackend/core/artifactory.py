@@ -62,6 +62,17 @@ class Artifactory(Backend):
         except self._non_existing_path_error:  # pragma: nocover
             return False
 
+    def _folder(
+            self,
+            path: str,
+    ) -> str:
+        r"""Folder path on backend."""
+        return audfactory.url(
+            self.host,
+            repository=self.repository,
+            group_id=audfactory.path_to_group_id(path),
+        )
+
     def _get_file(
             self,
             src_path: str,
@@ -98,11 +109,6 @@ class Artifactory(Backend):
             path: str,
     ):
         r"""List content of path."""
-        path = audfactory.url(
-            self.host,
-            repository=self.repository,
-            group_id=audfactory.path_to_group_id(path),
-        )
         return [p.name for p in audfactory.path(path)]
 
     def _put_file(

@@ -62,6 +62,17 @@ class FileSystem(Backend):
         r"""Check if file exists on backend."""
         return os.path.exists(path)
 
+    def _folder(
+            self,
+            path: str,
+    ) -> str:
+        r"""Folder path on backend."""
+        return os.path.join(
+            self.host,
+            self.repository,
+            path.replace(self.sep, os.path.sep),
+        )
+
     def _get_file(
             self,
             src_path: str,
@@ -91,11 +102,6 @@ class FileSystem(Backend):
             path: str,
     ):
         r"""List content of path."""
-        path = os.path.join(
-            self.host,
-            self.repository,
-            path.replace(self.sep, os.path.sep),
-        )
         return os.listdir(path)
 
     def _put_file(
