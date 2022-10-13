@@ -7,6 +7,14 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.3.16 (2022-10-13)
+---------------------------
+
+* Added: argument ``tmp_root`` to
+  ``audbackend.Backend.get_archive()`` and
+  ``audbackend.Backend.put_archive()``
+
+
 Version 0.3.15 (2022-04-01)
 ---------------------------
 
