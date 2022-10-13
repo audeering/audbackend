@@ -13,9 +13,6 @@ Version 0.3.16 (2022-10-13)
 * Added: argument ``tmp_root`` to
   ``audbackend.Backend.get_archive()`` and
   ``audbackend.Backend.put_archive()``
-* Changed: require ``flake8 <5.0.0``
-* Fixed: fix return value type hint of
-  ``audbackend.Backend._get_file()``
 
 
 Version 0.3.15 (2022-04-01)
