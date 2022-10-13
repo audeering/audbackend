@@ -109,7 +109,7 @@ class Backend:
                 e.g. ``media/archive1``
             dst_root: local destination directory
             version: version string
-            tmp_root: directory in which archive is temporarily extracted.
+            tmp_root: directory under which archive is temporarily extracted.
                 Defaults to temporary directory of system
             verbose: show debug messages
 
@@ -376,7 +376,7 @@ class Backend:
             dst_path: path to archive on backend without extension,
                 e.g. ``media/archive1``
             version: version string
-            tmp_root: directory in which archive is temporarily created.
+            tmp_root: directory under which archive is temporarily created.
                 Defaults to temporary directory of system
             verbose: show debug messages
 
