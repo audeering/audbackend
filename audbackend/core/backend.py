@@ -118,6 +118,7 @@ class Backend:
 
         Raises:
             FileNotFoundError: if archive does not exist on backend
+            FileNotFoundError: if ``tmp_root`` does not exist
 
         """
         with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
@@ -385,6 +386,7 @@ class Backend:
 
         Raises:
             FileNotFoundError: if one or more files do not exist
+            FileNotFoundError: if ``tmp_root`` does not exist
 
         """
         utils.check_path_for_allowed_chars(dst_path)
