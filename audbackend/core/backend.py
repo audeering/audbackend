@@ -99,6 +99,7 @@ class Backend:
             dst_root: str,
             version: str,
             *,
+            tmp_root: str = None,
             verbose: bool = False,
     ) -> typing.List[str]:
         r"""Get archive from backend and extract.
@@ -108,6 +109,8 @@ class Backend:
                 e.g. ``media/archive1``
             dst_root: local destination directory
             version: version string
+            tmp_root: directory under which archive is temporarily extracted.
+                Defaults to temporary directory of system
             verbose: show debug messages
 
         Returns:
@@ -115,10 +118,11 @@ class Backend:
 
         Raises:
             FileNotFoundError: if archive does not exist on backend
+            FileNotFoundError: if ``tmp_root`` does not exist
 
         """
-        with tempfile.TemporaryDirectory() as tmp:
-            tmp_root = os.path.join(tmp, os.path.basename(dst_root))
+        with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
+            tmp_root = audeer.path(tmp, os.path.basename(dst_root))
             remote_archive = src_path + '.zip'
             local_archive = os.path.join(
                 tmp_root,
@@ -356,6 +360,7 @@ class Backend:
             dst_path: str,
             version: str,
             *,
+            tmp_root: str = None,
             verbose: bool = False,
     ) -> str:
         r"""Create archive and put on backend.
@@ -372,6 +377,8 @@ class Backend:
             dst_path: path to archive on backend without extension,
                 e.g. ``media/archive1``
             version: version string
+            tmp_root: directory under which archive is temporarily created.
+                Defaults to temporary directory of system
             verbose: show debug messages
 
         Returns:
@@ -379,6 +386,7 @@ class Backend:
 
         Raises:
             FileNotFoundError: if one or more files do not exist
+            FileNotFoundError: if ``tmp_root`` does not exist
 
         """
         utils.check_path_for_allowed_chars(dst_path)
@@ -394,9 +402,9 @@ class Backend:
                     errno.ENOENT, os.strerror(errno.ENOENT), path,
                 )
 
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
             _, archive_name = self.split(dst_path)
-            archive = os.path.join(tmp, f'{archive_name}-{version}.zip')
+            archive = audeer.path(tmp, f'{archive_name}-{version}.zip')
             audeer.create_archive(
                 src_root,
                 files,

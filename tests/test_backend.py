@@ -33,25 +33,35 @@ def md5_read_chunk(
 
 
 @pytest.mark.parametrize(
-    'files, name, folder, version',
+    'files, name, folder, version, tmp_root',
     [
         (
             [],
             'empty',
             None,
             '1.0.0',
+            None,
         ),
         (
             'file.ext',
             'not-empty',
             None,
             '1.0.0',
+            None,
         ),
         (
             ['file.ext', 'dir/to/file.ext'],
             'not-empty',
             'group',
             '1.0.0',
+            None,
+        ),
+        (
+            ['file.ext', 'dir/to/file.ext'],
+            'not-empty',
+            'group',
+            '2.0.0',
+            'tmp',
         ),
     ],
 )
@@ -68,7 +78,10 @@ def md5_read_chunk(
         ),
     ]
 )
-def test_archive(tmpdir, files, name, folder, version, backend):
+def test_archive(tmpdir, files, name, folder, version, tmp_root, backend):
+
+    if tmp_root is not None:
+        tmp_root = audeer.path(tmpdir, tmp_root)
 
     files_as_list = [files] if isinstance(files, str) else files
     for file in files_as_list:
@@ -82,12 +95,59 @@ def test_archive(tmpdir, files, name, folder, version, backend):
         'test_archive',
         name,
     )
-    path_backend = backend.put_archive(tmpdir, files, archive, version)
+
+    # if a tmp_root is given but does not exist,
+    # put_archive() should fail
+    if tmp_root is not None:
+        if os.path.exists(tmp_root):
+            os.removedirs(tmp_root)
+        with pytest.raises(FileNotFoundError):
+            backend.put_archive(
+                tmpdir,
+                files,
+                archive,
+                version,
+                tmp_root=tmp_root,
+            )
+        audeer.mkdir(tmp_root)
+
+    path_backend = backend.put_archive(
+        tmpdir,
+        files,
+        archive,
+        version,
+        tmp_root=tmp_root,
+    )
     # operation will be skipped
-    assert backend.put_archive(tmpdir, files, archive, version) == path_backend
+    assert backend.put_archive(
+        tmpdir,
+        files,
+        archive,
+        version,
+        tmp_root=tmp_root,
+    ) == path_backend
     assert backend.exists(archive + '.zip', version)
 
-    assert backend.get_archive(archive, tmpdir, version) == files_as_list
+    # if a tmp_root is given but does not exist,
+    # get_archive() should fail
+    if tmp_root is not None:
+        if os.path.exists(tmp_root):
+            os.removedirs(tmp_root)
+        with pytest.raises(FileNotFoundError):
+            backend.get_archive(
+                archive,
+                tmpdir,
+                version,
+                tmp_root=tmp_root,
+            )
+        audeer.mkdir(tmp_root)
+
+    assert backend.get_archive(
+        archive,
+        tmpdir,
+        version,
+        tmp_root=tmp_root,
+    ) == files_as_list
 
     with pytest.raises(ValueError):
         backend.put_archive(tmpdir, files, 'broken_name?', version)
