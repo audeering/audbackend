@@ -8,17 +8,6 @@ import audeer
 from audbackend.core import utils
 
 
-def _assert_path_is_valid(
-        path: str,
-        ext: str,
-):
-    utils.check_path_for_allowed_chars(path)
-    if ext and not path.endswith(ext):
-        raise ValueError(
-            f"Invalid path name '{path}', "
-            f"does not end on '{ext}'."
-        )
-
 def _raise_file_not_found_error(
         path: str,
         *,
@@ -115,8 +104,12 @@ class Backend:
         Returns:
             ``True`` if file exists
 
+        Raises:
+            ValueError: if path is not valid
+
         """
-        _assert_path_is_valid(path, ext)
+        utils.check_path_for_allowed_chars(path)
+        utils.check_path_ends_on_ext(path, ext)
         return self._exists(path, version, ext)
 
     def get_archive(
@@ -424,9 +417,7 @@ class Backend:
         for file in files:
             path = os.path.join(src_root, file)
             if not os.path.exists(path):
-                raise FileNotFoundError(
-                    errno.ENOENT, os.strerror(errno.ENOENT), path,
-                )
+                _raise_file_not_found_error(path)
 
         with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
             _, archive_name = self.split(dst_path)
