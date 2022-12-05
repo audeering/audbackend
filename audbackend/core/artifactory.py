@@ -36,41 +36,6 @@ class Artifactory(Backend):
         path = self._path(path, version, ext)
         return audfactory.checksum(path)
 
-    def _path(
-            self,
-            path: str,
-            version: str,
-            ext: str,
-    ) -> str:
-        r"""Convert to backend path.
-
-        Format: <server>/<folder>/<version>/<basename>-<version>.<ext>
-
-        """
-        utils.check_path_for_allowed_chars(path)
-
-        folder, file = self.split(path)
-
-        if ext is None:
-            name, ext = os.path.splitext(file)
-        elif ext == '':
-            name = file
-        else:
-            if not ext.startswith('.'):
-                ext = '.' + ext
-            name = file[:-len(ext)]
-
-        utils.check_path_ends_on_ext(path, ext)
-
-        server_url = audfactory.url(
-            self.host,
-            repository=self.repository,
-            group_id=audfactory.path_to_group_id(folder),
-            name=name,
-            version=version,
-        )
-        return f'{server_url}/{name}-{version}{ext}'
-
     def _exists(
             self,
             path: str,
@@ -134,6 +99,45 @@ class Artifactory(Backend):
         )
         return [p.name for p in audfactory.path(path)]
 
+    def _path(
+            self,
+            path: str,
+            version: typing.Optional[str],
+            ext: str,
+    ) -> str:
+        r"""Convert to backend path.
+
+        Format: <server>/<folder>/<version>/<basename>-<version>.<ext>
+
+        """
+        utils.check_path_for_allowed_chars(path)
+
+        folder, file = self.split(path)
+
+        if ext is None:
+            name, ext = os.path.splitext(file)
+        elif ext == '':
+            name = file
+        else:
+            if not ext.startswith('.'):
+                ext = '.' + ext
+            name = file[:-len(ext)]
+
+        utils.check_path_ends_on_ext(path, ext)
+
+        path = audfactory.url(
+            self.host,
+            repository=self.repository,
+            group_id=audfactory.path_to_group_id(folder),
+            name=name,
+            version=version,
+        )
+
+        if version is not None:
+            path = f'{path}/{name}-{version}{ext}'
+
+        return path
+
     def _put_file(
             self,
             src_path: str,
@@ -162,14 +166,12 @@ class Artifactory(Backend):
             ext: str,
     ) -> typing.List[str]:
         r"""Versions of a file."""
-        root, name = self.split(path)
-        group_id = audfactory.path_to_group_id(root)
-        vs = audfactory.versions(
-            self.host,
-            self.repository,
-            group_id,
-            name,
-        )
+        path = self._path(path, None, ext)
+        path = audfactory.path(path)
+        try:
+            vs = [os.path.basename(str(p)) for p in path if p.is_dir]
+        except (FileNotFoundError, RuntimeError):
+            vs = []
         return vs
 
     _non_existing_path_error = (RuntimeError, requests.exceptions.HTTPError)
@@ -182,7 +184,7 @@ class Artifactory(Backend):
     or
     ``requests.exceptions.HTTPError: 403 Client Error``
     error,
-    which might depend on the instaleld ``dohq-artifactory``
+    which might depend on the installed ``dohq-artifactory``
     version. So we better catch both of them.
 
     """

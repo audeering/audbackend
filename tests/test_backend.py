@@ -415,13 +415,14 @@ def test_glob(tmpdir, files, pattern, folder, expected, backend):
         )
 
     expected = [
-        backend.path(
+        backend._path(
             backend.join(
                 pytest.ID,
                 'test_glob',
                 *x.split(backend.sep),
             ),
             '1.0.0',
+            'ext',
         )
         for x in expected
     ]
@@ -498,53 +499,6 @@ def test_ls(tmpdir, path, content, expected_content, backend):
 )
 def test_join(backend, paths, expected):
     assert backend.join(*paths) == expected
-
-
-@pytest.mark.parametrize(
-    'backend',
-    [
-        audbackend.FileSystem(
-            pytest.FILE_SYSTEM_HOST,
-            pytest.REPOSITORY_NAME,
-        ),
-        audbackend.Artifactory(
-            pytest.ARTIFACTORY_HOST,
-            pytest.REPOSITORY_NAME,
-        ),
-    ]
-)
-@pytest.mark.parametrize(
-    'path, version, ext, expected',
-    [
-        ('media/test', '1.0.0', None, 'test-1.0.0'),
-        ('media/test1-12.344', '1.0.0', None, 'test1-12-1.0.0.344'),
-        ('media/test.tar', '1.0.0', None, 'test-1.0.0.tar'),
-        ('media/test.tar', '1.0.0', 'tar', 'test-1.0.0.tar'),
-        ('media/test.tar', '1.0.0', '.tar', 'test-1.0.0.tar'),
-        ('media/test.tar.gz', '1.0.0', None, 'test.tar-1.0.0.gz'),
-        ('media/test.tar.gz', '1.0.0', 'tar.gz', 'test-1.0.0.tar.gz'),
-        ('media/test.tar.gz', '1.0.0', '.tar.gz', 'test-1.0.0.tar.gz'),
-        ('media/test.1.2.3', '1.0.0', '1.2.3', 'test-1.0.0.1.2.3'),
-        ('media/test.1.2.3', '1.0.0', '', 'test.1.2.3-1.0.0'),
-        pytest.param(  # invalid character
-            r'media\test',
-            '1.0.0',
-            None,
-            None,
-            marks=pytest.mark.xfail(raises=ValueError),
-        ),
-        pytest.param(  # invalid file extension
-            r'media/test.tar.gz',
-            '1.0.0',
-            'gz.tar',
-            None,
-            marks=pytest.mark.xfail(raises=ValueError),
-        ),
-    ]
-)
-def test_path(backend, path, version, ext, expected):
-    path = backend.path(path, version, ext=ext)
-    assert os.path.basename(path) == expected
 
 
 @pytest.mark.parametrize(
