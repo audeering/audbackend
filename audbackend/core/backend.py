@@ -15,7 +15,7 @@ def _raise_file_not_found_error(
 ):
     if version:
         path = f'{path} with version {version}'
-    FileNotFoundError(
+    raise FileNotFoundError(
         errno.ENOENT,
         os.strerror(errno.ENOENT),
         path,
@@ -380,6 +380,8 @@ class Backend:
             self,
             src_path: str,
             dst_path: str,
+            version: str,
+            ext: str,
             verbose: bool,
     ):  # pragma: no cover
         r"""Put file to backend."""
@@ -424,7 +426,7 @@ class Backend:
             utils.md5(src_path) == self.checksum(dst_path, version, ext=ext)
 
         if not skip:
-            self._put_file(src_path, dst_path, verbose)
+            self._put_file(src_path, dst_path, version, ext, verbose)
 
         return dst_path
 

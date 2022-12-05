@@ -44,7 +44,7 @@ class FileSystem(Backend):
     ) -> str:
         r"""Convert to backend path.
 
-        Format: <folder>/<version>/<basename>-<version>.<ext>
+        Format: <host>/<folder>/<version>/<basename>-<version>.<ext>
 
         """
         utils.check_path_for_allowed_chars(path)
@@ -131,9 +131,12 @@ class FileSystem(Backend):
             self,
             src_path: str,
             dst_path: str,
+            version: str,
+            ext: str,
             verbose: bool,
     ):
         r"""Put file to backend."""
+        dst_path = self._path(dst_path, version, ext)
         audeer.mkdir(os.path.dirname(dst_path))
         shutil.copy(src_path, dst_path)
 
@@ -153,6 +156,12 @@ class FileSystem(Backend):
             ext: str,
     ) -> typing.List[str]:
         r"""Versions of a file."""
-        root, _ = self.split(path)
+        root, name = self.split(path)
+        root = os.path.join(
+            self.host,
+            self.repository,
+            root.replace(self.sep, os.path.sep),
+            name,
+        )
         vs = audeer.list_dir_names(root)
         return vs
