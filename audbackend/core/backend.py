@@ -8,6 +8,31 @@ import audeer
 from audbackend.core import utils
 
 
+def _assert_path_is_valid(
+        path: str,
+        ext: str,
+):
+    utils.check_path_for_allowed_chars(path)
+    if ext and not path.endswith(ext):
+        raise ValueError(
+            f"Invalid path name '{path}', "
+            f"does not end on '{ext}'."
+        )
+
+def _raise_file_not_found_error(
+        path: str,
+        *,
+        version: str = None,
+):
+    if version:
+        path = f'{path} with version {version}'
+    FileNotFoundError(
+        errno.ENOENT,
+        os.strerror(errno.ENOENT),
+        path,
+    )
+
+
 class Backend:
     r"""Abstract backend.
 
@@ -31,6 +56,9 @@ class Backend:
     def _checksum(
             self,
             path: str,
+            version: str,
+            *,
+            ext: str = None,
     ) -> str:  # pragma: no cover
         r"""MD5 checksum of file on backend."""
         raise NotImplementedError()
@@ -56,18 +84,16 @@ class Backend:
             FileNotFoundError: if file does not exist on backend
 
         """
-        backend_path = self.path(path, version, ext=ext)
+        if not self.exists(path, version, ext=ext):
+            raise _raise_file_not_found_error(path, version=version)
 
-        if not self._exists(backend_path):
-            raise FileNotFoundError(
-                errno.ENOENT, os.strerror(errno.ENOENT), path,
-            )
-
-        return self._checksum(backend_path)
+        return self._checksum(path, version, ext=ext)
 
     def _exists(
             self,
             path: str,
+            version: str,
+            ext: str,
     ) -> bool:  # pragma: no cover
         r"""Check if file exists on backend."""
         raise NotImplementedError()
@@ -90,8 +116,8 @@ class Backend:
             ``True`` if file exists
 
         """
-        path = self.path(path, version, ext=ext)
-        return self._exists(path)
+        _assert_path_is_valid(path, ext)
+        return self._exists(path, version, ext)
 
     def get_archive(
             self,
@@ -144,6 +170,8 @@ class Backend:
             self,
             src_path: str,
             dst_path: str,
+            version: str,
+            ext: str,
             verbose: bool,
     ):  # pragma: no cover
         r"""Get file from backend."""
@@ -174,11 +202,8 @@ class Backend:
             FileNotFoundError: if file does not exist on backend
 
         """
-        src_path = self.path(src_path, version, ext=ext)
-        if not self._exists(src_path):
-            raise FileNotFoundError(
-                errno.ENOENT, os.strerror(errno.ENOENT), src_path,
-            )
+        if not self.exists(src_path, version, ext=ext):
+            raise _raise_file_not_found_error(src_path, version=version)
 
         dst_path = audeer.safe_path(dst_path)
         audeer.mkdir(os.path.dirname(dst_path))
@@ -212,6 +237,7 @@ class Backend:
 
         """
         return self._glob(pattern, folder)
+
 
     def join(
             self,
@@ -286,72 +312,72 @@ class Backend:
         """
         return sorted(self._ls(path))
 
-    def _path(
-            self,
-            folder: str,
-            name: str,
-            ext: str,
-            version: str,
-    ) -> str:  # pragma: no cover
-        r"""File path on backend."""
-        raise NotImplementedError()
+    # def _path(
+    #         self,
+    #         folder: str,
+    #         name: str,
+    #         ext: str,
+    #         version: str,
+    # ) -> str:  # pragma: no cover
+    #     r"""File path on backend."""
+    #     raise NotImplementedError()
 
-    def path(
-            self,
-            path: str,
-            version: str,
-            *,
-            ext: str = None,
-    ) -> str:
-        r"""File path on backend.
-
-        This converts a file path on the backend
-        from the form it is presented to a user
-        to the actual path on the backend storage.
-
-        Args:
-            path: relative path to file in repository
-            version: version string
-            ext: file extension, if ``None`` uses characters after last dot
-
-        Returns:
-            file path on backend
-
-        Raises:
-            ValueError: if ``path`` contains invalid character
-            ValueError: if ``path`` does not end on file extension
-
-        Example:
-            >>> import audbackend
-            >>> backend = audbackend.FileSystem('~/my-host', 'data')
-            >>> path = backend.path('media/archive1.zip', '1.0.0')
-            >>> os.path.basename(path)
-            'archive1-1.0.0.zip'
-            >>> path = backend.path(
-            ...     'media/archive1.tar.gz',
-            ...     '1.0.0',
-            ...     ext='tar.gz',
-            ... )
-            >>> os.path.basename(path)
-            'archive1-1.0.0.tar.gz'
-
-        """
-        utils.check_path_for_allowed_chars(path)
-        folder, file = self.split(path)
-        if ext is None:
-            name, ext = os.path.splitext(file)
-        elif ext == '':
-            name = file
-        else:
-            if not ext.startswith('.'):
-                ext = '.' + ext
-            if not path.endswith(ext):
-                raise ValueError(
-                    f"Invalid path name '{path}', "
-                    f"does not end on '{ext}'."
-                )
-            name = file[:-len(ext)]
-        return self._path(folder, name, ext, version)
+    # def path(
+    #         self,
+    #         path: str,
+    #         version: str,
+    #         *,
+    #         ext: str = None,
+    # ) -> str:
+    #     r"""File path on backend.
+    #
+    #     This converts a file path on the backend
+    #     from the form it is presented to a user
+    #     to the actual path on the backend storage.
+    #
+    #     Args:
+    #         path: relative path to file in repository
+    #         version: version string
+    #         ext: file extension, if ``None`` uses characters after last dot
+    #
+    #     Returns:
+    #         file path on backend
+    #
+    #     Raises:
+    #         ValueError: if ``path`` contains invalid character
+    #         ValueError: if ``path`` does not end on file extension
+    #
+    #     Example:
+    #         >>> import audbackend
+    #         >>> backend = audbackend.FileSystem('~/my-host', 'data')
+    #         >>> path = backend.path('media/archive1.zip', '1.0.0')
+    #         >>> os.path.basename(path)
+    #         'archive1-1.0.0.zip'
+    #         >>> path = backend.path(
+    #         ...     'media/archive1.tar.gz',
+    #         ...     '1.0.0',
+    #         ...     ext='tar.gz',
+    #         ... )
+    #         >>> os.path.basename(path)
+    #         'archive1-1.0.0.tar.gz'
+    #
+    #     """
+    #     utils.check_path_for_allowed_chars(path)
+    #     folder, file = self.split(path)
+    #     if ext is None:
+    #         name, ext = os.path.splitext(file)
+    #     elif ext == '':
+    #         name = file
+    #     else:
+    #         if not ext.startswith('.'):
+    #             ext = '.' + ext
+    #         if not path.endswith(ext):
+    #             raise ValueError(
+    #                 f"Invalid path name '{path}', "
+    #                 f"does not end on '{ext}'."
+    #             )
+    #         name = file[:-len(ext)]
+    #     return self._path(folder, name, ext, version)
 
     def put_archive(
             self,
@@ -458,15 +484,12 @@ class Backend:
 
         """
         if not os.path.exists(src_path):
-            raise FileNotFoundError(
-                errno.ENOENT, os.strerror(errno.ENOENT), src_path,
-            )
-
-        dst_path = self.path(dst_path, version, ext=ext)
+            raise _raise_file_not_found_error(src_path)
 
         # skip if file with same checksum exists on backend
-        skip = self._exists(dst_path) and \
-            utils.md5(src_path) == self._checksum(dst_path)
+        skip = self.exists(dst_path, version, ext=ext) and \
+            utils.md5(src_path) == self.checksum(dst_path, version, ext=ext)
+
         if not skip:
             self._put_file(src_path, dst_path, verbose)
 
@@ -475,6 +498,8 @@ class Backend:
     def _remove_file(
             self,
             path: str,
+            version: str,
+            ext: str,
     ):  # pragma: no cover
         r"""Remove file from backend."""
         raise NotImplementedError()
@@ -500,13 +525,10 @@ class Backend:
             FileNotFoundError: if file does not exist on backend
 
         """
-        path = self.path(path, version, ext=ext)
-        if not self._exists(path):
-            raise FileNotFoundError(
-                errno.ENOENT, os.strerror(errno.ENOENT), path,
-            )
+        if not self.exists(path, version, ext=ext):
+            _raise_file_not_found_error(path, version=version)
 
-        self._remove_file(path)
+        self._remove_file(path, version, ext)
 
         return path
 
@@ -534,8 +556,8 @@ class Backend:
 
     def _versions(
             self,
-            folder: str,
-            name: str,
+            path: str,
+            ext: str,
     ) -> typing.List[str]:  # pragma: no cover
         r"""Versions of a file."""
         raise NotImplementedError()
@@ -556,7 +578,5 @@ class Backend:
             list of versions in ascending order
 
         """
-        folder, file = self.split(path)
-        name = audeer.basename_wo_ext(file, ext=ext)
-        vs = self._versions(folder, name)
+        vs = self._versions(path, ext)
         return audeer.sort_versions(vs)
