@@ -12,7 +12,7 @@ from audbackend.core.backend import Backend
 class FileSystem(Backend):
     r"""File system backend.
 
-    Stores files and archives on a file system.
+    Store files and archives on a file system.
 
     Args:
         host: host directory
@@ -29,46 +29,75 @@ class FileSystem(Backend):
     def _checksum(
             self,
             path: str,
+            version: str,
+            ext: str,
     ) -> str:
         r"""MD5 checksum of file on backend."""
+        path = self._path(path, version, ext)
         return utils.md5(path)
 
     def _path(
             self,
-            folder: str,
-            name: str,
-            ext: str,
+            path: str,
             version: str,
+            ext: str,
     ) -> str:
-        r"""File path on backend."""
+        r"""Convert to backend path.
+
+        Format: <folder>/<version>/<basename>-<version>.<ext>
+
+        """
+        utils.check_path_for_allowed_chars(path)
+
+        folder, file = self.split(path)
+
+        if ext is None:
+            name, ext = os.path.splitext(file)
+        elif ext == '':
+            name = file
+        else:
+            if not ext.startswith('.'):
+                ext = '.' + ext
+            name = file[:-len(ext)]
+
+        utils.check_path_ends_on_ext(path, ext)
+
         path = os.path.join(
             self.host,
             self.repository,
             folder.replace(self.sep, os.path.sep),
             name,
         )
+
         if version is not None:
             path = os.path.join(
                 path,
                 version,
                 f'{name}-{version}{ext}',
             )
+
         return path
 
     def _exists(
             self,
             path: str,
+            version: str,
+            ext: str,
     ) -> bool:
         r"""Check if file exists on backend."""
+        path = self._path(path, version, ext)
         return os.path.exists(path)
 
     def _get_file(
             self,
             src_path: str,
             dst_path: str,
+            version: str,
+            ext: str,
             verbose: bool,
     ):
         r"""Get file from backend."""
+        src_path = self._path(src_path, version, ext)
         shutil.copy(src_path, dst_path)
 
     def _glob(
@@ -111,21 +140,19 @@ class FileSystem(Backend):
     def _remove_file(
             self,
             path: str,
+            version: str,
+            ext: str,
     ):
         r"""Remove file from backend."""
+        path = self._path(path, version, ext)
         os.remove(path)
 
     def _versions(
             self,
-            folder: str,
-            name: str,
+            path: str,
+            ext: str,
     ) -> typing.List[str]:
         r"""Versions of a file."""
-        root = self._path(folder, name, '', None)
-        vs = []
-        if os.path.exists(root):
-            vs = [
-                v for v in os.listdir(root)
-                if os.path.isdir(os.path.join(root, v))
-            ]
+        root, _ = self.split(path)
+        vs = audeer.list_dir_names(root)
         return vs
