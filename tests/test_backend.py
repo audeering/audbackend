@@ -118,6 +118,7 @@ def test_archive(tmpdir, files, name, folder, version, tmp_root, backend):
         version,
         tmp_root=tmp_root,
     )
+    assert path_backend.startswith(backend.host)
     # operation will be skipped
     assert backend.put_archive(
         tmpdir,
@@ -336,6 +337,7 @@ def test_file(tmpdir, local_file, remote_file, version, ext, backend):
 
     assert not backend.exists(remote_file, version, ext=ext)
     path_backend = backend.put_file(local_file, remote_file, version, ext=ext)
+    assert path_backend.startswith(backend.host)
     # operation will be skipped
     assert backend.put_file(
         local_file,
@@ -350,6 +352,7 @@ def test_file(tmpdir, local_file, remote_file, version, ext, backend):
     assert backend.checksum(remote_file, version, ext=ext) == md5(local_file)
 
     assert backend.remove_file(remote_file, version, ext=ext) == path_backend
+    assert path_backend.startswith(backend.host)
     assert not backend.exists(remote_file, version, ext=ext)
 
     if ext is None:
@@ -542,12 +545,24 @@ def test_versions(tmpdir, file_name, ext, backend):
         file_name,
     )
 
+    # empty backend
     assert not backend.versions(remote_file, ext=ext)
     with pytest.raises(RuntimeError):
         backend.latest_version(remote_file, ext=ext)
+
+    # v1
     backend.put_file(local_file, remote_file, '1.0.0', ext=ext)
     assert backend.versions(remote_file, ext=ext) == ['1.0.0']
     assert backend.latest_version(remote_file, ext=ext) == '1.0.0'
+
+    # v2
     backend.put_file(local_file, remote_file, '2.0.0', ext=ext)
+    assert backend.versions(remote_file, ext=ext) == ['1.0.0', '2.0.0']
+    assert backend.latest_version(remote_file, ext=ext) == '2.0.0'
+
+    # v3 with a different extension
+    other_ext = 'other'
+    other_remote_file = audeer.replace_file_extension(remote_file, other_ext)
+    backend.put_file(local_file, other_remote_file, '3.0.0', ext=other_ext)
     assert backend.versions(remote_file, ext=ext) == ['1.0.0', '2.0.0']
     assert backend.latest_version(remote_file, ext=ext) == '2.0.0'

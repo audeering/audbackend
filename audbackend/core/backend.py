@@ -172,7 +172,7 @@ class Backend:
             *,
             ext: str = None,
             verbose: bool = False,
-    ):
+    ) -> str:
         r"""Get file from backend.
 
         Args:
@@ -199,6 +199,8 @@ class Backend:
         audeer.mkdir(os.path.dirname(dst_path))
 
         self._get_file(src_path, dst_path, version, ext, verbose)
+
+        return dst_path
 
     def _glob(
             self,
@@ -291,7 +293,7 @@ class Backend:
     def ls(
             self,
             path: str,
-    ) -> typing.List:
+    ) -> typing.List[str]:
         r"""List content of path.
 
         Args:
@@ -380,7 +382,7 @@ class Backend:
             version: str,
             ext: str,
             verbose: bool,
-    ):  # pragma: no cover
+    ) -> str:  # pragma: no cover
         r"""Put file to backend."""
         raise NotImplementedError()
 
@@ -419,12 +421,13 @@ class Backend:
         if not os.path.exists(src_path):
             utils.raise_file_not_found_error(src_path)
 
-        # skip if file with same checksum exists on backend
-        skip = self.exists(dst_path, version, ext=ext) and \
-            utils.md5(src_path) == self.checksum(dst_path, version, ext=ext)
-
-        if not skip:
-            self._put_file(src_path, dst_path, version, ext, verbose)
+        dst_path = self._put_file(
+            src_path,
+            dst_path,
+            version,
+            ext,
+            verbose,
+        )
 
         return dst_path
 
@@ -433,7 +436,7 @@ class Backend:
             path: str,
             version: str,
             ext: str,
-    ):  # pragma: no cover
+    ) -> str:  # pragma: no cover
         r"""Remove file from backend."""
         raise NotImplementedError()
 
@@ -464,7 +467,7 @@ class Backend:
         if not self.exists(path, version, ext=ext):
             utils.raise_file_not_found_error(path, version=version)
 
-        self._remove_file(path, version, ext)
+        path = self._remove_file(path, version, ext)
 
         return path
 

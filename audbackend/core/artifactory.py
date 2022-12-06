@@ -1,4 +1,6 @@
 import os
+
+import audeer
 import requests
 import typing
 
@@ -149,20 +151,31 @@ class Artifactory(Backend):
             version: str,
             ext: str,
             verbose: bool,
-    ):
+    ) -> str:
         r"""Put file to backend."""
+        skip = False
+
+        # skip if file with same checksum already exists
+        if self._exists(dst_path, version, ext):
+            checksum = self._checksum(dst_path, version, ext)
+            skip = utils.md5(src_path) == checksum
+
         dst_path = self._path(dst_path, version, ext)
-        audfactory.deploy(src_path, dst_path, verbose=verbose)
+        if not skip:
+            audfactory.deploy(src_path, dst_path, verbose=verbose)
+
+        return dst_path
 
     def _remove_file(
             self,
             path: str,
             version: str,
             ext: str,
-    ):
+    ) -> str:
         r"""Remove file from backend."""
         path = self._path(path, version, ext)
         audfactory.path(path).unlink()
+        return path
 
     def _versions(
             self,
@@ -172,10 +185,15 @@ class Artifactory(Backend):
         r"""Versions of a file."""
         folder = self._folder(path, ext)
         folder = audfactory.path(folder)
+
         try:
             vs = [os.path.basename(str(f)) for f in folder if f.is_dir]
         except (FileNotFoundError, RuntimeError):
             vs = []
+
+        # filter out versions of files with different extension
+        vs = [v for v in vs if self._exists(path, v, ext)]
+
         return vs
 
     _non_existing_path_error = (RuntimeError, requests.exceptions.HTTPError)

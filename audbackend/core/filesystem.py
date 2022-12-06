@@ -138,21 +138,33 @@ class FileSystem(Backend):
             version: str,
             ext: str,
             verbose: bool,
-    ):
+    ) -> str:
         r"""Put file to backend."""
+        skip = False
+
+        # skip if file with same checksum already exists
+        if self._exists(dst_path, version, ext):
+            checksum = self._checksum(dst_path, version, ext)
+            skip = utils.md5(src_path) == checksum
+
         dst_path = self._path(dst_path, version, ext)
-        audeer.mkdir(os.path.dirname(dst_path))
-        shutil.copy(src_path, dst_path)
+
+        if not skip:
+            audeer.mkdir(os.path.dirname(dst_path))
+            shutil.copy(src_path, dst_path)
+
+        return dst_path
 
     def _remove_file(
             self,
             path: str,
             version: str,
             ext: str,
-    ):
+    ) -> str:
         r"""Remove file from backend."""
         path = self._path(path, version, ext)
         os.remove(path)
+        return path
 
     def _versions(
             self,
@@ -161,6 +173,7 @@ class FileSystem(Backend):
     ) -> typing.List[str]:
         r"""Versions of a file."""
         folder = self._folder(path, ext)
+
         if os.path.exists(folder):
             vs = audeer.list_dir_names(
                 folder,
@@ -168,4 +181,8 @@ class FileSystem(Backend):
             )
         else:
             vs = []
+
+        # filter out versions of files with different extension
+        vs = [v for v in vs if self._exists(path, v, ext)]
+
         return vs
