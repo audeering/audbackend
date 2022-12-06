@@ -1,6 +1,5 @@
 import os
 
-import audeer
 import requests
 import typing
 
