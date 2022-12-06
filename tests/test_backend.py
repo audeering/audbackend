@@ -200,14 +200,18 @@ def test_errors(tmpdir, backend):
         file_name,
     )
 
-    with pytest.raises(ValueError):  # extension does not match path
+    error_msg = f"Invalid path name '{remote_file}', " \
+                f"does not end on '.bad'."
+    with pytest.raises(ValueError, match=error_msg):
         backend.put_file(
             local_file,
             remote_file,
             '1.0.0',
             ext='bad',
         )
-    with pytest.raises(ValueError):  # path contains invalid character
+    error_msg = f"Invalid path name '{remote_file}\?', " \
+                f"allowed characters are '\[A-Za-z0-9/\._-\]\+'"
+    with pytest.raises(ValueError, match=error_msg):
         backend.put_file(
             local_file,
             remote_file + '?',
