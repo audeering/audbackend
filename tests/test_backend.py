@@ -209,8 +209,8 @@ def test_errors(tmpdir, backend):
             '1.0.0',
             ext='bad',
         )
-    error_msg = f"Invalid path name '{remote_file}\?', " \
-                f"allowed characters are '\[A-Za-z0-9/\._-\]\+'"
+    error_msg = rf"Invalid path name '{remote_file}\?', " \
+                rf"allowed characters are '\[A-Za-z0-9/\._-\]\+'"
     with pytest.raises(ValueError, match=error_msg):
         backend.put_file(
             local_file,
