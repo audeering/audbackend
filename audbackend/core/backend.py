@@ -1,4 +1,3 @@
-import errno
 import os
 import tempfile
 import typing
@@ -6,20 +5,6 @@ import typing
 import audeer
 
 from audbackend.core import utils
-
-
-def _raise_file_not_found_error(
-        path: str,
-        *,
-        version: str = None,
-):
-    if version:
-        path = f'{path} with version {version}'
-    raise FileNotFoundError(
-        errno.ENOENT,
-        os.strerror(errno.ENOENT),
-        path,
-    )
 
 
 class Backend:
@@ -74,8 +59,9 @@ class Backend:
             ValueError: if ``path`` does not end on file extension
 
         """
+        path, ext = utils.check_path_and_ext(path, ext)
         if not self.exists(path, version, ext=ext):
-            raise _raise_file_not_found_error(path, version=version)
+            utils.raise_file_not_found_error(path, version=version)
 
         return self._checksum(path, version, ext=ext)
 
@@ -110,8 +96,8 @@ class Backend:
             ValueError: if ``path`` does not end on file extension
 
         """
-        utils.check_path_for_allowed_chars(path)
-        utils.check_path_ends_on_ext(path, ext)
+        path, ext = utils.check_path_and_ext(path, ext)
+
         return self._exists(path, version, ext)
 
     def get_archive(
@@ -143,19 +129,24 @@ class Backend:
             ValueError: if ``src_path`` contains invalid character
 
         """
+        ext = '.zip'
+        src_path += ext
+        src_path, ext = utils.check_path_and_ext(src_path, ext)
+
         with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
+
             tmp_root = audeer.path(tmp, os.path.basename(dst_root))
-            remote_archive = src_path + '.zip'
             local_archive = os.path.join(
                 tmp_root,
-                os.path.basename(remote_archive),
+                os.path.basename(src_path),
             )
             self.get_file(
-                remote_archive,
+                src_path,
                 local_archive,
                 version,
                 verbose=verbose,
             )
+
             return audeer.extract_archive(
                 local_archive,
                 dst_root,
@@ -200,8 +191,9 @@ class Backend:
             ValueError: if ``src_path`` does not end on file extension
 
         """
+        path, ext = utils.check_path_and_ext(src_path, ext)
         if not self.exists(src_path, version, ext=ext):
-            raise _raise_file_not_found_error(src_path, version=version)
+            utils.raise_file_not_found_error(src_path, version=version)
 
         dst_path = audeer.safe_path(dst_path)
         audeer.mkdir(os.path.dirname(dst_path))
@@ -277,6 +269,8 @@ class Backend:
             ValueError: if ``path`` does not end on file extension
 
         """
+        path, ext = utils.check_path_and_ext(path, ext)
+
         vs = self.versions(path, ext=ext)
         if not vs:
             raise RuntimeError(
@@ -284,6 +278,7 @@ class Backend:
                 f"'{path}' in "
                 f"'{self.repository}'.",
             )
+
         return vs[-1]
 
     def _ls(
@@ -348,7 +343,9 @@ class Backend:
             ValueError: if ``dst_path`` contains invalid character
 
         """
-        utils.check_path_for_allowed_chars(dst_path)
+        ext = '.zip'
+        dst_path += ext
+        dst_path, ext = utils.check_path_and_ext(dst_path, ext)
         src_root = audeer.safe_path(src_root)
 
         if isinstance(files, str):
@@ -357,21 +354,21 @@ class Backend:
         for file in files:
             path = os.path.join(src_root, file)
             if not os.path.exists(path):
-                _raise_file_not_found_error(path)
+                utils.raise_file_not_found_error(path)
 
         with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
-            _, archive_name = self.split(dst_path)
-            archive = audeer.path(tmp, f'{archive_name}-{version}.zip')
+
+            archive = audeer.path(tmp, os.path.basename(dst_path))
             audeer.create_archive(
                 src_root,
                 files,
                 archive,
                 verbose=verbose,
             )
-            remote_archive = dst_path + '.zip'
+
             return self.put_file(
                 archive,
-                remote_archive,
+                dst_path,
                 version,
                 verbose=verbose,
             )
@@ -418,8 +415,9 @@ class Backend:
             ValueError: if ``dst_path`` does not end on file extension
 
         """
+        dst_path, ext = utils.check_path_and_ext(dst_path, ext)
         if not os.path.exists(src_path):
-            raise _raise_file_not_found_error(src_path)
+            utils.raise_file_not_found_error(src_path)
 
         # skip if file with same checksum exists on backend
         skip = self.exists(dst_path, version, ext=ext) and \
@@ -462,8 +460,9 @@ class Backend:
             ValueError: if ``path`` does not end on file extension
 
         """
+        path, ext = utils.check_path_and_ext(path, ext)
         if not self.exists(path, version, ext=ext):
-            _raise_file_not_found_error(path, version=version)
+            utils.raise_file_not_found_error(path, version=version)
 
         self._remove_file(path, version, ext)
 
@@ -489,6 +488,7 @@ class Backend:
         """
         folder = self.sep.join(path.split(self.sep)[:-1])
         basename = path.split(self.sep)[-1]
+
         return folder, basename
 
     def _versions(
@@ -519,8 +519,7 @@ class Backend:
             ValueError: if ``path`` does not end on file extension
 
         """
-        utils.check_path_for_allowed_chars(path)
-        utils.check_path_ends_on_ext(path, ext)
+        path, ext = utils.check_path_and_ext(path, ext)
 
         vs = self._versions(path, ext)
 

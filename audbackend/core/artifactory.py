@@ -99,6 +99,30 @@ class Artifactory(Backend):
         )
         return [p.name for p in audfactory.path(path)]
 
+    def _folder(
+            self,
+            path: str,
+            ext: str,
+    ) -> str:
+        r"""Convert to backend folder.
+
+        <folder>/<name>.<ext>
+        ->
+        <host>/<repository>/<folder>/<name>/
+
+        """
+        folder, file = self.split(path)
+        name, ext = utils.splitext(file, ext)
+
+        path = audfactory.url(
+            self.host,
+            repository=self.repository,
+            group_id=audfactory.path_to_group_id(folder),
+            name=name,
+        )
+
+        return path
+
     def _path(
             self,
             path: str,
@@ -107,34 +131,14 @@ class Artifactory(Backend):
     ) -> str:
         r"""Convert to backend path.
 
-        Format: <server>/<folder>/<version>/<basename>-<version>.<ext>
+        <folder>/<name>.<ext>
+        ->
+        <host>/<repository>/<folder>/<name>/<version>/<name>-<version>.<ext>
 
         """
-        utils.check_path_for_allowed_chars(path)
-
-        folder, file = self.split(path)
-
-        if ext is None:
-            name, ext = os.path.splitext(file)
-        elif ext == '':
-            name = file
-        else:
-            if not ext.startswith('.'):
-                ext = '.' + ext
-            name = file[:-len(ext)]
-
-        utils.check_path_ends_on_ext(path, ext)
-
-        path = audfactory.url(
-            self.host,
-            repository=self.repository,
-            group_id=audfactory.path_to_group_id(folder),
-            name=name,
-            version=version,
-        )
-
-        if version is not None:
-            path = f'{path}/{name}-{version}{ext}'
+        folder = self._folder(path, ext)
+        _, name = self.split(folder)
+        path = f'{folder}/{version}/{name}-{version}{ext}'
 
         return path
 
@@ -166,10 +170,10 @@ class Artifactory(Backend):
             ext: str,
     ) -> typing.List[str]:
         r"""Versions of a file."""
-        path = self._path(path, None, ext)
-        path = audfactory.path(path)
+        folder = self._folder(path, ext)
+        folder = audfactory.path(folder)
         try:
-            vs = [os.path.basename(str(p)) for p in path if p.is_dir]
+            vs = [os.path.basename(str(f)) for f in folder if f.is_dir]
         except (FileNotFoundError, RuntimeError):
             vs = []
         return vs

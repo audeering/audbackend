@@ -46,6 +46,30 @@ class FileSystem(Backend):
         path = self._path(path, version, ext)
         return os.path.exists(path)
 
+    def _folder(
+            self,
+            path: str,
+            ext: str,
+    ) -> str:
+        r"""Convert to backend folder.
+
+        <folder>/<name>.<ext>
+        ->
+        <host>/<repository>/<folder>/<name>/
+
+        """
+        folder, file = self.split(path)
+        name, ext = utils.splitext(file, ext)
+
+        path = os.path.join(
+            self.host,
+            self.repository,
+            folder.replace(self.sep, os.path.sep),
+            name,
+        )
+
+        return path
+
     def _get_file(
             self,
             src_path: str,
@@ -88,43 +112,23 @@ class FileSystem(Backend):
     def _path(
             self,
             path: str,
-            version: typing.Optional[str],
+            version: str,
             ext: str,
     ) -> str:
         r"""Convert to backend path.
 
-        Format: <host>/<folder>/<version>/<name>-<version>.<ext>
+        <folder>/<name>.<ext>
+        ->
+        <host>/<repository>/<folder>/<name>/<version>/<name>-<version>.<ext>
 
         """
-        utils.check_path_for_allowed_chars(path)
-
-        folder, file = self.split(path)
-
-        if ext is None:
-            name, ext = os.path.splitext(file)
-        elif ext == '':
-            name = file
-        else:
-            if not ext.startswith('.'):
-                ext = '.' + ext
-            name = file[:-len(ext)]
-
-        utils.check_path_ends_on_ext(path, ext)
-
+        folder = self._folder(path, ext)
+        name = os.path.basename(folder)
         path = os.path.join(
-            self.host,
-            self.repository,
-            folder.replace(self.sep, os.path.sep),
-            name,
+            folder,
+            version,
+            f'{name}-{version}{ext}',
         )
-
-        if version is not None:
-            path = os.path.join(
-                path,
-                version,
-                f'{name}-{version}{ext}',
-            )
-
         return path
 
     def _put_file(
@@ -156,14 +160,12 @@ class FileSystem(Backend):
             ext: str,
     ) -> typing.List[str]:
         r"""Versions of a file."""
-        path = self._path(path, None, ext)
-        root = os.path.join(
-            self.host,
-            self.repository,
-            path.replace(self.sep, os.path.sep),
-        )
-        if os.path.exists(root):
-            vs = audeer.list_dir_names(root, basenames=True)
+        folder = self._folder(path, ext)
+        if os.path.exists(folder):
+            vs = audeer.list_dir_names(
+                folder,
+                basenames=True,
+            )
         else:
             vs = []
         return vs

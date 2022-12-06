@@ -149,9 +149,6 @@ def test_archive(tmpdir, files, name, folder, version, tmp_root, backend):
         tmp_root=tmp_root,
     ) == files_as_list
 
-    with pytest.raises(ValueError):
-        backend.put_archive(tmpdir, files, 'broken_name?', version)
-
 
 @pytest.mark.parametrize(
     'name, host, cls',
@@ -202,6 +199,19 @@ def test_errors(tmpdir, backend):
         file_name,
     )
 
+    with pytest.raises(ValueError):  # extension does not match path
+        backend.put_file(
+            local_file,
+            remote_file,
+            '1.0.0',
+            ext='bad',
+        )
+    with pytest.raises(ValueError):  # path contains invalid character
+        backend.put_file(
+            local_file,
+            remote_file + '?',
+            '1.0.0',
+        )
     with pytest.raises(FileNotFoundError):
         backend.put_file(
             local_file,
@@ -370,7 +380,7 @@ def test_file(tmpdir, local_file, remote_file, version, ext, backend):
             f'{pytest.ID}/test_glob/path/to',
             ['path/to/file.ext'],
         ),
-        # Test nion-existing path on server
+        # Test non-existing path on server
         (
             [],
             f'{pytest.ID}/test_non-existing-path/**/*.ext',
@@ -422,7 +432,7 @@ def test_glob(tmpdir, files, pattern, folder, expected, backend):
                 *x.split(backend.sep),
             ),
             '1.0.0',
-            'ext',
+            '.ext',
         )
         for x in expected
     ]
