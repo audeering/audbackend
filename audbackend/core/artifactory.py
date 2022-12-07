@@ -132,14 +132,15 @@ class Artifactory(Backend):
 
             host_repo = f'{self.host}/{self.repository}'
             full_path = full_path[len(host_repo) + 1:]  # remove host and repo
+            full_path = full_path.replace('/', self.sep)
+            tokens = full_path.split('/')
 
-            tokens = full_path.split(os.path.sep)
             file = tokens[-1]
             version = tokens[-2]
             name = tokens[-3]
-            folder = os.path.sep.join(tokens[:-3])
+            folder = self.sep.join(tokens[:-3])
             ext = file[len(name) + len(version) + 1:]
-            path = os.path.join(folder, f'{name}{ext}')
+            path = self.join(folder, f'{name}{ext}')
             if ext:
                 ext = ext[1:]  # remove .
 
