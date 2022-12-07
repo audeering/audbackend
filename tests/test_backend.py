@@ -465,7 +465,7 @@ def test_ls(tmpdir, backend):
     content = [  # three files with different extensions
         (f'{prefix}/file.tar.gz', '1.0.0', ''),
         (f'{prefix}/file.tar.gz', '1.0.0', None),
-        (f'{prefix}/file.tar.gz', '1.0.0', 'tar.gz'),
+        (f'{prefix}/file.tar.gz', '1.0.0', '.tar.gz'),
     ] + sub_content
 
     # create content
@@ -490,7 +490,7 @@ def test_ls(tmpdir, backend):
     ]:
         folder = backend.join(prefix, folder)
         expected = [  # replace ext where it is None
-            (path, version, path.split('.')[-1] if ext is None else ext)
+            (path, version, f".{path.split('.')[-1]}" if ext is None else ext)
             for path, version, ext in expected
         ]
         assert backend.ls(folder) == sorted(expected)

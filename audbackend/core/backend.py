@@ -322,8 +322,8 @@ class Backend:
     def _ls(
             self,
             path: str,
-    ) -> typing.List:  # pragma: no cover
-        r"""List content of path."""
+    ) -> typing.List[typing.Tuple[str, str, str]]:  # pragma: no cover
+        r"""List all files under folder."""
         raise NotImplementedError()
 
     def ls(
@@ -332,14 +332,18 @@ class Backend:
     ) -> typing.List[typing.Tuple[str, str, str]]:
         r"""List all files under folder.
 
+        For each match,
+        path, version and extension is returned.
+        If extension is not empty,
+        it starts with a dot.
         If folder does not exist,
-        an empty list is returned.
+        the result is an empty list.
 
         Args:
             folder: folder on backend
 
         Returns:
-            list of tuples (path, version, ext)
+            sorted list of tuples (path, version, extension)
 
         Raises:
             ValueError: if ``folder`` contains invalid character

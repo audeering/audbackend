@@ -53,7 +53,7 @@ class FileSystem(Backend):
     ) -> str:
         r"""Convert to backend folder.
 
-        <folder>/<name>.<ext>
+        <folder>/<name><ext>
         ->
         <host>/<repository>/<folder>/<name>/
 
@@ -101,13 +101,13 @@ class FileSystem(Backend):
             self,
             folder: str,
     ):
-        r"""List content of folder."""
+        r"""List all files under folder."""
         root = self._folder(folder, '')
         paths = audeer.list_file_names(root, recursive=True)
 
-        # <host>/<repository>/<folder>/<name>/<version>/<name>-<version>.<ext>
+        # <host>/<repository>/<folder>/<name>/<version>/<name>-<version><ext>
         # ->
-        # (<folder>/<name>.<ext>, <version>, <ext>)
+        # (<folder>/<name><ext>, <version>, <ext>)
 
         result = []
         for full_path in paths:
@@ -123,8 +123,6 @@ class FileSystem(Backend):
             folder = self.sep.join(tokens[:-3])
             ext = file[len(name) + len(version) + 1:]
             path = self.join(folder, f'{name}{ext}')
-            if ext:
-                ext = ext[1:]  # remove .
 
             result.append((path, version, ext))
 
