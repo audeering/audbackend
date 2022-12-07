@@ -12,7 +12,7 @@ from audbackend.core.backend import Backend
 class FileSystem(Backend):
     r"""File system backend.
 
-    Stores files and archives on a file system.
+    Store files and archives on a file system.
 
     Args:
         host: host directory
@@ -29,46 +29,57 @@ class FileSystem(Backend):
     def _checksum(
             self,
             path: str,
+            version: str,
+            ext: str,
     ) -> str:
         r"""MD5 checksum of file on backend."""
+        path = self._path(path, version, ext)
         return utils.md5(path)
 
-    def _path(
+    def _exists(
             self,
-            folder: str,
-            name: str,
-            ext: str,
+            path: str,
             version: str,
+            ext: str,
+    ) -> bool:
+        r"""Check if file exists on backend."""
+        path = self._path(path, version, ext)
+        return os.path.exists(path)
+
+    def _folder(
+            self,
+            path: str,
+            ext: str,
     ) -> str:
-        r"""File path on backend."""
+        r"""Convert to backend folder.
+
+        <folder>/<name>.<ext>
+        ->
+        <host>/<repository>/<folder>/<name>/
+
+        """
+        folder, file = self.split(path)
+        name, ext = utils.splitext(file, ext)
+
         path = os.path.join(
             self.host,
             self.repository,
             folder.replace(self.sep, os.path.sep),
             name,
         )
-        if version is not None:
-            path = os.path.join(
-                path,
-                version,
-                f'{name}-{version}{ext}',
-            )
-        return path
 
-    def _exists(
-            self,
-            path: str,
-    ) -> bool:
-        r"""Check if file exists on backend."""
-        return os.path.exists(path)
+        return path
 
     def _get_file(
             self,
             src_path: str,
             dst_path: str,
+            version: str,
+            ext: str,
             verbose: bool,
     ):
         r"""Get file from backend."""
+        src_path = self._path(src_path, version, ext)
         shutil.copy(src_path, dst_path)
 
     def _glob(
@@ -98,34 +109,68 @@ class FileSystem(Backend):
         )
         return os.listdir(path)
 
+    def _path(
+            self,
+            path: str,
+            version: str,
+            ext: str,
+    ) -> str:
+        r"""Convert to backend path.
+
+        <folder>/<name>.<ext>
+        ->
+        <host>/<repository>/<folder>/<name>/<version>/<name>-<version>.<ext>
+
+        """
+        folder = self._folder(path, ext)
+        name = os.path.basename(folder)
+        path = os.path.join(
+            folder,
+            version,
+            f'{name}-{version}{ext}',
+        )
+        return path
+
     def _put_file(
             self,
             src_path: str,
             dst_path: str,
+            version: str,
+            ext: str,
             verbose: bool,
     ):
         r"""Put file to backend."""
+        dst_path = self._path(dst_path, version, ext)
         audeer.mkdir(os.path.dirname(dst_path))
         shutil.copy(src_path, dst_path)
 
     def _remove_file(
             self,
             path: str,
+            version: str,
+            ext: str,
     ):
         r"""Remove file from backend."""
+        path = self._path(path, version, ext)
         os.remove(path)
 
     def _versions(
             self,
-            folder: str,
-            name: str,
+            path: str,
+            ext: str,
     ) -> typing.List[str]:
         r"""Versions of a file."""
-        root = self._path(folder, name, '', None)
-        vs = []
-        if os.path.exists(root):
-            vs = [
-                v for v in os.listdir(root)
-                if os.path.isdir(os.path.join(root, v))
-            ]
+        folder = self._folder(path, ext)
+
+        if os.path.exists(folder):
+            vs = audeer.list_dir_names(
+                folder,
+                basenames=True,
+            )
+        else:
+            vs = []
+
+        # filter out versions of files with different extension
+        vs = [v for v in vs if self._exists(path, v, ext)]
+
         return vs
