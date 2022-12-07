@@ -440,16 +440,6 @@ def test_glob(tmpdir, files, pattern, folder, expected, backend):
 
 
 @pytest.mark.parametrize(
-    'path, content, expected_content',
-    [
-        (
-            'folder1',
-            ['file.txt', 'folder/abc.txt'],
-            ['file', 'folder'],
-        ),
-    ],
-)
-@pytest.mark.parametrize(
     'backend',
     [
         audbackend.FileSystem(
@@ -462,26 +452,48 @@ def test_glob(tmpdir, files, pattern, folder, expected, backend):
         ),
     ]
 )
-def test_ls(tmpdir, path, content, expected_content, backend):
+def test_ls(tmpdir, backend):
 
-    backend_path = backend.join(
+    prefix = backend.join(
         pytest.ID,
         'test_ls',
-        path,
     )
+    sub_content = [  # two versions of same file
+        (f'{prefix}/sub/file.txt', '1.0.0', None),
+        (f'{prefix}/sub/file.txt', '2.0.0', None),
+    ]
+    content = [  # three files with different extensions
+        (f'{prefix}/file.tar.gz', '1.0.0', ''),
+        (f'{prefix}/file.tar.gz', '1.0.0', None),
+        (f'{prefix}/file.tar.gz', '1.0.0', 'tar.gz'),
+    ] + sub_content
 
-    for file in content:
-        local_file = os.path.join(tmpdir, file)
-        audeer.mkdir(os.path.dirname(local_file))
-        audeer.touch(local_file)
-        remote_file = backend.join(backend_path, file)
+    # create content
+
+    tmp_file = os.path.join(tmpdir, '~')
+    for path, version, ext in content:
+        audeer.touch(tmp_file)
         backend.put_file(
-            local_file,
-            remote_file,
-            '1.0.0',
+            tmp_file,
+            path,
+            version,
+            ext=ext,
         )
 
-    assert backend.ls(backend_path) == expected_content
+    # test
+
+    for folder, expected in [
+        ('', content),
+        ('./', content),
+        ('sub', sub_content),
+        ('does-not-exist', []),
+    ]:
+        folder = backend.join(prefix, folder)
+        expected = [  # replace ext where it is None
+            (path, version, path.split('.')[-1] if ext is None else ext)
+            for path, version, ext in expected
+        ]
+        assert backend.ls(folder) == sorted(expected)
 
 
 @pytest.mark.parametrize(
