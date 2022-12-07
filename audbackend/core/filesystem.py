@@ -114,8 +114,9 @@ class FileSystem(Backend):
 
             host_repo = os.path.join(self.host, self.repository)
             full_path = full_path[len(host_repo) + 1:]  # remove host and repo
+            full_path = full_path.replace(os.path.sep, self.sep)
+            tokens = full_path.split(self.sep)
 
-            tokens = full_path.split(os.path.sep)
             file = tokens[-1]
             version = tokens[-2]
             name = tokens[-3]
