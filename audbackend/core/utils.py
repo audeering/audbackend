@@ -24,11 +24,7 @@ def check_path_and_ext(
 
     """
 
-    if BACKEND_ALLOWED_CHARS_COMPILED.fullmatch(path) is None:
-        raise ValueError(
-            f"Invalid path name '{path}', "
-            f"allowed characters are '{BACKEND_ALLOWED_CHARS}'."
-        )
+    check_path_for_allowed_chars(path)
 
     if ext is None:
         _, ext = os.path.splitext(path)
@@ -43,6 +39,14 @@ def check_path_and_ext(
         )
 
     return path, ext
+
+
+def check_path_for_allowed_chars(path):
+    if BACKEND_ALLOWED_CHARS_COMPILED.fullmatch(path) is None:
+        raise ValueError(
+            f"Invalid path name '{path}', "
+            f"allowed characters are '{BACKEND_ALLOWED_CHARS}'."
+        )
 
 
 def md5(

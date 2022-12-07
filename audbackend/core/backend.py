@@ -244,11 +244,18 @@ class Backend:
         Returns:
             path joined by :attr:`Backend.sep`
 
+        Raises:
+            ValueError: if joined path contains invalid character
+
         """
         paths = [path] + [p for p in paths]
         # skip part if '' or None
         paths = [path for path in paths if path]
-        return self.sep.join(paths)
+        path = self.sep.join(paths)
+
+        utils.check_path_for_allowed_chars(path)
+
+        return path
 
     def latest_version(
             self,
@@ -488,7 +495,12 @@ class Backend:
         Returns:
             tuple containing (folder, basename)
 
+        Raises:
+            ValueError: if ``path`` contains invalid character
+
         """
+        utils.check_path_for_allowed_chars(path)
+
         folder = self.sep.join(path.split(self.sep)[:-1])
         basename = path.split(self.sep)[-1]
 
