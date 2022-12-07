@@ -305,6 +305,12 @@ def test_exists(tmpdir, backend):
             None,
         ),
         (
+            os.path.join('dir.to', 'file.ext'),
+            'dir.to/file.ext',
+            '1.0.0',
+            None,
+        ),
+        (
             os.path.join('dir', 'to', 'file.ext'),
             'alias.ext',
             '1.0.0',
@@ -341,12 +347,7 @@ def test_file(tmpdir, local_file, remote_file, version, ext, backend):
     assert not backend.exists(remote_file, version, ext=ext)
     backend.put_file(local_file, remote_file, version, ext=ext)
     # operation will be skipped
-    backend.put_file(
-        local_file,
-        remote_file,
-        version,
-        ext=ext,
-    )
+    backend.put_file(local_file, remote_file, version, ext=ext)
     assert backend.exists(remote_file, version, ext=ext)
 
     backend.get_file(remote_file, local_file, version, ext=ext)
@@ -355,11 +356,6 @@ def test_file(tmpdir, local_file, remote_file, version, ext, backend):
 
     backend.remove_file(remote_file, version, ext=ext)
     assert not backend.exists(remote_file, version, ext=ext)
-
-    if ext is None:
-        _, ext = os.path.splitext(local_file)
-    else:
-        ext = '.' + ext
 
 
 @pytest.mark.parametrize(
