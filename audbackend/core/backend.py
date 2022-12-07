@@ -332,18 +332,18 @@ class Backend:
     ) -> typing.List[typing.Tuple[str, str, str]]:
         r"""List all files under folder.
 
-        For each match,
-        path, version and extension is returned.
-        If extension is not empty,
+        Returns a sorted list of tuples
+        with path, version and file extension.
+        If file extension is not empty,
         it starts with a dot.
         If folder does not exist,
-        the result is an empty list.
+        an empty list is returned.
 
         Args:
             folder: folder on backend
 
         Returns:
-            sorted list of tuples (path, version, extension)
+            list of tuples
 
         Raises:
             ValueError: if ``folder`` contains invalid character
