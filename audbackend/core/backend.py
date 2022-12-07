@@ -60,7 +60,7 @@ class Backend:
 
         """
         path, ext = utils.check_path_and_ext(path, ext)
-        if not self.exists(path, version, ext=ext):
+        if not self._exists(path, version, ext):
             utils.raise_file_not_found_error(path, version=version)
 
         return self._checksum(path, version, ext=ext)
@@ -192,7 +192,7 @@ class Backend:
 
         """
         path, ext = utils.check_path_and_ext(src_path, ext)
-        if not self.exists(src_path, version, ext=ext):
+        if not self._exists(src_path, version, ext):
             utils.raise_file_not_found_error(src_path, version=version)
 
         dst_path = audeer.safe_path(dst_path)
@@ -324,7 +324,7 @@ class Backend:
             *,
             tmp_root: str = None,
             verbose: bool = False,
-    ) -> str:
+    ):
         r"""Create archive and put on backend.
 
         The operation is silently skipped,
@@ -342,9 +342,6 @@ class Backend:
             tmp_root: directory under which archive is temporarily created.
                 Defaults to temporary directory of system
             verbose: show debug messages
-
-        Returns:
-            archive path on backend
 
         Raises:
             FileNotFoundError: if one or more files do not exist
@@ -375,7 +372,7 @@ class Backend:
                 verbose=verbose,
             )
 
-            return self.put_file(
+            self.put_file(
                 archive,
                 dst_path,
                 version,
@@ -389,7 +386,7 @@ class Backend:
             version: str,
             ext: str,
             verbose: bool,
-    ) -> str:  # pragma: no cover
+    ):  # pragma: no cover
         r"""Put file to backend."""
         raise NotImplementedError()
 
@@ -428,22 +425,28 @@ class Backend:
         if not os.path.exists(src_path):
             utils.raise_file_not_found_error(src_path)
 
-        dst_path = self._put_file(
-            src_path,
-            dst_path,
-            version,
-            ext,
-            verbose,
-        )
+        skip = False
 
-        return dst_path
+        # skip if file with same checksum already exists
+        if self._exists(dst_path, version, ext):
+            checksum = self._checksum(dst_path, version, ext)
+            skip = utils.md5(src_path) == checksum
+
+        if not skip:
+            self._put_file(
+                src_path,
+                dst_path,
+                version,
+                ext,
+                verbose,
+            )
 
     def _remove_file(
             self,
             path: str,
             version: str,
             ext: str,
-    ) -> str:  # pragma: no cover
+    ):  # pragma: no cover
         r"""Remove file from backend."""
         raise NotImplementedError()
 
@@ -453,16 +456,13 @@ class Backend:
             version: str,
             *,
             ext: str = None,
-    ) -> str:
+    ):
         r"""Remove file from backend.
 
         Args:
             path: path to file on backend
             version: version string
             ext: file extension, if ``None`` uses characters after last dot
-
-        Returns:
-            path of removed file on backend
 
         Raises:
             FileNotFoundError: if file does not exist on backend
@@ -471,12 +471,10 @@ class Backend:
 
         """
         path, ext = utils.check_path_and_ext(path, ext)
-        if not self.exists(path, version, ext=ext):
+        if not self._exists(path, version, ext):
             utils.raise_file_not_found_error(path, version=version)
 
         path = self._remove_file(path, version, ext)
-
-        return path
 
     @property
     def sep(self) -> str:

@@ -54,6 +54,31 @@ class Artifactory(Backend):
         except self._non_existing_path_error:  # pragma: nocover
             return False
 
+
+    def _folder(
+            self,
+            path: str,
+            ext: str,
+    ) -> str:
+        r"""Convert to backend folder.
+
+        <folder>/<name>.<ext>
+        ->
+        <host>/<repository>/<folder>/<name>/
+
+        """
+        folder, file = self.split(path)
+        name, ext = utils.splitext(file, ext)
+
+        path = audfactory.url(
+            self.host,
+            repository=self.repository,
+            group_id=audfactory.path_to_group_id(folder),
+            name=name,
+        )
+
+        return path
+
     def _get_file(
             self,
             src_path: str,
@@ -100,30 +125,6 @@ class Artifactory(Backend):
         )
         return [p.name for p in audfactory.path(path)]
 
-    def _folder(
-            self,
-            path: str,
-            ext: str,
-    ) -> str:
-        r"""Convert to backend folder.
-
-        <folder>/<name>.<ext>
-        ->
-        <host>/<repository>/<folder>/<name>/
-
-        """
-        folder, file = self.split(path)
-        name, ext = utils.splitext(file, ext)
-
-        path = audfactory.url(
-            self.host,
-            repository=self.repository,
-            group_id=audfactory.path_to_group_id(folder),
-            name=name,
-        )
-
-        return path
-
     def _path(
             self,
             path: str,
@@ -150,31 +151,20 @@ class Artifactory(Backend):
             version: str,
             ext: str,
             verbose: bool,
-    ) -> str:
+    ):
         r"""Put file to backend."""
-        skip = False
-
-        # skip if file with same checksum already exists
-        if self._exists(dst_path, version, ext):
-            checksum = self._checksum(dst_path, version, ext)
-            skip = utils.md5(src_path) == checksum
-
         dst_path = self._path(dst_path, version, ext)
-        if not skip:
-            audfactory.deploy(src_path, dst_path, verbose=verbose)
-
-        return dst_path
+        audfactory.deploy(src_path, dst_path, verbose=verbose)
 
     def _remove_file(
             self,
             path: str,
             version: str,
             ext: str,
-    ) -> str:
+    ):
         r"""Remove file from backend."""
         path = self._path(path, version, ext)
         audfactory.path(path).unlink()
-        return path
 
     def _versions(
             self,

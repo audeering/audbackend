@@ -138,33 +138,20 @@ class FileSystem(Backend):
             version: str,
             ext: str,
             verbose: bool,
-    ) -> str:
+    ):
         r"""Put file to backend."""
-        skip = False
-
-        # skip if file with same checksum already exists
-        if self._exists(dst_path, version, ext):
-            checksum = self._checksum(dst_path, version, ext)
-            skip = utils.md5(src_path) == checksum
-
-        dst_path = self._path(dst_path, version, ext)
-
-        if not skip:
-            audeer.mkdir(os.path.dirname(dst_path))
-            shutil.copy(src_path, dst_path)
-
-        return dst_path
+        audeer.mkdir(os.path.dirname(dst_path))
+        shutil.copy(src_path, dst_path)
 
     def _remove_file(
             self,
             path: str,
             version: str,
             ext: str,
-    ) -> str:
+    ):
         r"""Remove file from backend."""
         path = self._path(path, version, ext)
         os.remove(path)
-        return path
 
     def _versions(
             self,
