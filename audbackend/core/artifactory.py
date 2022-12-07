@@ -169,6 +169,25 @@ class Artifactory(Backend):
 
         return path
 
+    def _path(
+            self,
+            path: str,
+            version: typing.Optional[str],
+            ext: str,
+    ) -> str:
+        r"""Convert to backend path.
+
+        <folder>/<name>.<ext>
+        ->
+        <host>/<repository>/<folder>/<name>/<version>/<name>-<version>.<ext>
+
+        """
+        folder = self._folder(path, ext)
+        name = os.path.basename(folder)
+        path = f'{folder}/{version}/{name}-{version}{ext}'
+
+        return path
+
     def _put_file(
             self,
             src_path: str,
