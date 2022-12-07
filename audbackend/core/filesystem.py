@@ -140,6 +140,7 @@ class FileSystem(Backend):
             verbose: bool,
     ):
         r"""Put file to backend."""
+        dst_path = self._path(dst_path, version, ext)
         audeer.mkdir(os.path.dirname(dst_path))
         shutil.copy(src_path, dst_path)
 

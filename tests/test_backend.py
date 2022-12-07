@@ -111,22 +111,21 @@ def test_archive(tmpdir, files, name, folder, version, tmp_root, backend):
             )
         audeer.mkdir(tmp_root)
 
-    path_backend = backend.put_archive(
+    backend.put_archive(
         tmpdir,
         files,
         archive,
         version,
         tmp_root=tmp_root,
     )
-    assert path_backend.startswith(backend.host)
     # operation will be skipped
-    assert backend.put_archive(
+    backend.put_archive(
         tmpdir,
         files,
         archive,
         version,
         tmp_root=tmp_root,
-    ) == path_backend
+    )
     assert backend.exists(archive + '.zip', version)
 
     # if a tmp_root is given but does not exist,
@@ -340,30 +339,27 @@ def test_file(tmpdir, local_file, remote_file, version, ext, backend):
     )
 
     assert not backend.exists(remote_file, version, ext=ext)
-    path_backend = backend.put_file(local_file, remote_file, version, ext=ext)
-    assert path_backend.startswith(backend.host)
+    backend.put_file(local_file, remote_file, version, ext=ext)
     # operation will be skipped
-    assert backend.put_file(
+    backend.put_file(
         local_file,
         remote_file,
         version,
         ext=ext,
-    ) == path_backend
+    )
     assert backend.exists(remote_file, version, ext=ext)
 
     backend.get_file(remote_file, local_file, version, ext=ext)
     assert os.path.exists(local_file)
     assert backend.checksum(remote_file, version, ext=ext) == md5(local_file)
 
-    assert backend.remove_file(remote_file, version, ext=ext) == path_backend
-    assert path_backend.startswith(backend.host)
+    backend.remove_file(remote_file, version, ext=ext)
     assert not backend.exists(remote_file, version, ext=ext)
 
     if ext is None:
         _, ext = os.path.splitext(local_file)
     else:
         ext = '.' + ext
-    assert path_backend.endswith(ext)
 
 
 @pytest.mark.parametrize(
@@ -472,26 +468,23 @@ def test_glob(tmpdir, files, pattern, folder, expected, backend):
 )
 def test_ls(tmpdir, path, content, expected_content, backend):
 
+    backend_path = backend.join(
+        pytest.ID,
+        'test_ls',
+        path,
+    )
+
     for file in content:
         local_file = os.path.join(tmpdir, file)
         audeer.mkdir(os.path.dirname(local_file))
-        with open(local_file, 'w'):
-            pass
-        backend_path = backend.join(
-            pytest.ID,
-            'test_ls',
-            path,
-        )
+        audeer.touch(local_file)
         remote_file = backend.join(backend_path, file)
-        backend_file_path = backend.put_file(
+        backend.put_file(
             local_file,
             remote_file,
             '1.0.0',
         )
-        print('DEBUG: ', backend_file_path)
 
-    print('DEBUG: ', content)
-    print('DEBUG: ', backend.ls(backend_path))
     assert backend.ls(backend_path) == expected_content
 
 

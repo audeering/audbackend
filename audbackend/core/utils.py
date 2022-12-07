@@ -42,7 +42,7 @@ def check_path_and_ext(
 
 
 def check_path_for_allowed_chars(path):
-    if BACKEND_ALLOWED_CHARS_COMPILED.fullmatch(path) is None:
+    if path and BACKEND_ALLOWED_CHARS_COMPILED.fullmatch(path) is None:
         raise ValueError(
             f"Invalid path name '{path}', "
             f"allowed characters are '{BACKEND_ALLOWED_CHARS}'."

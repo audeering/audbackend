@@ -54,7 +54,6 @@ class Artifactory(Backend):
         except self._non_existing_path_error:  # pragma: nocover
             return False
 
-
     def _folder(
             self,
             path: str,
@@ -139,7 +138,7 @@ class Artifactory(Backend):
 
         """
         folder = self._folder(path, ext)
-        _, name = self.split(folder)
+        name = os.path.basename(folder)
         path = f'{folder}/{version}/{name}-{version}{ext}'
 
         return path
