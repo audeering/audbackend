@@ -122,7 +122,7 @@ class FileSystem(Backend):
             name = tokens[-3]
             folder = os.path.sep.join(tokens[:-3])
             ext = file[len(name) + len(version) + 1:]
-            path = os.path.join(folder, f'{name}{ext}')
+            path = self.join(folder, f'{name}{ext}')
             if ext:
                 ext = ext[1:]  # remove .
 
