@@ -67,14 +67,9 @@ class Artifactory(Backend):
 
         """
         folder, file = self.split(path)
-        name, ext = utils.splitext(file, ext)
+        name, _ = utils.splitext(file, ext)
 
-        path = audfactory.url(
-            self.host,
-            repository=self.repository,
-            group_id=audfactory.path_to_group_id(folder),
-            name=name,
-        )
+        path = f'{self.host}/{self.repository}/{folder}/{name}'
 
         return path
 
