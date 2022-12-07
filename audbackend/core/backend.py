@@ -425,14 +425,11 @@ class Backend:
         if not os.path.exists(src_path):
             utils.raise_file_not_found_error(src_path)
 
-        skip = False
-
         # skip if file with same checksum already exists
-        if self._exists(dst_path, version, ext):
-            checksum = self._checksum(dst_path, version, ext)
-            skip = utils.md5(src_path) == checksum
-
-        if not skip:
+        if not (
+            self._exists(dst_path, version, ext)
+            and self._checksum(dst_path, version, ext) == utils.md5(src_path)
+        ):
             self._put_file(
                 src_path,
                 dst_path,
