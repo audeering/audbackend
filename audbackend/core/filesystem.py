@@ -99,15 +99,35 @@ class FileSystem(Backend):
 
     def _ls(
             self,
-            path: str,
+            folder: str,
     ):
-        r"""List content of path."""
-        path = os.path.join(
-            self.host,
-            self.repository,
-            path.replace(self.sep, os.path.sep),
-        )
-        return os.listdir(path)
+        r"""List content of folder."""
+        root = self._folder(folder, '')
+        paths = audeer.list_file_names(root, recursive=True)
+
+        # <host>/<repository>/<folder>/<name>/<version>/<name>-<version>.<ext>
+        # ->
+        # (<folder>/<name>.<ext>, <version>, <ext>)
+
+        result = []
+        for full_path in paths:
+
+            host_repo = os.path.join(self.host, self.repository)
+            full_path = full_path[len(host_repo) + 1:]  # remove host and repo
+
+            tokens = full_path.split(os.path.sep)
+            file = tokens[-1]
+            version = tokens[-2]
+            name = tokens[-3]
+            folder = os.path.sep.join(tokens[:-3])
+            ext = file[len(name) + len(version) + 1:]
+            path = os.path.join(folder, f'{name}{ext}')
+            if ext:
+                ext = ext[1:]  # remove .
+
+            result.append((path, version, ext))
+
+        return result
 
     def _path(
             self,

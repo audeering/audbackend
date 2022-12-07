@@ -291,7 +291,7 @@ class Backend:
         r"""Latest version of a file.
 
         Args:
-            path: relative path to file in repository
+            path: path to file on backend
             ext: file extension, if ``None`` uses characters after last dot
 
         Returns:
@@ -328,21 +328,27 @@ class Backend:
 
     def ls(
             self,
-            path: str,
-    ) -> typing.List[str]:
-        r"""List content of path.
+            folder: str,
+    ) -> typing.List[typing.Tuple[str, str, str]]:
+        r"""List all files under folder.
+
+        If folder does not exist,
+        an empty list is returned.
 
         Args:
-            path: relative path to folder in repository
+            folder: folder on backend
 
         Returns:
-            folder content
+            list of tuples (path, version, ext)
 
         Raises:
-            RuntimeError: if ``path`` does not exist on backend
+            ValueError: if ``folder`` contains invalid character
 
         """
-        return sorted(self._ls(path))
+        utils.check_path_for_allowed_chars(folder)
+        paths = self._ls(folder)
+
+        return sorted(paths)
 
     def put_archive(
             self,
