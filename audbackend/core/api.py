@@ -15,7 +15,7 @@ backend_registry = {
 r"""Backend registry."""
 
 
-def available() -> typing.Dict[str, typing.List[typing.Tuple[str, str]]]:
+def available() -> typing.Dict[str, typing.List[Backend]]:
     r"""List available backends.
 
     Returns:
