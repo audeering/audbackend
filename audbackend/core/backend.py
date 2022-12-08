@@ -337,7 +337,7 @@ class Backend:
         Returns a sorted list of tuples
         with path, version and file extension.
         If file extension is not empty,
-        it starts with a dot.        
+        it starts with a dot.
 
         Args:
             folder: folder on backend
