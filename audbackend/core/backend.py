@@ -363,7 +363,12 @@ class Backend:
         paths = sorted(paths)
 
         if len(paths) == 0:
-            utils.raise_file_not_found_error(folder)
+            if folder == '/':  # noqa
+                # capture special case that
+                # there are no files on the backend
+                return []
+            else:
+                utils.raise_file_not_found_error(folder)
 
         if latest_version:
             # d[path, ext] = ['1.0.0', '2.0.0']
