@@ -329,6 +329,8 @@ class Backend:
     def ls(
             self,
             folder: str,
+            *,
+            latest_version: bool = False,
     ) -> typing.List[typing.Tuple[str, str, str]]:
         r"""List all files under folder.
 
@@ -341,6 +343,8 @@ class Backend:
 
         Args:
             folder: folder on backend
+            latest_version: if multiple versions of a file exist,
+                only include the latest
 
         Returns:
             list of tuples
@@ -351,12 +355,29 @@ class Backend:
         Example:
             >>> backend.ls('folder')[:2]
             [('folder/name.ext', '1.0.0', '.ext'), ('folder/name.ext', '2.0.0', '.ext')]
+            >>> backend.ls('folder', latest_version=True)[:1]
+            [('folder/name.ext', '2.0.0', '.ext')]
 
         """  # noqa: E501
         utils.check_path_for_allowed_chars(folder)
         paths = self._ls(folder)
+        paths = sorted(paths)
 
-        return sorted(paths)
+        if latest_version:
+            # d[path, ext] = ['1.0.0', '2.0.0']
+            d = {}
+            for p, v, e in paths:
+                key = (p, e)
+                if key not in d:
+                    d[key] = []
+                d[key].append(v)
+            # d[path, ext] = '2.0.0'
+            for key, vs in d.items():
+                d[key] = audeer.sort_versions(vs)[-1]
+            # [(path, ext, '2.0.0'), ...]
+            paths = [(p, v, e) for (p, e), v in d.items()]
+
+        return paths
 
     def put_archive(
             self,

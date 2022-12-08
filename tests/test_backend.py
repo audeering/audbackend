@@ -458,15 +458,22 @@ def test_ls(tmpdir, backend):
         pytest.ID,
         'test_ls',
     )
+
     sub_content = [  # two versions of same file
         (f'{prefix}/sub/file.txt', '1.0.0', None),
         (f'{prefix}/sub/file.txt', '2.0.0', None),
     ]
+    sub_content_latest = sub_content[-1:]
+
     content = [  # three files with different extensions
         (f'{prefix}/file.tar.gz', '1.0.0', ''),
         (f'{prefix}/file.tar.gz', '1.0.0', None),
         (f'{prefix}/file.tar.gz', '1.0.0', '.tar.gz'),
-    ] + sub_content
+    ]
+    content_latest = content
+
+    content = sub_content + content
+    content_latest = content_latest + sub_content_latest
 
     # create content
 
@@ -482,18 +489,27 @@ def test_ls(tmpdir, backend):
 
     # test
 
-    for folder, expected in [
-        ('', content),
-        ('./', content),
-        ('sub', sub_content),
-        ('does-not-exist', []),
+    for folder, expected, expected_latest in [
+        ('', content, content_latest),
+        ('./', content, content_latest),
+        ('sub', sub_content, sub_content_latest),
+        ('does-not-exist', [], []),
     ]:
         folder = backend.join(prefix, folder)
+
         expected = [  # replace ext where it is None
-            (path, version, f".{path.split('.')[-1]}" if ext is None else ext)
-            for path, version, ext in expected
+            (p, v, f".{p.split('.')[-1]}" if e is None else e)
+            for p, v, e in expected
         ]
-        assert backend.ls(folder) == sorted(expected)
+        expected = sorted(expected)
+        assert backend.ls(folder) == expected
+
+        expected_latest = [  # replace ext where it is None
+            (p, v, f".{p.split('.')[-1]}" if e is None else e)
+            for p, v, e in expected_latest
+        ]
+        expected_latest = sorted(expected_latest)
+        assert backend.ls(folder, latest_version=True) == expected_latest
 
 
 @pytest.mark.parametrize(
