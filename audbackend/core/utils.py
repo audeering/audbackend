@@ -53,7 +53,21 @@ def md5(
         file: str,
         chunk_size: int = 8192,
 ) -> str:
-    r"""Create MD5 checksum."""
+    r"""Calculate MD5 checksum.
+
+    Args:
+        file: path to file
+        chunk_size: chunk size (does not have an influence on the result)
+
+    Returns:
+        checksum
+
+    Example:
+        >>> path = audeer.path(tmp, 'src.pth')
+        >>> md5(path)
+        'd41d8cd98f00b204e9800998ecf8427e'
+
+    """
     file = audeer.safe_path(file)
     with open(file, 'rb') as fp:
         hasher = hashlib.md5()
