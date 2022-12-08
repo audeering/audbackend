@@ -349,8 +349,8 @@ class Backend:
             ValueError: if ``folder`` contains invalid character
 
         Example:
-            >>> backend.ls('folder')
-            [('folder/name.ext', '1.0.0', '.ext'), ('folder/name.ext', '2.0.0', '.ext'), ('folder/name.zip', '1.0.0', '.zip')]
+            >>> backend.ls('folder')[:2]
+            [('folder/name.ext', '1.0.0', '.ext'), ('folder/name.ext', '2.0.0', '.ext')]
 
         """  # noqa: E501
         utils.check_path_for_allowed_chars(folder)
