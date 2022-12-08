@@ -328,7 +328,7 @@ class Backend:
 
     def ls(
             self,
-            folder: str,
+            folder: str = '/',
             *,
             latest_version: bool = False,
     ) -> typing.List[typing.Tuple[str, str, str]]:

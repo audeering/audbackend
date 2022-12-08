@@ -490,8 +490,7 @@ def test_ls(tmpdir, backend):
     # test
 
     for folder, expected, expected_latest in [
-        ('', content, content_latest),
-        ('./', content, content_latest),
+        ('/', content, content_latest),
         ('sub', sub_content, sub_content_latest),
         ('does-not-exist', [], []),
     ]:
