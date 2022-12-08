@@ -58,6 +58,10 @@ class Backend:
             ValueError: if ``path`` contains invalid character
             ValueError: if ``path`` does not end on file extension
 
+        Example:
+            >>> backend.checksum('folder/name.ext', '1.0.0')
+            'd41d8cd98f00b204e9800998ecf8427e'
+
         """
         path, ext = utils.check_path_and_ext(path, ext)
         if not self._exists(path, version, ext):
@@ -95,6 +99,10 @@ class Backend:
             ValueError: if ``path`` contains invalid character
             ValueError: if ``path`` does not end on file extension
 
+        Example:
+            >>> backend.exists('folder/name.ext', '1.0.0')
+            True
+
         """
         path, ext = utils.check_path_and_ext(path, ext)
 
@@ -127,6 +135,11 @@ class Backend:
             FileNotFoundError: if archive does not exist on backend
             FileNotFoundError: if ``tmp_root`` does not exist
             ValueError: if ``src_path`` contains invalid character
+
+        Example:
+            >>> dst_root = audeer.path(tmp, 'dst')
+            >>> backend.get_archive('folder/name', dst_root, '1.0.0')
+            ['src.pth']
 
         """
         ext = '.zip'
@@ -190,6 +203,14 @@ class Backend:
             ValueError: if ``src_path`` contains invalid character
             ValueError: if ``src_path`` does not end on file extension
 
+        Example:
+            >>> dst_path = audeer.path(tmp, 'dst.pth')
+            >>> os.path.exists(dst_path)
+            False
+            >>> _ = backend.get_file('folder/name.ext', dst_path, '1.0.0')
+            >>> os.path.exists(dst_path)
+            True
+
         """
         path, ext = utils.check_path_and_ext(src_path, ext)
         if not self._exists(src_path, version, ext):
@@ -247,6 +268,10 @@ class Backend:
         Raises:
             ValueError: if joined path contains invalid character
 
+        Example:
+            >>> backend.join('folder', 'name.ext')
+            'folder/name.ext'
+
         """
         paths = [path] + [p for p in paths]
         # skip part if '' or None
@@ -276,6 +301,10 @@ class Backend:
             RuntimeError: if file does not exist on backend
             ValueError: if ``path`` contains invalid character
             ValueError: if ``path`` does not end on file extension
+
+        Example:
+            >>> backend.latest_version('folder/name.ext')
+            '2.0.0'
 
         """
         path, ext = utils.check_path_and_ext(path, ext)
@@ -347,6 +376,14 @@ class Backend:
             FileNotFoundError: if one or more files do not exist
             FileNotFoundError: if ``tmp_root`` does not exist
             ValueError: if ``dst_path`` contains invalid character
+
+        Example:
+            >>> backend.exists('folder/name.zip', '2.0.0')
+            False
+            >>> files = ['src.pth']
+            >>> backend.put_archive(tmp, files, 'folder/name', '2.0.0')
+            >>> backend.exists('folder/name.zip', '2.0.0')
+            True
 
         """
         ext = '.zip'
@@ -420,6 +457,14 @@ class Backend:
             ValueError: if ``dst_path`` contains invalid character
             ValueError: if ``dst_path`` does not end on file extension
 
+        Example:
+            >>> backend.exists('folder/name.ext', '3.0.0')
+            False
+            >>> src_path = audeer.path(tmp, 'src.pth')
+            >>> backend.put_file(src_path, 'folder/name.ext', '3.0.0')
+            >>> backend.exists('folder/name.ext', '3.0.0')
+            True
+
         """
         dst_path, ext = utils.check_path_and_ext(dst_path, ext)
         if not os.path.exists(src_path):
@@ -466,6 +511,13 @@ class Backend:
             ValueError: if ``path`` contains invalid character
             ValueError: if ``path`` does not end on file extension
 
+        Example:
+            >>> backend.exists('folder/name.ext', '1.0.0')
+            True
+            >>> backend.remove_file('folder/name.ext', '1.0.0')
+            >>> backend.exists('folder/name.ext', '1.0.0')
+            False
+
         """
         path, ext = utils.check_path_and_ext(path, ext)
         if not self._exists(path, version, ext):
@@ -492,6 +544,10 @@ class Backend:
 
         Raises:
             ValueError: if ``path`` contains invalid character
+
+        Example:
+            >>> backend.split('folder/name.ext')
+            ('folder', 'name.ext')
 
         """
         utils.check_path_for_allowed_chars(path)
@@ -527,6 +583,10 @@ class Backend:
         Raises:
             ValueError: if ``path`` contains invalid character
             ValueError: if ``path`` does not end on file extension
+
+        Example:
+            >>> backend.versions('folder/name.ext')
+            ['1.0.0', '2.0.0']
 
         """
         path, ext = utils.check_path_and_ext(path, ext)
