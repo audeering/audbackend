@@ -70,6 +70,9 @@ def register(
         name: backend registry name
         cls: backend class
 
+    Example:
+        >>> register('file-system', FileSystem)
+
     """
     backend_registry[name] = cls
 
