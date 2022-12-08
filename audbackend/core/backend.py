@@ -337,9 +337,7 @@ class Backend:
         Returns a sorted list of tuples
         with path, version and file extension.
         If file extension is not empty,
-        it starts with a dot.
-        If folder does not exist,
-        an empty list is returned.
+        it starts with a dot.        
 
         Args:
             folder: folder on backend
@@ -350,6 +348,7 @@ class Backend:
             list of tuples
 
         Raises:
+            FileNotFoundError: if ``folder`` does not exist
             ValueError: if ``folder`` contains invalid character
 
         Example:
@@ -362,6 +361,9 @@ class Backend:
         utils.check_path_for_allowed_chars(folder)
         paths = self._ls(folder)
         paths = sorted(paths)
+
+        if len(paths) == 0:
+            utils.raise_file_not_found_error(folder)
 
         if latest_version:
             # d[path, ext] = ['1.0.0', '2.0.0']

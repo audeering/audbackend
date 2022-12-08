@@ -251,6 +251,8 @@ def test_errors(tmpdir, backend):
             remote_file,
             '1.0.0',
         )
+    with pytest.raises(FileNotFoundError):
+        backend.ls(remote_file)
 
 
 @pytest.mark.parametrize(
@@ -492,7 +494,6 @@ def test_ls(tmpdir, backend):
     for folder, expected, expected_latest in [
         ('/', content, content_latest),
         ('sub', sub_content, sub_content_latest),
-        ('does-not-exist', [], []),
     ]:
         folder = backend.join(prefix, folder)
 
