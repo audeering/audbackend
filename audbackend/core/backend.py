@@ -321,7 +321,7 @@ class Backend:
 
     def _ls(
             self,
-            path: str,
+            folder: str,
     ) -> typing.List[typing.Tuple[str, str, str]]:  # pragma: no cover
         r"""List all files under folder."""
         raise NotImplementedError()
