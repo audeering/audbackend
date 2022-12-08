@@ -30,6 +30,11 @@ Backend
 .. autoclass:: Backend
     :members:
 
+available
+---------
+
+.. autofunction:: available
+
 create
 ------
 

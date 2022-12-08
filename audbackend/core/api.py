@@ -15,6 +15,37 @@ backend_registry = {
 r"""Backend registry."""
 
 
+def available() -> typing.Dict[str, typing.List[typing.Tuple[str, str]]]:
+    r"""List available backends.
+
+    Returns:
+        sorted dictionary with backends
+
+    Examples:
+        >>> create(
+        ...     'artifactory',
+        ...     'https://audeering.jfrog.io/artifactory',
+        ...     'repo',
+        ... )
+        ('Artifactory', 'https://audeering.jfrog.io/artifactory', 'repo')
+        >>> list(available())
+        ['artifactory', 'file-system']
+        >>> available()['artifactory']
+        [('Artifactory', 'https://audeering.jfrog.io/artifactory', 'repo')]
+
+    """
+    result = {}
+
+    for name in sorted(backend_registry):
+        result[name] = []
+        if name in backends:
+            for repository in backends[name].values():
+                for backend in repository.values():
+                    result[name].append(backend)
+
+    return result
+
+
 def create(
         name: str,
         host: str,
@@ -34,9 +65,12 @@ def create(
         ValueError: if registry name does not exist
 
     Example:
-        >>> backend = create('file-system', tmp, 'doctest')
-        >>> backend.repository
-        'doctest'
+        >>> create(
+        ...     'artifactory',
+        ...     'https://audeering.jfrog.io/artifactory',
+        ...     'repo',
+        ... )
+        ('Artifactory', 'https://audeering.jfrog.io/artifactory', 'repo')
 
     """
     if name not in backend_registry:
