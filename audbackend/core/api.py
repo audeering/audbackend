@@ -33,6 +33,11 @@ def create(
     Raises:
         ValueError: if registry name does not exist
 
+    Example:
+        >>> backend = create('file-system', tmp, 'doctest')
+        >>> backend.repository
+        'doctest'
+
     """
     if name not in backend_registry:
         raise ValueError(
@@ -64,6 +69,9 @@ def register(
     Args:
         name: backend registry name
         cls: backend class
+
+    Example:
+        >>> register('file-system', FileSystem)
 
     """
     backend_registry[name] = cls
