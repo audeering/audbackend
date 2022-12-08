@@ -363,9 +363,8 @@ class Backend:
         paths = sorted(paths)
 
         if len(paths) == 0:
-            if folder == '/':  # noqa
-                # capture special case that
-                # there are no files on the backend
+            if folder == '/':  # pragma: no cover
+                # special case that there are no files on the backend
                 return []
             else:
                 utils.raise_file_not_found_error(folder)
