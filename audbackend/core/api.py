@@ -22,12 +22,6 @@ def available() -> typing.Dict[str, typing.List[Backend]]:
         sorted dictionary with backends
 
     Examples:
-        >>> create(
-        ...     'artifactory',
-        ...     'https://audeering.jfrog.io/artifactory',
-        ...     'repo',
-        ... )
-        ('Artifactory', 'https://audeering.jfrog.io/artifactory', 'repo')
         >>> list(available())
         ['artifactory', 'file-system']
         >>> available()['artifactory']

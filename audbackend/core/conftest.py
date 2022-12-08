@@ -8,6 +8,11 @@ import audeer
 @pytest.fixture(autouse=True)
 def create_backend(doctest_namespace):
     with tempfile.TemporaryDirectory() as tmp:
+        audbackend.create(
+            'artifactory',
+            'https://audeering.jfrog.io/artifactory',
+            'repo',
+        )
         backend = audbackend.create(
             'file-system',
             tmp,
