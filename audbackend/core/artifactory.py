@@ -125,7 +125,7 @@ class Artifactory(Backend):
 
         # <host>/<repository>/<folder>/<name>/<version>/<name>-<version><ext>
         # ->
-        # (<folder>/<name><ext>, <version>, <ext>)
+        # (<folder>/<name><ext>, <ext>, <version>)
 
         result = []
         for full_path in paths:
@@ -142,7 +142,7 @@ class Artifactory(Backend):
             ext = file[len(name) + len(version) + 1:]
             path = self.join(folder, f'{name}{ext}')
 
-            result.append((path, version, ext))
+            result.append((path, ext, version))
 
         return result
 

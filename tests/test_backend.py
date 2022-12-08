@@ -462,15 +462,15 @@ def test_ls(tmpdir, backend):
     )
 
     sub_content = [  # two versions of same file
-        (f'{prefix}/sub/file.txt', '1.0.0', None),
-        (f'{prefix}/sub/file.txt', '2.0.0', None),
+        (f'{prefix}/sub/file.txt', None, '1.0.0'),
+        (f'{prefix}/sub/file.txt', None, '2.0.0'),
     ]
     sub_content_latest = sub_content[-1:]
 
     content = [  # three files with different extensions
-        (f'{prefix}/file.tar.gz', '1.0.0', ''),
-        (f'{prefix}/file.tar.gz', '1.0.0', None),
-        (f'{prefix}/file.tar.gz', '1.0.0', '.tar.gz'),
+        (f'{prefix}/file.tar.gz', '', '1.0.0'),
+        (f'{prefix}/file.tar.gz', None, '1.0.0'),
+        (f'{prefix}/file.tar.gz', '.tar.gz', '1.0.0'),
     ]
     content_latest = content
 
@@ -480,7 +480,7 @@ def test_ls(tmpdir, backend):
     # create content
 
     tmp_file = os.path.join(tmpdir, '~')
-    for path, version, ext in content:
+    for path, ext, version in content:
         audeer.touch(tmp_file)
         backend.put_file(
             tmp_file,
@@ -498,15 +498,15 @@ def test_ls(tmpdir, backend):
         folder = backend.join(prefix, folder)
 
         expected = [  # replace ext where it is None
-            (p, v, f".{p.split('.')[-1]}" if e is None else e)
-            for p, v, e in expected
+            (p, f".{p.split('.')[-1]}" if e is None else e, v)
+            for p, e, v in expected
         ]
         expected = sorted(expected)
         assert backend.ls(folder) == expected
 
         expected_latest = [  # replace ext where it is None
-            (p, v, f".{p.split('.')[-1]}" if e is None else e)
-            for p, v, e in expected_latest
+            (p, f".{p.split('.')[-1]}" if e is None else e, v)
+            for p, e, v in expected_latest
         ]
         expected_latest = sorted(expected_latest)
         assert backend.ls(folder, latest_version=True) == expected_latest
