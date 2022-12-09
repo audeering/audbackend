@@ -359,6 +359,8 @@ class Backend:
 
         """  # noqa: E501
         utils.check_path_for_allowed_chars(folder)
+        if not folder.endswith('/'):
+            folder += '/'
         paths = self._ls(folder)
         paths = sorted(paths)
 
