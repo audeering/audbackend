@@ -28,7 +28,8 @@ class Backend:
         r"""Repository name."""
 
     def __repr__(self) -> str:
-        return str((self.__class__.__name__, self.host, self.repository))
+        name = f'{self.__class__.__module__}.{self.__class__.__name__}'
+        return str((name, self.host, self.repository))
 
     def _checksum(
             self,

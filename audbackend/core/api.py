@@ -31,9 +31,9 @@ def available() -> typing.Dict[str, typing.List[Backend]]:
         >>> list(available())
         ['artifactory', 'file-system']
         >>> available()['artifactory']
-        [('Artifactory', 'https://audeering.jfrog.io/artifactory', 'repo')]
+        [('audbackend.core.artifactory.Artifactory', 'https://host.com', 'repo')]
 
-    """
+    """  # noqa: E501
     result = {}
 
     for name in sorted(backend_registry):
@@ -67,10 +67,10 @@ def create(
     Example:
         >>> create(
         ...     'artifactory',
-        ...     'https://audeering.jfrog.io/artifactory',
+        ...     'https://host.com',
         ...     'repo',
         ... )
-        ('Artifactory', 'https://audeering.jfrog.io/artifactory', 'repo')
+        ('audbackend.core.artifactory.Artifactory', 'https://host.com', 'repo')
 
     """
     if name not in backend_registry:

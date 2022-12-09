@@ -10,7 +10,7 @@ def create_backend(doctest_namespace):
     with tempfile.TemporaryDirectory() as tmp:
         audbackend.create(
             'artifactory',
-            'https://audeering.jfrog.io/artifactory',
+            'https://host.com',
             'repo',
         )
         backend = audbackend.create(
