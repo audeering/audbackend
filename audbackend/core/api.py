@@ -18,8 +18,14 @@ r"""Backend registry."""
 def available() -> typing.Dict[str, typing.List[Backend]]:
     r"""List available backends.
 
+    Returns a dictionary with
+    registered backend names as keys
+    (see :func:`audbackend.register`)
+    and a list with backend instances as values
+    (see :func:`audbackend.create`).
+
     Returns:
-        sorted dictionary with backends
+        dictionary with backends
 
     Examples:
         >>> list(available())
