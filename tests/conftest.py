@@ -12,20 +12,23 @@ import audfactory
 pytest.ROOT = os.path.dirname(os.path.realpath(__file__))
 pytest.ID = audeer.uid()
 
+# Artifactory
 pytest.ARTIFACTORY_HOST = 'https://audeering.jfrog.io/artifactory'
 pytest.ARTIFACTORY_REPOSITORY = f'unittests-public/{pytest.ID}'
 pytest.ARTIFACTORY_BACKEND = audbackend.Artifactory(
-    'https://audeering.jfrog.io/artifactory',
-    f'unittests-public/{pytest.ID}',
+    pytest.ARTIFACTORY_HOST,
+    pytest.ARTIFACTORY_REPOSITORY,
 )
 
+# file system
 pytest.FILE_SYSTEM_HOST = audeer.path(pytest.ROOT, 'host')
 pytest.FILE_SYSTEM_REPOSITORY = os.path.join('unittests-public', pytest.ID)
 pytest.FILE_SYSTEM_BACKEND = audbackend.FileSystem(
     pytest.FILE_SYSTEM_HOST,
-    os.path.join('unittests-public', pytest.ID)
+    pytest.FILE_SYSTEM_REPOSITORY,
 )
 
+# list of all backends that will be tested by default
 pytest.BACKENDS = [
     pytest.FILE_SYSTEM_BACKEND,
     pytest.ARTIFACTORY_BACKEND,
