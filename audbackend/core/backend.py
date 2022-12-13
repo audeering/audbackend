@@ -370,7 +370,7 @@ class Backend:
                 utils.raise_file_not_found_error(folder)
 
         if latest_version:
-            # d[path, ext] = ['1.0.0', '2.0.0']
+            # d[(path, ext)] = ['1.0.0', '2.0.0']
             d = {}
             for p, e, v in paths:
                 key = (p, e)
