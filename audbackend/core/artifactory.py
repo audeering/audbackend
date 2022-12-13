@@ -1,9 +1,6 @@
-<<<<<<< HEAD
 import dohq_artifactory
-=======
 import os
 
->>>>>>> Remove Backend.path() and Backend._path() (#47)
 import requests
 import typing
 
