@@ -27,6 +27,10 @@ class Backend:
         self.repository = repository
         r"""Repository name."""
 
+    def __repr__(self) -> str:
+        name = f'{self.__class__.__module__}.{self.__class__.__name__}'
+        return str((name, self.host, self.repository))
+
     def _checksum(
             self,
             path: str,
