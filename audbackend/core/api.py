@@ -27,7 +27,7 @@ def available() -> typing.Dict[str, typing.List[Backend]]:
     Returns:
         dictionary with backends
 
-    Examples:
+    Example:
         >>> list(available())
         ['artifactory', 'file-system']
         >>> available()['artifactory']
