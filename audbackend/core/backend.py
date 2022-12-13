@@ -377,7 +377,7 @@ class Backend:
                 if key not in d:
                     d[key] = []
                 d[key].append(v)
-            # d[path, ext] = '2.0.0'
+            # d[(path, ext)] = '2.0.0'
             for key, vs in d.items():
                 d[key] = audeer.sort_versions(vs)[-1]
             # [(path, ext, '2.0.0'), ...]
