@@ -1,4 +1,5 @@
 from audbackend.core.api import (
+    available,
     create,
     register,
 )

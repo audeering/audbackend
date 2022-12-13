@@ -15,6 +15,37 @@ backend_registry = {
 r"""Backend registry."""
 
 
+def available() -> typing.Dict[str, typing.List[Backend]]:
+    r"""List available backends.
+
+    Returns a dictionary with
+    registered backend names as keys
+    (see :func:`audbackend.register`)
+    and a list with backend instances as values
+    (see :func:`audbackend.create`).
+
+    Returns:
+        dictionary with backends
+
+    Example:
+        >>> list(available())
+        ['artifactory', 'file-system']
+        >>> available()['artifactory']
+        [('audbackend.core.artifactory.Artifactory', 'https://host.com', 'repo')]
+
+    """  # noqa: E501
+    result = {}
+
+    for name in sorted(backend_registry):
+        result[name] = []
+        if name in backends:
+            for repository in backends[name].values():
+                for backend in repository.values():
+                    result[name].append(backend)
+
+    return result
+
+
 def create(
         name: str,
         host: str,
@@ -34,9 +65,12 @@ def create(
         ValueError: if registry name does not exist
 
     Example:
-        >>> backend = create('file-system', tmp, 'doctest')
-        >>> backend.repository
-        'doctest'
+        >>> create(
+        ...     'artifactory',
+        ...     'https://host.com',
+        ...     'repo',
+        ... )
+        ('audbackend.core.artifactory.Artifactory', 'https://host.com', 'repo')
 
     """
     if name not in backend_registry:
