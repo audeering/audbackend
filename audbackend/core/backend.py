@@ -367,7 +367,7 @@ class Backend:
         paths = sorted(paths)
 
         if len(paths) == 0:
-            if folder == '/':  # pragma: no cover
+            if folder == '/':
                 # special case that there are no files on the backend
                 return []
             else:
