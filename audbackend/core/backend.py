@@ -323,7 +323,11 @@ class Backend:
             self,
             folder: str,
     ) -> typing.List[typing.Tuple[str, str, str]]:  # pragma: no cover
-        r"""List all files under folder."""
+        r"""List all files under folder.
+
+        Returns an empty list if folder does not exist.
+
+        """
         raise NotImplementedError()
 
     def ls(
