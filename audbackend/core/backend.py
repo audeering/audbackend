@@ -380,7 +380,7 @@ class Backend:
             # d[(path, ext)] = '2.0.0'
             for key, vs in d.items():
                 d[key] = audeer.sort_versions(vs)[-1]
-            # [(path, ext, '2.0.0'), ...]
+            # [(path, ext, '2.0.0')]
             paths = [(p, e, v) for (p, e), v in d.items()]
 
         return paths
