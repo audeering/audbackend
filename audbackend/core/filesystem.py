@@ -53,7 +53,7 @@ class FileSystem(Backend):
     ) -> str:
         r"""Convert to backend folder.
 
-        <folder>/<name>.<ext>
+        <folder>/<name><ext>
         ->
         <host>/<repository>/<folder>/<name>/
 
@@ -99,15 +99,38 @@ class FileSystem(Backend):
 
     def _ls(
             self,
-            path: str,
+            folder: str,
     ):
-        r"""List content of path."""
-        path = os.path.join(
-            self.host,
-            self.repository,
-            path.replace(self.sep, os.path.sep),
-        )
-        return os.listdir(path)
+        r"""List all files under folder.
+
+        Return an empty list if no files match or folder does not exist.
+
+        """
+        root = self._folder(folder, '')
+        paths = audeer.list_file_names(root, recursive=True)
+
+        # <host>/<repository>/<folder>/<name>/<version>/<name>-<version><ext>
+        # ->
+        # (<folder>/<name><ext>, <ext>, <version>)
+
+        result = []
+        for full_path in paths:
+
+            host_repo = os.path.join(self.host, self.repository)
+            full_path = full_path[len(host_repo) + 1:]  # remove host and repo
+            full_path = full_path.replace(os.path.sep, self.sep)
+            tokens = full_path.split(self.sep)
+
+            file = tokens[-1]
+            version = tokens[-2]
+            name = tokens[-3]
+            folder = self.sep.join(tokens[:-3])
+            ext = file[len(name) + len(version) + 1:]
+            path = self.join(folder, f'{name}{ext}')
+
+            result.append((path, ext, version))
+
+        return result
 
     def _path(
             self,
