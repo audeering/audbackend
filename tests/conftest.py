@@ -1,4 +1,3 @@
-import glob
 import os
 import shutil
 
@@ -43,7 +42,7 @@ def cleanup_session():
         pytest.ROOT,
         '.coverage.*',
     )
-    for file in glob.glob(path):
+    for file in audeer.list_file_names(path):
         os.remove(file)
 
     yield
