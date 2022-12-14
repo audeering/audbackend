@@ -295,7 +295,7 @@ class Backend:
         r"""Latest version of a file.
 
         Args:
-            path: relative path to file in repository
+            path: path to file on backend
             ext: file extension, if ``None`` uses characters after last dot
 
         Returns:
@@ -325,28 +325,77 @@ class Backend:
 
     def _ls(
             self,
-            path: str,
-    ) -> typing.List:  # pragma: no cover
-        r"""List content of path."""
+            folder: str,
+    ) -> typing.List[typing.Tuple[str, str, str]]:  # pragma: no cover
+        r"""List all files under folder.
+
+        Return an empty list if no files match or folder does not exist.
+
+        """
         raise NotImplementedError()
 
     def ls(
             self,
-            path: str,
-    ) -> typing.List[str]:
-        r"""List content of path.
+            folder: str = '/',
+            *,
+            latest_version: bool = False,
+    ) -> typing.List[typing.Tuple[str, str, str]]:
+        r"""List all files under folder.
+
+        Returns a sorted list of tuples
+        with path, extension and version.
+        When ``folder`` is set to the
+        root of the backend (``'/'``)
+        a (possibly empty) list with
+        all files on the backend is returned.
 
         Args:
-            path: relative path to folder in repository
+            folder: folder on backend
+            latest_version: if multiple versions of a file exist,
+                only include the latest
 
         Returns:
-            folder content
+            list of tuples (path, extension, version)
 
         Raises:
-            RuntimeError: if ``path`` does not exist on backend
+            FileNotFoundError: if ``folder`` does not exist
+            ValueError: if ``folder`` contains invalid character
 
-        """
-        return sorted(self._ls(path))
+        Example:
+            >>> backend.ls('folder')[:2]
+            [('folder/name.ext', '.ext', '1.0.0'), ('folder/name.ext', '.ext', '2.0.0')]
+            >>> backend.ls('folder', latest_version=True)[:1]
+            [('folder/name.ext', '.ext', '2.0.0')]
+
+        """  # noqa: E501
+        utils.check_path_for_allowed_chars(folder)
+        if not folder.endswith('/'):
+            folder += '/'
+        paths = self._ls(folder)
+        paths = sorted(paths)
+
+        if len(paths) == 0:
+            if folder == '/':
+                # special case that there are no files on the backend
+                return []
+            else:
+                utils.raise_file_not_found_error(folder)
+
+        if latest_version:
+            # d[(path, ext)] = ['1.0.0', '2.0.0']
+            d = {}
+            for p, e, v in paths:
+                key = (p, e)
+                if key not in d:
+                    d[key] = []
+                d[key].append(v)
+            # d[(path, ext)] = '2.0.0'
+            for key, vs in d.items():
+                d[key] = audeer.sort_versions(vs)[-1]
+            # [(path, ext, '2.0.0')]
+            paths = [(p, e, v) for (p, e), v in d.items()]
+
+        return paths
 
     def put_archive(
             self,
