@@ -55,11 +55,10 @@ class FileSystem(Backend):
         <host>/<repository>/<folder>
 
         """
-        folder = os.path.join(
-            self.host,
-            self.repository,
-            folder.replace(self.sep, os.path.sep),
-        )
+        folder = folder.replace(self.sep, os.path.sep)
+        if folder.startswith(os.path.sep):
+            folder = folder[1:]
+        folder = os.path.join(self.host, self.repository, folder)
         return folder
 
     def _get_file(
@@ -114,7 +113,7 @@ class FileSystem(Backend):
 
             name = tokens[-1]
             version = tokens[-2]
-            folder = self.sep.join(tokens[:-3])
+            folder = self.sep.join(tokens[:-2])
             path = self.join(folder, name)
 
             result.append((path, version))
@@ -165,11 +164,10 @@ class FileSystem(Backend):
             src_path: str,
             dst_path: str,
             version: str,
-            ext: str,
             verbose: bool,
     ):
         r"""Put file to backend."""
-        dst_path = self._path(dst_path, version, ext)
+        dst_path = self._path(dst_path, version)
         audeer.mkdir(os.path.dirname(dst_path))
         shutil.copy(src_path, dst_path)
 
@@ -177,10 +175,9 @@ class FileSystem(Backend):
             self,
             path: str,
             version: str,
-            ext: str,
     ):
         r"""Remove file from backend."""
-        path = self._path(path, version, ext)
+        path = self._path(path, version)
         os.remove(path)
 
     def _versions(

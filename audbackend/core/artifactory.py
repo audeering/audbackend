@@ -60,8 +60,13 @@ class Artifactory(Backend):
         <host>/<repository>/<folder>
 
         """
-        path = f'{self.host}/{self.repository}/{folder}'
-        return path
+        folder = folder.replace(self.sep, '/')
+        if not folder.startswith(self.sep):
+            folder = '/' + folder
+        folder = f'{self.host}/{self.repository}{folder}'
+        if not folder.endswith(self.sep):
+            folder = folder + '/'
+        return folder
 
     def _get_file(
             self,
@@ -127,7 +132,7 @@ class Artifactory(Backend):
 
             name = tokens[-1]
             version = tokens[-2]
-            folder = self.sep.join(tokens[:-3])
+            folder = self.sep.join(tokens[:-2])
             path = self.join(folder, name)
 
             result.append((path, version))
@@ -148,7 +153,7 @@ class Artifactory(Backend):
         """
         folder, name = self.split(path)
         folder = self._folder(folder)
-        path = f'{folder}/{version}/{name}'
+        path = f'{folder}{version}/{name}'
 
         return path
 

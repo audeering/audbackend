@@ -157,15 +157,6 @@ def test_errors(tmpdir, backend):
     local_file = os.path.join(tmpdir, file_name)
     remote_file = 'does-not-exist'
 
-    error_msg = f"Invalid path name '{remote_file}', " \
-                f"does not end on '.bad'."
-    with pytest.raises(ValueError, match=error_msg):
-        backend.put_file(
-            local_file,
-            remote_file,
-            '1.0.0',
-            ext='bad',
-        )
     error_msg = rf"Invalid path name '{remote_file}\?', " \
                 rf"allowed characters are '\[A-Za-z0-9/\._-\]\+'"
     with pytest.raises(ValueError, match=error_msg):
@@ -236,37 +227,27 @@ def test_exists(tmpdir, path, version, backend):
 
 
 @pytest.mark.parametrize(
-    'src_path, dst_path, version, ext',
+    'src_path, dst_path, version',
     [
         (
-            'file.ext',
-            'file.ext',
+            'file',
+            'file',
             '1.0.0',
-            None,
         ),
         (
-            'file.tar.gz',
-            'file.tar.gz',
+            'file.ext',
+            'file.ext',
             '1.0.0',
-            'tar.gz',
         ),
         (
             os.path.join('dir', 'to', 'file.ext'),
             'dir/to/file.ext',
             '1.0.0',
-            None,
         ),
         (
             os.path.join('dir.to', 'file.ext'),
             'dir.to/file.ext',
             '1.0.0',
-            None,
-        ),
-        (
-            os.path.join('dir', 'to', 'file.ext'),
-            'alias.ext',
-            '1.0.0',
-            None,
         ),
     ],
 )
@@ -275,25 +256,24 @@ def test_exists(tmpdir, path, version, backend):
     pytest.BACKENDS,
     indirect=True,
 )
-def test_file(tmpdir, src_path, dst_path, version, ext, backend):
+def test_file(tmpdir, src_path, dst_path, version, backend):
 
     src_path = audeer.path(tmpdir, src_path)
     audeer.mkdir(os.path.dirname(src_path))
     audeer.touch(src_path)
 
-    assert not backend.exists(dst_path, version, ext=ext)
-    backend.put_file(src_path, dst_path, version, ext=ext)
+    assert not backend.exists(dst_path, version)
+    backend.put_file(src_path, dst_path, version)
     # operation will be skipped
-    backend.put_file(src_path, dst_path, version, ext=ext)
-    assert backend.exists(dst_path, version, ext=ext)
+    backend.put_file(src_path, dst_path, version)
+    assert backend.exists(dst_path, version)
 
-    backend.get_file(dst_path, src_path, version, ext=ext)
+    backend.get_file(dst_path, src_path, version)
     assert os.path.exists(src_path)
-    assert backend.checksum(dst_path, version, ext=ext) == \
-           audbackend.md5(src_path)
+    assert backend.checksum(dst_path, version) == audbackend.md5(src_path)
 
-    backend.remove_file(dst_path, version, ext=ext)
-    assert not backend.exists(dst_path, version, ext=ext)
+    backend.remove_file(dst_path, version)
+    assert not backend.exists(dst_path, version)
 
 
 @pytest.mark.parametrize(
@@ -351,7 +331,6 @@ def test_glob(tmpdir, files, pattern, folder, expected, backend):
         backend._path(
             file,
             '1.0.0',
-            '.ext',
         )
         for file in expected
     ]
@@ -369,53 +348,38 @@ def test_ls(tmpdir, backend):
     assert backend.ls() == []
     assert backend.ls('/') == []
 
-    sub_content = [  # two versions of same file
-        ('sub/file.txt', None, '1.0.0'),
-        ('sub/file.txt', None, '2.0.0'),
+    sub_content = [  # files in sub directory
+        ('sub/file.ext', '1.0.0'),
+        ('sub/file.ext', '2.0.0'),
     ]
     sub_content_latest = sub_content[-1:]
 
-    content = [  # three files with different extensions
-        ('file.tar.gz', '', '1.0.0'),
-        ('file.tar.gz', None, '1.0.0'),
-        ('file.tar.gz', '.tar.gz', '1.0.0'),
+    content = [  # files in root directory
+        ('file.ext', '1.0.0'),
+        ('file.ext', '2.0.0'),
     ]
-    content_latest = content
-
-    content = sub_content + content
-    content_latest = content_latest + sub_content_latest
+    content_latest = content[-1:] + sub_content_latest
+    content += sub_content
 
     # create content
 
     tmp_file = os.path.join(tmpdir, '~')
-    for path, ext, version in content:
+    for path, version in content:
         audeer.touch(tmp_file)
         backend.put_file(
             tmp_file,
             path,
             version,
-            ext=ext,
         )
 
     # test
 
-    for folder, expected, expected_latest in [
+    for folder, expected, latest in [
         ('/', content, content_latest),
         ('sub', sub_content, sub_content_latest),
     ]:
-        expected = [  # replace ext where it is None
-            (p, f".{p.split('.')[-1]}" if e is None else e, v)
-            for p, e, v in expected
-        ]
-        expected = sorted(expected)
-        assert backend.ls(folder) == expected
-
-        expected_latest = [  # replace ext where it is None
-            (p, f".{p.split('.')[-1]}" if e is None else e, v)
-            for p, e, v in expected_latest
-        ]
-        expected_latest = sorted(expected_latest)
-        assert backend.ls(folder, latest_version=True) == expected_latest
+        assert backend.ls(folder) == sorted(expected)
+        assert backend.ls(folder, latest_version=True) == sorted(latest)
 
 
 @pytest.mark.parametrize(
@@ -439,10 +403,10 @@ def test_join(paths, expected, backend):
 
 
 @pytest.mark.parametrize(
-    'dst_path, ext',
+    'dst_path',
     [
-        ('db.yaml', None),
-        ('file.tar.gz', 'tar.gz'),
+        'file.ext',
+        'sub/file.ext'
     ]
 )
 @pytest.mark.parametrize(
@@ -450,29 +414,29 @@ def test_join(paths, expected, backend):
     pytest.BACKENDS,
     indirect=True,
 )
-def test_versions(tmpdir, dst_path, ext, backend):
+def test_versions(tmpdir, dst_path, backend):
 
     src_path = audeer.path(tmpdir, '~')
     audeer.touch(src_path)
 
     # empty backend
-    assert not backend.versions(dst_path, ext=ext)
+    assert not backend.versions(dst_path)
     with pytest.raises(RuntimeError):
-        backend.latest_version(dst_path, ext=ext)
+        backend.latest_version(dst_path)
 
     # v1
-    backend.put_file(src_path, dst_path, '1.0.0', ext=ext)
-    assert backend.versions(dst_path, ext=ext) == ['1.0.0']
-    assert backend.latest_version(dst_path, ext=ext) == '1.0.0'
+    backend.put_file(src_path, dst_path, '1.0.0')
+    assert backend.versions(dst_path) == ['1.0.0']
+    assert backend.latest_version(dst_path) == '1.0.0'
 
     # v2
-    backend.put_file(src_path, dst_path, '2.0.0', ext=ext)
-    assert backend.versions(dst_path, ext=ext) == ['1.0.0', '2.0.0']
-    assert backend.latest_version(dst_path, ext=ext) == '2.0.0'
+    backend.put_file(src_path, dst_path, '2.0.0')
+    assert backend.versions(dst_path) == ['1.0.0', '2.0.0']
+    assert backend.latest_version(dst_path) == '2.0.0'
 
     # v3 with a different extension
     other_ext = 'other'
     other_remote_file = audeer.replace_file_extension(dst_path, other_ext)
-    backend.put_file(src_path, other_remote_file, '3.0.0', ext=other_ext)
-    assert backend.versions(dst_path, ext=ext) == ['1.0.0', '2.0.0']
-    assert backend.latest_version(dst_path, ext=ext) == '2.0.0'
+    backend.put_file(src_path, other_remote_file, '3.0.0')
+    assert backend.versions(dst_path) == ['1.0.0', '2.0.0']
+    assert backend.latest_version(dst_path) == '2.0.0'

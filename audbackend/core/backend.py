@@ -62,7 +62,7 @@ class Backend:
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
-        path = utils.check_path_for_allowed_chars(path)
+        utils.check_path_for_allowed_chars(path)
         if not self._exists(path, version):
             utils.raise_file_not_found_error(path, version=version)
 
@@ -98,7 +98,7 @@ class Backend:
             True
 
         """
-        path = utils.check_path_for_allowed_chars(path)
+        utils.check_path_for_allowed_chars(path)
 
         return self._exists(path, version)
 
@@ -137,7 +137,7 @@ class Backend:
 
         """
         src_path += '.zip'
-        src_path = utils.check_path_for_allowed_chars(src_path)
+        utils.check_path_for_allowed_chars(src_path)
 
         with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
 
@@ -201,7 +201,7 @@ class Backend:
             True
 
         """
-        path = utils.check_path_for_allowed_chars(src_path)
+        utils.check_path_for_allowed_chars(src_path)
         if not self._exists(src_path, version):
             utils.raise_file_not_found_error(src_path, version=version)
 
@@ -292,7 +292,7 @@ class Backend:
             '2.0.0'
 
         """
-        path = utils.check_path_for_allowed_chars(path)
+        utils.check_path_for_allowed_chars(path)
 
         vs = self.versions(path)
         if not vs:
@@ -344,9 +344,9 @@ class Backend:
 
         Examples:
             >>> backend.ls('folder')[:2]
-            [('folder/name.ext', '.ext', '1.0.0'), ('folder/name.ext', '.ext', '2.0.0')]
+            [('folder/name.ext', '1.0.0'), ('folder/name.ext', '2.0.0')]
             >>> backend.ls('folder', latest_version=True)[:1]
-            [('folder/name.ext', '.ext', '2.0.0')]
+            [('folder/name.ext', '2.0.0')]
 
         """  # noqa: E501
         utils.check_path_for_allowed_chars(folder)
@@ -420,7 +420,7 @@ class Backend:
 
         """
         dst_path += '.zip'
-        dst_path = utils.check_path_for_allowed_chars(dst_path)
+        utils.check_path_for_allowed_chars(dst_path)
         src_root = audeer.safe_path(src_root)
 
         if isinstance(files, str):
@@ -494,7 +494,7 @@ class Backend:
             True
 
         """
-        dst_path = utils.check_path_for_allowed_chars(dst_path)
+        utils.check_path_for_allowed_chars(dst_path)
         if not os.path.exists(src_path):
             utils.raise_file_not_found_error(src_path)
 
@@ -536,7 +536,7 @@ class Backend:
             False
 
         """
-        path = utils.check_path_for_allowed_chars(path)
+        utils.check_path_for_allowed_chars(path)
         if not self._exists(path, version):
             utils.raise_file_not_found_error(path, version=version)
 
@@ -601,7 +601,7 @@ class Backend:
             ['1.0.0', '2.0.0']
 
         """
-        path = utils.check_path_for_allowed_chars(path)
+        utils.check_path_for_allowed_chars(path)
 
         vs = self._versions(path)
 
