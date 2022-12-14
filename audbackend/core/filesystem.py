@@ -103,7 +103,7 @@ class FileSystem(Backend):
     ):
         r"""List all files under folder.
 
-        Returns an empty list if folder does not exist.
+        Return an empty list if no files match or folder does not exist.
 
         """
         root = self._folder(folder, '')
