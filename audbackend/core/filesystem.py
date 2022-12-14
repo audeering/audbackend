@@ -50,9 +50,9 @@ class FileSystem(Backend):
     ) -> str:
         r"""Convert to backend folder.
 
-        <folder>/<name>
+        <folder>
         ->
-        <host>/<repository>/<folder>/
+        <host>/<repository>/<folder>
 
         """
         folder = os.path.join(

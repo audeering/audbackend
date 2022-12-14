@@ -51,24 +51,16 @@ class Artifactory(Backend):
 
     def _folder(
             self,
-            path: str,
-            ext: str,
+            folder: str,
     ) -> str:
         r"""Convert to backend folder.
 
-        <folder>/<name><ext>
+        <folder>
         ->
-        <host>/<repository>/<folder>/<name>/
+        <host>/<repository>/<folder>
 
         """
-        folder, file = self.split(path)
-        name, _ = utils.splitext(file, ext)
-
-        if folder:
-            path = f'{self.host}/{self.repository}/{folder}/{name}'
-        else:
-            path = f'{self.host}/{self.repository}/{name}'
-
+        path = f'{self.host}/{self.repository}/{folder}'
         return path
 
     def _get_file(
@@ -76,11 +68,10 @@ class Artifactory(Backend):
             src_path: str,
             dst_path: str,
             version: str,
-            ext: str,
             verbose: bool,
     ):
         r"""Get file from backend."""
-        src_path = self._path(src_path, version, ext)
+        src_path = self._path(src_path, version)
         audfactory.download(src_path, dst_path, verbose=verbose)
 
     def _glob(
@@ -114,17 +105,17 @@ class Artifactory(Backend):
         Return an empty list if no files match or folder does not exist.
 
         """
-        root = self._folder(folder, '')
+        folder = self._folder(folder)
 
-        path = audfactory.path(root)
+        folder = audfactory.path(folder)
         try:
-            paths = [str(x) for x in path.glob("**/*") if x.is_file()]
+            paths = [str(x) for x in folder.glob("**/*") if x.is_file()]
         except self._non_existing_path_error:  # pragma: nocover
             paths = []
 
-        # <host>/<repository>/<folder>/<name>/<version>/<name>-<version><ext>
+        # <host>/<repository>/<folder>/<name>
         # ->
-        # (<folder>/<name><ext>, <ext>, <version>)
+        # (<folder>/<name>, <version>)
 
         result = []
         for full_path in paths:
@@ -134,33 +125,30 @@ class Artifactory(Backend):
             full_path = full_path.replace('/', self.sep)
             tokens = full_path.split('/')
 
-            file = tokens[-1]
+            name = tokens[-1]
             version = tokens[-2]
-            name = tokens[-3]
             folder = self.sep.join(tokens[:-3])
-            ext = file[len(name) + len(version) + 1:]
-            path = self.join(folder, f'{name}{ext}')
+            path = self.join(folder, name)
 
-            result.append((path, ext, version))
+            result.append((path, version))
 
         return result
 
     def _path(
             self,
             path: str,
-            version: typing.Optional[str],
-            ext: str,
+            version: str,
     ) -> str:
         r"""Convert to backend path.
 
-        <folder>/<name>.<ext>
+        <folder>/<name>
         ->
-        <host>/<repository>/<folder>/<name>/<version>/<name>-<version>.<ext>
+        <host>/<repository>/<folder>/<version>/<name>
 
         """
-        folder = self._folder(path, ext)
-        name = os.path.basename(folder)
-        path = f'{folder}/{version}/{name}-{version}{ext}'
+        folder, name = self.split(path)
+        folder = self._folder(folder)
+        path = f'{folder}/{version}/{name}'
 
         return path
 
@@ -188,30 +176,28 @@ class Artifactory(Backend):
             src_path: str,
             dst_path: str,
             version: str,
-            ext: str,
             verbose: bool,
     ):
         r"""Put file to backend."""
-        dst_path = self._path(dst_path, version, ext)
+        dst_path = self._path(dst_path, version)
         audfactory.deploy(src_path, dst_path, verbose=verbose)
 
     def _remove_file(
             self,
             path: str,
             version: str,
-            ext: str,
     ):
         r"""Remove file from backend."""
-        path = self._path(path, version, ext)
+        path = self._path(path, version)
         audfactory.path(path).unlink()
 
     def _versions(
             self,
             path: str,
-            ext: str,
     ) -> typing.List[str]:
         r"""Versions of a file."""
-        folder = self._folder(path, ext)
+        folder, _ = self.split(path)
+        folder = self._folder(folder)
         folder = audfactory.path(folder)
 
         try:
@@ -220,7 +206,7 @@ class Artifactory(Backend):
             vs = []
 
         # filter out versions of files with different extension
-        vs = [v for v in vs if self._exists(path, v, ext)]
+        vs = [v for v in vs if self._exists(path, v)]
 
         return vs
 
