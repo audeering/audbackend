@@ -8,12 +8,13 @@ import audeer
 
 @pytest.fixture(scope='function')
 def backend(request):
-    backend = request.param
-    assert isinstance(backend, audbackend.Backend)
+
+    name = request.param
+    host = pytest.HOSTS[name]
+    repository = pytest.REPOSITORIES[name] + audeer.uid()[:8]
+    backend = audbackend.create(name, host, repository)
+
     yield backend
-    # remove all files from backend
-    for (path, ext, version) in backend.ls():
-        backend.remove_file(path, version, ext=ext)
 
 
 @pytest.mark.parametrize(
@@ -123,31 +124,25 @@ def test_archive(tmpdir, files, name, folder, version, tmp_root, backend):
 
 
 @pytest.mark.parametrize(
-    'name, host, repository, cls',
+    'name, cls',
     [
         (
             'file-system',
-            pytest.FILE_SYSTEM_HOST,
-            pytest.FILE_SYSTEM_REPOSITORY,
             audbackend.FileSystem,
         ),
         (
             'artifactory',
-            pytest.ARTIFACTORY_HOST,
-            pytest.ARTIFACTORY_REPOSITORY,
             audbackend.Artifactory,
         ),
         pytest.param(  # backend does not exist
             'does-not-exist',
-            '',
-            '',
             None,
             marks=pytest.mark.xfail(raises=ValueError)
         )
     ]
 )
-def test_create(name, host, repository, cls):
-    backend = audbackend.create(name, host, repository)
+def test_create(name, cls):
+    backend = audbackend.create(name, 'host', 'repository')
     assert isinstance(backend, cls)
 
 
@@ -219,18 +214,18 @@ def test_errors(tmpdir, backend):
 
 
 @pytest.mark.parametrize(
-    'backend',
-    pytest.BACKENDS,
-    indirect=True,
-)
-@pytest.mark.parametrize(
     'path, version',
     [
         ('file.txt', '1.0.0'),
         ('folder/test.txt', '1.0.0'),
     ]
 )
-def test_exists(tmpdir, backend, path, version):
+@pytest.mark.parametrize(
+    'backend',
+    pytest.BACKENDS,
+    indirect=True,
+)
+def test_exists(tmpdir, path, version, backend):
 
     src_path = audeer.path(tmpdir, '~')
     audeer.touch(src_path)
@@ -424,12 +419,6 @@ def test_ls(tmpdir, backend):
 
 
 @pytest.mark.parametrize(
-    'backend',
-    [
-        pytest.FILE_SYSTEM_BACKEND,
-    ]
-)
-@pytest.mark.parametrize(
     'paths, expected',
     [
         ([''], ''),
@@ -439,7 +428,13 @@ def test_ls(tmpdir, backend):
         (['', 'root', None, '', 'file', ''], 'root/file'),
     ]
 )
-def test_join(backend, paths, expected):
+@pytest.mark.parametrize(
+    'backend',
+    [
+        audbackend.Backend('host', 'repository'),
+    ]
+)
+def test_join(paths, expected, backend):
     assert backend.join(*paths) == expected
 
 

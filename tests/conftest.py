@@ -9,28 +9,21 @@ import audfactory
 
 
 pytest.ROOT = os.path.dirname(os.path.realpath(__file__))
-pytest.ID = audeer.uid()
+uid = audeer.uid()[:8]
 
-# Artifactory
-pytest.ARTIFACTORY_HOST = 'https://audeering.jfrog.io/artifactory'
-pytest.ARTIFACTORY_REPOSITORY = f'unittests-public/{pytest.ID}'
-pytest.ARTIFACTORY_BACKEND = audbackend.Artifactory(
-    pytest.ARTIFACTORY_HOST,
-    pytest.ARTIFACTORY_REPOSITORY,
-)
+pytest.HOSTS = {
+    'artifactory': 'https://audeering.jfrog.io/artifactory',
+    'file-system': os.path.join(pytest.ROOT, 'file-system'),
+}
+pytest.REPOSITORIES = {
+    'artifactory': f'unittests-public/{uid}/',
+    'file-system': uid + os.sep,
+}
 
-# file system
-pytest.FILE_SYSTEM_HOST = audeer.path(pytest.ROOT, 'host')
-pytest.FILE_SYSTEM_REPOSITORY = os.path.join('unittests-public', pytest.ID)
-pytest.FILE_SYSTEM_BACKEND = audbackend.FileSystem(
-    pytest.FILE_SYSTEM_HOST,
-    pytest.FILE_SYSTEM_REPOSITORY,
-)
-
-# list of all backends that will be tested by default
+# list of backends that will be tested
 pytest.BACKENDS = [
-    pytest.FILE_SYSTEM_BACKEND,
-    pytest.ARTIFACTORY_BACKEND,
+    # 'artifactory',
+    'file-system',
 ]
 
 
@@ -48,14 +41,14 @@ def cleanup_session():
     yield
 
     # clean up file system
-    if os.path.exists(pytest.FILE_SYSTEM_HOST):
-        shutil.rmtree(pytest.FILE_SYSTEM_HOST)
+    if os.path.exists(pytest.HOSTS['file-system']):
+        shutil.rmtree(pytest.HOSTS['file-system'])
 
     # clean up Artifactory
     url = audfactory.path(
         audfactory.url(
-            pytest.ARTIFACTORY_HOST,
-            repository=pytest.ARTIFACTORY_REPOSITORY,
+            pytest.HOSTS['artifactory'],
+            repository=pytest.REPOSITORIES['artifactory'],
         ),
     )
     if url.exists():
