@@ -44,6 +44,24 @@ class FileSystem(Backend):
         path = self._path(path, version)
         return os.path.exists(path)
 
+    def _folder(
+            self,
+            folder: str,
+    ) -> str:
+        r"""Convert to backend folder.
+
+        <folder>/<name>
+        ->
+        <host>/<repository>/<folder>/
+
+        """
+        folder = os.path.join(
+            self.host,
+            self.repository,
+            folder.replace(self.sep, os.path.sep),
+        )
+        return folder
+
     def _get_file(
             self,
             src_path: str,
@@ -79,8 +97,8 @@ class FileSystem(Backend):
         Return an empty list if no files match or folder does not exist.
 
         """
-        root = folder.replace(self.sep, os.path.sep)
-        paths = audeer.list_file_names(root, recursive=True)
+        folder = self._folder(folder)
+        paths = audeer.list_file_names(folder, recursive=True)
 
         # <host>/<repository>/<folder>/<version>/<name>
         # ->
@@ -116,7 +134,7 @@ class FileSystem(Backend):
 
         """
         folder, name = self.split(path)
-        folder = folder.replace(self.sep, os.path.sep)
+        folder = self._folder(folder)
         path = os.path.join(folder, version, name)
         return path
 
@@ -147,10 +165,11 @@ class FileSystem(Backend):
             src_path: str,
             dst_path: str,
             version: str,
+            ext: str,
             verbose: bool,
     ):
         r"""Put file to backend."""
-        dst_path = self._path(dst_path, version)
+        dst_path = self._path(dst_path, version, ext)
         audeer.mkdir(os.path.dirname(dst_path))
         shutil.copy(src_path, dst_path)
 
@@ -158,9 +177,10 @@ class FileSystem(Backend):
             self,
             path: str,
             version: str,
+            ext: str,
     ):
         r"""Remove file from backend."""
-        path = self._path(path, version)
+        path = self._path(path, version, ext)
         os.remove(path)
 
     def _versions(
@@ -168,8 +188,8 @@ class FileSystem(Backend):
             path: str,
     ) -> typing.List[str]:
         r"""Versions of a file."""
-        folder, name = self.split(path)
-        folder = folder.replace(self.sep, os.path.sep)
+        folder, _ = self.split(path)
+        folder = self._folder(folder)
 
         if os.path.exists(folder):
             vs = audeer.list_dir_names(

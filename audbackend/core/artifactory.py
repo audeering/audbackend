@@ -32,20 +32,18 @@ class Artifactory(Backend):
             self,
             path: str,
             version: str,
-            ext: str,
     ) -> str:
         r"""MD5 checksum of file on backend."""
-        path = self._path(path, version, ext)
+        path = self._path(path, version)
         return audfactory.checksum(path)
 
     def _exists(
             self,
             path: str,
             version: str,
-            ext: str,
     ) -> bool:
         r"""Check if file exists on backend."""
-        path = self._path(path, version, ext)
+        path = self._path(path, version)
         try:
             return audfactory.path(path).exists()
         except self._non_existing_path_error:

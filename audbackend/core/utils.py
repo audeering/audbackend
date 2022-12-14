@@ -70,13 +70,3 @@ def raise_file_not_found_error(
         os.strerror(errno.ENOENT),
         path,
     )
-
-
-def splitext(
-        path: str,
-        ext: str,
-) -> typing.Tuple[str, str]:
-    r"""Split path into basename and ext."""
-    if ext:
-        path = path[:-len(ext)]
-    return path, ext
