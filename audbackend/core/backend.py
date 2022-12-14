@@ -340,6 +340,10 @@ class Backend:
 
         Returns a sorted list of tuples
         with path, extension and version.
+        When ``folder`` is set to the
+        root of the backend (``'/'``)
+        a (possibly empty) list with
+        all files on the backend is returned.
 
         Args:
             folder: folder on backend
