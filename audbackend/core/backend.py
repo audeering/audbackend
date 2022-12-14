@@ -35,7 +35,6 @@ class Backend:
             self,
             path: str,
             version: str,
-            ext: str,
     ) -> str:  # pragma: no cover
         r"""MD5 checksum of file on backend."""
         raise NotImplementedError()
@@ -44,15 +43,12 @@ class Backend:
             self,
             path: str,
             version: str,
-            *,
-            ext: str = None,
     ) -> str:
         r"""Get MD5 checksum for file on backend.
 
         Args:
             path: path to file on backend
             version: version string
-            ext: file extension, if ``None`` uses characters after last dot
 
         Returns:
             MD5 checksum
@@ -60,24 +56,22 @@ class Backend:
         Raises:
             FileNotFoundError: if file does not exist on backend
             ValueError: if ``path`` contains invalid character
-            ValueError: if ``path`` does not end on file extension
 
         Examples:
             >>> backend.checksum('folder/name.ext', '1.0.0')
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
-        path, ext = utils.check_path_and_ext(path, ext)
-        if not self._exists(path, version, ext):
+        path = utils.check_path_for_allowed_chars(path)
+        if not self._exists(path, version):
             utils.raise_file_not_found_error(path, version=version)
 
-        return self._checksum(path, version, ext=ext)
+        return self._checksum(path, version)
 
     def _exists(
             self,
             path: str,
             version: str,
-            ext: str,
     ) -> bool:  # pragma: no cover
         r"""Check if file exists on backend."""
         raise NotImplementedError()
@@ -86,31 +80,27 @@ class Backend:
             self,
             path: str,
             version: str,
-            *,
-            ext: str = None,
     ) -> bool:
         r"""Check if file exists on backend.
 
         Args:
             path: path to file on backend
             version: version string
-            ext: file extension, if ``None`` uses characters after last dot
 
         Returns:
             ``True`` if file exists
 
         Raises:
             ValueError: if ``path`` contains invalid character
-            ValueError: if ``path`` does not end on file extension
 
         Examples:
             >>> backend.exists('folder/name.ext', '1.0.0')
             True
 
         """
-        path, ext = utils.check_path_and_ext(path, ext)
+        path = utils.check_path_for_allowed_chars(path)
 
-        return self._exists(path, version, ext)
+        return self._exists(path, version)
 
     def get_archive(
             self,
@@ -146,9 +136,8 @@ class Backend:
             ['src.pth']
 
         """
-        ext = '.zip'
-        src_path += ext
-        src_path, ext = utils.check_path_and_ext(src_path, ext)
+        src_path += '.zip'
+        src_path = utils.check_path_for_allowed_chars(src_path)
 
         with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
 
@@ -175,7 +164,6 @@ class Backend:
             src_path: str,
             dst_path: str,
             version: str,
-            ext: str,
             verbose: bool,
     ):  # pragma: no cover
         r"""Get file from backend."""
@@ -187,7 +175,6 @@ class Backend:
             dst_path: str,
             version: str,
             *,
-            ext: str = None,
             verbose: bool = False,
     ) -> str:
         r"""Get file from backend.
@@ -196,7 +183,6 @@ class Backend:
             src_path: path to file on backend
             dst_path: destination path to local file
             version: version string
-            ext: file extension, if ``None`` uses characters after last dot
             verbose: show debug messages
 
         Returns:
@@ -205,7 +191,6 @@ class Backend:
         Raises:
             FileNotFoundError: if file does not exist on backend
             ValueError: if ``src_path`` contains invalid character
-            ValueError: if ``src_path`` does not end on file extension
 
         Examples:
             >>> dst_path = audeer.path(tmp, 'dst.pth')
@@ -216,14 +201,14 @@ class Backend:
             True
 
         """
-        path, ext = utils.check_path_and_ext(src_path, ext)
-        if not self._exists(src_path, version, ext):
+        path = utils.check_path_for_allowed_chars(src_path)
+        if not self._exists(src_path, version):
             utils.raise_file_not_found_error(src_path, version=version)
 
         dst_path = audeer.safe_path(dst_path)
         audeer.mkdir(os.path.dirname(dst_path))
 
-        self._get_file(src_path, dst_path, version, ext, verbose)
+        self._get_file(src_path, dst_path, version, verbose)
 
         return dst_path
 
@@ -289,14 +274,11 @@ class Backend:
     def latest_version(
             self,
             path: str,
-            *,
-            ext: str = None,
     ) -> str:
         r"""Latest version of a file.
 
         Args:
             path: path to file on backend
-            ext: file extension, if ``None`` uses characters after last dot
 
         Returns:
             version string
@@ -304,16 +286,15 @@ class Backend:
         Raises:
             RuntimeError: if file does not exist on backend
             ValueError: if ``path`` contains invalid character
-            ValueError: if ``path`` does not end on file extension
 
         Examples:
             >>> backend.latest_version('folder/name.ext')
             '2.0.0'
 
         """
-        path, ext = utils.check_path_and_ext(path, ext)
+        path = utils.check_path_for_allowed_chars(path)
 
-        vs = self.versions(path, ext=ext)
+        vs = self.versions(path)
         if not vs:
             raise RuntimeError(
                 f"Cannot find a version for "
@@ -343,7 +324,7 @@ class Backend:
         r"""List all files under folder.
 
         Returns a sorted list of tuples
-        with path, extension and version.
+        with path and version.
         When ``folder`` is set to the
         root of the backend (``'/'``)
         a (possibly empty) list with
@@ -355,7 +336,7 @@ class Backend:
                 only include the latest
 
         Returns:
-            list of tuples (path, extension, version)
+            list of tuples (path, version)
 
         Raises:
             FileNotFoundError: if ``folder`` does not exist
@@ -382,18 +363,17 @@ class Backend:
                 utils.raise_file_not_found_error(folder)
 
         if latest_version:
-            # d[(path, ext)] = ['1.0.0', '2.0.0']
+            # d[path] = ['1.0.0', '2.0.0']
             d = {}
-            for p, e, v in paths:
-                key = (p, e)
-                if key not in d:
-                    d[key] = []
-                d[key].append(v)
-            # d[(path, ext)] = '2.0.0'
-            for key, vs in d.items():
-                d[key] = audeer.sort_versions(vs)[-1]
-            # [(path, ext, '2.0.0')]
-            paths = [(p, e, v) for (p, e), v in d.items()]
+            for p, v in paths:
+                if p not in d:
+                    d[p] = []
+                d[p].append(v)
+            # d[path] = '2.0.0'
+            for p, vs in d.items():
+                d[p] = audeer.sort_versions(vs)[-1]
+            # [(path, '2.0.0')]
+            paths = [(p, v) for p, v in d.items()]
 
         return paths
 
@@ -439,9 +419,8 @@ class Backend:
             True
 
         """
-        ext = '.zip'
-        dst_path += ext
-        dst_path, ext = utils.check_path_and_ext(dst_path, ext)
+        dst_path += '.zip'
+        dst_path = utils.check_path_for_allowed_chars(dst_path)
         src_root = audeer.safe_path(src_root)
 
         if isinstance(files, str):
@@ -474,7 +453,6 @@ class Backend:
             src_path: str,
             dst_path: str,
             version: str,
-            ext: str,
             verbose: bool,
     ):  # pragma: no cover
         r"""Put file to backend."""
@@ -486,7 +464,6 @@ class Backend:
             dst_path: str,
             version: str,
             *,
-            ext: str = None,
             verbose: bool = False,
     ):
         r"""Put file on backend.
@@ -499,7 +476,6 @@ class Backend:
             src_path: path to local file
             dst_path: path to file on backend
             version: version string
-            ext: file extension, if ``None`` uses characters after last dot
             verbose: show debug messages
 
         Returns:
@@ -508,7 +484,6 @@ class Backend:
         Raises:
             FileNotFoundError: if local file does not exist
             ValueError: if ``dst_path`` contains invalid character
-            ValueError: if ``dst_path`` does not end on file extension
 
         Examples:
             >>> backend.exists('folder/name.ext', '3.0.0')
@@ -519,28 +494,21 @@ class Backend:
             True
 
         """
-        dst_path, ext = utils.check_path_and_ext(dst_path, ext)
+        dst_path = utils.check_path_for_allowed_chars(dst_path)
         if not os.path.exists(src_path):
             utils.raise_file_not_found_error(src_path)
 
         # skip if file with same checksum already exists
         if not (
-            self._exists(dst_path, version, ext)
-            and self._checksum(dst_path, version, ext) == utils.md5(src_path)
+            self._exists(dst_path, version)
+            and self._checksum(dst_path, version) == utils.md5(src_path)
         ):
-            self._put_file(
-                src_path,
-                dst_path,
-                version,
-                ext,
-                verbose,
-            )
+            self._put_file(src_path, dst_path, version, verbose)
 
     def _remove_file(
             self,
             path: str,
             version: str,
-            ext: str,
     ):  # pragma: no cover
         r"""Remove file from backend."""
         raise NotImplementedError()
@@ -549,20 +517,16 @@ class Backend:
             self,
             path: str,
             version: str,
-            *,
-            ext: str = None,
     ):
         r"""Remove file from backend.
 
         Args:
             path: path to file on backend
             version: version string
-            ext: file extension, if ``None`` uses characters after last dot
 
         Raises:
             FileNotFoundError: if file does not exist on backend
             ValueError: if ``path`` contains invalid character
-            ValueError: if ``path`` does not end on file extension
 
         Examples:
             >>> backend.exists('folder/name.ext', '1.0.0')
@@ -572,11 +536,11 @@ class Backend:
             False
 
         """
-        path, ext = utils.check_path_and_ext(path, ext)
-        if not self._exists(path, version, ext):
+        path = utils.check_path_for_allowed_chars(path)
+        if not self._exists(path, version):
             utils.raise_file_not_found_error(path, version=version)
 
-        path = self._remove_file(path, version, ext)
+        path = self._remove_file(path, version)
 
     @property
     def sep(self) -> str:
@@ -613,7 +577,6 @@ class Backend:
     def _versions(
             self,
             path: str,
-            ext: str,
     ) -> typing.List[str]:  # pragma: no cover
         r"""Versions of a file."""
         raise NotImplementedError()
@@ -621,29 +584,25 @@ class Backend:
     def versions(
             self,
             path: str,
-            *,
-            ext: str = None,
     ) -> typing.List[str]:
         r"""Versions of a file.
 
         Args:
             path: path to file on backend
-            ext: file extension, if ``None`` uses characters after last dot
 
         Returns:
             list of versions in ascending order
 
         Raises:
             ValueError: if ``path`` contains invalid character
-            ValueError: if ``path`` does not end on file extension
 
         Examples:
             >>> backend.versions('folder/name.ext')
             ['1.0.0', '2.0.0']
 
         """
-        path, ext = utils.check_path_and_ext(path, ext)
+        path = utils.check_path_for_allowed_chars(path)
 
-        vs = self._versions(path, ext)
+        vs = self._versions(path)
 
         return audeer.sort_versions(vs)
