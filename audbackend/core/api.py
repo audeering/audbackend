@@ -27,7 +27,7 @@ def available() -> typing.Dict[str, typing.List[Backend]]:
     Returns:
         dictionary with backends
 
-    Example:
+    Examples:
         >>> list(available())
         ['artifactory', 'file-system']
         >>> available()['artifactory']
@@ -64,7 +64,7 @@ def create(
     Raises:
         ValueError: if registry name does not exist
 
-    Example:
+    Examples:
         >>> create(
         ...     'artifactory',
         ...     'https://host.com',
@@ -104,7 +104,7 @@ def register(
         name: backend registry name
         cls: backend class
 
-    Example:
+    Examples:
         >>> register('file-system', FileSystem)
 
     """

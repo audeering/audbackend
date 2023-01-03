@@ -62,7 +62,7 @@ class Backend:
             ValueError: if ``path`` contains invalid character
             ValueError: if ``path`` does not end on file extension
 
-        Example:
+        Examples:
             >>> backend.checksum('folder/name.ext', '1.0.0')
             'd41d8cd98f00b204e9800998ecf8427e'
 
@@ -103,7 +103,7 @@ class Backend:
             ValueError: if ``path`` contains invalid character
             ValueError: if ``path`` does not end on file extension
 
-        Example:
+        Examples:
             >>> backend.exists('folder/name.ext', '1.0.0')
             True
 
@@ -140,7 +140,7 @@ class Backend:
             FileNotFoundError: if ``tmp_root`` does not exist
             ValueError: if ``src_path`` contains invalid character
 
-        Example:
+        Examples:
             >>> dst_root = audeer.path(tmp, 'dst')
             >>> backend.get_archive('folder/name', dst_root, '1.0.0')
             ['src.pth']
@@ -207,7 +207,7 @@ class Backend:
             ValueError: if ``src_path`` contains invalid character
             ValueError: if ``src_path`` does not end on file extension
 
-        Example:
+        Examples:
             >>> dst_path = audeer.path(tmp, 'dst.pth')
             >>> os.path.exists(dst_path)
             False
@@ -272,7 +272,7 @@ class Backend:
         Raises:
             ValueError: if joined path contains invalid character
 
-        Example:
+        Examples:
             >>> backend.join('folder', 'name.ext')
             'folder/name.ext'
 
@@ -306,7 +306,7 @@ class Backend:
             ValueError: if ``path`` contains invalid character
             ValueError: if ``path`` does not end on file extension
 
-        Example:
+        Examples:
             >>> backend.latest_version('folder/name.ext')
             '2.0.0'
 
@@ -361,7 +361,7 @@ class Backend:
             FileNotFoundError: if ``folder`` does not exist
             ValueError: if ``folder`` contains invalid character
 
-        Example:
+        Examples:
             >>> backend.ls('folder')[:2]
             [('folder/name.ext', '.ext', '1.0.0'), ('folder/name.ext', '.ext', '2.0.0')]
             >>> backend.ls('folder', latest_version=True)[:1]
@@ -430,7 +430,7 @@ class Backend:
             FileNotFoundError: if ``tmp_root`` does not exist
             ValueError: if ``dst_path`` contains invalid character
 
-        Example:
+        Examples:
             >>> backend.exists('folder/name.zip', '2.0.0')
             False
             >>> files = ['src.pth']
@@ -510,7 +510,7 @@ class Backend:
             ValueError: if ``dst_path`` contains invalid character
             ValueError: if ``dst_path`` does not end on file extension
 
-        Example:
+        Examples:
             >>> backend.exists('folder/name.ext', '3.0.0')
             False
             >>> src_path = audeer.path(tmp, 'src.pth')
@@ -564,7 +564,7 @@ class Backend:
             ValueError: if ``path`` contains invalid character
             ValueError: if ``path`` does not end on file extension
 
-        Example:
+        Examples:
             >>> backend.exists('folder/name.ext', '1.0.0')
             True
             >>> backend.remove_file('folder/name.ext', '1.0.0')
@@ -598,7 +598,7 @@ class Backend:
         Raises:
             ValueError: if ``path`` contains invalid character
 
-        Example:
+        Examples:
             >>> backend.split('folder/name.ext')
             ('folder', 'name.ext')
 
@@ -637,7 +637,7 @@ class Backend:
             ValueError: if ``path`` contains invalid character
             ValueError: if ``path`` does not end on file extension
 
-        Example:
+        Examples:
             >>> backend.versions('folder/name.ext')
             ['1.0.0', '2.0.0']
 

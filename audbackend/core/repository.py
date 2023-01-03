@@ -12,7 +12,7 @@ class Repository:
         host: repository host
         backend: repository backend
 
-    Example:
+    Examples:
         >>> Repository('data-local', '/data', 'file-system')
         Repository('data-local', '/data', 'file-system')
 

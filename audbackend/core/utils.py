@@ -62,7 +62,7 @@ def md5(
     Returns:
         checksum
 
-    Example:
+    Examples:
         >>> path = audeer.path(tmp, 'src.pth')
         >>> md5(path)
         'd41d8cd98f00b204e9800998ecf8427e'
