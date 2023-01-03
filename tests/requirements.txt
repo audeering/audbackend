@@ -1,5 +1,4 @@
-# To avoid https://github.com/tholo/pytest-flake8/issues/87
-flake8 <5.0.0
+pre-commit
 pytest
 pytest-cov
 pytest-doctestplus
