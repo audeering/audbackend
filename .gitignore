@@ -8,3 +8,4 @@ venv/
 .coverage*
 coverage.xml
 __init__.pyc
+docs/api/
