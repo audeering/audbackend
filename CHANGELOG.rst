@@ -7,6 +7,13 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.3.17 (2023-02-13)
+---------------------------
+
+* Added: support for Python 3.10
+* Changed: depend on ``audfactory>=1.0.10``
+
+
 Version 0.3.16 (2022-10-13)
 ---------------------------
 
