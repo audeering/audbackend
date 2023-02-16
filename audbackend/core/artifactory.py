@@ -1,3 +1,4 @@
+import dohq_artifactory
 import requests
 import typing
 
@@ -133,7 +134,7 @@ class Artifactory(Backend):
     _non_existing_path_error = (
             RuntimeError,
             requests.exceptions.HTTPError,
-            artifactory.exception.ArtifactoryException,
+            dohq_artifactory.exception.ArtifactoryException,
     )
     r"""Error expected for non-existing paths.
 
