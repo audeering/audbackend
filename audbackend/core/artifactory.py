@@ -130,17 +130,23 @@ class Artifactory(Backend):
         group_id = audfactory.path_to_group_id(folder)
         return audfactory.versions(self.host, self.repository, group_id, name)
 
-    _non_existing_path_error = (RuntimeError, requests.exceptions.HTTPError)
+    _non_existing_path_error = (
+            RuntimeError,
+            requests.exceptions.HTTPError,
+            artifactory.exception.ArtifactoryException,
+    )
     r"""Error expected for non-existing paths.
 
     If a user has no permission to a given path
-    or the path does not exists :func:`audfactory.path`
-    might return a
+    or the path does not exists
+    :func:`audfactory.path` might return a
     ``RuntimeError: 404 page not found``
     or
     ``requests.exceptions.HTTPError: 403 Client Error``
+    or
+    ``artifactory.exception.ArtifactoryException``
     error,
-    which might depend on the instaleld ``dohq-artifactory``
-    version. So we better catch both of them.
+    which depend on the instaleld ``dohq-artifactory`` version.
+    So we better catch all of them.
 
     """
