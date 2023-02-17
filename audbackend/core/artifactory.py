@@ -59,8 +59,10 @@ class Artifactory(Backend):
             # RuntimeError: 404 page not found
             # or
             # requests.exceptions.HTTPError: 403 Client Error
+            # or
+            # dohq_artifactory.exception.ArtifactoryException
             return audfactory.path(path).exists()
-        except self._non_existing_path_error:  # pragma: nocover
+        except self._non_existing_path_error:
             return False
 
     def _get_file(
@@ -90,7 +92,7 @@ class Artifactory(Backend):
         path = audfactory.path(url)
         try:
             result = [str(x) for x in path.glob(pattern)]
-        except self._non_existing_path_error:  # pragma: nocover
+        except self._non_existing_path_error:
             result = []
         return result
 
