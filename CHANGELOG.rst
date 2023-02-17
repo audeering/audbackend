@@ -7,6 +7,14 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 0.3.18 (2023-02-17)
+---------------------------
+
+* Fixed: support ``dohq_artifactory.exception.ArtifactoryException``
+  which was introduced in ``dohq_artifactory>=0.8``
+  and is raised instead of a HTTP request error
+
+
 Version 0.3.17 (2023-02-13)
 ---------------------------
 
