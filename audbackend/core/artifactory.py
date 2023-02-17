@@ -55,12 +55,6 @@ class Artifactory(Backend):
     ) -> bool:
         r"""Check if file exists on backend."""
         try:
-            # Can lead to
-            # RuntimeError: 404 page not found
-            # or
-            # requests.exceptions.HTTPError: 403 Client Error
-            # or
-            # dohq_artifactory.exception.ArtifactoryException
             return audfactory.path(path).exists()
         except self._non_existing_path_error:
             return False
@@ -143,13 +137,12 @@ class Artifactory(Backend):
     If a user has no permission to a given path
     or the path does not exists
     :func:`audfactory.path` might return a
-    ``RuntimeError: 404 page not found``
-    or
-    ``requests.exceptions.HTTPError: 403 Client Error``
+    ``RuntimeError``,
+    ``requests.exceptions.HTTPError``
+    for ``dohq_artifactory<0.8``
     or
     ``artifactory.exception.ArtifactoryException``
-    error,
-    which depend on the instaleld ``dohq-artifactory`` version.
+    for ``dohq_artifactory>=0.8``.
     So we better catch all of them.
 
     """
