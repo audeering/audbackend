@@ -42,3 +42,20 @@ def cleanup_session():
     )
     if url.exists():
         url.unlink()
+
+
+@pytest.fixture(scope='function', autouse=False)
+def no_artifactory_access_rights():
+    current_username = os.environ.get('ARTIFACTORY_USERNAME', False)
+    current_api_key = os.environ.get('ARTIFACTORY_API_KEY', False)
+    os.environ['ARTIFACTORY_USERNAME'] = 'non-existing-user'
+    os.environ['ARTIFACTORY_API_KEY'] = 'non-existing-password'
+    yield
+    if current_username:
+        os.environ["ARTIFACTORY_USERNAME"] = current_username
+    else:
+        del os.environ['ARTIFACTORY_USERNAME']
+    if current_api_key:
+        os.environ['ARTIFACTORY_API_KEY'] = current_api_key
+    else:
+        del os.environ['ARTIFACTORY_API_KEY']
