@@ -46,8 +46,16 @@ def cleanup_session():
 
 @pytest.fixture(scope='function', autouse=False)
 def no_artifactory_access_rights():
-    os.environ["ARTIFACTORY_USERNAME"] = "non-existing-user"
-    os.environ["ARTIFACTORY_API_KEY"] = "non-existing-password"
+    current_username = os.environ.get('ARTIFACTORY_USERNAME', False)
+    current_api_key = os.environ.get('ARTIFACTORY_API_KEY', False)
+    os.environ['ARTIFACTORY_USERNAME'] = 'non-existing-user'
+    os.environ['ARTIFACTORY_API_KEY'] = 'non-existing-password'
     yield
-    del os.environ["ARTIFACTORY_USERNAME"]
-    del os.environ["ARTIFACTORY_API_KEY"]
+    if current_username:
+        os.environ["ARTIFACTORY_USERNAME"] = current_username
+    else:
+        del os.environ['ARTIFACTORY_USERNAME']
+    if current_api_key:
+        os.environ['ARTIFACTORY_API_KEY'] = current_api_key
+    else:
+        del os.environ['ARTIFACTORY_API_KEY']
