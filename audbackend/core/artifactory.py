@@ -60,10 +60,10 @@ class Artifactory(Backend):
 
         """
         folder = folder.replace(self.sep, '/')
-        if not folder.startswith(self.sep):
+        if not folder.startswith('/'):
             folder = '/' + folder
         folder = f'{self.host}/{self.repository}{folder}'
-        if not folder.endswith(self.sep):
+        if not folder.endswith('/'):
             folder = folder + '/'
         return folder
 
