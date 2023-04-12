@@ -277,68 +277,6 @@ def test_file(tmpdir, src_path, dst_path, version, backend):
 
 
 @pytest.mark.parametrize(
-    'files, pattern, folder, expected',
-    [
-        (
-            [],
-            '**/*.ext',
-            None,
-            [],
-        ),
-        (
-            ['file.ext', 'path/to/file.ext', 'no.match'],
-            '**/*.ext',
-            None,
-            ['file.ext', 'path/to/file.ext'],
-        ),
-        (
-            ['file.ext', 'path/to/file.ext'],
-            '**/*.ext',
-            'path/to',
-            ['path/to/file.ext'],
-        ),
-        # Test non-existing path on server
-        (
-            [],
-            'does-not-exist/**/*.ext',
-            None,
-            [],
-        ),
-
-    ],
-)
-@pytest.mark.parametrize(
-    'backend',
-    pytest.BACKENDS,
-    indirect=True,
-)
-def test_glob(tmpdir, files, pattern, folder, expected, backend):
-
-    src_path = audeer.path(tmpdir, '~')
-    audeer.touch(src_path)
-
-    paths = []
-    for dst_path in files:
-        paths.append(
-            backend.put_file(
-                src_path,
-                dst_path,
-                '1.0.0',
-            )
-        )
-
-    expected = [
-        backend._path(
-            file,
-            '1.0.0',
-        )
-        for file in expected
-    ]
-
-    assert sorted(expected) == sorted(backend.glob(pattern, folder=folder))
-
-
-@pytest.mark.parametrize(
     'backend',
     pytest.BACKENDS,
     indirect=True,

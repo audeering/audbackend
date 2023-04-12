@@ -212,34 +212,6 @@ class Backend:
 
         return dst_path
 
-    def _glob(
-            self,
-            pattern: str,
-            folder: typing.Optional[str],
-    ) -> typing.List[str]:  # pragma: no cover
-        r"""Return matching files names."""
-        raise NotImplementedError()
-
-    def glob(
-            self,
-            pattern: str,
-            *,
-            folder: str = None,
-    ) -> typing.List[str]:
-        r"""Return matching files names.
-
-        Use ``'**'`` to scan into sub-directories.
-
-        Args:
-            pattern: pattern string
-            folder: search under this folder
-
-        Returns:
-            matching files on backend
-
-        """
-        return self._glob(pattern, folder)
-
     def join(
             self,
             path: str,
