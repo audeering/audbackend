@@ -1,17 +1,18 @@
 import pytest
 
 import audbackend
+import audeer
 
 
 BACKEND = audbackend.Artifactory(
-    pytest.ARTIFACTORY_HOST,
-    pytest.REPOSITORY_NAME,
+    pytest.HOSTS['artifactory'],
+    pytest.REPOSITORIES['artifactory'],
 )
 
 
 def test_exists(no_artifactory_access_rights):
     remote_file = BACKEND.join(
-        pytest.ID,
+        audeer.uid()[:8],
         'file.txt',
     )
     version = '1.0.0'

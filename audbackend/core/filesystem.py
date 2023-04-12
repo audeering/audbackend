@@ -137,28 +137,6 @@ class FileSystem(Backend):
         path = os.path.join(folder, version, name)
         return path
 
-    def _path(
-            self,
-            path: str,
-            version: str,
-            ext: str,
-    ) -> str:
-        r"""Convert to backend path.
-
-        <folder>/<name>.<ext>
-        ->
-        <host>/<repository>/<folder>/<name>/<version>/<name>-<version>.<ext>
-
-        """
-        folder = self._folder(path, ext)
-        name = os.path.basename(folder)
-        path = os.path.join(
-            folder,
-            version,
-            f'{name}-{version}{ext}',
-        )
-        return path
-
     def _put_file(
             self,
             src_path: str,

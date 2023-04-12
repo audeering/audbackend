@@ -6,7 +6,6 @@ import typing
 
 import audfactory
 
-from audbackend.core import utils
 from audbackend.core.backend import Backend
 
 
@@ -154,25 +153,6 @@ class Artifactory(Backend):
         folder, name = self.split(path)
         folder = self._folder(folder)
         path = f'{folder}{version}/{name}'
-
-        return path
-
-    def _path(
-            self,
-            path: str,
-            version: typing.Optional[str],
-            ext: str,
-    ) -> str:
-        r"""Convert to backend path.
-
-        <folder>/<name>.<ext>
-        ->
-        <host>/<repository>/<folder>/<name>/<version>/<name>-<version>.<ext>
-
-        """
-        folder = self._folder(path, ext)
-        name = os.path.basename(folder)
-        path = f'{folder}/{version}/{name}-{version}{ext}'
 
         return path
 
