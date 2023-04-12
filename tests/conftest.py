@@ -3,6 +3,7 @@ import shutil
 
 import pytest
 
+import audbackend
 import audeer
 import audfactory
 
