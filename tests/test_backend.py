@@ -1,4 +1,5 @@
 import os
+import platform
 import re
 import stat
 
@@ -215,7 +216,12 @@ def test_errors(tmpdir, backend):
     with pytest.raises(ValueError, match=error_invalid_char):
         backend.get_archive(file_invalid_char, tmpdir, version)
     # `tmp_root` does not exist
-    error_msg = "No such file or directory: 'non-existing/..."
+    if platform.system() == 'Windows':
+        error_msg = (
+            "The system cannot find the path specified: 'non-existing..."
+        )
+    else:
+        error_msg = "No such file or directory: 'non-existing/..."
     with pytest.raises(FileNotFoundError, match=error_msg):
         backend.get_archive(archive, tmpdir, version, tmp_root='non-existing')
     # extension of `src_path` is not supported
