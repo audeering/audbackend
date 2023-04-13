@@ -173,10 +173,7 @@ def test_errors(tmpdir, backend):
 
     # Create local read-only folder
     folder_read_only = audeer.mkdir(audeer.path(tmpdir, 'read-only-folder'))
-    if platform.system() == 'Windows':
-        os.system(f'attrib -w {folder_read_only}')
-    else:
-        os.chmod(folder_read_only, stat.S_IRUSR)
+    os.chmod(folder_read_only, stat.S_IRUSR)
 
     # File names and error messages
     # for common errors
@@ -246,10 +243,10 @@ def test_errors(tmpdir, backend):
     with pytest.raises(RuntimeError, match=error_msg):
         backend.get_archive('malformed.zip', tmpdir, version)
     # no write permissions to `dst_path`
-    # if not platform.system() == 'Windows':
-    # Currently we don't know how to provoke permission error on Windows
-    with pytest.raises(PermissionError, match=error_read_only):
-        backend.get_archive(archive, folder_read_only, version)
+    if not platform.system() == 'Windows':
+        # Currently we don't know how to provoke permission error on Windows
+        with pytest.raises(PermissionError, match=error_read_only):
+            backend.get_archive(archive, folder_read_only, version)
 
     # --- get_file ---
     # `src_path` missing
