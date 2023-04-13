@@ -332,14 +332,14 @@ def test_ls(tmpdir, backend):
     assert backend.ls('/') == []
 
     sub_content = [  # files in sub directory
-        ('sub/file.ext', '1.0.0'),
-        ('sub/file.ext', '2.0.0'),
+        ('sub/file.foo', '1.0.0'),
+        ('sub/file.foo', '2.0.0'),
     ]
     sub_content_latest = sub_content[-1:]
 
     content = [  # files in root directory
-        ('file.ext', '1.0.0'),
-        ('file.ext', '2.0.0'),
+        ('file.bar', '1.0.0'),
+        ('file.bar', '2.0.0'),
     ]
     content_latest = content[-1:] + sub_content_latest
     content += sub_content
@@ -357,12 +357,21 @@ def test_ls(tmpdir, backend):
 
     # test
 
-    for folder, expected, latest in [
-        ('/', content, content_latest),
-        ('sub', sub_content, sub_content_latest),
+    for folder, latest, pattern, expected in [
+        ('/', False, None, content),
+        ('/', True, None, content_latest),
+        ('/', False, '*.foo', sub_content),
+        ('/', True, '*.foo', sub_content_latest),
+        ('sub', False, None, sub_content),
+        ('sub', True, None, sub_content_latest),
+        ('sub', False, '*.bar', []),
+        ('sub', True, '*.bar', []),
     ]:
-        assert backend.ls(folder) == sorted(expected)
-        assert backend.ls(folder, latest_version=True) == sorted(latest)
+        assert backend.ls(
+            folder,
+            latest_version=latest,
+            pattern=pattern,
+        ) == sorted(expected)
 
 
 @pytest.mark.parametrize(

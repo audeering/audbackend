@@ -1,3 +1,4 @@
+import fnmatch
 import os
 import tempfile
 import typing
@@ -58,7 +59,7 @@ class Backend:
             ValueError: if ``path`` contains invalid character
 
         Examples:
-            >>> backend.checksum('folder/name.ext', '1.0.0')
+            >>> backend.checksum('name.ext', '1.0.0')
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
@@ -94,7 +95,7 @@ class Backend:
             ValueError: if ``path`` contains invalid character
 
         Examples:
-            >>> backend.exists('folder/name.ext', '1.0.0')
+            >>> backend.exists('name.ext', '1.0.0')
             True
 
         """
@@ -136,7 +137,7 @@ class Backend:
 
         Examples:
             >>> dst_root = audeer.path(tmp, 'dst')
-            >>> backend.get_archive('folder/name.zip', dst_root, '1.0.0')
+            >>> backend.get_archive('a.zip', dst_root, '1.0.0')
             ['src.pth']
 
         """
@@ -199,7 +200,7 @@ class Backend:
             >>> dst_path = audeer.path(tmp, 'dst.pth')
             >>> os.path.exists(dst_path)
             False
-            >>> _ = backend.get_file('folder/name.ext', dst_path, '1.0.0')
+            >>> _ = backend.get_file('name.ext', dst_path, '1.0.0')
             >>> os.path.exists(dst_path)
             True
 
@@ -263,7 +264,7 @@ class Backend:
             ValueError: if ``path`` contains invalid character
 
         Examples:
-            >>> backend.latest_version('folder/name.ext')
+            >>> backend.latest_version('name.ext')
             '2.0.0'
 
         """
@@ -295,6 +296,7 @@ class Backend:
             folder: str = '/',
             *,
             latest_version: bool = False,
+            pattern: str = None,
     ) -> typing.List[typing.Tuple[str, str]]:
         r"""List all files under folder.
 
@@ -309,6 +311,9 @@ class Backend:
             folder: folder on backend
             latest_version: if multiple versions of a file exist,
                 only include the latest
+            pattern: if not ``None``,
+                return only files matching the pattern string,
+                see :func:`fnmatch.fnmatch`
 
         Returns:
             list of tuples (path, version)
@@ -318,10 +323,14 @@ class Backend:
             ValueError: if ``folder`` contains invalid character
 
         Examples:
-            >>> backend.ls('folder')[:2]
-            [('folder/name.ext', '1.0.0'), ('folder/name.ext', '2.0.0')]
-            >>> backend.ls('folder', latest_version=True)[:1]
-            [('folder/name.ext', '2.0.0')]
+            >>> backend.ls()
+            [('a.zip', '1.0.0'), ('a/b.ext', '1.0.0'), ('name.ext', '1.0.0'), ('name.ext', '2.0.0')]
+            >>> backend.ls(pattern='*.ext')
+            [('a/b.ext', '1.0.0'), ('name.ext', '1.0.0'), ('name.ext', '2.0.0')]
+            >>> backend.ls(latest_version=True)
+            [('a.zip', '1.0.0'), ('a/b.ext', '1.0.0'), ('name.ext', '2.0.0')]
+            >>> backend.ls('a')
+            [('a/b.ext', '1.0.0')]
 
         """  # noqa: E501
         utils.check_path_for_allowed_chars(folder)
@@ -336,6 +345,9 @@ class Backend:
                 return []
             else:
                 utils.raise_file_not_found_error(folder)
+
+        if pattern:
+            paths = [(p, v) for p, v in paths if fnmatch.fnmatch(p, pattern)]
 
         if latest_version:
             # d[path] = ['1.0.0', '2.0.0']
@@ -389,11 +401,11 @@ class Backend:
             RuntimeError: if extension of ``dst_path`` is not supported
 
         Examples:
-            >>> backend.exists('folder/name.zip', '2.0.0')
+            >>> backend.exists('a.tar.gz', '1.0.0')
             False
             >>> files = ['src.pth']
-            >>> backend.put_archive(tmp, files, 'folder/name.zip', '2.0.0')
-            >>> backend.exists('folder/name.zip', '2.0.0')
+            >>> backend.put_archive(tmp, files, 'name.tar.gz', '1.0.0')
+            >>> backend.exists('name.tar.gz', '1.0.0')
             True
 
         """
@@ -506,10 +518,10 @@ class Backend:
             ValueError: if ``path`` contains invalid character
 
         Examples:
-            >>> backend.exists('folder/name.ext', '1.0.0')
+            >>> backend.exists('name.ext', '1.0.0')
             True
-            >>> backend.remove_file('folder/name.ext', '1.0.0')
-            >>> backend.exists('folder/name.ext', '1.0.0')
+            >>> backend.remove_file('name.ext', '1.0.0')
+            >>> backend.exists('name.ext', '1.0.0')
             False
 
         """
@@ -574,7 +586,7 @@ class Backend:
             ValueError: if ``path`` contains invalid character
 
         Examples:
-            >>> backend.versions('folder/name.ext')
+            >>> backend.versions('name.ext')
             ['1.0.0', '2.0.0']
 
         """
