@@ -59,7 +59,7 @@ class Backend:
             ValueError: if ``path`` contains invalid character
 
         Examples:
-            >>> backend.checksum('folder/name.ext', '1.0.0')
+            >>> backend.checksum('name.ext', '1.0.0')
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
@@ -95,7 +95,7 @@ class Backend:
             ValueError: if ``path`` contains invalid character
 
         Examples:
-            >>> backend.exists('folder/name.ext', '1.0.0')
+            >>> backend.exists('name.ext', '1.0.0')
             True
 
         """
@@ -137,7 +137,7 @@ class Backend:
 
         Examples:
             >>> dst_root = audeer.path(tmp, 'dst')
-            >>> backend.get_archive('folder/name.zip', dst_root, '1.0.0')
+            >>> backend.get_archive('a.zip', dst_root, '1.0.0')
             ['src.pth']
 
         """
@@ -200,7 +200,7 @@ class Backend:
             >>> dst_path = audeer.path(tmp, 'dst.pth')
             >>> os.path.exists(dst_path)
             False
-            >>> _ = backend.get_file('folder/name.ext', dst_path, '1.0.0')
+            >>> _ = backend.get_file('name.ext', dst_path, '1.0.0')
             >>> os.path.exists(dst_path)
             True
 
@@ -264,7 +264,7 @@ class Backend:
             ValueError: if ``path`` contains invalid character
 
         Examples:
-            >>> backend.latest_version('folder/name.ext')
+            >>> backend.latest_version('name.ext')
             '2.0.0'
 
         """
@@ -323,10 +323,14 @@ class Backend:
             ValueError: if ``folder`` contains invalid character
 
         Examples:
-            >>> backend.ls('folder')[:2]
-            [('folder/name.ext', '1.0.0'), ('folder/name.ext', '2.0.0')]
-            >>> backend.ls('folder', latest_version=True)[:1]
-            [('folder/name.ext', '2.0.0')]
+            >>> backend.ls()
+            [('a.zip', '1.0.0'), ('a/b.ext', '1.0.0'), ('name.ext', '1.0.0'), ('name.ext', '2.0.0')]
+            >>> backend.ls(pattern='*.ext')
+            [('a/b.ext', '1.0.0'), ('name.ext', '1.0.0'), ('name.ext', '2.0.0')]
+            >>> backend.ls(latest_version=True)
+            [('a.zip', '1.0.0'), ('a/b.ext', '1.0.0'), ('name.ext', '2.0.0')]
+            >>> backend.ls('a')
+            [('a/b.ext', '1.0.0')]
 
         """  # noqa: E501
         utils.check_path_for_allowed_chars(folder)
@@ -397,11 +401,11 @@ class Backend:
             RuntimeError: if extension of ``dst_path`` is not supported
 
         Examples:
-            >>> backend.exists('folder/name.zip', '2.0.0')
+            >>> backend.exists('a.tar.gz', '1.0.0')
             False
             >>> files = ['src.pth']
-            >>> backend.put_archive(tmp, files, 'folder/name.zip', '2.0.0')
-            >>> backend.exists('folder/name.zip', '2.0.0')
+            >>> backend.put_archive(tmp, files, 'name.tar.gz', '1.0.0')
+            >>> backend.exists('name.tar.gz', '1.0.0')
             True
 
         """
@@ -514,10 +518,10 @@ class Backend:
             ValueError: if ``path`` contains invalid character
 
         Examples:
-            >>> backend.exists('folder/name.ext', '1.0.0')
+            >>> backend.exists('name.ext', '1.0.0')
             True
-            >>> backend.remove_file('folder/name.ext', '1.0.0')
-            >>> backend.exists('folder/name.ext', '1.0.0')
+            >>> backend.remove_file('name.ext', '1.0.0')
+            >>> backend.exists('name.ext', '1.0.0')
             False
 
         """
@@ -582,7 +586,7 @@ class Backend:
             ValueError: if ``path`` contains invalid character
 
         Examples:
-            >>> backend.versions('folder/name.ext')
+            >>> backend.versions('name.ext')
             ['1.0.0', '2.0.0']
 
         """
