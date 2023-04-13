@@ -22,31 +22,24 @@ def backend(request):
     [
         (
             [],
-            'empty',
+            'empty.zip',
             None,
             '1.0.0',
             None,
         ),
         (
             'file.ext',
-            'not-empty',
+            'not-empty.zip',
             None,
             '1.0.0',
             None,
         ),
         (
             ['file.ext', 'dir/to/file.ext'],
-            'not-empty',
+            'not-empty.zip',
             'group',
             '1.0.0',
             None,
-        ),
-        (
-            ['file.ext', 'dir/to/file.ext'],
-            'not-empty',
-            'group',
-            '2.0.0',
-            'tmp',
         ),
         (
             ['file.ext', 'dir/to/file.ext'],
@@ -55,6 +48,22 @@ def backend(request):
             '2.0.0',
             'tmp',
         ),
+        (
+            ['file.ext', 'dir/to/file.ext'],
+            'not-empty.tar.gz',
+            'group',
+            '2.0.0',
+            'tmp',
+        ),
+        # extension not supported
+        pytest.param(
+            ['file.ext', 'dir/to/file.ext'],
+            'not-supported.bad',
+            'group',
+            '2.0.0',
+            'tmp',
+            marks=pytest.mark.xfail(raises=RuntimeError),
+        )
     ],
 )
 @pytest.mark.parametrize(
@@ -106,10 +115,7 @@ def test_archive(tmpdir, files, name, folder, version, tmp_root, backend):
         version,
         tmp_root=tmp_root,
     )
-    if archive.endswith('.zip'):
-        assert backend.exists(archive, version)
-    else:
-        assert backend.exists(archive + '.zip', version)
+    assert backend.exists(archive, version)
 
     # if a tmp_root is given but does not exist,
     # get_archive() should fail
@@ -147,7 +153,7 @@ def test_archive(tmpdir, files, name, folder, version, tmp_root, backend):
         pytest.param(  # backend does not exist
             'does-not-exist',
             None,
-            marks=pytest.mark.xfail(raises=ValueError)
+            marks=pytest.mark.xfail(raises=ValueError),
         )
     ]
 )

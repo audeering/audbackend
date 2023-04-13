@@ -111,13 +111,13 @@ class Backend:
             tmp_root: str = None,
             verbose: bool = False,
     ) -> typing.List[str]:
-        r"""Get ZIP archive from backend and extract.
+        r"""Get archive from backend and extract.
+
+        The archive type is derived from the extension of ``src_path``.
+        See :func:`audeer.create_archive` for supported extensions.
 
         Args:
-            src_path: path to ZIP archive on backend,
-                e.g. ``sub/archive.zip``.
-                If path does not end on ``.zip``
-                it is automatically extended to ``<src_path>.zip``
+            src_path: path to archive on backend
             dst_root: local destination directory
             version: version string
             tmp_root: directory under which archive is temporarily extracted.
@@ -131,6 +131,7 @@ class Backend:
             FileNotFoundError: if archive does not exist on backend
             FileNotFoundError: if ``tmp_root`` does not exist
             ValueError: if ``src_path`` contains invalid character
+            RuntimeError: if extension of ``src_path`` is not supported
 
         Examples:
             >>> dst_root = audeer.path(tmp, 'dst')
@@ -138,8 +139,6 @@ class Backend:
             ['src.pth']
 
         """
-        if not src_path.endswith('.zip'):
-            src_path += '.zip'
         utils.check_path_for_allowed_chars(src_path)
 
         with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
@@ -390,7 +389,10 @@ class Backend:
             tmp_root: str = None,
             verbose: bool = False,
     ):
-        r"""Create ZIP archive and put on backend.
+        r"""Create archive and put on backend.
+
+        The archive type is derived from the extension of ``dst_path``.
+        See :func:`audeer.create_archive` for supported extensions.
 
         The operation is silently skipped,
         if an archive with the same checksum
@@ -401,10 +403,8 @@ class Backend:
                 Only folders and files below ``src_root``
                 will be included into the archive
             files: relative path to file(s) from ``src_root``
-            dst_path: path to ZIP archive on backend,
-                e.g. ``sub/archive.zip``.
-                If path does not end on ``.zip``
-                it is automatically extended to ``<dst_path>.zip``
+            dst_path: path to archive on backend,
+                e.g. ``sub/archive.zip``
             version: version string
             tmp_root: directory under which archive is temporarily created.
                 Defaults to temporary directory of system
@@ -414,6 +414,7 @@ class Backend:
             FileNotFoundError: if one or more files do not exist
             FileNotFoundError: if ``tmp_root`` does not exist
             ValueError: if ``dst_path`` contains invalid character
+            RuntimeError: if extension of ``dst_path`` is not supported
 
         Examples:
             >>> backend.exists('folder/name.zip', '2.0.0')
@@ -424,8 +425,6 @@ class Backend:
             True
 
         """
-        if not dst_path.endswith('.zip'):
-            dst_path += '.zip'
         utils.check_path_for_allowed_chars(dst_path)
         src_root = audeer.safe_path(src_root)
 
