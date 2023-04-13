@@ -78,28 +78,6 @@ class Artifactory(Backend):
         src_path = self._path(src_path, version)
         audfactory.download(src_path, dst_path, verbose=verbose)
 
-    def _glob(
-            self,
-            pattern: str,
-            folder: typing.Optional[str],
-    ) -> typing.List[str]:
-        r"""Return matching files names."""
-        if folder is not None:
-            group_id = audfactory.path_to_group_id(folder)
-        else:
-            group_id = None
-        url = audfactory.url(
-            self.host,
-            repository=self.repository,
-            group_id=group_id,
-        )
-        path = audfactory.path(url)
-        try:
-            result = [str(x) for x in path.glob(pattern)]
-        except self._non_existing_path_error:
-            result = []
-        return result
-
     def _ls(
             self,
             folder: str,

@@ -1,4 +1,3 @@
-import glob
 import os
 import shutil
 import typing
@@ -71,21 +70,6 @@ class FileSystem(Backend):
         r"""Get file from backend."""
         src_path = self._path(src_path, version)
         shutil.copy(src_path, dst_path)
-
-    def _glob(
-            self,
-            pattern: str,
-            folder: typing.Optional[str],
-    ) -> typing.List[str]:
-        r"""Return matching files names."""
-        if folder is None:
-            folder = ''
-        pattern = pattern.replace(self.sep, os.path.sep)
-        folder = folder.replace(self.sep, os.path.sep)
-        root = os.path.join(self.host, self.repository)
-        path = os.path.join(root, folder, pattern)
-        matches = glob.glob(path, recursive=True)
-        return [os.path.join(root, folder, match) for match in matches]
 
     def _ls(
             self,
