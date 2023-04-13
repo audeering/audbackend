@@ -114,7 +114,7 @@ class Backend:
         r"""Get archive from backend and extract.
 
         The archive type is derived from the extension of ``src_path``.
-        See :func:`audeer.create_archive` for supported extensions.
+        See :func:`audeer.extract_archive` for supported extensions.
 
         Args:
             src_path: path to archive on backend
@@ -132,6 +132,7 @@ class Backend:
             FileNotFoundError: if ``tmp_root`` does not exist
             ValueError: if ``src_path`` contains invalid character
             RuntimeError: if extension of ``src_path`` is not supported
+            RuntimeError: if ``src_path`` is a malformed archive
 
         Examples:
             >>> dst_root = audeer.path(tmp, 'dst')
