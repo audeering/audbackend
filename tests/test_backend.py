@@ -174,7 +174,7 @@ def test_errors(tmpdir, backend):
     # Create local read-only folder
     folder_read_only = audeer.mkdir(audeer.path(tmpdir, 'read-only-folder'))
     if platform.system() == 'Windows':
-        os.system(f'attrib +r {folder_read_only}')
+        os.system(f'attrib -w {folder_read_only}')
     else:
         os.chmod(folder_read_only, stat.S_IRUSR)
 
