@@ -302,6 +302,8 @@ def test_errors(tmpdir, backend):
         "No such file or directory: "
         f"'{audeer.path(tmpdir, folder_missing, file)}'"
     )
+    if platform.system() == 'Windows':
+        error_msg = re.escape('[Errno 2] ' + error_msg)
     with pytest.raises(FileNotFoundError, match=error_msg):
         backend.put_archive(
             audeer.path(tmpdir, folder_missing),
