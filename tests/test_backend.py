@@ -256,8 +256,10 @@ def test_errors(tmpdir, backend):
     with pytest.raises(ValueError, match=error_invalid_char):
         backend.get_file(file_invalid_char, tmpdir, version)
     # no write permissions to `dst_path`
-    with pytest.raises(PermissionError, match=error_read_only):
-        backend.get_file(file, folder_read_only, version)
+    if not platform.system() == 'Windows':
+        # Currently we don't know how to provoke permission error on Windows
+        with pytest.raises(PermissionError, match=error_read_only):
+            backend.get_file(file, folder_read_only, version)
 
     # --- join ---
     # joined path contains invalid char
