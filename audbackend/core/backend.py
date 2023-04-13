@@ -131,9 +131,11 @@ class Backend:
         Raises:
             FileNotFoundError: if archive does not exist on backend
             FileNotFoundError: if ``tmp_root`` does not exist
-            ValueError: if ``src_path`` contains invalid character
+            PermissionError: if the user lacks write permissions
+                for ``dst_path``
             RuntimeError: if extension of ``src_path`` is not supported
             RuntimeError: if ``src_path`` is a malformed archive
+            ValueError: if ``src_path`` contains invalid character
 
         Examples:
             >>> dst_root = audeer.path(tmp, 'dst')
@@ -193,7 +195,9 @@ class Backend:
             full path to local file
 
         Raises:
-            FileNotFoundError: if file does not exist on backend
+            FileNotFoundError: if ``src_path`` does not exist on backend
+            PermissionError: if the user lacks write permissions
+                for ``dst_path``
             ValueError: if ``src_path`` contains invalid character
 
         Examples:
@@ -260,7 +264,7 @@ class Backend:
             version string
 
         Raises:
-            RuntimeError: if file does not exist on backend
+            RuntimeError: if ``path`` does not exist on backend
             ValueError: if ``path`` contains invalid character
 
         Examples:
@@ -471,7 +475,7 @@ class Backend:
             file path on backend
 
         Raises:
-            FileNotFoundError: if local file does not exist
+            FileNotFoundError: if ``src_path`` does not exist
             ValueError: if ``dst_path`` contains invalid character
 
         Examples:
@@ -514,7 +518,7 @@ class Backend:
             version: version string
 
         Raises:
-            FileNotFoundError: if file does not exist on backend
+            FileNotFoundError: if ``path`` does not exist on backend
             ValueError: if ``path`` contains invalid character
 
         Examples:
