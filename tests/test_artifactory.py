@@ -17,3 +17,7 @@ def test_exists(no_artifactory_access_rights):
     )
     version = '1.0.0'
     assert not BACKEND.exists(remote_file, version)
+
+
+def test_ls(no_artifactory_access_rights):
+    assert BACKEND.ls() == []
