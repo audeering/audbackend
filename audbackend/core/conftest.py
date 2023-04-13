@@ -20,7 +20,7 @@ def create_backend(doctest_namespace):
         )
         src_file = 'src.pth'
         src_path = audeer.touch(audeer.path(tmp, src_file))
-        backend.put_archive(tmp, [src_file], 'folder/name', '1.0.0')
+        backend.put_archive(tmp, [src_file], 'folder/name.zip', '1.0.0')
         for version in ['1.0.0', '2.0.0']:
             backend.put_file(src_path, 'folder/name.ext', version)
         doctest_namespace['backend'] = backend

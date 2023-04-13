@@ -113,9 +113,11 @@ class Backend:
     ) -> typing.List[str]:
         r"""Get archive from backend and extract.
 
+        The archive type is derived from the extension of ``src_path``.
+        See :func:`audeer.extract_archive` for supported extensions.
+
         Args:
-            src_path: path to archive on backend without extension,
-                e.g. ``media/archive1``
+            src_path: path to archive on backend
             dst_root: local destination directory
             version: version string
             tmp_root: directory under which archive is temporarily extracted.
@@ -129,14 +131,15 @@ class Backend:
             FileNotFoundError: if archive does not exist on backend
             FileNotFoundError: if ``tmp_root`` does not exist
             ValueError: if ``src_path`` contains invalid character
+            RuntimeError: if extension of ``src_path`` is not supported
+            RuntimeError: if ``src_path`` is a malformed archive
 
         Examples:
             >>> dst_root = audeer.path(tmp, 'dst')
-            >>> backend.get_archive('folder/name', dst_root, '1.0.0')
+            >>> backend.get_archive('folder/name.zip', dst_root, '1.0.0')
             ['src.pth']
 
         """
-        src_path += '.zip'
         utils.check_path_for_allowed_chars(src_path)
 
         with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
@@ -361,6 +364,9 @@ class Backend:
     ):
         r"""Create archive and put on backend.
 
+        The archive type is derived from the extension of ``dst_path``.
+        See :func:`audeer.create_archive` for supported extensions.
+
         The operation is silently skipped,
         if an archive with the same checksum
         already exists on the backend.
@@ -370,8 +376,7 @@ class Backend:
                 Only folders and files below ``src_root``
                 will be included into the archive
             files: relative path to file(s) from ``src_root``
-            dst_path: path to archive on backend without extension,
-                e.g. ``media/archive1``
+            dst_path: path to archive on backend
             version: version string
             tmp_root: directory under which archive is temporarily created.
                 Defaults to temporary directory of system
@@ -381,17 +386,17 @@ class Backend:
             FileNotFoundError: if one or more files do not exist
             FileNotFoundError: if ``tmp_root`` does not exist
             ValueError: if ``dst_path`` contains invalid character
+            RuntimeError: if extension of ``dst_path`` is not supported
 
         Examples:
             >>> backend.exists('folder/name.zip', '2.0.0')
             False
             >>> files = ['src.pth']
-            >>> backend.put_archive(tmp, files, 'folder/name', '2.0.0')
+            >>> backend.put_archive(tmp, files, 'folder/name.zip', '2.0.0')
             >>> backend.exists('folder/name.zip', '2.0.0')
             True
 
         """
-        dst_path += '.zip'
         utils.check_path_for_allowed_chars(dst_path)
         src_root = audeer.safe_path(src_root)
 

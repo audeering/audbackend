@@ -22,28 +22,35 @@ def backend(request):
     [
         (
             [],
-            'empty',
+            'empty.zip',
             None,
             '1.0.0',
             None,
         ),
         (
             'file.ext',
-            'not-empty',
+            'not-empty.zip',
             None,
             '1.0.0',
             None,
         ),
         (
             ['file.ext', 'dir/to/file.ext'],
-            'not-empty',
+            'not-empty.zip',
             'group',
             '1.0.0',
             None,
         ),
         (
             ['file.ext', 'dir/to/file.ext'],
-            'not-empty',
+            'not-empty.zip',
+            'group',
+            '2.0.0',
+            'tmp',
+        ),
+        (
+            ['file.ext', 'dir/to/file.ext'],
+            'not-empty.tar.gz',
             'group',
             '2.0.0',
             'tmp',
@@ -99,7 +106,7 @@ def test_archive(tmpdir, files, name, folder, version, tmp_root, backend):
         version,
         tmp_root=tmp_root,
     )
-    assert backend.exists(archive + '.zip', version)
+    assert backend.exists(archive, version)
 
     # if a tmp_root is given but does not exist,
     # get_archive() should fail
@@ -137,7 +144,7 @@ def test_archive(tmpdir, files, name, folder, version, tmp_root, backend):
         pytest.param(  # backend does not exist
             'does-not-exist',
             None,
-            marks=pytest.mark.xfail(raises=ValueError)
+            marks=pytest.mark.xfail(raises=ValueError),
         )
     ]
 )
@@ -153,55 +160,93 @@ def test_create(name, cls):
 )
 def test_errors(tmpdir, backend):
 
-    file_name = 'does-not-exist'
-    local_file = os.path.join(tmpdir, file_name)
-    remote_file = 'does-not-exist'
-
-    error_msg = rf"Invalid path name '{remote_file}\?', " \
-                rf"allowed characters are '\[A-Za-z0-9/\._-\]\+'"
-    with pytest.raises(ValueError, match=error_msg):
-        backend.put_file(
-            local_file,
-            remote_file + '?',
-            '1.0.0',
-        )
     with pytest.raises(FileNotFoundError):
-        backend.put_file(
-            local_file,
-            remote_file,
+        backend.checksum(
+            'missing.txt',
             '1.0.0',
         )
+
+    with pytest.raises(FileNotFoundError):
+        backend.get_archive(
+            'missing.zip',
+            tmpdir,
+            '1.0.0',
+        )
+
+    backend.put_file(
+        audeer.touch(audeer.path(tmpdir, 'archive.bad')),
+        'archive.bad',
+        '1.0.0',
+    )
+    error_msg = 'You can only extract'
+    with pytest.raises(RuntimeError, match=error_msg):
+        backend.get_archive(
+            'archive.bad',  # extension not supported
+            tmpdir,
+            '1.0.0',
+        )
+
+    backend.put_file(
+        audeer.touch(audeer.path(tmpdir, 'malformed.zip')),
+        'malformed.zip',
+        '1.0.0',
+    )
+    error_msg = 'Broken archive'
+    with pytest.raises(RuntimeError, match=error_msg):
+        backend.get_archive(
+            'malformed.zip',  # malformed archive
+            tmpdir,
+            '1.0.0',
+        )
+
+    with pytest.raises(FileNotFoundError):
+        backend.get_file(
+            'missing.txt',
+            'missing.txt',
+            '1.0.0',
+        )
+
     with pytest.raises(FileNotFoundError):
         backend.put_archive(
             tmpdir,
-            'archive',
-            remote_file,
+            'missing.txt',
+            'archive.zip',
             '1.0.0',
         )
-    with pytest.raises(FileNotFoundError):
-        backend.get_file(
-            remote_file,
-            local_file,
-            '1.0.0',
-        )
-    with pytest.raises(FileNotFoundError):
-        backend.get_archive(
-            remote_file,
+
+    error_msg = 'You can only create'
+    with pytest.raises(RuntimeError, match=error_msg):
+        backend.put_archive(
             tmpdir,
+            [],
+            'archive.bad',  # extension not supported
             '1.0.0',
         )
+
     with pytest.raises(FileNotFoundError):
-        backend.checksum(
-            remote_file,
+        backend.put_file(
+            'missing.txt',
+            'missing.txt',
             '1.0.0',
         )
+
+    error_msg = r"Invalid path name 'missing.txt\?', " \
+                r"allowed characters are '\[A-Za-z0-9/\._-\]\+'"
+    with pytest.raises(ValueError, match=error_msg):
+        backend.put_file(
+            'missing.txt',
+            'missing.txt' + '?',
+            '1.0.0',
+        )
+
+    with pytest.raises(FileNotFoundError):
+        backend.ls('missing.txt')
+
     with pytest.raises(FileNotFoundError):
         backend.remove_file(
-            remote_file,
+            'missing.txt',
             '1.0.0',
         )
-    with pytest.raises(FileNotFoundError):
-        backend.ls(remote_file)
 
 
 @pytest.mark.parametrize(
