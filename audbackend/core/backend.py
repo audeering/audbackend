@@ -114,8 +114,10 @@ class Backend:
         r"""Get archive from backend and extract.
 
         Args:
-            src_path: path to archive on backend without extension,
-                e.g. ``media/archive1``
+            src_path: path to archive on backend,
+                e.g. ``media/archive1.zip``.
+                If path does not end on ``.zip``
+                it is automatically extended to ``<src_path>.zip``
             dst_root: local destination directory
             version: version string
             tmp_root: directory under which archive is temporarily extracted.
@@ -132,11 +134,12 @@ class Backend:
 
         Examples:
             >>> dst_root = audeer.path(tmp, 'dst')
-            >>> backend.get_archive('folder/name', dst_root, '1.0.0')
+            >>> backend.get_archive('folder/name.zip', dst_root, '1.0.0')
             ['src.pth']
 
         """
-        src_path += '.zip'
+        if not src_path.endswith('.zip'):
+            src_path += '.zip'
         utils.check_path_for_allowed_chars(src_path)
 
         with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
@@ -398,8 +401,10 @@ class Backend:
                 Only folders and files below ``src_root``
                 will be included into the archive
             files: relative path to file(s) from ``src_root``
-            dst_path: path to archive on backend without extension,
-                e.g. ``media/archive1``
+            dst_path: path to archive on backend,
+                e.g. ``media/archive1.zip``.
+                If path does not end on ``.zip``
+                it is automatically extended to ``<dst_path>.zip``
             version: version string
             tmp_root: directory under which archive is temporarily created.
                 Defaults to temporary directory of system
@@ -414,12 +419,13 @@ class Backend:
             >>> backend.exists('folder/name.zip', '2.0.0')
             False
             >>> files = ['src.pth']
-            >>> backend.put_archive(tmp, files, 'folder/name', '2.0.0')
+            >>> backend.put_archive(tmp, files, 'folder/name.zip', '2.0.0')
             >>> backend.exists('folder/name.zip', '2.0.0')
             True
 
         """
-        dst_path += '.zip'
+        if not dst_path.endswith('.zip'):
+            dst_path += '.zip'
         utils.check_path_for_allowed_chars(dst_path)
         src_root = audeer.safe_path(src_root)
 
