@@ -48,6 +48,13 @@ def backend(request):
             '2.0.0',
             'tmp',
         ),
+        (
+            ['file.ext', 'dir/to/file.ext'],
+            'not-empty.zip',
+            'group',
+            '2.0.0',
+            'tmp',
+        ),
     ],
 )
 @pytest.mark.parametrize(
@@ -99,7 +106,10 @@ def test_archive(tmpdir, files, name, folder, version, tmp_root, backend):
         version,
         tmp_root=tmp_root,
     )
-    assert backend.exists(archive + '.zip', version)
+    if archive.endswith('.zip'):
+        assert backend.exists(archive, version)
+    else:
+        assert backend.exists(archive + '.zip', version)
 
     # if a tmp_root is given but does not exist,
     # get_archive() should fail
