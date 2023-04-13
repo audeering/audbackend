@@ -1,4 +1,6 @@
 import os
+import re
+import stat
 
 import pytest
 
@@ -160,93 +162,187 @@ def test_create(name, cls):
 )
 def test_errors(tmpdir, backend):
 
-    with pytest.raises(FileNotFoundError):
-        backend.checksum(
-            'missing.txt',
-            '1.0.0',
-        )
+    # Ensure we have one file and one archive published on the backend
+    archive = 'archive.zip'
+    file = 'file.txt'
+    version = '1.0.0'
+    src_path = audeer.touch(audeer.path(tmpdir, file))
+    backend.put_file(src_path, file, version)
+    backend.put_archive(tmpdir, [file], archive, version)
 
-    with pytest.raises(FileNotFoundError):
-        backend.get_archive(
-            'missing.zip',
-            tmpdir,
-            '1.0.0',
-        )
+    # Create local read-only folder
+    folder_read_only = audeer.mkdir(audeer.path(tmpdir, 'read-only-folder'))
+    os.chmod(folder_read_only, stat.S_IRUSR)
 
-    backend.put_file(
-        audeer.touch(audeer.path(tmpdir, 'archive.bad')),
-        'archive.bad',
-        '1.0.0',
+    # File names and error messages
+    # for common errors
+    archive_invalid_extension = 'archive.bad'
+    file_missing = 'missing.txt'
+    file_invalid_char = 'missing.txt?'
+    folder_missing = 'missing/'
+    error_invalid_char = re.escape(
+        f"Invalid path name '{file_invalid_char}', "
+        "allowed characters are '[A-Za-z0-9/._-]+'."
     )
-    error_msg = 'You can only extract'
-    with pytest.raises(RuntimeError, match=error_msg):
-        backend.get_archive(
-            'archive.bad',  # extension not supported
-            tmpdir,
-            '1.0.0',
-        )
+    error_missing = (
+        f"No such file or directory: '{file_missing} with version {version}'"
+    )
+    error_missing_folder = (
+        f"No such file or directory: '{folder_missing}'"
+    )
+    error_read_only = (
+        f"Permission denied: '{os.path.join(folder_read_only, file)}'"
+    )
 
+    # --- checksum ---
+    # `path` missing
+    with pytest.raises(FileNotFoundError, match=error_missing):
+        backend.checksum(file_missing, version)
+    # `path` contains invalid character
+    with pytest.raises(ValueError, match=error_invalid_char):
+        backend.checksum(file_invalid_char, version)
+
+    # --- exists ---
+    # `path` contains invalid character
+    with pytest.raises(ValueError, match=error_invalid_char):
+        backend.exists(file_invalid_char, version)
+
+    # --- get_archive ---
+    # `src_path` missing
+    with pytest.raises(FileNotFoundError, match=error_missing):
+        backend.get_archive(file_missing, tmpdir, version)
+    # `src_path` contains invalid character
+    with pytest.raises(ValueError, match=error_invalid_char):
+        backend.get_archive(file_invalid_char, tmpdir, version)
+    # `tmp_root` does not exist
+    error_msg = "No such file or directory: 'non-existing/..."
+    with pytest.raises(FileNotFoundError, match=error_msg):
+        backend.get_archive(archive, tmpdir, version, tmp_root='non-existing')
+    # extension of `src_path` is not supported
+    error_msg = 'You can only extract ZIP and TAR.GZ files, ...'
+    backend.put_file(
+        audeer.touch(audeer.path(tmpdir, archive_invalid_extension)),
+        archive_invalid_extension,
+        version,
+    )
+    with pytest.raises(RuntimeError, match=error_msg):
+        backend.get_archive(archive_invalid_extension, tmpdir, version)
+    # `src_path` is a malformed archive
+    error_msg = 'Broken archive: '
     backend.put_file(
         audeer.touch(audeer.path(tmpdir, 'malformed.zip')),
         'malformed.zip',
-        '1.0.0',
+        version,
     )
-    error_msg = 'Broken archive'
     with pytest.raises(RuntimeError, match=error_msg):
-        backend.get_archive(
-            'malformed.zip',  # malformed archive
-            tmpdir,
-            '1.0.0',
-        )
+        backend.get_archive('malformed.zip', tmpdir, version)
+    # no write permissions to `dst_path`
+    with pytest.raises(PermissionError, match=error_read_only):
+        backend.get_archive(archive, folder_read_only, version)
 
-    with pytest.raises(FileNotFoundError):
-        backend.get_file(
-            'missing.txt',
-            'missing.txt',
-            '1.0.0',
-        )
+    # --- get_file ---
+    # `src_path` missing
+    with pytest.raises(FileNotFoundError, match=error_missing):
+        backend.get_file(file_missing, file_missing, version)
+    # `src_path` contains invalid character
+    with pytest.raises(ValueError, match=error_invalid_char):
+        backend.get_file(file_invalid_char, tmpdir, version)
+    # no write permissions to `dst_path`
+    with pytest.raises(PermissionError, match=error_read_only):
+        backend.get_file(file, folder_read_only, version)
 
-    with pytest.raises(FileNotFoundError):
-        backend.put_archive(
-            tmpdir,
-            'missing.txt',
-            'archive.zip',
-            '1.0.0',
-        )
-
-    error_msg = 'You can only create'
-    with pytest.raises(RuntimeError, match=error_msg):
-        backend.put_archive(
-            tmpdir,
-            [],
-            'archive.bad',  # extension not supported
-            '1.0.0',
-        )
-
-    with pytest.raises(FileNotFoundError):
-        backend.put_file(
-            'missing.txt',
-            'missing.txt',
-            '1.0.0',
-        )
-
-    error_msg = r"Invalid path name 'missing.txt\?', " \
-                r"allowed characters are '\[A-Za-z0-9/\._-\]\+'"
+    # --- join ---
+    # joined path contains invalid char
+    error_msg = re.escape(
+        f"Invalid path name '{file_invalid_char}/{file}', "
+        "allowed characters are '[A-Za-z0-9/._-]+'."
+    )
     with pytest.raises(ValueError, match=error_msg):
-        backend.put_file(
-            'missing.txt',
-            'missing.txt' + '?',
-            '1.0.0',
-        )
+        backend.join(file_invalid_char, file)
+    error_msg = re.escape(
+        f"Invalid path name '{file}/{file_invalid_char}', "
+        "allowed characters are '[A-Za-z0-9/._-]+'."
+    )
+    with pytest.raises(ValueError, match=error_msg):
+        backend.join(file, file_invalid_char)
 
-    with pytest.raises(FileNotFoundError):
-        backend.ls('missing.txt')
+    # --- latest_version ---
+    # `path` missing
+    error_msg = (
+        f"Cannot find a version for '{file_missing}' "
+        f"in '{backend.repository}'"
+    )
+    with pytest.raises(RuntimeError, match=error_msg):
+        backend.latest_version(file_missing)
+    # `path` contains invalid character
+    with pytest.raises(ValueError, match=error_invalid_char):
+        backend.latest_version(file_invalid_char)
 
-    with pytest.raises(FileNotFoundError):
-        backend.remove_file(
-            'missing.txt',
-            '1.0.0',
+    # --- ls ---
+    # `path` missing
+    with pytest.raises(FileNotFoundError, match=error_missing_folder):
+        backend.ls(folder_missing)
+    # `path` contains invalid character
+    with pytest.raises(ValueError, match=error_invalid_char):
+        backend.ls(file_invalid_char)
+
+    # --- put_archive ---
+    # `src_root` missing
+    error_msg = (
+        "No such file or directory: "
+        f"'{audeer.path(tmpdir, folder_missing, file)}'"
+    )
+    with pytest.raises(FileNotFoundError, match=error_msg):
+        backend.put_archive(
+            audeer.path(tmpdir, folder_missing),
+            file,
+            archive,
+            version,
         )
+    # `files` missing
+    error_msg = (
+        "No such file or directory: "
+        f"'{audeer.path(tmpdir, file_missing)}'"
+    )
+    with pytest.raises(FileNotFoundError, match=error_msg):
+        backend.put_archive(tmpdir, file_missing, archive, version)
+    # `dst_path` contains invalid character
+    with pytest.raises(ValueError, match=error_invalid_char):
+        backend.put_archive(tmpdir, file, file_invalid_char, version)
+    # extension of `dst_path` is not supported
+    error_msg = 'You can only create a ZIP or TAR.GZ archive, not ...'
+    with pytest.raises(RuntimeError, match=error_msg):
+        backend.put_archive(tmpdir, file, archive_invalid_extension, version)
+
+    # --- put_file ---
+    # `src_path` does not exists
+    error_msg = (
+        "No such file or directory: "
+        f"'{audeer.path(tmpdir, file_missing)}'"
+    )
+    with pytest.raises(FileNotFoundError, match=error_msg):
+        backend.put_file(audeer.path(tmpdir, file_missing), file, version)
+    # `dst_path` contains invalid character
+    with pytest.raises(ValueError, match=error_invalid_char):
+        backend.put_file(src_path, file_invalid_char, version)
+
+    # --- remove_file ---
+    # `path` does not exists
+    with pytest.raises(FileNotFoundError, match=error_missing):
+        backend.remove_file(file_missing, version)
+    # `path` contains invalid character
+    with pytest.raises(ValueError, match=error_invalid_char):
+        backend.remove_file(file_invalid_char, version)
+
+    # --- split ---
+    # `path` contains invalid character
+    with pytest.raises(ValueError, match=error_invalid_char):
+        backend.split(file_invalid_char)
+
+    # --- versions ---
+    # `path` contains invalid character
+    with pytest.raises(ValueError, match=error_invalid_char):
+        backend.versions(file_invalid_char)
 
 
 @pytest.mark.parametrize(
