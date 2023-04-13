@@ -307,10 +307,7 @@ def test_errors(tmpdir, backend):
             version,
         )
     # `files` missing
-    error_msg = re.escape(
-        "No such file or directory: "
-        f"'{audeer.path(tmpdir, file_missing)}'"
-    )
+    error_msg = 'No such file or directory: ...'
     with pytest.raises(FileNotFoundError, match=error_msg):
         backend.put_archive(tmpdir, file_missing, archive, version)
     # `dst_path` contains invalid character
@@ -323,10 +320,7 @@ def test_errors(tmpdir, backend):
 
     # --- put_file ---
     # `src_path` does not exists
-    error_msg = re.escape(
-        "No such file or directory: "
-        f"'{audeer.path(tmpdir, file_missing)}'"
-    )
+    error_msg = 'No such file or directory: ...'
     with pytest.raises(FileNotFoundError, match=error_msg):
         backend.put_file(audeer.path(tmpdir, file_missing), file, version)
     # `dst_path` contains invalid character
