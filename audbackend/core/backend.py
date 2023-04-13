@@ -320,7 +320,7 @@ class Backend:
             folder: str = '/',
             *,
             latest_version: bool = False,
-    ) -> typing.List[typing.Tuple[str, str, str]]:
+    ) -> typing.List[typing.Tuple[str, str]]:
         r"""List all files under folder.
 
         Returns a sorted list of tuples
