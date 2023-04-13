@@ -298,7 +298,7 @@ def test_errors(tmpdir, backend):
 
     # --- put_archive ---
     # `src_root` missing
-    error_msg = re.escape(
+    error_msg = (
         "No such file or directory: "
         f"'{audeer.path(tmpdir, folder_missing, file)}'"
     )
