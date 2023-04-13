@@ -1,3 +1,4 @@
+import fnmatch
 import os
 import tempfile
 import typing
@@ -295,6 +296,7 @@ class Backend:
             folder: str = '/',
             *,
             latest_version: bool = False,
+            pattern: str = None,
     ) -> typing.List[typing.Tuple[str, str]]:
         r"""List all files under folder.
 
@@ -309,6 +311,9 @@ class Backend:
             folder: folder on backend
             latest_version: if multiple versions of a file exist,
                 only include the latest
+            pattern: if not ``None``,
+                return only files matching the pattern string,
+                see :func:`fnmatch.fnmatch`
 
         Returns:
             list of tuples (path, version)
@@ -336,6 +341,9 @@ class Backend:
                 return []
             else:
                 utils.raise_file_not_found_error(folder)
+
+        if pattern:
+            paths = [(p, v) for p, v in paths if fnmatch.fnmatch(p, pattern)]
 
         if latest_version:
             # d[path] = ['1.0.0', '2.0.0']
