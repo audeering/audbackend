@@ -403,8 +403,7 @@ class Backend:
                 Only folders and files below ``src_root``
                 will be included into the archive
             files: relative path to file(s) from ``src_root``
-            dst_path: path to archive on backend,
-                e.g. ``sub/archive.zip``
+            dst_path: path to archive on backend
             version: version string
             tmp_root: directory under which archive is temporarily created.
                 Defaults to temporary directory of system
