@@ -278,7 +278,7 @@ def test_errors(tmpdir, backend):
 
     # --- latest_version ---
     # `path` missing
-    error_msg = (
+    error_msg = re.escape(
         f"Cannot find a version for '{file_missing}' "
         f"in '{backend.repository}'"
     )
@@ -298,7 +298,7 @@ def test_errors(tmpdir, backend):
 
     # --- put_archive ---
     # `src_root` missing
-    error_msg = (
+    error_msg = re.escape(
         "No such file or directory: "
         f"'{audeer.path(tmpdir, folder_missing, file)}'"
     )
@@ -310,7 +310,7 @@ def test_errors(tmpdir, backend):
             version,
         )
     # `files` missing
-    error_msg = (
+    error_msg = re.escape(
         "No such file or directory: "
         f"'{audeer.path(tmpdir, file_missing)}'"
     )
@@ -326,7 +326,7 @@ def test_errors(tmpdir, backend):
 
     # --- put_file ---
     # `src_path` does not exists
-    error_msg = (
+    error_msg = re.escape(
         "No such file or directory: "
         f"'{audeer.path(tmpdir, file_missing)}'"
     )
