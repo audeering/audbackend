@@ -111,11 +111,11 @@ class Backend:
             tmp_root: str = None,
             verbose: bool = False,
     ) -> typing.List[str]:
-        r"""Get archive from backend and extract.
+        r"""Get ZIP archive from backend and extract.
 
         Args:
-            src_path: path to archive on backend,
-                e.g. ``media/archive1.zip``.
+            src_path: path to ZIP archive on backend,
+                e.g. ``sub/archive.zip``.
                 If path does not end on ``.zip``
                 it is automatically extended to ``<src_path>.zip``
             dst_root: local destination directory
@@ -390,7 +390,7 @@ class Backend:
             tmp_root: str = None,
             verbose: bool = False,
     ):
-        r"""Create archive and put on backend.
+        r"""Create ZIP archive and put on backend.
 
         The operation is silently skipped,
         if an archive with the same checksum
@@ -401,8 +401,8 @@ class Backend:
                 Only folders and files below ``src_root``
                 will be included into the archive
             files: relative path to file(s) from ``src_root``
-            dst_path: path to archive on backend,
-                e.g. ``media/archive1.zip``.
+            dst_path: path to ZIP archive on backend,
+                e.g. ``sub/archive.zip``.
                 If path does not end on ``.zip``
                 it is automatically extended to ``<dst_path>.zip``
             version: version string
