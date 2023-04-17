@@ -225,7 +225,7 @@ class Backend:
         if (
                 not os.access(dst_root, os.W_OK) or
                 (os.path.exists(dst_path) and not os.access(dst_root, os.W_OK))
-        ):
+        ):  # pragma: no cover
             msg = f"Permission denied: '{dst_path}'"
             raise PermissionError(msg)
 
