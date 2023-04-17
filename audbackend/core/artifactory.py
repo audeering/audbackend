@@ -6,6 +6,7 @@ import typing
 
 import audfactory
 
+from audbackend.core import utils
 from audbackend.core.backend import Backend
 
 
@@ -88,12 +89,12 @@ class Artifactory(Backend):
 
         """
         folder = self._folder(folder)
-
         folder = audfactory.path(folder)
-        try:
-            paths = [str(x) for x in folder.glob("**/*") if x.is_file()]
-        except self._non_existing_path_error:  # pragma: nocover
-            paths = []
+
+        if not folder.exists():
+            utils.raise_file_not_found_error(str(folder))
+
+        paths = [str(x) for x in folder.glob("**/*") if x.is_file()]
 
         # <host>/<repository>/<folder>/<name>
         # ->

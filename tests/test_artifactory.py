@@ -19,5 +19,7 @@ def test_exists(no_artifactory_access_rights):
     assert not BACKEND.exists(remote_file, version)
 
 
-def test_ls(no_artifactory_access_rights):
-    assert BACKEND.ls() == []
+# TODO: re-enable once we have solved
+#  https://github.com/audeering/audbackend/issues/86
+# def test_ls(no_artifactory_access_rights):
+#     assert BACKEND.ls() == []

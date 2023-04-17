@@ -6,9 +6,22 @@ import typing
 
 import audeer
 
+from audbackend.core.errors import BackendError
+
 
 BACKEND_ALLOWED_CHARS = '[A-Za-z0-9/._-]+'
 BACKEND_ALLOWED_CHARS_COMPILED = re.compile(BACKEND_ALLOWED_CHARS)
+
+
+def call_function_on_backend(
+        function: typing.Callable,
+        *args,
+        **kwargs,
+) -> typing.Any:
+    try:
+        return function(*args, **kwargs)
+    except Exception as ex:
+        raise BackendError(ex)
 
 
 def check_path_for_allowed_chars(path):
@@ -57,14 +70,7 @@ def md5_read_chunk(
         yield data
 
 
-def raise_file_not_found_error(
-        path: str,
-        *,
-        version: str = None,
-):
-    if version:
-        path = f'{path} with version {version}'
-
+def raise_file_not_found_error(path: str):
     raise FileNotFoundError(
         errno.ENOENT,
         os.strerror(errno.ENOENT),
