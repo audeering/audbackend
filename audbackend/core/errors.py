@@ -4,6 +4,13 @@ class BackendError(Exception):
     Args:
         exception: exception raised by backend
 
+    Examples:
+        >>> try:
+        ...     backend.checksum('does-not-exist', '1.0.0')
+        ... except BackendError as ex:
+        ...     ex.exception
+        FileNotFoundError(2, 'No such file or directory')
+
     """
     def __init__(
             self,
