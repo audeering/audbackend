@@ -64,8 +64,6 @@ class Backend:
 
         """
         utils.check_path_for_allowed_chars(path)
-        # if not self._exists(path, version):
-        #     utils.raise_file_not_found_error(path, version=version)
 
         return utils.call_function_on_backend(
             self._checksum,
