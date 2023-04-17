@@ -34,6 +34,7 @@ the following classes and functions are available.
     :toctree:
     :nosignatures:
 
+    BackendError
     Repository
     available
     create
