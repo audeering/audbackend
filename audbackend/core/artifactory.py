@@ -83,11 +83,8 @@ class Artifactory(Backend):
             self,
             folder: str,
     ):
-        r"""List all files under folder.
+        r"""List all files under folder."""
 
-        Return an empty list if no files match or folder does not exist.
-
-        """
         folder = self._folder(folder)
         folder = audfactory.path(folder)
 
