@@ -412,8 +412,8 @@ class Backend:
             FileNotFoundError: if ``src_root``,
                 ``tmp_root``,
                 or one or more ``files`` do not exist
-            ValueError: if ``dst_path`` contains invalid character
             RuntimeError: if extension of ``dst_path`` is not supported
+            ValueError: if ``dst_path`` contains invalid character
 
         Examples:
             >>> backend.exists('a.tar.gz', '1.0.0')
