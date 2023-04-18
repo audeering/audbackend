@@ -409,7 +409,7 @@ class Backend:
 
         Raises:
             BackendError: if an error is raised on the backend
-            FileNotFoundError: if one or more files do not exist
+            FileNotFoundError: if one or more ``files`` do not exist
             FileNotFoundError: if ``tmp_root`` does not exist
             ValueError: if ``dst_path`` contains invalid character
             RuntimeError: if extension of ``dst_path`` is not supported
