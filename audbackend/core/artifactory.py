@@ -1,7 +1,5 @@
-import dohq_artifactory
 import os
 
-import requests
 import typing
 
 import audfactory
@@ -44,10 +42,8 @@ class Artifactory(Backend):
     ) -> bool:
         r"""Check if file exists on backend."""
         path = self._path(path, version)
-        try:
-            return audfactory.path(path).exists()
-        except self._non_existing_path_error:
-            return False
+        path = audfactory.path(path)
+        return path.exists()
 
     def _folder(
             self,
@@ -170,23 +166,3 @@ class Artifactory(Backend):
         vs = [v for v in vs if self._exists(path, v)]
 
         return vs
-
-    _non_existing_path_error = (
-            RuntimeError,
-            requests.exceptions.HTTPError,
-            dohq_artifactory.exception.ArtifactoryException,
-    )
-    r"""Error expected for non-existing paths.
-
-    If a user has no permission to a given path
-    or the path does not exists
-    :func:`audfactory.path` might return a
-    ``RuntimeError``,
-    ``requests.exceptions.HTTPError``
-    for ``dohq_artifactory<0.8``
-    or
-    ``artifactory.exception.ArtifactoryException``
-    for ``dohq_artifactory>=0.8``.
-    So we better catch all of them.
-
-    """

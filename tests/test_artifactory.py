@@ -16,7 +16,8 @@ def test_exists(no_artifactory_access_rights):
         'file.txt',
     )
     version = '1.0.0'
-    assert not BACKEND.exists(remote_file, version)
+    with pytest.raises(audbackend.BackendError):
+        BACKEND.exists(remote_file, version)
 
 
 # TODO: re-enable once we have solved
