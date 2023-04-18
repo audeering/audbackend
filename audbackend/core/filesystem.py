@@ -23,7 +23,7 @@ class FileSystem(Backend):
             host: str,
             repository: str,
     ):
-        super().__init__(audeer.safe_path(host), repository)
+        super().__init__(audeer.path(host), repository)
 
     def _checksum(
             self,
@@ -75,12 +75,13 @@ class FileSystem(Backend):
             self,
             folder: str,
     ):
-        r"""List all files under folder.
+        r"""List all files under folder."""
 
-        Return an empty list if no files match or folder does not exist.
-
-        """
         folder = self._folder(folder)
+
+        if not os.path.exists(folder):
+            utils.raise_file_not_found_error(folder)
+
         paths = audeer.list_file_names(folder, recursive=True)
 
         # <host>/<repository>/<folder>/<version>/<name>

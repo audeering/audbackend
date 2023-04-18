@@ -55,7 +55,7 @@ class Backend:
             MD5 checksum
 
         Raises:
-            FileNotFoundError: if file does not exist on backend
+            BackendError: if an error is raised on the backend
             ValueError: if ``path`` contains invalid character
 
         Examples:
@@ -64,10 +64,12 @@ class Backend:
 
         """
         utils.check_path_for_allowed_chars(path)
-        if not self._exists(path, version):
-            utils.raise_file_not_found_error(path, version=version)
 
-        return self._checksum(path, version)
+        return utils.call_function_on_backend(
+            self._checksum,
+            path,
+            version,
+        )
 
     def _exists(
             self,
@@ -92,6 +94,7 @@ class Backend:
             ``True`` if file exists
 
         Raises:
+            BackendError: if an error is raised on the backend
             ValueError: if ``path`` contains invalid character
 
         Examples:
@@ -101,7 +104,11 @@ class Backend:
         """
         utils.check_path_for_allowed_chars(path)
 
-        return self._exists(path, version)
+        return utils.call_function_on_backend(
+            self._exists,
+            path,
+            version,
+        )
 
     def get_archive(
             self,
@@ -129,7 +136,7 @@ class Backend:
             extracted files
 
         Raises:
-            FileNotFoundError: if archive does not exist on backend
+            BackendError: if an error is raised on the backend
             FileNotFoundError: if ``tmp_root`` does not exist
             PermissionError: if the user lacks write permissions
                 for ``dst_path``
@@ -195,7 +202,7 @@ class Backend:
             full path to local file
 
         Raises:
-            FileNotFoundError: if ``src_path`` does not exist on backend
+            BackendError: if an error is raised on the backend
             PermissionError: if the user lacks write permissions
                 for ``dst_path``
             ValueError: if ``src_path`` contains invalid character
@@ -210,13 +217,25 @@ class Backend:
 
         """
         utils.check_path_for_allowed_chars(src_path)
-        if not self._exists(src_path, version):
-            utils.raise_file_not_found_error(src_path, version=version)
 
-        dst_path = audeer.safe_path(dst_path)
-        audeer.mkdir(os.path.dirname(dst_path))
+        dst_path = audeer.path(dst_path)
+        dst_root = os.path.dirname(dst_path)
 
-        self._get_file(src_path, dst_path, version, verbose)
+        audeer.mkdir(dst_root)
+        if (
+                not os.access(dst_root, os.W_OK) or
+                (os.path.exists(dst_path) and not os.access(dst_root, os.W_OK))
+        ):  # pragma: no Windows cover
+            msg = f"Permission denied: '{dst_path}'"
+            raise PermissionError(msg)
+
+        utils.call_function_on_backend(
+            self._get_file,
+            src_path,
+            dst_path,
+            version,
+            verbose,
+        )
 
         return dst_path
 
@@ -264,7 +283,8 @@ class Backend:
             version string
 
         Raises:
-            RuntimeError: if ``path`` does not exist on backend
+            BackendError: if an error is raised on the backend
+            RuntimeError: if no version is found
             ValueError: if ``path`` contains invalid character
 
         Examples:
@@ -288,11 +308,7 @@ class Backend:
             self,
             folder: str,
     ) -> typing.List[typing.Tuple[str, str, str]]:  # pragma: no cover
-        r"""List all files under folder.
-
-        Return an empty list if no files match or folder does not exist.
-
-        """
+        r"""List all files under folder."""
         raise NotImplementedError()
 
     def ls(
@@ -323,7 +339,7 @@ class Backend:
             list of tuples (path, version)
 
         Raises:
-            FileNotFoundError: if ``folder`` does not exist
+            BackendError: if an error is raised on the backend
             ValueError: if ``folder`` contains invalid character
 
         Examples:
@@ -340,15 +356,8 @@ class Backend:
         utils.check_path_for_allowed_chars(folder)
         if not folder.endswith('/'):
             folder += '/'
-        paths = self._ls(folder)
+        paths = utils.call_function_on_backend(self._ls, folder)
         paths = sorted(paths)
-
-        if len(paths) == 0:
-            if folder == '/':
-                # special case that there are no files on the backend
-                return []
-            else:
-                utils.raise_file_not_found_error(folder)
 
         if pattern:
             paths = [(p, v) for p, v in paths if fnmatch.fnmatch(p, pattern)]
@@ -399,10 +408,12 @@ class Backend:
             verbose: show debug messages
 
         Raises:
-            FileNotFoundError: if one or more files do not exist
-            FileNotFoundError: if ``tmp_root`` does not exist
-            ValueError: if ``dst_path`` contains invalid character
+            BackendError: if an error is raised on the backend
+            FileNotFoundError: if ``src_root``,
+                ``tmp_root``,
+                or one or more ``files`` do not exist
             RuntimeError: if extension of ``dst_path`` is not supported
+            ValueError: if ``dst_path`` contains invalid character
 
         Examples:
             >>> backend.exists('a.tar.gz', '1.0.0')
@@ -414,15 +425,22 @@ class Backend:
 
         """
         utils.check_path_for_allowed_chars(dst_path)
-        src_root = audeer.safe_path(src_root)
+        src_root = audeer.path(src_root)
 
-        if isinstance(files, str):
-            files = [files]
+        if not os.path.exists(src_root):
+            utils.raise_file_not_found_error(src_root)
+
+        files = audeer.to_list(files)
 
         for file in files:
             path = os.path.join(src_root, file)
             if not os.path.exists(path):
                 utils.raise_file_not_found_error(path)
+
+        if tmp_root is not None:
+            tmp_root = audeer.path(tmp_root)
+            if not os.path.exists(tmp_root):
+                utils.raise_file_not_found_error(tmp_root)
 
         with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
 
@@ -475,6 +493,7 @@ class Backend:
             file path on backend
 
         Raises:
+            BackendError: if an error is raised on the backend
             FileNotFoundError: if ``src_path`` does not exist
             ValueError: if ``dst_path`` contains invalid character
 
@@ -493,10 +512,16 @@ class Backend:
 
         # skip if file with same checksum already exists
         if not (
-            self._exists(dst_path, version)
-            and self._checksum(dst_path, version) == utils.md5(src_path)
+            self.exists(dst_path, version)
+            and self.checksum(dst_path, version) == utils.md5(src_path)
         ):
-            self._put_file(src_path, dst_path, version, verbose)
+            utils.call_function_on_backend(
+                self._put_file,
+                src_path,
+                dst_path,
+                version,
+                verbose,
+            )
 
     def _remove_file(
             self,
@@ -518,7 +543,7 @@ class Backend:
             version: version string
 
         Raises:
-            FileNotFoundError: if ``path`` does not exist on backend
+            BackendError: if an error is raised on the backend
             ValueError: if ``path`` contains invalid character
 
         Examples:
@@ -530,10 +555,12 @@ class Backend:
 
         """
         utils.check_path_for_allowed_chars(path)
-        if not self._exists(path, version):
-            utils.raise_file_not_found_error(path, version=version)
 
-        path = self._remove_file(path, version)
+        utils.call_function_on_backend(
+            self._remove_file,
+            path,
+            version,
+        )
 
     @property
     def sep(self) -> str:
@@ -587,6 +614,7 @@ class Backend:
             list of versions in ascending order
 
         Raises:
+            BackendError: if an error is raised on the backend
             ValueError: if ``path`` contains invalid character
 
         Examples:
@@ -596,6 +624,9 @@ class Backend:
         """
         utils.check_path_for_allowed_chars(path)
 
-        vs = self._versions(path)
+        vs = utils.call_function_on_backend(
+            self._versions,
+            path,
+        )
 
         return audeer.sort_versions(vs)
