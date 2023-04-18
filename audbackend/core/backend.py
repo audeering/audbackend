@@ -339,7 +339,6 @@ class Backend:
 
         Raises:
             BackendError: if an error is raised on the backend
-            FileNotFoundError: if ``folder`` does not exist
             ValueError: if ``folder`` contains invalid character
 
         Examples:
