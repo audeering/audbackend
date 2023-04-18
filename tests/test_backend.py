@@ -437,10 +437,8 @@ def test_file(tmpdir, src_path, dst_path, version, backend):
 )
 def test_ls(tmpdir, backend):
 
-    # TODO: re-enable once we have solved
-    #  https://github.com/audeering/audbackend/issues/86
-    # assert backend.ls() == []
-    # assert backend.ls('/') == []
+    assert backend.ls() == []
+    assert backend.ls('/') == []
 
     sub_content = [  # files in sub directory
         ('sub/file.foo', '1.0.0'),

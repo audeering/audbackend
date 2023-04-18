@@ -35,10 +35,7 @@ def test_errors(tmpdir, no_artifactory_access_rights):
         BACKEND.latest_version(remote_file)
 
     with pytest.raises(audbackend.BackendError):
+        BACKEND.ls('/')
+
+    with pytest.raises(audbackend.BackendError):
         BACKEND.versions(remote_file)
-
-
-# TODO: re-enable once we have solved
-#  https://github.com/audeering/audbackend/issues/86
-# def test_ls(no_artifactory_access_rights):
-#     assert BACKEND.ls() == []

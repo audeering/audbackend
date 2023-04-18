@@ -26,7 +26,7 @@ pytest.BACKENDS = [
 ]
 
 
-@pytest.fixture(scope='session', autouse=True)
+@pytest.fixture(scope='package', autouse=True)
 def cleanup_session():
 
     # clean up old coverage files
