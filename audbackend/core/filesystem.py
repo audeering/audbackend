@@ -9,9 +9,7 @@ from audbackend.core.backend import Backend
 
 
 class FileSystem(Backend):
-    r"""File system backend.
-
-    Store files and archives on a file system.
+    r"""Backend for file system.
 
     Args:
         host: host directory
@@ -25,7 +23,9 @@ class FileSystem(Backend):
     ):
         super().__init__(host, repository)
 
-        self.root = audeer.mkdir(audeer.path(host, repository))
+        self.root = audeer.path(host, repository)
+        if not os.path.exists(self.root):
+            audeer.mkdir(self.root)
 
     def _checksum(
             self,

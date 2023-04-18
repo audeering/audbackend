@@ -3,6 +3,7 @@ import typing
 from audbackend.core.artifactory import Artifactory
 from audbackend.core.backend import Backend
 from audbackend.core.filesystem import FileSystem
+from audbackend.core import utils
 
 
 backends = {}
@@ -62,6 +63,7 @@ def create(
         backend object
 
     Raises:
+        BackendError: if an error is raised on the backend
         ValueError: if registry name does not exist
 
     Examples:
@@ -87,7 +89,11 @@ def create(
         backends[name][host] = {}
     if repository not in backends[name][host]:
         backend = backend_registry[name]
-        backends[name][host][repository] = backend(host, repository)
+        backends[name][host][repository] = utils.call_function_on_backend(
+            backend,
+            host,
+            repository,
+        )
     return backends[name][host][repository]
 
 

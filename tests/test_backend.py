@@ -134,25 +134,38 @@ def test_archive(tmpdir, files, name, folder, version, tmp_root, backend):
 
 
 @pytest.mark.parametrize(
-    'name, cls',
+    'name, host, repository, cls',
     [
         (
             'file-system',
+            pytest.HOSTS['file-system'],
+            pytest.REPOSITORIES['file-system'],
             audbackend.FileSystem,
         ),
         (
             'artifactory',
+            pytest.HOSTS['artifactory'],
+            pytest.REPOSITORIES['artifactory'],
             audbackend.Artifactory,
         ),
         pytest.param(  # backend does not exist
-            'does-not-exist',
+            'bad-backend',
+            None,
+            None,
             None,
             marks=pytest.mark.xfail(raises=ValueError),
-        )
+        ),
+        pytest.param(  # cannot create repository
+            'artifactory',
+            'bad-host',
+            'bad-repo',
+            None,
+            marks=pytest.mark.xfail(raises=audbackend.BackendError),
+        ),
     ]
 )
-def test_create(name, cls):
-    backend = audbackend.create(name, 'host', 'repository')
+def test_create(name, host, repository, cls):
+    backend = audbackend.create(name, host, repository)
     assert isinstance(backend, cls)
 
 

@@ -9,9 +9,7 @@ from audbackend.core.backend import Backend
 
 
 class Artifactory(Backend):
-    r"""Artifactory backend.
-
-    Store files and archives on Artifactory.
+    r"""Backend for Artifactory.
 
     Args:
         host: host address
@@ -27,7 +25,9 @@ class Artifactory(Backend):
         super().__init__(host, repository)
 
         self.root = f'{self.host}/{self.repository}'
-        audfactory.path(self.root).mkdir()
+        path = audfactory.path(self.root)
+        if not path.exists():
+            audfactory.path(self.root).mkdir()
 
     def _checksum(
             self,
