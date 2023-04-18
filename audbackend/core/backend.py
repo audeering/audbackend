@@ -283,7 +283,8 @@ class Backend:
             version string
 
         Raises:
-            RuntimeError: if ``path`` does not exist on backend
+            BackendError: if an error is raised on the backend
+            RuntimeError: if no version is found
             ValueError: if ``path`` contains invalid character
 
         Examples:
