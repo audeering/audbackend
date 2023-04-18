@@ -43,7 +43,7 @@ jobs:
         ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
         ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
       run: |
-        python -m pytest --cov-config=.coveragerc.$RUNNER_OS
+        python -m pytest --cov-config=.coveragerc.${{ matrix.os }}
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
