@@ -23,7 +23,7 @@ class FileSystem(Backend):
             host: str,
             repository: str,
     ):
-        super().__init__(audeer.safe_path(host), repository)
+        super().__init__(audeer.path(host), repository)
 
     def _checksum(
             self,

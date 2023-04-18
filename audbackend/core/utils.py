@@ -51,7 +51,7 @@ def md5(
         'd41d8cd98f00b204e9800998ecf8427e'
 
     """
-    file = audeer.safe_path(file)
+    file = audeer.path(file)
     with open(file, 'rb') as fp:
         hasher = hashlib.md5()
         for chunk in md5_read_chunk(fp, chunk_size):

@@ -218,7 +218,7 @@ class Backend:
         """
         utils.check_path_for_allowed_chars(src_path)
 
-        dst_path = audeer.safe_path(dst_path)
+        dst_path = audeer.path(dst_path)
         dst_root = os.path.dirname(dst_path)
 
         audeer.mkdir(dst_root)
@@ -409,8 +409,9 @@ class Backend:
 
         Raises:
             BackendError: if an error is raised on the backend
-            FileNotFoundError: if one or more ``files`` do not exist
-            FileNotFoundError: if ``tmp_root`` does not exist
+            FileNotFoundError: if ``src_root``,
+                ``tmp_root``,
+                or one or more ``files`` do not exist
             ValueError: if ``dst_path`` contains invalid character
             RuntimeError: if extension of ``dst_path`` is not supported
 
@@ -424,15 +425,22 @@ class Backend:
 
         """
         utils.check_path_for_allowed_chars(dst_path)
-        src_root = audeer.safe_path(src_root)
+        src_root = audeer.path(src_root)
 
-        if isinstance(files, str):
-            files = [files]
+        if not os.path.exists(src_root):
+            utils.raise_file_not_found_error(src_root)
+
+        files = audeer.to_list(files)
 
         for file in files:
             path = os.path.join(src_root, file)
             if not os.path.exists(path):
                 utils.raise_file_not_found_error(path)
+
+        if tmp_root is not None:
+            tmp_root = audeer.path(tmp_root)
+            if not os.path.exists(tmp_root):
+                utils.raise_file_not_found_error(tmp_root)
 
         with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
 
