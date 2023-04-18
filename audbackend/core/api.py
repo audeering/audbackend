@@ -30,8 +30,8 @@ def available() -> typing.Dict[str, typing.List[Backend]]:
     Examples:
         >>> list(available())
         ['artifactory', 'file-system']
-        >>> available()['artifactory']
-        [('audbackend.core.artifactory.Artifactory', 'https://host.com', 'repo')]
+        >>> available()['file-system']
+        [('audbackend.core.filesystem.FileSystem', 'host', 'doctest')]
 
     """  # noqa: E501
     result = {}
@@ -66,11 +66,11 @@ def create(
 
     Examples:
         >>> create(
-        ...     'artifactory',
-        ...     'https://host.com',
+        ...     'file-system',
+        ...     'host',
         ...     'repo',
         ... )
-        ('audbackend.core.artifactory.Artifactory', 'https://host.com', 'repo')
+        ('audbackend.core.filesystem.FileSystem', 'host', 'repo')
 
     """
     if name not in backend_registry:

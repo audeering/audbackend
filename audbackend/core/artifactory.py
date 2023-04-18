@@ -26,6 +26,9 @@ class Artifactory(Backend):
     ):
         super().__init__(host, repository)
 
+        self.root = f'{self.host}/{self.repository}'
+        audfactory.path(self.root).mkdir()
+
     def _checksum(
             self,
             path: str,
@@ -59,7 +62,7 @@ class Artifactory(Backend):
         folder = folder.replace(self.sep, '/')
         if not folder.startswith('/'):
             folder = '/' + folder
-        folder = f'{self.host}/{self.repository}{folder}'
+        folder = f'{self.root}{folder}'
         if not folder.endswith('/'):
             folder = folder + '/'
         return folder
@@ -96,8 +99,7 @@ class Artifactory(Backend):
         result = []
         for full_path in paths:
 
-            host_repo = f'{self.host}/{self.repository}'
-            full_path = full_path[len(host_repo) + 1:]  # remove host and repo
+            full_path = full_path[len(self.root) + 1:]  # remove host and repo
             full_path = full_path.replace('/', self.sep)
             tokens = full_path.split('/')
 
