@@ -29,7 +29,6 @@ def prepare_docstring_tests(doctest_namespace):
             backend.put_file(file, 'name.ext', version)
 
         doctest_namespace['backend'] = backend
-        # doctest_namespace['tmp'] = tmp
 
         yield
 

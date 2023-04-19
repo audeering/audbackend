@@ -148,12 +148,12 @@ def test_archive(tmpdir, files, name, folder, version, tmp_root, backend):
             f'unittest-{audeer.uid()[:8]}',
             audbackend.FileSystem,
         ),
-        # (
-        #     'artifactory',
-        #     pytest.HOSTS['artifactory'],
-        #     f'unittest-{audeer.uid()[:8]}',
-        #     audbackend.Artifactory,
-        # ),
+        (
+            'artifactory',
+            pytest.HOSTS['artifactory'],
+            f'unittest-{audeer.uid()[:8]}',
+            audbackend.Artifactory,
+        ),
         pytest.param(  # backend does not exist
             'bad-backend',
             None,
