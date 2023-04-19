@@ -83,12 +83,17 @@ class Backend:
             self,
             path: str,
             version: str,
+            *,
+            suppress_backend_errors: bool = False,
     ) -> bool:
         r"""Check if file exists on backend.
 
         Args:
             path: path to file on backend
             version: version string
+            suppress_backend_errors: if set to ``True``,
+                silently catch errors raised on the backend
+                and return ``False``
 
         Returns:
             ``True`` if file exists
@@ -108,6 +113,8 @@ class Backend:
             self._exists,
             path,
             version,
+            suppress_backend_errors=suppress_backend_errors,
+            fallback_return_value=False,
         )
 
     def get_archive(
@@ -315,6 +322,7 @@ class Backend:
             *,
             latest_version: bool = False,
             pattern: str = None,
+            suppress_backend_errors: bool = False,
     ) -> typing.List[typing.Tuple[str, str]]:
         r"""List all files under folder.
 
@@ -332,6 +340,9 @@ class Backend:
             pattern: if not ``None``,
                 return only files matching the pattern string,
                 see :func:`fnmatch.fnmatch`
+            suppress_backend_errors: if set to ``True``,
+                silently catch errors raised on the backend
+                and return an empty list
 
         Returns:
             list of tuples (path, version)
@@ -354,7 +365,15 @@ class Backend:
         utils.check_path_for_allowed_chars(folder)
         if not folder.endswith('/'):
             folder += '/'
-        paths = utils.call_function_on_backend(self._ls, folder)
+        paths = utils.call_function_on_backend(
+            self._ls,
+            folder,
+            suppress_backend_errors=suppress_backend_errors,
+            fallback_return_value=[],
+        )
+        if not paths:
+            return paths
+
         paths = sorted(paths)
 
         if pattern:
@@ -600,11 +619,16 @@ class Backend:
     def versions(
             self,
             path: str,
+            *,
+            suppress_backend_errors: bool = False,
     ) -> typing.List[str]:
         r"""Versions of a file.
 
         Args:
             path: path to file on backend
+            suppress_backend_errors: if set to ``True``,
+                silently catch errors raised on the backend
+                and return an empty list
 
         Returns:
             list of versions in ascending order
@@ -623,6 +647,8 @@ class Backend:
         vs = utils.call_function_on_backend(
             self._versions,
             path,
+            suppress_backend_errors=suppress_backend_errors,
+            fallback_return_value=[],
         )
 
         return audeer.sort_versions(vs)

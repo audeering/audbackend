@@ -29,9 +29,16 @@ def test_errors(tmpdir, backend, no_artifactory_access_rights):
     )
     version = '1.0.0'
 
+    # --- exists ---
     with pytest.raises(audbackend.BackendError):
         backend.exists(remote_file, version)
+    assert backend.exists(
+        remote_file,
+        version,
+        suppress_backend_errors=True,
+    ) == False
 
+    # --- put_file ---
     with pytest.raises(audbackend.BackendError):
         backend.put_file(
             local_file,
@@ -39,11 +46,22 @@ def test_errors(tmpdir, backend, no_artifactory_access_rights):
             version,
         )
 
+    # --- latest_version ---
     with pytest.raises(audbackend.BackendError):
         backend.latest_version(remote_file)
 
+    # --- ls ---
     with pytest.raises(audbackend.BackendError):
         backend.ls('/')
+    assert backend.ls(
+        '/',
+        suppress_backend_errors=True,
+    ) == []
 
+    # --- versions ---
     with pytest.raises(audbackend.BackendError):
         backend.versions(remote_file)
+    assert backend.versions(
+        remote_file,
+        suppress_backend_errors=True,
+    ) == []

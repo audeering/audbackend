@@ -16,12 +16,17 @@ BACKEND_ALLOWED_CHARS_COMPILED = re.compile(BACKEND_ALLOWED_CHARS)
 def call_function_on_backend(
         function: typing.Callable,
         *args,
+        suppress_backend_errors: bool = False,
+        fallback_return_value: typing.Any = None,
         **kwargs,
 ) -> typing.Any:
     try:
         return function(*args, **kwargs)
     except Exception as ex:
-        raise BackendError(ex)
+        if suppress_backend_errors:
+            return fallback_return_value
+        else:
+            raise BackendError(ex)
 
 
 def check_path_for_allowed_chars(path):
