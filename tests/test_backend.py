@@ -315,7 +315,7 @@ def test_errors(tmpdir, backend):
         f"Cannot find a version for '{file_missing}' "
         f"in '{backend.repository}'"
     )
-    with pytest.raises(RuntimeError, match=error_msg):
+    with pytest.raises(audbackend.BackendError, match=error_backend):
         backend.latest_version(file_missing)
     # `path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
@@ -542,8 +542,10 @@ def test_versions(tmpdir, dst_path, backend):
     audeer.touch(src_path)
 
     # empty backend
-    assert not backend.versions(dst_path)
-    with pytest.raises(RuntimeError):
+    with pytest.raises(audbackend.BackendError):
+        backend.versions(dst_path)
+    assert not backend.versions(dst_path, suppress_backend_errors=True)
+    with pytest.raises(audbackend.BackendError):
         backend.latest_version(dst_path)
 
     # v1

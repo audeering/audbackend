@@ -55,7 +55,8 @@ class Backend:
             MD5 checksum
 
         Raises:
-            BackendError: if an error is raised on the backend
+            BackendError: if an error is raised on the backend,
+                e.g. ``path`` does not exist
             ValueError: if ``path`` contains invalid character
 
         Examples:
@@ -83,18 +84,25 @@ class Backend:
             self,
             path: str,
             version: str,
+            *,
+            suppress_backend_errors: bool = False,
     ) -> bool:
         r"""Check if file exists on backend.
 
         Args:
             path: path to file on backend
             version: version string
+            suppress_backend_errors: if set to ``True``,
+                silently catch errors raised on the backend
+                and return ``False``
 
         Returns:
             ``True`` if file exists
 
         Raises:
-            BackendError: if an error is raised on the backend
+            BackendError: if ``suppress_backend_errors`` is ``False``
+                and an error is raised on the backend,
+                e.g. ``path`` does not exist
             ValueError: if ``path`` contains invalid character
 
         Examples:
@@ -108,6 +116,8 @@ class Backend:
             self._exists,
             path,
             version,
+            suppress_backend_errors=suppress_backend_errors,
+            fallback_return_value=False,
         )
 
     def get_archive(
@@ -136,7 +146,8 @@ class Backend:
             extracted files
 
         Raises:
-            BackendError: if an error is raised on the backend
+            BackendError: if an error is raised on the backend,
+                e.g. ``src_path`` does not exist
             FileNotFoundError: if ``tmp_root`` does not exist
             PermissionError: if the user lacks write permissions
                 for ``dst_path``
@@ -201,7 +212,8 @@ class Backend:
             full path to local file
 
         Raises:
-            BackendError: if an error is raised on the backend
+            BackendError: if an error is raised on the backend,
+                e.g. ``src_path`` does not exist
             PermissionError: if the user lacks write permissions
                 for ``dst_path``
             ValueError: if ``src_path`` contains invalid character
@@ -281,8 +293,8 @@ class Backend:
             version string
 
         Raises:
-            BackendError: if an error is raised on the backend
-            RuntimeError: if no version is found
+            BackendError: if an error is raised on the backend,
+                e.g. ``path`` does not exist
             ValueError: if ``path`` contains invalid character
 
         Examples:
@@ -291,22 +303,18 @@ class Backend:
 
         """
         utils.check_path_for_allowed_chars(path)
-
         vs = self.versions(path)
-        if not vs:
-            raise RuntimeError(
-                f"Cannot find a version for "
-                f"'{path}' in "
-                f"'{self.repository}'.",
-            )
-
         return vs[-1]
 
     def _ls(
             self,
             folder: str,
     ) -> typing.List[typing.Tuple[str, str, str]]:  # pragma: no cover
-        r"""List all files under folder."""
+        r"""List all files under folder.
+
+        If folder does not exist an error should be raised.
+
+        """
         raise NotImplementedError()
 
     def ls(
@@ -315,6 +323,7 @@ class Backend:
             *,
             latest_version: bool = False,
             pattern: str = None,
+            suppress_backend_errors: bool = False,
     ) -> typing.List[typing.Tuple[str, str]]:
         r"""List all files under folder.
 
@@ -332,12 +341,17 @@ class Backend:
             pattern: if not ``None``,
                 return only files matching the pattern string,
                 see :func:`fnmatch.fnmatch`
+            suppress_backend_errors: if set to ``True``,
+                silently catch errors raised on the backend
+                and return an empty list
 
         Returns:
             list of tuples (path, version)
 
         Raises:
-            BackendError: if an error is raised on the backend
+            BackendError: if ``suppress_backend_errors`` is ``False``
+                and an error is raised on the backend,
+                e.g. ``folder`` does not exist
             ValueError: if ``folder`` contains invalid character
 
         Examples:
@@ -354,7 +368,15 @@ class Backend:
         utils.check_path_for_allowed_chars(folder)
         if not folder.endswith('/'):
             folder += '/'
-        paths = utils.call_function_on_backend(self._ls, folder)
+        paths = utils.call_function_on_backend(
+            self._ls,
+            folder,
+            suppress_backend_errors=suppress_backend_errors,
+            fallback_return_value=[],
+        )
+        if not paths:
+            return paths
+
         paths = sorted(paths)
 
         if pattern:
@@ -539,7 +561,8 @@ class Backend:
             version: version string
 
         Raises:
-            BackendError: if an error is raised on the backend
+            BackendError: if an error is raised on the backend,
+                e.g. ``path`` does not exist
             ValueError: if ``path`` contains invalid character
 
         Examples:
@@ -594,23 +617,34 @@ class Backend:
             self,
             path: str,
     ) -> typing.List[str]:  # pragma: no cover
-        r"""Versions of a file."""
+        r"""Versions of a file.
+
+        If path does not exist an error should be raised.
+
+        """
         raise NotImplementedError()
 
     def versions(
             self,
             path: str,
+            *,
+            suppress_backend_errors: bool = False,
     ) -> typing.List[str]:
         r"""Versions of a file.
 
         Args:
             path: path to file on backend
+            suppress_backend_errors: if set to ``True``,
+                silently catch errors raised on the backend
+                and return an empty list
 
         Returns:
             list of versions in ascending order
 
         Raises:
-            BackendError: if an error is raised on the backend
+            BackendError: if ``suppress_backend_errors`` is ``False``
+                and an error is raised on the backend,
+                e.g. ``path`` does not exist
             ValueError: if ``path`` contains invalid character
 
         Examples:
@@ -623,6 +657,8 @@ class Backend:
         vs = utils.call_function_on_backend(
             self._versions,
             path,
+            suppress_backend_errors=suppress_backend_errors,
+            fallback_return_value=[],
         )
 
         return audeer.sort_versions(vs)

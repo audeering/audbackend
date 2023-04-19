@@ -89,7 +89,11 @@ class Artifactory(Backend):
             self,
             folder: str,
     ):
-        r"""List all files under folder."""
+        r"""List all files under folder.
+
+        If folder does not exist an error should be raised.
+
+        """
 
         folder = self._folder(folder)
         folder = audfactory.path(folder)
@@ -162,17 +166,21 @@ class Artifactory(Backend):
             self,
             path: str,
     ) -> typing.List[str]:
-        r"""Versions of a file."""
+        r"""Versions of a file.
+
+        If path does not exist an error should be raised.
+
+        """
         folder, _ = self.split(path)
         folder = self._folder(folder)
         folder = audfactory.path(folder)
 
-        try:
-            vs = [os.path.basename(str(f)) for f in folder if f.is_dir]
-        except (FileNotFoundError, RuntimeError):
-            vs = []
+        vs = [os.path.basename(str(f)) for f in folder if f.is_dir]
 
         # filter out versions of files with different extension
         vs = [v for v in vs if self._exists(path, v)]
+
+        if not vs:
+            utils.raise_file_not_found_error(path)
 
         return vs
