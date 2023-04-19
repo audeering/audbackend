@@ -4,41 +4,46 @@ import audbackend
 import audeer
 
 
-BACKEND = audbackend.Artifactory(
-    pytest.HOSTS['artifactory'],
-    pytest.REPOSITORIES['artifactory'],
-)
+@pytest.fixture(scope='function')
+def backend(request):
+
+    backend = audbackend.Artifactory(
+        pytest.HOSTS['artifactory'],
+        f'unittest-{audeer.uid()[:8]}',
+    )
+
+    yield backend
+
+    # TODO: replace with audbackend.delete() when available
+    backend._repo.delete()
 
 
-def test_errors(tmpdir, no_artifactory_access_rights):
+def test_errors(tmpdir, backend, no_artifactory_access_rights):
 
     local_file = audeer.touch(
         audeer.path(tmpdir, 'file.txt')
     )
-    remote_file = BACKEND.join(
+    remote_file = backend.join(
         audeer.uid()[:8],
         'file.txt',
     )
     version = '1.0.0'
 
     with pytest.raises(audbackend.BackendError):
-        BACKEND.exists(remote_file, version)
+        backend.exists(remote_file, version)
 
     with pytest.raises(audbackend.BackendError):
-        BACKEND.put_file(
+        backend.put_file(
             local_file,
             remote_file,
             version,
         )
 
     with pytest.raises(audbackend.BackendError):
-        BACKEND.latest_version(remote_file)
+        backend.latest_version(remote_file)
 
     with pytest.raises(audbackend.BackendError):
-        BACKEND.versions(remote_file)
+        backend.ls('/')
 
-
-# TODO: re-enable once we have solved
-#  https://github.com/audeering/audbackend/issues/86
-# def test_ls(no_artifactory_access_rights):
-#     assert BACKEND.ls() == []
+    with pytest.raises(audbackend.BackendError):
+        backend.versions(remote_file)

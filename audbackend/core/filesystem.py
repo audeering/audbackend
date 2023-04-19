@@ -9,9 +9,7 @@ from audbackend.core.backend import Backend
 
 
 class FileSystem(Backend):
-    r"""File system backend.
-
-    Store files and archives on a file system.
+    r"""Backend for file system.
 
     Args:
         host: host directory
@@ -23,7 +21,11 @@ class FileSystem(Backend):
             host: str,
             repository: str,
     ):
-        super().__init__(audeer.path(host), repository)
+        super().__init__(host, repository)
+
+        self._root = audeer.path(host, repository)
+        if not os.path.exists(self._root):
+            audeer.mkdir(self._root)
 
     def _checksum(
             self,
@@ -57,7 +59,7 @@ class FileSystem(Backend):
         folder = folder.replace(self.sep, os.path.sep)
         if folder.startswith(os.path.sep):
             folder = folder[1:]
-        folder = os.path.join(self.host, self.repository, folder)
+        folder = audeer.path(self._root, folder)
         return folder
 
     def _get_file(
@@ -91,8 +93,7 @@ class FileSystem(Backend):
         result = []
         for full_path in paths:
 
-            host_repo = os.path.join(self.host, self.repository)
-            full_path = full_path[len(host_repo) + 1:]  # remove host and repo
+            full_path = full_path[len(self._root) + 1:]  # remove host and repo
             full_path = full_path.replace(os.path.sep, self.sep)
             tokens = full_path.split(self.sep)
 

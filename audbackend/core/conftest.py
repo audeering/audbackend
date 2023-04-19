@@ -1,29 +1,35 @@
+import os
 import tempfile
+
 import pytest
 
 import audbackend
 import audeer
 
 
-@pytest.fixture(autouse=True)
-def create_backend(doctest_namespace):
+@pytest.fixture(scope='function', autouse=True)
+def prepare_docstring_tests(doctest_namespace):
+
     with tempfile.TemporaryDirectory() as tmp:
-        audbackend.create(
-            'artifactory',
-            'https://host.com',
-            'repo',
-        )
+
+        current_dir = os.getcwd()
+        os.chdir(tmp)
+
         backend = audbackend.create(
             'file-system',
-            tmp,
+            'host',
             'doctest',
         )
-        src_file = 'src.pth'
-        src_path = audeer.touch(audeer.path(tmp, src_file))
-        backend.put_archive(tmp, [src_file], 'a.zip', '1.0.0')
+
+        file = 'src.pth'
+        audeer.touch(file)
+        backend.put_archive('.', [file], 'a.zip', '1.0.0')
+        backend.put_file(file, 'a/b.ext', '1.0.0')
         for version in ['1.0.0', '2.0.0']:
-            backend.put_file(src_path, 'name.ext', version)
-        backend.put_file(src_path, 'a/b.ext', '1.0.0')
+            backend.put_file(file, 'name.ext', version)
+
         doctest_namespace['backend'] = backend
-        doctest_namespace['tmp'] = tmp
+
         yield
+
+        os.chdir(current_dir)

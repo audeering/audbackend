@@ -145,8 +145,7 @@ class Backend:
             ValueError: if ``src_path`` contains invalid character
 
         Examples:
-            >>> dst_root = audeer.path(tmp, 'dst')
-            >>> backend.get_archive('a.zip', dst_root, '1.0.0')
+            >>> backend.get_archive('a.zip', '.', '1.0.0')
             ['src.pth']
 
         """
@@ -208,11 +207,10 @@ class Backend:
             ValueError: if ``src_path`` contains invalid character
 
         Examples:
-            >>> dst_path = audeer.path(tmp, 'dst.pth')
-            >>> os.path.exists(dst_path)
+            >>> os.path.exists('dst.pth')
             False
-            >>> _ = backend.get_file('name.ext', dst_path, '1.0.0')
-            >>> os.path.exists(dst_path)
+            >>> _ = backend.get_file('name.ext', 'dst.pth', '1.0.0')
+            >>> os.path.exists('dst.pth')
             True
 
         """
@@ -418,8 +416,7 @@ class Backend:
         Examples:
             >>> backend.exists('a.tar.gz', '1.0.0')
             False
-            >>> files = ['src.pth']
-            >>> backend.put_archive(tmp, files, 'name.tar.gz', '1.0.0')
+            >>> backend.put_archive('.', ['src.pth'], 'name.tar.gz', '1.0.0')
             >>> backend.exists('name.tar.gz', '1.0.0')
             True
 
@@ -500,8 +497,7 @@ class Backend:
         Examples:
             >>> backend.exists('folder/name.ext', '3.0.0')
             False
-            >>> src_path = audeer.path(tmp, 'src.pth')
-            >>> backend.put_file(src_path, 'folder/name.ext', '3.0.0')
+            >>> backend.put_file('src.pth', 'folder/name.ext', '3.0.0')
             >>> backend.exists('folder/name.ext', '3.0.0')
             True
 

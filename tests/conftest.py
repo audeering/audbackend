@@ -1,22 +1,15 @@
 import os
-import shutil
 
 import pytest
 
 import audeer
-import audfactory
 
 
 pytest.ROOT = os.path.dirname(os.path.realpath(__file__))
-uid = audeer.uid()[:8]
 
 pytest.HOSTS = {
     'artifactory': 'https://audeering.jfrog.io/artifactory',
-    'file-system': os.path.join(pytest.ROOT, 'file-system'),
-}
-pytest.REPOSITORIES = {
-    'artifactory': f'unittests-public/{uid}/',
-    'file-system': uid + os.sep,
+    'file-system': os.path.join(pytest.ROOT, 'host'),
 }
 
 # list of backends that will be tested
@@ -26,7 +19,7 @@ pytest.BACKENDS = [
 ]
 
 
-@pytest.fixture(scope='session', autouse=True)
+@pytest.fixture(scope='package', autouse=True)
 def cleanup_session():
 
     # clean up old coverage files
@@ -39,19 +32,8 @@ def cleanup_session():
 
     yield
 
-    # clean up file system
     if os.path.exists(pytest.HOSTS['file-system']):
-        shutil.rmtree(pytest.HOSTS['file-system'])
-
-    # clean up Artifactory
-    url = audfactory.path(
-        audfactory.url(
-            pytest.HOSTS['artifactory'],
-            repository=pytest.REPOSITORIES['artifactory'],
-        ),
-    )
-    if url.exists():
-        url.unlink()
+        os.rmdir(pytest.HOSTS['file-system'])
 
 
 @pytest.fixture(scope='function', autouse=False)
