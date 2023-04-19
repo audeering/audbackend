@@ -152,15 +152,15 @@ class FileSystem(Backend):
         folder, _ = self.split(path)
         folder = self._folder(folder)
 
-        if os.path.exists(folder):
-            vs = audeer.list_dir_names(
-                folder,
-                basenames=True,
-            )
-        else:
-            vs = []
+        vs = audeer.list_dir_names(
+            folder,
+            basenames=True,
+        )
 
         # filter out versions of files with different extension
         vs = [v for v in vs if self._exists(path, v)]
+
+        if not vs:
+            utils.raise_file_not_found_error(path)
 
         return vs

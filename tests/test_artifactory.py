@@ -36,7 +36,7 @@ def test_errors(tmpdir, backend, no_artifactory_access_rights):
         remote_file,
         version,
         suppress_backend_errors=True,
-    ) == False
+    ) is False
 
     # --- put_file ---
     with pytest.raises(audbackend.BackendError):

@@ -313,7 +313,11 @@ class Backend:
             self,
             folder: str,
     ) -> typing.List[typing.Tuple[str, str, str]]:  # pragma: no cover
-        r"""List all files under folder."""
+        r"""List all files under folder.
+
+        If folder does not exist an error should be raised.
+
+        """
         raise NotImplementedError()
 
     def ls(
@@ -613,7 +617,11 @@ class Backend:
             self,
             path: str,
     ) -> typing.List[str]:  # pragma: no cover
-        r"""Versions of a file."""
+        r"""Versions of a file.
+
+        If path does not exist an error should be raised.
+
+        """
         raise NotImplementedError()
 
     def versions(
