@@ -55,7 +55,8 @@ class Backend:
             MD5 checksum
 
         Raises:
-            BackendError: if an error is raised on the backend
+            BackendError: if an error is raised on the backend,
+                e.g. ``path`` does not exist
             ValueError: if ``path`` contains invalid character
 
         Examples:
@@ -99,7 +100,9 @@ class Backend:
             ``True`` if file exists
 
         Raises:
-            BackendError: if an error is raised on the backend
+            BackendError: if ``suppress_backend_errors`` is ``False``
+                and an error is raised on the backend,
+                e.g. ``path`` does not exist
             ValueError: if ``path`` contains invalid character
 
         Examples:
@@ -143,7 +146,8 @@ class Backend:
             extracted files
 
         Raises:
-            BackendError: if an error is raised on the backend
+            BackendError: if an error is raised on the backend,
+                e.g. ``src_path`` does not exist
             FileNotFoundError: if ``tmp_root`` does not exist
             PermissionError: if the user lacks write permissions
                 for ``dst_path``
@@ -208,7 +212,8 @@ class Backend:
             full path to local file
 
         Raises:
-            BackendError: if an error is raised on the backend
+            BackendError: if an error is raised on the backend,
+                e.g. ``src_path`` does not exist
             PermissionError: if the user lacks write permissions
                 for ``dst_path``
             ValueError: if ``src_path`` contains invalid character
@@ -288,7 +293,8 @@ class Backend:
             version string
 
         Raises:
-            BackendError: if an error is raised on the backend
+            BackendError: if an error is raised on the backend,
+                e.g. ``path`` does not exist
             ValueError: if ``path`` contains invalid character
 
         Examples:
@@ -343,7 +349,9 @@ class Backend:
             list of tuples (path, version)
 
         Raises:
-            BackendError: if an error is raised on the backend
+            BackendError: if ``suppress_backend_errors`` is ``False``
+                and an error is raised on the backend,
+                e.g. ``folder`` does not exist
             ValueError: if ``folder`` contains invalid character
 
         Examples:
@@ -553,7 +561,8 @@ class Backend:
             version: version string
 
         Raises:
-            BackendError: if an error is raised on the backend
+            BackendError: if an error is raised on the backend,
+                e.g. ``path`` does not exist
             ValueError: if ``path`` contains invalid character
 
         Examples:
@@ -633,7 +642,9 @@ class Backend:
             list of versions in ascending order
 
         Raises:
-            BackendError: if an error is raised on the backend
+            BackendError: if ``suppress_backend_errors`` is ``False``
+                and an error is raised on the backend,
+                e.g. ``path`` does not exist
             ValueError: if ``path`` contains invalid character
 
         Examples:
