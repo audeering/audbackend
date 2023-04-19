@@ -33,8 +33,24 @@ class FileSystem(Backend):
             version: str,
     ) -> str:
         r"""MD5 checksum of file on backend."""
+        path = self._expand(path)
         path = self._path(path, version)
         return utils.md5(path)
+
+    def _collapse(
+            self,
+            path,
+    ):
+        r"""Convert to virtual path
+
+        <host>/<repository>/<path>
+        ->
+        <path>
+
+        """
+        path = path[len(self._root) + 1:]  # remove host and repo
+        path = path.replace(os.path.sep, self.sep)
+        return path
 
     def _exists(
             self,
@@ -42,25 +58,26 @@ class FileSystem(Backend):
             version: str,
     ) -> bool:
         r"""Check if file exists on backend."""
+        path = self._expand(path)
         path = self._path(path, version)
         return os.path.exists(path)
 
-    def _folder(
+    def _expand(
             self,
-            folder: str,
+            path: str,
     ) -> str:
-        r"""Convert to backend folder.
+        r"""Convert to backend path.
 
-        <folder>
+        <path>
         ->
-        <host>/<repository>/<folder>
+        <host>/<repository>/<path>
 
         """
-        folder = folder.replace(self.sep, os.path.sep)
-        if folder.startswith(os.path.sep):
-            folder = folder[1:]
-        folder = audeer.path(self._root, folder)
-        return folder
+        path = path.replace(self.sep, os.path.sep)
+        if path.startswith(os.path.sep):
+            path = path[1:]
+        path = os.path.join(self._root, path)
+        return path
 
     def _get_file(
             self,
@@ -70,37 +87,54 @@ class FileSystem(Backend):
             verbose: bool,
     ):
         r"""Get file from backend."""
+        src_path = self._expand(src_path)
         src_path = self._path(src_path, version)
         shutil.copy(src_path, dst_path)
 
     def _ls(
             self,
-            folder: str,
+            path: str,
     ):
-        r"""List all files under folder."""
+        r"""List all files under (sub-)path."""
+        path = self._expand(path)
 
-        folder = self._folder(folder)
-
-        if not os.path.exists(folder):
-            utils.raise_file_not_found_error(folder)
-
-        paths = audeer.list_file_names(folder, recursive=True)
+        if path.endswith('/'):
+            if not os.path.exists(path):
+                utils.raise_file_not_found_error(path)
+            paths = audeer.list_file_names(path, recursive=True)
+        else:
+            folder, _ = self.split(path)
+            if not os.path.exists(folder):
+                utils.raise_file_not_found_error(path)
+            vs = audeer.list_dir_names(
+                folder,
+                basenames=True,
+            )
+            # consider only folders that are version strings
+            paths = [
+                self._path(path, v) for v in vs
+                if audeer.is_semantic_version(v)
+            ]
+            # keep only existing paths to filter out
+            # versions of other files in same folder
+            paths = [p for p in paths if os.path.exists(p)]
+            if not paths:
+                utils.raise_file_not_found_error(path)
 
         # <host>/<repository>/<folder>/<version>/<name>
         # ->
         # (<folder>/<name>, <version>)
 
         result = []
-        for full_path in paths:
+        for p in paths:
 
-            full_path = full_path[len(self._root) + 1:]  # remove host and repo
-            full_path = full_path.replace(os.path.sep, self.sep)
-            tokens = full_path.split(self.sep)
+            p = self._collapse(p)  # remove host and repo
+            tokens = p.split(self.sep)
 
             name = tokens[-1]
             version = tokens[-2]
-            folder = self.sep.join(tokens[:-2])
-            path = self.join(folder, name)
+            path = self.sep.join(tokens[:-2])
+            path = self.join(path, name)
 
             result.append((path, version))
 
@@ -113,13 +147,12 @@ class FileSystem(Backend):
     ) -> str:
         r"""Convert to backend path.
 
-        <folder>/<name>
+        <host>/<repository>/<folder>/<name>
         ->
         <host>/<repository>/<folder>/<version>/<name>
 
         """
         folder, name = self.split(path)
-        folder = self._folder(folder)
         path = os.path.join(folder, version, name)
         return path
 
@@ -131,6 +164,7 @@ class FileSystem(Backend):
             verbose: bool,
     ):
         r"""Put file to backend."""
+        dst_path = self._expand(dst_path)
         dst_path = self._path(dst_path, version)
         audeer.mkdir(os.path.dirname(dst_path))
         shutil.copy(src_path, dst_path)
@@ -141,26 +175,6 @@ class FileSystem(Backend):
             version: str,
     ):
         r"""Remove file from backend."""
+        path = self._expand(path)
         path = self._path(path, version)
         os.remove(path)
-
-    def _versions(
-            self,
-            path: str,
-    ) -> typing.List[str]:
-        r"""Versions of a file."""
-        folder, _ = self.split(path)
-        folder = self._folder(folder)
-
-        vs = audeer.list_dir_names(
-            folder,
-            basenames=True,
-        )
-
-        # filter out versions of files with different extension
-        vs = [v for v in vs if self._exists(path, v)]
-
-        if not vs:
-            utils.raise_file_not_found_error(path)
-
-        return vs

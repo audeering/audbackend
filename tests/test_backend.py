@@ -492,10 +492,10 @@ def test_ls(tmpdir, backend):
         ('/', True, None, content_latest),
         ('/', False, '*.foo', sub_content),
         ('/', True, '*.foo', sub_content_latest),
-        ('sub', False, None, sub_content),
-        ('sub', True, None, sub_content_latest),
-        ('sub', False, '*.bar', []),
-        ('sub', True, '*.bar', []),
+        ('sub/', False, None, sub_content),
+        ('sub/', True, None, sub_content_latest),
+        ('sub/', False, '*.bar', []),
+        ('sub/', True, '*.bar', []),
     ]:
         assert backend.ls(
             folder,

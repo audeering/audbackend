@@ -310,32 +310,38 @@ class Backend:
             self,
             folder: str,
     ) -> typing.List[typing.Tuple[str, str, str]]:  # pragma: no cover
-        r"""List all files under folder.
+        r"""List all files under (sub-)path.
 
-        If folder does not exist an error should be raised.
+        * If path does not exist an error should be raised.
+        * If path ends on `/` it is a sub-path
 
         """
         raise NotImplementedError()
 
     def ls(
             self,
-            folder: str = '/',
+            path: str = '/',
             *,
             latest_version: bool = False,
             pattern: str = None,
             suppress_backend_errors: bool = False,
     ) -> typing.List[typing.Tuple[str, str]]:
-        r"""List all files under folder.
+        r"""List files on backend.
 
         Returns a sorted list of tuples
         with path and version.
-        When ``folder`` is set to the
-        root of the backend (``'/'``)
+        It is possible to provide a sub-path
+        e.g. ``/sub/path/``.
+        In that case all files 
+        that start with the sub-path are returned.         
+        When ``path`` is set to ``'/'``
         a (possibly empty) list with
-        all files on the backend is returned.
+        all files on the backend is returned.        
 
         Args:
-            folder: folder on backend
+            path: (sub-)path on backend.
+                If a sub-path is provided,
+                it has to end on ``/`` 
             latest_version: if multiple versions of a file exist,
                 only include the latest
             pattern: if not ``None``,
@@ -351,8 +357,8 @@ class Backend:
         Raises:
             BackendError: if ``suppress_backend_errors`` is ``False``
                 and an error is raised on the backend,
-                e.g. ``folder`` does not exist
-            ValueError: if ``folder`` contains invalid character
+                e.g. ``path`` does not exist
+            ValueError: if ``path`` contains invalid character
 
         Examples:
             >>> backend.ls()
@@ -361,16 +367,14 @@ class Backend:
             [('a/b.ext', '1.0.0'), ('name.ext', '1.0.0'), ('name.ext', '2.0.0')]
             >>> backend.ls(latest_version=True)
             [('a.zip', '1.0.0'), ('a/b.ext', '1.0.0'), ('name.ext', '2.0.0')]
-            >>> backend.ls('a')
+            >>> backend.ls('a/')
             [('a/b.ext', '1.0.0')]
 
         """  # noqa: E501
-        utils.check_path_for_allowed_chars(folder)
-        if not folder.endswith('/'):
-            folder += '/'
+        utils.check_path_for_allowed_chars(path)
         paths = utils.call_function_on_backend(
             self._ls,
-            folder,
+            path,
             suppress_backend_errors=suppress_backend_errors,
             fallback_return_value=[],
         )
@@ -652,13 +656,6 @@ class Backend:
             ['1.0.0', '2.0.0']
 
         """
-        utils.check_path_for_allowed_chars(path)
-
-        vs = utils.call_function_on_backend(
-            self._versions,
-            path,
-            suppress_backend_errors=suppress_backend_errors,
-            fallback_return_value=[],
-        )
-
-        return audeer.sort_versions(vs)
+        paths = self.ls(path, suppress_backend_errors=suppress_backend_errors)
+        vs = [v for _, v in paths]
+        return vs
