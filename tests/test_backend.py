@@ -14,10 +14,16 @@ def backend(request):
 
     name = request.param
     host = pytest.HOSTS[name]
-    repository = pytest.REPOSITORIES[name] + audeer.uid()[:8]
+    repository = f'unittest-{audeer.uid()[:8]}'
     backend = audbackend.create(name, host, repository)
 
     yield backend
+
+    # TODO: replace with audbackend.delete() when available
+    if name == 'artifactory':
+        backend._repo.delete()
+    elif name == 'file-system':
+        audeer.rmdir(backend._root)
 
 
 @pytest.mark.parametrize(
@@ -139,15 +145,15 @@ def test_archive(tmpdir, files, name, folder, version, tmp_root, backend):
         (
             'file-system',
             pytest.HOSTS['file-system'],
-            pytest.REPOSITORIES['file-system'],
+            f'unittest-{audeer.uid()[:8]}',
             audbackend.FileSystem,
         ),
-        (
-            'artifactory',
-            pytest.HOSTS['artifactory'],
-            pytest.REPOSITORIES['artifactory'],
-            audbackend.Artifactory,
-        ),
+        # (
+        #     'artifactory',
+        #     pytest.HOSTS['artifactory'],
+        #     f'unittest-{audeer.uid()[:8]}',
+        #     audbackend.Artifactory,
+        # ),
         pytest.param(  # backend does not exist
             'bad-backend',
             None,
@@ -155,18 +161,33 @@ def test_archive(tmpdir, files, name, folder, version, tmp_root, backend):
             None,
             marks=pytest.mark.xfail(raises=ValueError),
         ),
-        pytest.param(  # cannot create repository
+        pytest.param(  # host does not exist
             'artifactory',
             'bad-host',
-            'bad-repo',
+            'repo',
+            None,
+            marks=pytest.mark.xfail(raises=audbackend.BackendError),
+        ),
+        pytest.param(  # invalid repository name
+            'artifactory',
+            pytest.HOSTS['artifactory'],
+            'bad/repo',
             None,
             marks=pytest.mark.xfail(raises=audbackend.BackendError),
         ),
     ]
 )
 def test_create(name, host, repository, cls):
+
     backend = audbackend.create(name, host, repository)
+
     assert isinstance(backend, cls)
+
+    # TODO: replace with audbackend.delete() when available
+    if name == 'artifactory':
+        backend._repo.delete()
+    else:
+        audeer.rmdir(backend._root)
 
 
 @pytest.mark.parametrize(

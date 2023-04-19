@@ -23,9 +23,9 @@ class FileSystem(Backend):
     ):
         super().__init__(host, repository)
 
-        self.root = audeer.path(host, repository)
-        if not os.path.exists(self.root):
-            audeer.mkdir(self.root)
+        self._root = audeer.path(host, repository)
+        if not os.path.exists(self._root):
+            audeer.mkdir(self._root)
 
     def _checksum(
             self,
@@ -59,7 +59,7 @@ class FileSystem(Backend):
         folder = folder.replace(self.sep, os.path.sep)
         if folder.startswith(os.path.sep):
             folder = folder[1:]
-        folder = audeer.path(self.root, folder)
+        folder = audeer.path(self._root, folder)
         return folder
 
     def _get_file(
@@ -93,7 +93,7 @@ class FileSystem(Backend):
         result = []
         for full_path in paths:
 
-            full_path = full_path[len(self.root) + 1:]  # remove host and repo
+            full_path = full_path[len(self._root) + 1:]  # remove host and repo
             full_path = full_path.replace(os.path.sep, self.sep)
             tokens = full_path.split(self.sep)
 

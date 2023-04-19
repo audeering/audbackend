@@ -1,6 +1,7 @@
 import os
-
 import typing
+
+import dohq_artifactory
 
 import audfactory
 
@@ -24,10 +25,17 @@ class Artifactory(Backend):
     ):
         super().__init__(host, repository)
 
-        self.root = f'{self.host}/{self.repository}'
-        path = audfactory.path(self.root)
-        if not path.exists():
-            audfactory.path(self.root).mkdir()
+        self._artifactory = audfactory.path(self.host)
+        self._repo = self._artifactory.find_repository_local(self.repository)
+
+        if self._repo is None:
+            # create repository if it does not exist
+            self._repo = dohq_artifactory.RepositoryLocal(
+                self._artifactory,
+                self.repository,
+                packageType=dohq_artifactory.RepositoryLocal.GENERIC,
+            )
+            self._repo.create()
 
     def _checksum(
             self,
@@ -62,7 +70,7 @@ class Artifactory(Backend):
         folder = folder.replace(self.sep, '/')
         if not folder.startswith('/'):
             folder = '/' + folder
-        folder = f'{self.root}{folder}'
+        folder = f'{self._repo.path}{folder}'
         if not folder.endswith('/'):
             folder = folder + '/'
         return folder
@@ -99,7 +107,8 @@ class Artifactory(Backend):
         result = []
         for full_path in paths:
 
-            full_path = full_path[len(self.root) + 1:]  # remove host and repo
+            # remove host and repo
+            full_path = full_path[len(str(self._repo.path)):]
             full_path = full_path.replace('/', self.sep)
             tokens = full_path.split('/')
 
