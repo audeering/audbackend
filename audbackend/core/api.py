@@ -68,8 +68,8 @@ def create(
     :class:`audbackend.BackendError`
     is raised.
 
-    Use :func:`audbackend.avilable`
-    to list available backend alias.
+    Use :func:`audbackend.available`
+    to list available backend aliases.
 
     Args:
         name: alias under which backend class is registered
