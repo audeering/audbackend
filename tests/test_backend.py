@@ -315,7 +315,7 @@ def test_errors(tmpdir, backend):
         f"Cannot find a version for '{file_missing}' "
         f"in '{backend.repository}'"
     )
-    with pytest.raises(RuntimeError, match=error_msg):
+    with pytest.raises(audbackend.BackendError, match=error_backend):
         backend.latest_version(file_missing)
     # `path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):

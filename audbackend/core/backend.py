@@ -289,7 +289,6 @@ class Backend:
 
         Raises:
             BackendError: if an error is raised on the backend
-            RuntimeError: if no version is found
             ValueError: if ``path`` contains invalid character
 
         Examples:
@@ -298,15 +297,7 @@ class Backend:
 
         """
         utils.check_path_for_allowed_chars(path)
-
         vs = self.versions(path)
-        if not vs:
-            raise RuntimeError(
-                f"Cannot find a version for "
-                f"'{path}' in "
-                f"'{self.repository}'.",
-            )
-
         return vs[-1]
 
     def _ls(
