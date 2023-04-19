@@ -20,7 +20,7 @@ def available() -> typing.Dict[str, typing.List[Backend]]:
     r"""List available backends.
 
     Returns a dictionary with
-    registered backend names as keys
+    registered backend aliases as keys
     (see :func:`audbackend.register`)
     and a list with backend instances as values
     (see :func:`audbackend.create`).
@@ -52,10 +52,27 @@ def create(
         host: str,
         repository: str,
 ) -> Backend:
-    r"""Create backend.
+    r"""Create backend instance.
+
+    Returns an instance of the class
+    registered under the alias ``name``
+    with :func:`audbackend.register`.
+
+    If the ``repository``
+    does not yet exist
+    on the ``host``
+    it will be created.
+    If this is not possible
+    (e.g. user lacks permission)
+    an error of type
+    :class:`audbackend.BackendError`
+    is raised.
+
+    Use :func:`audbackend.avilable`
+    to list available backend alias.
 
     Args:
-        name: backend registry name
+        name: alias under which backend class is registered
         host: host address
         repository: repository name
 
@@ -64,7 +81,8 @@ def create(
 
     Raises:
         BackendError: if an error is raised on the backend
-        ValueError: if registry name does not exist
+        ValueError: if no backend class with alias ``name``
+            has been registered
 
     Examples:
         >>> create(
@@ -101,13 +119,14 @@ def register(
         name: str,
         cls: typing.Type[Backend],
 ):
-    r"""Register backend.
+    r"""Register backend class.
 
-    If a backend with this name already exists,
+    If there is already a backend class
+    registered under the alias ``name``
     it will be overwritten.
 
     Args:
-        name: backend registry name
+        name: alias under which backend class is registered
         cls: backend class
 
     Examples:

@@ -17,7 +17,6 @@ class Artifactory(Backend):
         repository: repository name
 
     """
-
     def __init__(
             self,
             host,
