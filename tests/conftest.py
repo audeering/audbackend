@@ -14,7 +14,7 @@ pytest.HOSTS = {
 
 # list of backends that will be tested
 pytest.BACKENDS = [
-    # 'artifactory',
+    'artifactory',
     'file-system',
 ]
 

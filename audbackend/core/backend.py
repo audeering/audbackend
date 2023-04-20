@@ -332,16 +332,16 @@ class Backend:
         with path and version.
         It is possible to provide a sub-path
         e.g. ``/sub/path/``.
-        In that case all files 
-        that start with the sub-path are returned.         
+        In that case all files
+        that start with the sub-path are returned.
         When ``path`` is set to ``'/'``
         a (possibly empty) list with
-        all files on the backend is returned.        
+        all files on the backend is returned.
 
         Args:
             path: (sub-)path on backend.
                 If a sub-path is provided,
-                it has to end on ``/`` 
+                it has to end on ``/``
             latest_version: if multiple versions of a file exist,
                 only include the latest
             pattern: if not ``None``,
