@@ -332,7 +332,7 @@ class Backend:
         with path and version.
         If a full path
         (e.g. ``/sub/file.ext``)
-        is provdided,
+        is provided,
         all versions of the path are returned.
         If a sub-path
         (e.g. ``/sub/``)
