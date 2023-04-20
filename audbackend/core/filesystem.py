@@ -22,7 +22,7 @@ class FileSystem(Backend):
     ):
         super().__init__(host, repository)
 
-        self._root = audeer.path(host, repository)
+        self._root = audeer.path(host, repository) + os.sep
         if not os.path.exists(self._root):
             audeer.mkdir(self._root)
 
@@ -46,7 +46,7 @@ class FileSystem(Backend):
         <path>
 
         """
-        path = path[len(self._root) + 1:]  # remove host and repo
+        path = path[len(self._root):]  # remove host and repo
         path = path.replace(os.path.sep, self.sep)
         return path
 
