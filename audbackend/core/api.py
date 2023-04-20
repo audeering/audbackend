@@ -87,11 +87,7 @@ def create(
             has been registered
 
     Examples:
-        >>> create(
-        ...     'file-system',
-        ...     'host',
-        ...     'doctest',
-        ... )
+        >>> create('file-system', 'host', 'doctest')
         ('audbackend.core.filesystem.FileSystem', 'host', 'doctest')
 
     """
