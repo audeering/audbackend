@@ -331,7 +331,7 @@ class Backend:
         Returns a sorted list of tuples
         with path and version.
         If a full path
-        (e.g. ``/sub/file.ext``)
+        (e.g. ``sub/file.ext``)
         is provided,
         all versions of the path are returned.
         If a sub-path
