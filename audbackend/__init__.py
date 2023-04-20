@@ -1,6 +1,7 @@
 from audbackend.core.api import (
     available,
     create,
+    delete,
     register,
 )
 from audbackend.core.artifactory import Artifactory
