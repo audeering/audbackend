@@ -475,11 +475,11 @@ def test_ls(tmpdir, backend):
         ('file.foo', '1.0.0'),
     ]
     sub_content = [
-        ('sub/file.foo', '1.0.0'),
-        ('sub/file.foo', '2.0.0'),
+        ('sub/.file.foo', '1.0.0'),
+        ('sub/.file.foo', '2.0.0'),
     ]
     sub_content_latest = [
-        ('sub/file.foo', '2.0.0'),
+        ('sub/.file.foo', '2.0.0'),
     ]
 
     # create content
@@ -506,16 +506,16 @@ def test_ls(tmpdir, backend):
         ('sub/', True, '*.bar', []),
         ('file.bar', False, None, content_bar),
         ('file.bar', True, None, [('file.bar', '2.0.0')]),
-        ('sub/file.foo', False, None, sub_content),
-        ('sub/file.foo', True, None, sub_content_latest),
+        ('sub/.file.foo', False, None, sub_content),
+        ('sub/.file.foo', True, None, sub_content_latest),
         ('/sub/', False, None, sub_content),
         ('/sub/', True, None, sub_content_latest),
         ('/sub/', False, '*.bar', []),
         ('/sub/', True, '*.bar', []),
         ('/file.bar', False, None, content_bar),
         ('/file.bar', True, None, [('file.bar', '2.0.0')]),
-        ('/sub/file.foo', False, None, sub_content),
-        ('/sub/file.foo', True, None, sub_content_latest),
+        ('/sub/.file.foo', False, None, sub_content),
+        ('/sub/.file.foo', True, None, sub_content_latest),
     ]:
         assert backend.ls(
             path,
