@@ -1,5 +1,4 @@
 import os
-import typing
 
 import dohq_artifactory
 
@@ -45,6 +44,21 @@ class Artifactory(Backend):
         path = self._path(path, version)
         return audfactory.checksum(path)
 
+    def _collapse(
+            self,
+            path,
+    ):
+        r"""Convert to virtual path.
+
+        <host>/<repository>/<path>
+        ->
+        <path>
+
+        """
+        path = path[len(str(self._repo.path)):]
+        path = path.replace('/', self.sep)
+        return path
+
     def _exists(
             self,
             path: str,
@@ -55,24 +69,22 @@ class Artifactory(Backend):
         path = audfactory.path(path)
         return path.exists()
 
-    def _folder(
+    def _expand(
             self,
-            folder: str,
+            path: str,
     ) -> str:
-        r"""Convert to backend folder.
+        r"""Convert to backend path.
 
-        <folder>
+        <path>
         ->
-        <host>/<repository>/<folder>
+        <host>/<repository>/<path>
 
         """
-        folder = folder.replace(self.sep, '/')
-        if not folder.startswith('/'):
-            folder = '/' + folder
-        folder = f'{self._repo.path}{folder}'
-        if not folder.endswith('/'):
-            folder = folder + '/'
-        return folder
+        path = path.replace(self.sep, '/')
+        if path.startswith('/'):
+            path = path[1:]
+        path = f'{self._repo.path}{path}'
+        return path
 
     def _get_file(
             self,
@@ -87,38 +99,45 @@ class Artifactory(Backend):
 
     def _ls(
             self,
-            folder: str,
+            path: str,
     ):
-        r"""List all files under folder.
+        r"""List all files under (sub-)path."""
 
-        If folder does not exist an error should be raised.
+        if path.endswith('/'):  # find files under sub-path
 
-        """
+            path = self._expand(path)
+            path = audfactory.path(path)
+            if not path.exists():
+                utils.raise_file_not_found_error(str(path))
+            paths = [str(x) for x in path.glob("**/*") if x.is_file()]
 
-        folder = self._folder(folder)
-        folder = audfactory.path(folder)
+        else:  # find versions of path
 
-        if not folder.exists():
-            utils.raise_file_not_found_error(str(folder))
+            root, _ = self.split(path)
+            root = self._expand(root)
+            root = audfactory.path(root)
+            vs = [os.path.basename(str(f)) for f in root if f.is_dir]
 
-        paths = [str(x) for x in folder.glob("**/*") if x.is_file()]
+            # filter out other files with same root and version
+            paths = [self._path(path, v) for v in vs if self._exists(path, v)]
 
-        # <host>/<repository>/<folder>/<name>
+            if not paths:
+                utils.raise_file_not_found_error(path)
+
+        # <host>/<repository>/<root>/<name>
         # ->
-        # (<folder>/<name>, <version>)
+        # (<root>/<name>, <version>)
 
         result = []
-        for full_path in paths:
+        for p in paths:
 
-            # remove host and repo
-            full_path = full_path[len(str(self._repo.path)):]
-            full_path = full_path.replace('/', self.sep)
-            tokens = full_path.split('/')
+            p = self._collapse(p)  # remove host and repo
+            tokens = p.split('/')
 
             name = tokens[-1]
             version = tokens[-2]
-            folder = self.sep.join(tokens[:-2])
-            path = self.join(folder, name)
+            path = self.sep.join(tokens[:-2])
+            path = self.join(path, name)
 
             result.append((path, version))
 
@@ -131,15 +150,14 @@ class Artifactory(Backend):
     ) -> str:
         r"""Convert to backend path.
 
-        <folder>/<name>
+        <root>/<name>
         ->
-        <host>/<repository>/<folder>/<version>/<name>
+        <host>/<repository>/<root>/<version>/<name>
 
         """
-        folder, name = self.split(path)
-        folder = self._folder(folder)
-        path = f'{folder}{version}/{name}'
-
+        root, name = self.split(path)
+        root = self._expand(root)
+        path = f'{root}/{version}/{name}'
         return path
 
     def _put_file(
@@ -161,26 +179,3 @@ class Artifactory(Backend):
         r"""Remove file from backend."""
         path = self._path(path, version)
         audfactory.path(path).unlink()
-
-    def _versions(
-            self,
-            path: str,
-    ) -> typing.List[str]:
-        r"""Versions of a file.
-
-        If path does not exist an error should be raised.
-
-        """
-        folder, _ = self.split(path)
-        folder = self._folder(folder)
-        folder = audfactory.path(folder)
-
-        vs = [os.path.basename(str(f)) for f in folder if f.is_dir]
-
-        # filter out versions of files with different extension
-        vs = [v for v in vs if self._exists(path, v)]
-
-        if not vs:
-            utils.raise_file_not_found_error(path)
-
-        return vs

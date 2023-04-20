@@ -461,23 +461,44 @@ def test_ls(tmpdir, backend):
     assert backend.ls() == []
     assert backend.ls('/') == []
 
-    sub_content = [  # files in sub directory
-        ('sub/file.foo', '1.0.0'),
-        ('sub/file.foo', '2.0.0'),
+    root = [
+        ('file.bar', '1.0.0'),
+        ('file.bar', '2.0.0'),
+        ('file.foo', '1.0.0'),
     ]
-    sub_content_latest = sub_content[-1:]
-
-    content = [  # files in root directory
+    root_latest = [
+        ('file.bar', '2.0.0'),
+        ('file.foo', '1.0.0'),
+    ]
+    root_foo = [
+        ('file.foo', '1.0.0'),
+    ]
+    root_bar = [
         ('file.bar', '1.0.0'),
         ('file.bar', '2.0.0'),
     ]
-    content_latest = content[-1:] + sub_content_latest
-    content += sub_content
+    root_bar_latest = [
+        ('file.bar', '2.0.0'),
+    ]
+    sub = [
+        ('sub/file.foo', '1.0.0'),
+        ('sub/file.foo', '2.0.0'),
+    ]
+    sub_latest = [
+        ('sub/file.foo', '2.0.0'),
+    ]
+    hidden = [
+        ('.sub/.file.foo', '1.0.0'),
+        ('.sub/.file.foo', '2.0.0'),
+    ]
+    hidden_latest = [
+        ('.sub/.file.foo', '2.0.0'),
+    ]
 
     # create content
 
     tmp_file = os.path.join(tmpdir, '~')
-    for path, version in content:
+    for path, version in root + sub + hidden:
         audeer.touch(tmp_file)
         backend.put_file(
             tmp_file,
@@ -487,18 +508,38 @@ def test_ls(tmpdir, backend):
 
     # test
 
-    for folder, latest, pattern, expected in [
-        ('/', False, None, content),
-        ('/', True, None, content_latest),
-        ('/', False, '*.foo', sub_content),
-        ('/', True, '*.foo', sub_content_latest),
-        ('sub', False, None, sub_content),
-        ('sub', True, None, sub_content_latest),
-        ('sub', False, '*.bar', []),
-        ('sub', True, '*.bar', []),
+    for path, latest, pattern, expected in [
+        ('/', False, None, root + sub + hidden),
+        ('/', True, None, root_latest + sub_latest + hidden_latest),
+        ('/', False, '*.foo', root_foo + sub + hidden),
+        ('/', True, '*.foo', root_foo + sub_latest + hidden_latest),
+        ('sub/', False, None, sub),
+        ('sub/', True, None, sub_latest),
+        ('sub/', False, '*.bar', []),
+        ('sub/', True, '*.bar', []),
+        ('.sub/', False, None, hidden),
+        ('.sub/', True, None, hidden_latest),
+        ('file.bar', False, None, root_bar),
+        ('file.bar', True, None, root_bar_latest),
+        ('sub/file.foo', False, None, sub),
+        ('sub/file.foo', True, None, sub_latest),
+        ('.sub/.file.foo', False, None, hidden),
+        ('.sub/.file.foo', True, None, hidden_latest),
+        ('/sub/', False, None, sub),
+        ('/sub/', True, None, sub_latest),
+        ('/sub/', False, '*.bar', []),
+        ('/sub/', True, '*.bar', []),
+        ('/.sub/', False, None, hidden),
+        ('/.sub/', True, None, hidden_latest),
+        ('/file.bar', False, None, root_bar),
+        ('/file.bar', True, None, root_bar_latest),
+        ('/sub/file.foo', False, None, sub),
+        ('/sub/file.foo', True, None, sub_latest),
+        ('/.sub/.file.foo', False, None, hidden),
+        ('/.sub/.file.foo', True, None, hidden_latest),
     ]:
         assert backend.ls(
-            folder,
+            path,
             latest_version=latest,
             pattern=pattern,
         ) == sorted(expected)

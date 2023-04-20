@@ -267,8 +267,8 @@ class Backend:
             ValueError: if joined path contains invalid character
 
         Examples:
-            >>> backend.join('folder', 'name.ext')
-            'folder/name.ext'
+            >>> backend.join('sub', 'name.ext')
+            'sub/name.ext'
 
         """
         paths = [path] + [p for p in paths]
@@ -308,34 +308,45 @@ class Backend:
 
     def _ls(
             self,
-            folder: str,
+            path: str,
     ) -> typing.List[typing.Tuple[str, str, str]]:  # pragma: no cover
-        r"""List all files under folder.
+        r"""List all files under (sub-)path.
 
-        If folder does not exist an error should be raised.
+        * If path does not exist an error should be raised.
+        * If path ends on `/` it is a sub-path
 
         """
         raise NotImplementedError()
 
     def ls(
             self,
-            folder: str = '/',
+            path: str = '/',
             *,
             latest_version: bool = False,
             pattern: str = None,
             suppress_backend_errors: bool = False,
     ) -> typing.List[typing.Tuple[str, str]]:
-        r"""List all files under folder.
+        r"""List files on backend.
 
         Returns a sorted list of tuples
         with path and version.
-        When ``folder`` is set to the
-        root of the backend (``'/'``)
+        If a full path
+        (e.g. ``sub/file.ext``)
+        is provided,
+        all versions of the path are returned.
+        If a sub-path
+        (e.g. ``sub/``)
+        is provided,
+        all files that start with
+        the sub-path are returned.
+        When ``path`` is set to ``'/'``
         a (possibly empty) list with
         all files on the backend is returned.
 
         Args:
-            folder: folder on backend
+            path: path or sub-path
+                (if it ends with ``'/'``)
+                on backend
             latest_version: if multiple versions of a file exist,
                 only include the latest
             pattern: if not ``None``,
@@ -351,26 +362,26 @@ class Backend:
         Raises:
             BackendError: if ``suppress_backend_errors`` is ``False``
                 and an error is raised on the backend,
-                e.g. ``folder`` does not exist
-            ValueError: if ``folder`` contains invalid character
+                e.g. ``path`` does not exist
+            ValueError: if ``path`` contains invalid character
 
         Examples:
             >>> backend.ls()
             [('a.zip', '1.0.0'), ('a/b.ext', '1.0.0'), ('name.ext', '1.0.0'), ('name.ext', '2.0.0')]
-            >>> backend.ls(pattern='*.ext')
-            [('a/b.ext', '1.0.0'), ('name.ext', '1.0.0'), ('name.ext', '2.0.0')]
             >>> backend.ls(latest_version=True)
             [('a.zip', '1.0.0'), ('a/b.ext', '1.0.0'), ('name.ext', '2.0.0')]
-            >>> backend.ls('a')
+            >>> backend.ls('name.ext')
+            [('name.ext', '1.0.0'), ('name.ext', '2.0.0')]
+            >>> backend.ls(pattern='*.ext')
+            [('a/b.ext', '1.0.0'), ('name.ext', '1.0.0'), ('name.ext', '2.0.0')]
+            >>> backend.ls('a/')
             [('a/b.ext', '1.0.0')]
 
         """  # noqa: E501
-        utils.check_path_for_allowed_chars(folder)
-        if not folder.endswith('/'):
-            folder += '/'
+        utils.check_path_for_allowed_chars(path)
         paths = utils.call_function_on_backend(
             self._ls,
-            folder,
+            path,
             suppress_backend_errors=suppress_backend_errors,
             fallback_return_value=[],
         )
@@ -517,10 +528,10 @@ class Backend:
             ValueError: if ``dst_path`` contains invalid character
 
         Examples:
-            >>> backend.exists('folder/name.ext', '3.0.0')
+            >>> backend.exists('sub/name.ext', '3.0.0')
             False
-            >>> backend.put_file('src.pth', 'folder/name.ext', '3.0.0')
-            >>> backend.exists('folder/name.ext', '3.0.0')
+            >>> backend.put_file('src.pth', 'sub/name.ext', '3.0.0')
+            >>> backend.exists('sub/name.ext', '3.0.0')
             True
 
         """
@@ -590,39 +601,28 @@ class Backend:
             self,
             path: str,
     ) -> typing.Tuple[str, str]:
-        r"""Split path on backend into folder and basename.
+        r"""Split path on backend into root and basename.
 
         Args:
             path: path containing :attr:`Backend.sep` as separator
 
         Returns:
-            tuple containing (folder, basename)
+            tuple containing (root, basename)
 
         Raises:
             ValueError: if ``path`` contains invalid character
 
         Examples:
-            >>> backend.split('folder/name.ext')
-            ('folder', 'name.ext')
+            >>> backend.split('sub/name.ext')
+            ('sub', 'name.ext')
 
         """
         utils.check_path_for_allowed_chars(path)
 
-        folder = self.sep.join(path.split(self.sep)[:-1])
+        root = self.sep.join(path.split(self.sep)[:-1])
         basename = path.split(self.sep)[-1]
 
-        return folder, basename
-
-    def _versions(
-            self,
-            path: str,
-    ) -> typing.List[str]:  # pragma: no cover
-        r"""Versions of a file.
-
-        If path does not exist an error should be raised.
-
-        """
-        raise NotImplementedError()
+        return root, basename
 
     def versions(
             self,
@@ -652,13 +652,6 @@ class Backend:
             ['1.0.0', '2.0.0']
 
         """
-        utils.check_path_for_allowed_chars(path)
-
-        vs = utils.call_function_on_backend(
-            self._versions,
-            path,
-            suppress_backend_errors=suppress_backend_errors,
-            fallback_return_value=[],
-        )
-
-        return audeer.sort_versions(vs)
+        paths = self.ls(path, suppress_backend_errors=suppress_backend_errors)
+        vs = [v for _, v in paths]
+        return vs
