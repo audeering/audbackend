@@ -624,17 +624,6 @@ class Backend:
 
         return root, basename
 
-    def _versions(
-            self,
-            path: str,
-    ) -> typing.List[str]:  # pragma: no cover
-        r"""Versions of a file.
-
-        If path does not exist an error should be raised.
-
-        """
-        raise NotImplementedError()
-
     def versions(
             self,
             path: str,
