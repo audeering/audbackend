@@ -340,8 +340,7 @@ class Backend:
 
         Args:
             path: (sub-)path on backend.
-                If a sub-path is provided,
-                it has to end on ``/``
+                A sub-path must end on ``/``
             latest_version: if multiple versions of a file exist,
                 only include the latest
             pattern: if not ``None``,
@@ -363,10 +362,12 @@ class Backend:
         Examples:
             >>> backend.ls()
             [('a.zip', '1.0.0'), ('a/b.ext', '1.0.0'), ('name.ext', '1.0.0'), ('name.ext', '2.0.0')]
-            >>> backend.ls(pattern='*.ext')
-            [('a/b.ext', '1.0.0'), ('name.ext', '1.0.0'), ('name.ext', '2.0.0')]
             >>> backend.ls(latest_version=True)
             [('a.zip', '1.0.0'), ('a/b.ext', '1.0.0'), ('name.ext', '2.0.0')]
+            >>> backend.ls('name.ext')
+            [('name.ext', '1.0.0'), ('name.ext', '2.0.0')]
+            >>> backend.ls(pattern='*.ext')
+            [('a/b.ext', '1.0.0'), ('name.ext', '1.0.0'), ('name.ext', '2.0.0')]
             >>> backend.ls('a/')
             [('a/b.ext', '1.0.0')]
 

@@ -32,7 +32,6 @@ class FileSystem(Backend):
             version: str,
     ) -> str:
         r"""MD5 checksum of file on backend."""
-        path = self._expand(path)
         path = self._path(path, version)
         return utils.md5(path)
 
@@ -57,7 +56,6 @@ class FileSystem(Backend):
             version: str,
     ) -> bool:
         r"""Check if file exists on backend."""
-        path = self._expand(path)
         path = self._path(path, version)
         return os.path.exists(path)
 
@@ -86,7 +84,6 @@ class FileSystem(Backend):
             verbose: bool,
     ):
         r"""Get file from backend."""
-        src_path = self._expand(src_path)
         src_path = self._path(src_path, version)
         shutil.copy(src_path, dst_path)
 
@@ -95,28 +92,26 @@ class FileSystem(Backend):
             path: str,
     ):
         r"""List all files under (sub-)path."""
-        path = self._expand(path)
 
-        if path.endswith('/'):
+        if path.endswith('/'):  # find files under sub-path
+
+            path = self._expand(path)
             if not os.path.exists(path):
                 utils.raise_file_not_found_error(path)
             paths = audeer.list_file_names(path, recursive=True)
-        else:
+
+        else:  # find versions of path
+
             root, _ = self.split(path)
-            if not os.path.exists(root):
-                utils.raise_file_not_found_error(path)
+            root = self._expand(root)
             vs = audeer.list_dir_names(
                 root,
                 basenames=True,
             )
-            # consider only folders that are version strings
-            paths = [
-                self._path(path, v) for v in vs
-                if audeer.is_semantic_version(v)
-            ]
-            # keep only existing paths to filter out
-            # versions of other files under same root
-            paths = [p for p in paths if os.path.exists(p)]
+
+            # filter out other files with same root and version
+            paths = [self._path(path, v) for v in vs if self._exists(path, v)]
+
             if not paths:
                 utils.raise_file_not_found_error(path)
 
@@ -152,6 +147,7 @@ class FileSystem(Backend):
 
         """
         root, name = self.split(path)
+        root = self._expand(root)
         path = os.path.join(root, version, name)
         return path
 
@@ -163,7 +159,6 @@ class FileSystem(Backend):
             verbose: bool,
     ):
         r"""Put file to backend."""
-        dst_path = self._expand(dst_path)
         dst_path = self._path(dst_path, version)
         audeer.mkdir(os.path.dirname(dst_path))
         shutil.copy(src_path, dst_path)
@@ -174,6 +169,5 @@ class FileSystem(Backend):
             version: str,
     ):
         r"""Remove file from backend."""
-        path = self._expand(path)
         path = self._path(path, version)
         os.remove(path)

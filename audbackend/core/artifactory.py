@@ -103,16 +103,15 @@ class Artifactory(Backend):
     ):
         r"""List all files under (sub-)path."""
 
-        if path.endswith('/'):
+        if path.endswith('/'):  # find files under sub-path
 
-            # find files under sub-path
             path = self._expand(path)
             path = audfactory.path(path)
             if not path.exists():
                 utils.raise_file_not_found_error(str(path))
             paths = [str(x) for x in path.glob("**/*") if x.is_file()]
 
-        else:
+        else:  # find versions of path
 
             root, _ = self.split(path)
             root = self._expand(root)
