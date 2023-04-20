@@ -344,9 +344,9 @@ class Backend:
         all files on the backend is returned.
 
         Args:
-            path: path or sub-path 
-                (if it ends with ``'/'``) 
-                on backend 
+            path: path or sub-path
+                (if it ends with ``'/'``)
+                on backend
             latest_version: if multiple versions of a file exist,
                 only include the latest
             pattern: if not ``None``,
