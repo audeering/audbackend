@@ -107,6 +107,7 @@ class FileSystem(Backend):
             vs = audeer.list_dir_names(
                 root,
                 basenames=True,
+                hidden=True,
             )
 
             # filter out other files with same root and version
