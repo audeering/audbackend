@@ -267,8 +267,8 @@ class Backend:
             ValueError: if joined path contains invalid character
 
         Examples:
-            >>> backend.join('folder', 'name.ext')
-            'folder/name.ext'
+            >>> backend.join('sub', 'name.ext')
+            'sub/name.ext'
 
         """
         paths = [path] + [p for p in paths]
@@ -308,7 +308,7 @@ class Backend:
 
     def _ls(
             self,
-            folder: str,
+            path: str,
     ) -> typing.List[typing.Tuple[str, str, str]]:  # pragma: no cover
         r"""List all files under (sub-)path.
 
@@ -521,10 +521,10 @@ class Backend:
             ValueError: if ``dst_path`` contains invalid character
 
         Examples:
-            >>> backend.exists('folder/name.ext', '3.0.0')
+            >>> backend.exists('sub/name.ext', '3.0.0')
             False
-            >>> backend.put_file('src.pth', 'folder/name.ext', '3.0.0')
-            >>> backend.exists('folder/name.ext', '3.0.0')
+            >>> backend.put_file('src.pth', 'sub/name.ext', '3.0.0')
+            >>> backend.exists('sub/name.ext', '3.0.0')
             True
 
         """
@@ -594,28 +594,28 @@ class Backend:
             self,
             path: str,
     ) -> typing.Tuple[str, str]:
-        r"""Split path on backend into folder and basename.
+        r"""Split path on backend into root and basename.
 
         Args:
             path: path containing :attr:`Backend.sep` as separator
 
         Returns:
-            tuple containing (folder, basename)
+            tuple containing (root, basename)
 
         Raises:
             ValueError: if ``path`` contains invalid character
 
         Examples:
-            >>> backend.split('folder/name.ext')
-            ('folder', 'name.ext')
+            >>> backend.split('sub/name.ext')
+            ('sub', 'name.ext')
 
         """
         utils.check_path_for_allowed_chars(path)
 
-        folder = self.sep.join(path.split(self.sep)[:-1])
+        root = self.sep.join(path.split(self.sep)[:-1])
         basename = path.split(self.sep)[-1]
 
-        return folder, basename
+        return root, basename
 
     def _versions(
             self,

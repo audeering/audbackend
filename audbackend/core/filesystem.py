@@ -103,11 +103,11 @@ class FileSystem(Backend):
                 utils.raise_file_not_found_error(path)
             paths = audeer.list_file_names(path, recursive=True)
         else:
-            folder, _ = self.split(path)
-            if not os.path.exists(folder):
+            root, _ = self.split(path)
+            if not os.path.exists(root):
                 utils.raise_file_not_found_error(path)
             vs = audeer.list_dir_names(
-                folder,
+                root,
                 basenames=True,
             )
             # consider only folders that are version strings
@@ -116,14 +116,14 @@ class FileSystem(Backend):
                 if audeer.is_semantic_version(v)
             ]
             # keep only existing paths to filter out
-            # versions of other files in same folder
+            # versions of other files under same root
             paths = [p for p in paths if os.path.exists(p)]
             if not paths:
                 utils.raise_file_not_found_error(path)
 
-        # <host>/<repository>/<folder>/<version>/<name>
+        # <host>/<repository>/<root>/<version>/<name>
         # ->
-        # (<folder>/<name>, <version>)
+        # (<root>/<name>, <version>)
 
         result = []
         for p in paths:
@@ -147,13 +147,13 @@ class FileSystem(Backend):
     ) -> str:
         r"""Convert to backend path.
 
-        <host>/<repository>/<folder>/<name>
+        <host>/<repository>/<root>/<name>
         ->
-        <host>/<repository>/<folder>/<version>/<name>
+        <host>/<repository>/<root>/<version>/<name>
 
         """
-        folder, name = self.split(path)
-        path = os.path.join(folder, version, name)
+        root, name = self.split(path)
+        path = os.path.join(root, version, name)
         return path
 
     def _put_file(

@@ -42,8 +42,24 @@ class Artifactory(Backend):
             version: str,
     ) -> str:
         r"""MD5 checksum of file on backend."""
+        path = self._expand(path)
         path = self._path(path, version)
         return audfactory.checksum(path)
+
+    def _collapse(
+            self,
+            path,
+    ):
+        r"""Convert to virtual path
+
+        <host>/<repository>/<path>
+        ->
+        <path>
+
+        """
+        path = path[len(self._repo.path) + 1:]  # remove host and repo
+        path = path.replace('/', self.sep)
+        return path
 
     def _exists(
             self,
@@ -51,28 +67,27 @@ class Artifactory(Backend):
             version: str,
     ) -> bool:
         r"""Check if file exists on backend."""
+        path = self._expand(path)
         path = self._path(path, version)
         path = audfactory.path(path)
         return path.exists()
 
-    def _folder(
+    def _expand(
             self,
-            folder: str,
+            path: str,
     ) -> str:
-        r"""Convert to backend folder.
+        r"""Convert to backend path.
 
-        <folder>
+        <path>
         ->
-        <host>/<repository>/<folder>
+        <host>/<repository>/<path>
 
         """
-        folder = folder.replace(self.sep, '/')
-        if not folder.startswith('/'):
-            folder = '/' + folder
-        folder = f'{self._repo.path}{folder}'
-        if not folder.endswith('/'):
-            folder = folder + '/'
-        return folder
+        path = path.replace(self.sep, '/')
+        if not path.startswith('/'):
+            path = '/' + path
+        path = f'{self._repo.path}{path}'
+        return path
 
     def _get_file(
             self,
@@ -82,6 +97,7 @@ class Artifactory(Backend):
             verbose: bool,
     ):
         r"""Get file from backend."""
+        src_path = self._expand(src_path)
         src_path = self._path(src_path, version)
         audfactory.download(src_path, dst_path, verbose=verbose)
 
@@ -95,7 +111,7 @@ class Artifactory(Backend):
 
         """
 
-        folder = self._folder(folder)
+        folder = self._expand(folder)
         folder = audfactory.path(folder)
 
         if not folder.exists():
@@ -131,15 +147,13 @@ class Artifactory(Backend):
     ) -> str:
         r"""Convert to backend path.
 
-        <folder>/<name>
+        <root>/<name>
         ->
-        <host>/<repository>/<folder>/<version>/<name>
+        <host>/<repository>/<root>/<version>/<name>
 
         """
-        folder, name = self.split(path)
-        folder = self._folder(folder)
-        path = f'{folder}{version}/{name}'
-
+        root, name = self.split(path)
+        path = f'{root}/{version}/{name}'
         return path
 
     def _put_file(
@@ -172,7 +186,7 @@ class Artifactory(Backend):
 
         """
         folder, _ = self.split(path)
-        folder = self._folder(folder)
+        folder = self._expand(folder)
         folder = audfactory.path(folder)
 
         vs = [os.path.basename(str(f)) for f in folder if f.is_dir]
