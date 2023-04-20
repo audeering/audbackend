@@ -48,7 +48,7 @@ class Artifactory(Backend):
             self,
             path,
     ):
-        r"""Convert to virtual path
+        r"""Convert to virtual path.
 
         <host>/<repository>/<path>
         ->
