@@ -4,6 +4,8 @@ import pytest
 
 import audeer
 
+import audbackend
+
 
 pytest.ROOT = os.path.dirname(os.path.realpath(__file__))
 
@@ -12,11 +14,25 @@ pytest.HOSTS = {
     'file-system': os.path.join(pytest.ROOT, 'host'),
 }
 
-# list of backends that will be tested
+# list of backends that will be tested by default
 pytest.BACKENDS = [
     'artifactory',
     'file-system',
 ]
+
+
+@pytest.fixture(scope='function', autouse=False)
+def backend(request):
+
+    name = request.param
+    host = pytest.HOSTS[name]
+    repository = f'unittest-{audeer.uid()[:8]}'
+
+    backend = audbackend.create(name, host, repository)
+
+    yield backend
+
+    audbackend.delete(name, host, repository)
 
 
 @pytest.fixture(scope='package', autouse=True)

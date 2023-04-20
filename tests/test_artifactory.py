@@ -4,20 +4,11 @@ import audbackend
 import audeer
 
 
-@pytest.fixture(scope='function')
-def backend(request):
-
-    backend = audbackend.Artifactory(
-        pytest.HOSTS['artifactory'],
-        f'unittest-{audeer.uid()[:8]}',
-    )
-
-    yield backend
-
-    # TODO: replace with audbackend.delete() when available
-    backend._repo.delete()
-
-
+@pytest.mark.parametrize(
+    'backend',
+    ['artifactory'],
+    indirect=True,
+)
 def test_errors(tmpdir, backend, no_artifactory_access_rights):
 
     local_file = audeer.touch(
