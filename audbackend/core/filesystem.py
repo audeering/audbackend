@@ -98,7 +98,7 @@ class FileSystem(Backend):
             path = self._expand(path)
             if not os.path.exists(path):
                 utils.raise_file_not_found_error(path)
-            paths = audeer.list_file_names(path, recursive=True)
+            paths = audeer.list_file_names(path, recursive=True, hidden=True)
 
         else:  # find versions of path
 
