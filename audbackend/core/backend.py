@@ -330,10 +330,15 @@ class Backend:
 
         Returns a sorted list of tuples
         with path and version.
-        It is possible to provide a sub-path
-        e.g. ``/sub/path/``.
-        In that case all files
-        that start with the sub-path are returned.
+        If a full path
+        (e.g. ``/sub/file.ext``)
+        is provdided,
+        all versions of the path are returned.
+        If a sub-path
+        (e.g. ``/sub/``)
+        is provided,
+        all files that start with
+        the sub-path are returned.
         When ``path`` is set to ``'/'``
         a (possibly empty) list with
         all files on the backend is returned.
