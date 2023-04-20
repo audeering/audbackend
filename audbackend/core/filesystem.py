@@ -50,6 +50,12 @@ class FileSystem(Backend):
         path = path.replace(os.path.sep, self.sep)
         return path
 
+    def _delete(
+            self,
+    ):
+        r"""Delete repository and all its content."""
+        audeer.rmdir(self._root)
+
     def _exists(
             self,
             path: str,
