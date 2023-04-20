@@ -38,5 +38,6 @@ the following classes and functions are available.
     Repository
     available
     create
+    delete
     md5
     register

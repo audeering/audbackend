@@ -59,6 +59,12 @@ class Artifactory(Backend):
         path = path.replace('/', self.sep)
         return path
 
+    def _delete(
+            self,
+    ):
+        r"""Delete repository and all its content."""
+        self._repo.delete()
+
     def _exists(
             self,
             path: str,

@@ -72,6 +72,12 @@ class Backend:
             version,
         )
 
+    def _delete(
+            self,
+    ):  # pragma: no cover
+        r"""Delete repository and all its content."""
+        raise NotImplementedError()
+
     def _exists(
             self,
             path: str,

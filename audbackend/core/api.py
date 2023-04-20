@@ -17,7 +17,7 @@ r"""Backend registry."""
 
 
 def available() -> typing.Dict[str, typing.List[Backend]]:
-    r"""List available backends.
+    r"""List available backend instances.
 
     Returns a dictionary with
     registered backend aliases as keys
@@ -26,7 +26,7 @@ def available() -> typing.Dict[str, typing.List[Backend]]:
     (see :func:`audbackend.create`).
 
     Returns:
-        dictionary with backends
+        dictionary with backend instances
 
     Examples:
         >>> list(available())
@@ -54,7 +54,9 @@ def create(
 ) -> Backend:
     r"""Create backend instance.
 
-    Returns an instance of the class
+    Returns a backend instance for the
+    ``repository`` on the ``host``.
+    The instance is an object of the class
     registered under the alias ``name``
     with :func:`audbackend.register`.
 
@@ -69,7 +71,7 @@ def create(
     is raised.
 
     Use :func:`audbackend.available`
-    to list available backend aliases.
+    to list available backend instances.
 
     Args:
         name: alias under which backend class is registered
@@ -85,12 +87,8 @@ def create(
             has been registered
 
     Examples:
-        >>> create(
-        ...     'file-system',
-        ...     'host',
-        ...     'repo',
-        ... )
-        ('audbackend.core.filesystem.FileSystem', 'host', 'repo')
+        >>> create('file-system', 'host', 'doctest')
+        ('audbackend.core.filesystem.FileSystem', 'host', 'doctest')
 
     """
     if name not in backend_registry:
@@ -113,6 +111,42 @@ def create(
             repository,
         )
     return backends[name][host][repository]
+
+
+def delete(
+        name: str,
+        host: str,
+        repository: str,
+):
+    r"""Delete repository and remove backend instance.
+
+    .. warning:: Deletes the repository and all its content.
+
+    If an instance of the backend exists,
+    it will be removed from the available instances.
+    See also :func:`audbackend.available`.
+
+    Args:
+        name: alias under which backend class is registered
+        host: host address
+        repository: repository name
+
+    Raises:
+        BackendError: if an error is raised on the backend
+        ValueError: if no backend class with alias ``name``
+            has been registered
+
+    Examples:
+        >>> create('file-system', 'host', 'doctest').ls()
+        [('a.zip', '1.0.0'), ('a/b.ext', '1.0.0'), ('name.ext', '1.0.0'), ('name.ext', '2.0.0')]
+        >>> delete('file-system', 'host', 'doctest')
+        >>> create('file-system', 'host', 'doctest').ls()
+        []
+
+    """  # noqa: E501
+    backend = create(name, host, repository)
+    utils.call_function_on_backend(backend._delete)
+    backends[name][host].pop(repository)
 
 
 def register(
