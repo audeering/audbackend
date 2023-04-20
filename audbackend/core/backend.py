@@ -335,7 +335,7 @@ class Backend:
         is provided,
         all versions of the path are returned.
         If a sub-path
-        (e.g. ``/sub/``)
+        (e.g. ``sub/``)
         is provided,
         all files that start with
         the sub-path are returned.
