@@ -74,6 +74,14 @@ def md5_read_chunk(
         yield data
 
 
+def raise_file_exists_error(path: str):
+    raise FileExistsError(
+        errno.EEXIST,
+        os.strerror(errno.EEXIST),
+        path,
+    )
+
+
 def raise_file_not_found_error(path: str):
     raise FileNotFoundError(
         errno.ENOENT,

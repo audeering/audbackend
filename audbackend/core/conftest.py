@@ -15,11 +15,10 @@ def prepare_docstring_tests(doctest_namespace):
         current_dir = os.getcwd()
         os.chdir(tmp)
 
-        backend = audbackend.create(
-            'file-system',
-            'host',
-            'doctest',
-        )
+        host = 'host'
+        repository = 'doctest'
+
+        backend = audbackend.create('file-system', host, repository)
 
         file = 'src.pth'
         audeer.touch(file)
@@ -31,5 +30,7 @@ def prepare_docstring_tests(doctest_namespace):
         doctest_namespace['backend'] = backend
 
         yield
+
+        audbackend.delete('file-system', host, repository)
 
         os.chdir(current_dir)

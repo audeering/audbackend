@@ -36,6 +36,7 @@ the following classes and functions are available.
 
     BackendError
     Repository
+    access
     available
     create
     delete

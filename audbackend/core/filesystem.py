@@ -23,8 +23,13 @@ class FileSystem(Backend):
         super().__init__(host, repository)
 
         self._root = audeer.path(host, repository) + os.sep
+
+    def _access(
+            self,
+    ):
+        r"""Access existing repository."""
         if not os.path.exists(self._root):
-            audeer.mkdir(self._root)
+            utils.raise_file_not_found_error(self._root)
 
     def _checksum(
             self,
@@ -49,6 +54,15 @@ class FileSystem(Backend):
         path = path[len(self._root):]  # remove host and repo
         path = path.replace(os.path.sep, self.sep)
         return path
+
+    def _create(
+            self,
+    ):
+        r"""Access existing repository."""
+        if os.path.exists(self._root):
+            utils.raise_file_exists_error(self._root)
+
+        audeer.mkdir(self._root)
 
     def _delete(
             self,

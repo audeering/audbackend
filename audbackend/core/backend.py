@@ -32,6 +32,16 @@ class Backend:
         name = f'{self.__class__.__module__}.{self.__class__.__name__}'
         return str((name, self.host, self.repository))
 
+    def _access(
+            self,
+    ):  # pragma: no cover
+        r"""Access existing repository.
+
+        * If repository does not exist an error should be raised
+
+        """
+        raise NotImplementedError()
+
     def _checksum(
             self,
             path: str,
@@ -71,6 +81,16 @@ class Backend:
             path,
             version,
         )
+
+    def _create(
+            self,
+    ):  # pragma: no cover
+        r"""Create a new repository.
+
+        * If repository exists already an error should be raised
+
+        """
+        raise NotImplementedError()
 
     def _delete(
             self,
@@ -318,7 +338,7 @@ class Backend:
     ) -> typing.List[typing.Tuple[str, str, str]]:  # pragma: no cover
         r"""List all files under (sub-)path.
 
-        * If path does not exist an error should be raised.
+        * If path does not exist an error should be raised
         * If path ends on `/` it is a sub-path
 
         """
