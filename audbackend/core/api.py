@@ -16,6 +16,35 @@ backend_registry = {
 r"""Backend registry."""
 
 
+def _backend(
+        name: str,
+        host: str,
+        repository: str,
+) -> Backend:
+    r"""Get backend instance."""
+
+    if name not in backend_registry:
+        raise ValueError(
+            f"A backend class with name "
+            f"'{name}' "
+            f"does not exist. "
+            f"Use 'audbackend.register()' to register one."
+        )
+
+    if name not in backends:
+        backends[name] = {}
+    if host not in backends[name]:
+        backends[name][host] = {}
+    if repository not in backends[name][host]:
+        backends[name][host][repository] = utils.call_function_on_backend(
+            backend_registry[name],
+            host,
+            repository,
+        )
+
+    return backends[name][host][repository]
+
+
 def access(
         name: str,
         host: str,
@@ -59,25 +88,7 @@ def access(
         ('audbackend.core.filesystem.FileSystem', 'host', 'doctest')
 
     """
-    if name not in backend_registry:
-        raise ValueError(
-            'A backend class with name '
-            f"'{name} "
-            'does not exist.'
-            "Use 'register_backend()' to register one."
-        )
-
-    if name not in backends:
-        backends[name] = {}
-    if host not in backends[name]:
-        backends[name][host] = {}
-    if repository not in backends[name][host]:
-        backends[name][host][repository] = utils.call_function_on_backend(
-            backend_registry[name],
-            host,
-            repository,
-        )
-    backend = backends[name][host][repository]
+    backend = _backend(name, host, repository)
     utils.call_function_on_backend(backend._access)
     return backend
 
@@ -156,25 +167,7 @@ def create(
         ('audbackend.core.filesystem.FileSystem', 'host', 'repository')
 
     """
-    if name not in backend_registry:
-        raise ValueError(
-            'A backend class with name '
-            f"'{name} "
-            'does not exist.'
-            "Use 'register_backend()' to register one."
-        )
-
-    if name not in backends:
-        backends[name] = {}
-    if host not in backends[name]:
-        backends[name][host] = {}
-    if repository not in backends[name][host]:
-        backends[name][host][repository] = utils.call_function_on_backend(
-            backend_registry[name],
-            host,
-            repository,
-        )
-    backend = backends[name][host][repository]
+    backend = _backend(name, host, repository)
     utils.call_function_on_backend(backend._create)
     return backend
 
