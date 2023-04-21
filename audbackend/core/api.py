@@ -16,6 +16,72 @@ backend_registry = {
 r"""Backend registry."""
 
 
+def access(
+        name: str,
+        host: str,
+        repository: str,
+) -> Backend:
+    r"""Access repository.
+
+    Returns a backend instance
+    for the ``repository``
+    on the ``host``.
+    The instance is an object of the class
+    registered under the alias ``name``
+    with :func:`audbackend.register`.
+
+    If the repository does not exist
+    or cannot be accessed for other reasons
+    (e.g. user lacks permission)
+    an error of type
+    :class:`audbackend.BackendError`
+    is raised.
+
+    Use :func:`audbackend.available`
+    to list available backend instances.
+
+    Args:
+        name: alias under which backend class is registered
+        host: host address
+        repository: repository name
+
+    Returns:
+        backend object
+
+    Raises:
+        BackendError: if an error is raised on the backend,
+            e.g. repository does not exist
+        ValueError: if no backend class with alias ``name``
+            has been registered
+
+    Examples:
+        >>> create('file-system', 'host', 'doctest')
+        ('audbackend.core.filesystem.FileSystem', 'host', 'doctest')
+
+    """
+    if name not in backend_registry:
+        raise ValueError(
+            'A backend class with name '
+            f"'{name} "
+            'does not exist.'
+            "Use 'register_backend()' to register one."
+        )
+
+    if name not in backends:
+        backends[name] = {}
+    if host not in backends[name]:
+        backends[name][host] = {}
+    if repository not in backends[name][host]:
+        backends[name][host][repository] = utils.call_function_on_backend(
+            backend_registry[name],
+            host,
+            repository,
+        )
+    backend = backends[name][host][repository]
+    utils.call_function_on_backend(backend._access)
+    return backend
+
+
 def available() -> typing.Dict[str, typing.List[Backend]]:
     r"""List available backend instances.
 
@@ -52,20 +118,18 @@ def create(
         host: str,
         repository: str,
 ) -> Backend:
-    r"""Create backend instance.
+    r"""Create repository.
 
-    Returns a backend instance for the
-    ``repository`` on the ``host``.
+    Creates the ``repository``
+    on the ``host``
+    and returns a backend instance for it.
     The instance is an object of the class
     registered under the alias ``name``
     with :func:`audbackend.register`.
 
-    If the ``repository``
-    does not yet exist
-    on the ``host``
-    it will be created.
-    If this is not possible
+    If the repository cannot be created
     (e.g. user lacks permission)
+    or if it exists already,
     an error of type
     :class:`audbackend.BackendError`
     is raised.
@@ -82,7 +146,8 @@ def create(
         backend object
 
     Raises:
-        BackendError: if an error is raised on the backend
+        BackendError: if an error is raised on the backend,
+            e.g. repository cannot be created
         ValueError: if no backend class with alias ``name``
             has been registered
 
@@ -104,13 +169,14 @@ def create(
     if host not in backends[name]:
         backends[name][host] = {}
     if repository not in backends[name][host]:
-        backend = backend_registry[name]
         backends[name][host][repository] = utils.call_function_on_backend(
-            backend,
+            backend_registry[name],
             host,
             repository,
         )
-    return backends[name][host][repository]
+    backend = backends[name][host][repository]
+    utils.call_function_on_backend(backend._create)
+    return backend
 
 
 def delete(
@@ -118,7 +184,7 @@ def delete(
         host: str,
         repository: str,
 ):
-    r"""Delete repository and remove backend instance.
+    r"""Delete repository.
 
     .. warning:: Deletes the repository and all its content.
 
@@ -132,7 +198,8 @@ def delete(
         repository: repository name
 
     Raises:
-        BackendError: if an error is raised on the backend
+        BackendError: if an error is raised on the backend,
+            e.g. repository does not exist
         ValueError: if no backend class with alias ``name``
             has been registered
 
@@ -144,7 +211,7 @@ def delete(
         []
 
     """  # noqa: E501
-    backend = create(name, host, repository)
+    backend = access(name, host, repository)
     utils.call_function_on_backend(backend._delete)
     backends[name][host].pop(repository)
 

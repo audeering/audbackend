@@ -26,14 +26,12 @@ class Artifactory(Backend):
         self._artifactory = audfactory.path(self.host)
         self._repo = self._artifactory.find_repository_local(self.repository)
 
+    def _access(
+            self,
+    ):
+        r"""Access existing repository."""
         if self._repo is None:
-            # create repository if it does not exist
-            self._repo = dohq_artifactory.RepositoryLocal(
-                self._artifactory,
-                self.repository,
-                packageType=dohq_artifactory.RepositoryLocal.GENERIC,
-            )
-            self._repo.create()
+            utils.raise_file_not_found_error(str(self._repo.path))
 
     def _checksum(
             self,
@@ -58,6 +56,20 @@ class Artifactory(Backend):
         path = path[len(str(self._repo.path)):]
         path = path.replace('/', self.sep)
         return path
+
+    def _create(
+            self,
+    ):
+        r"""Access existing repository."""
+        if self._repo is not None:
+            utils.raise_file_exists_error(str(self._repo.path))
+
+        self._repo = dohq_artifactory.RepositoryLocal(
+            self._artifactory,
+            self.repository,
+            package_type=dohq_artifactory.RepositoryLocal.GENERIC,
+        )
+        self._repo.create()
 
     def _delete(
             self,
