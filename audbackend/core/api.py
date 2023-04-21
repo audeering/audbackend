@@ -158,7 +158,8 @@ def create(
 
     Raises:
         BackendError: if an error is raised on the backend,
-            e.g. repository cannot be created
+            e.g. repository exists already
+            or cannot be created
         ValueError: if no backend class with alias ``name``
             has been registered
 
