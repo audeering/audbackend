@@ -55,7 +55,7 @@ def access(
             has been registered
 
     Examples:
-        >>> create('file-system', 'host', 'doctest')
+        >>> access('file-system', 'host', 'doctest')
         ('audbackend.core.filesystem.FileSystem', 'host', 'doctest')
 
     """
@@ -152,8 +152,8 @@ def create(
             has been registered
 
     Examples:
-        >>> create('file-system', 'host', 'doctest')
-        ('audbackend.core.filesystem.FileSystem', 'host', 'doctest')
+        >>> create('file-system', 'host', 'repository')
+        ('audbackend.core.filesystem.FileSystem', 'host', 'repository')
 
     """
     if name not in backend_registry:
@@ -204,7 +204,7 @@ def delete(
             has been registered
 
     Examples:
-        >>> create('file-system', 'host', 'doctest').ls()
+        >>> access('file-system', 'host', 'doctest').ls()
         [('a.zip', '1.0.0'), ('a/b.ext', '1.0.0'), ('name.ext', '1.0.0'), ('name.ext', '2.0.0')]
         >>> delete('file-system', 'host', 'doctest')
         >>> create('file-system', 'host', 'doctest').ls()
