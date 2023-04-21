@@ -46,8 +46,7 @@ import audbackend
 def test_api(name, host, repository, cls):
 
     error_msg = (
-        "A backend class with name 'bad' does not exist. "
-        "Use 'audbackend.register()' to register one."
+        "A backend class with name 'bad' does not exist."
     )
 
     with pytest.raises(ValueError, match=error_msg):
