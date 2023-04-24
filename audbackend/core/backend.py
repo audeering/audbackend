@@ -70,11 +70,11 @@ class Backend:
             ValueError: if ``path`` contains invalid character
 
         Examples:
-            >>> backend.checksum('name.ext', '1.0.0')
+            >>> backend.checksum('/name.ext', '1.0.0')
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
-        utils.check_path_for_allowed_chars(path)
+        utils.check_path(path, self.sep)
 
         return utils.call_function_on_backend(
             self._checksum,
@@ -132,11 +132,11 @@ class Backend:
             ValueError: if ``path`` contains invalid character
 
         Examples:
-            >>> backend.exists('name.ext', '1.0.0')
+            >>> backend.exists('/name.ext', '1.0.0')
             True
 
         """
-        utils.check_path_for_allowed_chars(path)
+        utils.check_path(path, self.sep)
 
         return utils.call_function_on_backend(
             self._exists,
@@ -182,11 +182,11 @@ class Backend:
             ValueError: if ``src_path`` contains invalid character
 
         Examples:
-            >>> backend.get_archive('a.zip', '.', '1.0.0')
+            >>> backend.get_archive('/a.zip', '.', '1.0.0')
             ['src.pth']
 
         """
-        utils.check_path_for_allowed_chars(src_path)
+        utils.check_path(src_path, self.sep)
 
         with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
 
@@ -247,12 +247,12 @@ class Backend:
         Examples:
             >>> os.path.exists('dst.pth')
             False
-            >>> _ = backend.get_file('name.ext', 'dst.pth', '1.0.0')
+            >>> _ = backend.get_file('/name.ext', 'dst.pth', '1.0.0')
             >>> os.path.exists('dst.pth')
             True
 
         """
-        utils.check_path_for_allowed_chars(src_path)
+        utils.check_path(src_path, self.sep)
 
         dst_path = audeer.path(dst_path)
         dst_root = os.path.dirname(dst_path)
@@ -294,15 +294,17 @@ class Backend:
 
         Examples:
             >>> backend.join('sub', 'name.ext')
-            'sub/name.ext'
+            '/sub/name.ext'
 
         """
         paths = [path] + [p for p in paths]
         # skip part if '' or None
         paths = [path for path in paths if path]
         path = self.sep.join(paths)
+        if not path.startswith(self.sep):
+            path = self.sep + path
 
-        utils.check_path_for_allowed_chars(path)
+        utils.check_path(path, self.sep)
 
         return path
 
@@ -324,11 +326,11 @@ class Backend:
             ValueError: if ``path`` contains invalid character
 
         Examples:
-            >>> backend.latest_version('name.ext')
+            >>> backend.latest_version('/name.ext')
             '2.0.0'
 
         """
-        utils.check_path_for_allowed_chars(path)
+        utils.check_path(path, self.sep)
         vs = self.versions(path)
         return vs[-1]
 
@@ -357,11 +359,11 @@ class Backend:
         Returns a sorted list of tuples
         with path and version.
         If a full path
-        (e.g. ``sub/file.ext``)
+        (e.g. ``/sub/file.ext``)
         is provided,
         all versions of the path are returned.
         If a sub-path
-        (e.g. ``sub/``)
+        (e.g. ``/sub/``)
         is provided,
         all files that start with
         the sub-path are returned.
@@ -393,18 +395,18 @@ class Backend:
 
         Examples:
             >>> backend.ls()
-            [('a.zip', '1.0.0'), ('a/b.ext', '1.0.0'), ('name.ext', '1.0.0'), ('name.ext', '2.0.0')]
+            [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/name.ext', '1.0.0'), ('/name.ext', '2.0.0')]
             >>> backend.ls(latest_version=True)
-            [('a.zip', '1.0.0'), ('a/b.ext', '1.0.0'), ('name.ext', '2.0.0')]
-            >>> backend.ls('name.ext')
-            [('name.ext', '1.0.0'), ('name.ext', '2.0.0')]
+            [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/name.ext', '2.0.0')]
+            >>> backend.ls('/name.ext')
+            [('/name.ext', '1.0.0'), ('/name.ext', '2.0.0')]
             >>> backend.ls(pattern='*.ext')
-            [('a/b.ext', '1.0.0'), ('name.ext', '1.0.0'), ('name.ext', '2.0.0')]
-            >>> backend.ls('a/')
-            [('a/b.ext', '1.0.0')]
+            [('/a/b.ext', '1.0.0'), ('/name.ext', '1.0.0'), ('/name.ext', '2.0.0')]
+            >>> backend.ls('/a/')
+            [('/a/b.ext', '1.0.0')]
 
         """  # noqa: E501
-        utils.check_path_for_allowed_chars(path)
+        utils.check_path(path, self.sep)
         paths = utils.call_function_on_backend(
             self._ls,
             path,
@@ -473,14 +475,14 @@ class Backend:
             ValueError: if ``dst_path`` contains invalid character
 
         Examples:
-            >>> backend.exists('a.tar.gz', '1.0.0')
+            >>> backend.exists('/a.tar.gz', '1.0.0')
             False
-            >>> backend.put_archive('.', ['src.pth'], 'name.tar.gz', '1.0.0')
-            >>> backend.exists('name.tar.gz', '1.0.0')
+            >>> backend.put_archive('.', ['src.pth'], '/name.tar.gz', '1.0.0')
+            >>> backend.exists('/name.tar.gz', '1.0.0')
             True
 
         """
-        utils.check_path_for_allowed_chars(dst_path)
+        utils.check_path(dst_path, self.sep)
         src_root = audeer.path(src_root)
 
         if not os.path.exists(src_root):
@@ -554,14 +556,14 @@ class Backend:
             ValueError: if ``dst_path`` contains invalid character
 
         Examples:
-            >>> backend.exists('sub/name.ext', '3.0.0')
+            >>> backend.exists('/sub/name.ext', '3.0.0')
             False
-            >>> backend.put_file('src.pth', 'sub/name.ext', '3.0.0')
-            >>> backend.exists('sub/name.ext', '3.0.0')
+            >>> backend.put_file('src.pth', '/sub/name.ext', '3.0.0')
+            >>> backend.exists('/sub/name.ext', '3.0.0')
             True
 
         """
-        utils.check_path_for_allowed_chars(dst_path)
+        utils.check_path(dst_path, self.sep)
         if not os.path.exists(src_path):
             utils.raise_file_not_found_error(src_path)
 
@@ -603,14 +605,14 @@ class Backend:
             ValueError: if ``path`` contains invalid character
 
         Examples:
-            >>> backend.exists('name.ext', '1.0.0')
+            >>> backend.exists('/name.ext', '1.0.0')
             True
-            >>> backend.remove_file('name.ext', '1.0.0')
-            >>> backend.exists('name.ext', '1.0.0')
+            >>> backend.remove_file('/name.ext', '1.0.0')
+            >>> backend.exists('/name.ext', '1.0.0')
             False
 
         """
-        utils.check_path_for_allowed_chars(path)
+        utils.check_path(path, self.sep)
 
         utils.call_function_on_backend(
             self._remove_file,
@@ -639,11 +641,11 @@ class Backend:
             ValueError: if ``path`` contains invalid character
 
         Examples:
-            >>> backend.split('sub/name.ext')
-            ('sub', 'name.ext')
+            >>> backend.split('/sub/name.ext')
+            ('/sub', 'name.ext')
 
         """
-        utils.check_path_for_allowed_chars(path)
+        utils.check_path(path, self.sep)
 
         root = self.sep.join(path.split(self.sep)[:-1])
         basename = path.split(self.sep)[-1]
@@ -674,7 +676,7 @@ class Backend:
             ValueError: if ``path`` contains invalid character
 
         Examples:
-            >>> backend.versions('name.ext')
+            >>> backend.versions('/name.ext')
             ['1.0.0', '2.0.0']
 
         """
