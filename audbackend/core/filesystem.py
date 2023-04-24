@@ -142,7 +142,7 @@ class FileSystem(Backend):
 
         # <host>/<repository>/<root>/<version>/<name>
         # ->
-        # (<root>/<name>, <version>)
+        # (/<root>/<name>, <version>)
 
         result = []
         for p in paths:
@@ -153,6 +153,8 @@ class FileSystem(Backend):
             name = tokens[-1]
             version = tokens[-2]
             path = self.sep.join(tokens[:-2])
+            if not path.startswith(self.sep):
+                path = self.sep + path
             path = self.join(path, name)
 
             result.append((path, version))
