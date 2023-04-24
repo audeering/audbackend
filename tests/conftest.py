@@ -74,7 +74,7 @@ def backend(request):
     r"""Create and delete a repository on the backend."""
     name = request.param
     host = pytest.HOSTS[name]
-    repository = f'unittest-{audeer.uid()[:8]}'
+    repository = f'unittest-{pytest.UID}-{audeer.uid()[:8]}'
 
     backend = audbackend.create(name, host, repository)
 
