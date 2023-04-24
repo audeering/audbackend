@@ -50,10 +50,10 @@ class Artifactory(Backend):
 
         <host>/<repository>/<path>
         ->
-        <path>
+        /<path>
 
         """
-        path = path[len(str(self._repo.path)):]
+        path = path[len(str(self._repo.path)) - 1:]
         path = path.replace('/', self.sep)
         return path
 

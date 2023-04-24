@@ -48,10 +48,10 @@ class FileSystem(Backend):
 
         <host>/<repository>/<path>
         ->
-        <path>
+        /<path>
 
         """
-        path = path[len(self._root):]  # remove host and repo
+        path = path[len(self._root) - 1:]  # remove host and repo
         path = path.replace(os.path.sep, self.sep)
         return path
 
