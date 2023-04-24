@@ -66,7 +66,7 @@ def test_archive(tmpdir, files, name, folder, version, tmp_root, backend):
         with open(path, 'w'):
             pass
 
-    archive = backend.join('test_archive', name)
+    archive = backend.join('/test_archive', name)
 
     # if a tmp_root is given but does not exist,
     # put_archive() should fail
@@ -130,12 +130,13 @@ def test_archive(tmpdir, files, name, folder, version, tmp_root, backend):
 def test_errors(tmpdir, backend):
 
     # Ensure we have one file and one archive published on the backend
-    archive = 'archive.zip'
-    file = 'file.txt'
+    archive = '/archive.zip'
+    local_file = 'file.txt'
+    remote_file = f'/{local_file}'
     version = '1.0.0'
-    src_path = audeer.touch(audeer.path(tmpdir, file))
-    backend.put_file(src_path, file, version)
-    backend.put_archive(tmpdir, [file], archive, version)
+    src_path = audeer.touch(audeer.path(tmpdir, local_file))
+    backend.put_file(src_path, remote_file, version)
+    backend.put_archive(tmpdir, [local_file], archive, version)
 
     # Create local read-only folder
     folder_read_only = audeer.mkdir(audeer.path(tmpdir, 'read-only-folder'))
@@ -143,31 +144,36 @@ def test_errors(tmpdir, backend):
 
     # File names and error messages
     # for common errors
-    archive_invalid_extension = 'archive.bad'
-    file_missing = 'missing.txt'
-    file_invalid_char = 'missing.txt?'
-    folder_missing = 'missing/'
+    file_invalid_path = 'invalid/path.txt'
+    error_invalid_path = re.escape(
+        f"Invalid backend path '{file_invalid_path}', "
+        f"must start with '/'."
+    )
+    file_invalid_char = '/invalid/char.txt?'
+    error_invalid_char = re.escape(
+        f"Invalid backend path '{file_invalid_char}', "
+        f"allowed characters are '[A-Za-z0-9/._-]+'."
+    )
     error_backend = (
         'An exception was raised by the backend, '
         'please see stack trace for further information.'
     )
-    error_invalid_char = re.escape(
-        f"Invalid path name '{file_invalid_char}', "
-        "allowed characters are '[A-Za-z0-9/._-]+'."
-    )
     error_read_only = (
-        f"Permission denied: '{os.path.join(folder_read_only, file)}'"
+        f"Permission denied: '{os.path.join(folder_read_only, local_file)}'"
     )
 
     # --- checksum ---
     # `path` missing
     with pytest.raises(audbackend.BackendError, match=error_backend):
-        backend.checksum(file_missing, version)
+        backend.checksum('/missing.txt', version)
     # `path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
         backend.checksum(file_invalid_char, version)
 
     # --- exists ---
+    # `path` without leading '/'
+    with pytest.raises(ValueError, match=error_invalid_path):
+        backend.exists(file_invalid_path, version)
     # `path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
         backend.exists(file_invalid_char, version)
@@ -175,7 +181,10 @@ def test_errors(tmpdir, backend):
     # --- get_archive ---
     # `src_path` missing
     with pytest.raises(audbackend.BackendError, match=error_backend):
-        backend.get_archive(file_missing, tmpdir, version)
+        backend.get_archive('/missing.txt', tmpdir, version)
+    # `src_path` without leading '/'
+    with pytest.raises(ValueError, match=error_invalid_path):
+        backend.get_archive(file_invalid_path, tmpdir, version)
     # `src_path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
         backend.get_archive(file_invalid_char, tmpdir, version)
@@ -191,21 +200,21 @@ def test_errors(tmpdir, backend):
     # extension of `src_path` is not supported
     error_msg = 'You can only extract ZIP and TAR.GZ files, ...'
     backend.put_file(
-        audeer.touch(audeer.path(tmpdir, archive_invalid_extension)),
-        archive_invalid_extension,
+        audeer.touch(audeer.path(tmpdir, 'archive.bad')),
+        '/archive.bad',
         version,
     )
     with pytest.raises(RuntimeError, match=error_msg):
-        backend.get_archive(archive_invalid_extension, tmpdir, version)
+        backend.get_archive('/archive.bad', tmpdir, version)
     # `src_path` is a malformed archive
     error_msg = 'Broken archive: '
     backend.put_file(
         audeer.touch(audeer.path(tmpdir, 'malformed.zip')),
-        'malformed.zip',
+        '/malformed.zip',
         version,
     )
     with pytest.raises(RuntimeError, match=error_msg):
-        backend.get_archive('malformed.zip', tmpdir, version)
+        backend.get_archive('/malformed.zip', tmpdir, version)
     # no write permissions to `dst_path`
     if not platform.system() == 'Windows':
         # Currently we don't know how to provoke permission error on Windows
@@ -215,7 +224,10 @@ def test_errors(tmpdir, backend):
     # --- get_file ---
     # `src_path` missing
     with pytest.raises(audbackend.BackendError, match=error_backend):
-        backend.get_file(file_missing, file_missing, version)
+        backend.get_file('/missing.txt', 'missing.txt', version)
+    # `src_path` without leading '/'
+    with pytest.raises(ValueError, match=error_invalid_path):
+        backend.get_file(file_invalid_path, tmpdir, version)
     # `src_path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
         backend.get_file(file_invalid_char, tmpdir, version)
@@ -224,31 +236,23 @@ def test_errors(tmpdir, backend):
         # Currently we don't know how to provoke permission error on Windows
         dst_path = audeer.path(folder_read_only, 'file.txt')
         with pytest.raises(PermissionError, match=error_read_only):
-            backend.get_file(file, dst_path, version)
+            backend.get_file(remote_file, dst_path, version)
 
     # --- join ---
+    # joined path without leading '/'
+    with pytest.raises(ValueError, match=error_invalid_path):
+        backend.join(file_invalid_path, local_file)
     # joined path contains invalid char
-    error_msg = re.escape(
-        f"Invalid path name '{file_invalid_char}/{file}', "
-        "allowed characters are '[A-Za-z0-9/._-]+'."
-    )
-    with pytest.raises(ValueError, match=error_msg):
-        backend.join(file_invalid_char, file)
-    error_msg = re.escape(
-        f"Invalid path name '{file}/{file_invalid_char}', "
-        "allowed characters are '[A-Za-z0-9/._-]+'."
-    )
-    with pytest.raises(ValueError, match=error_msg):
-        backend.join(file, file_invalid_char)
+    with pytest.raises(ValueError, match=error_invalid_char):
+        backend.join(file_invalid_char, local_file)
 
     # --- latest_version ---
     # `path` missing
-    error_msg = re.escape(
-        f"Cannot find a version for '{file_missing}' "
-        f"in '{backend.repository}'"
-    )
     with pytest.raises(audbackend.BackendError, match=error_backend):
-        backend.latest_version(file_missing)
+        backend.latest_version('/missing.txt')
+    # joined path without leading '/'
+    with pytest.raises(ValueError, match=error_invalid_path):
+        backend.latest_version(file_invalid_path)
     # `path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
         backend.latest_version(file_invalid_char)
@@ -256,7 +260,10 @@ def test_errors(tmpdir, backend):
     # --- ls ---
     # `path` missing
     with pytest.raises(audbackend.BackendError, match=error_backend):
-        backend.ls(folder_missing)
+        backend.ls('/missing/')
+    # joined path without leading '/'
+    with pytest.raises(ValueError, match=error_invalid_path):
+        backend.ls(file_invalid_path)
     # `path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
         backend.ls(file_invalid_char)
@@ -266,28 +273,38 @@ def test_errors(tmpdir, backend):
     error_msg = 'No such file or directory: ...'
     with pytest.raises(FileNotFoundError, match=error_msg):
         backend.put_archive(
-            audeer.path(tmpdir, folder_missing),
-            file,
+            audeer.path(tmpdir, '/missing/'),
+            local_file,
             archive,
             version,
         )
     # `files` missing
     error_msg = 'No such file or directory: ...'
     with pytest.raises(FileNotFoundError, match=error_msg):
-        backend.put_archive(tmpdir, file_missing, archive, version)
+        backend.put_archive(tmpdir, 'missing.txt', archive, version)
+    # `dst_path` without leading '/'
+    with pytest.raises(ValueError, match=error_invalid_path):
+        backend.put_archive(tmpdir, local_file, file_invalid_path, version)
     # `dst_path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
-        backend.put_archive(tmpdir, file, file_invalid_char, version)
+        backend.put_archive(tmpdir, local_file, file_invalid_char, version)
     # extension of `dst_path` is not supported
     error_msg = 'You can only create a ZIP or TAR.GZ archive, not ...'
     with pytest.raises(RuntimeError, match=error_msg):
-        backend.put_archive(tmpdir, file, archive_invalid_extension, version)
+        backend.put_archive(tmpdir, local_file, '/archive.bad', version)
 
     # --- put_file ---
     # `src_path` does not exists
     error_msg = 'No such file or directory: ...'
     with pytest.raises(FileNotFoundError, match=error_msg):
-        backend.put_file(audeer.path(tmpdir, file_missing), file, version)
+        backend.put_file(
+            audeer.path(tmpdir, 'missing.txt'),
+            remote_file,
+            version,
+        )
+    # `dst_path` without leading '/'
+    with pytest.raises(ValueError, match=error_invalid_path):
+        backend.put_file(src_path, file_invalid_path, version)
     # `dst_path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
         backend.put_file(src_path, file_invalid_char, version)
@@ -295,17 +312,26 @@ def test_errors(tmpdir, backend):
     # --- remove_file ---
     # `path` does not exists
     with pytest.raises(audbackend.BackendError, match=error_backend):
-        backend.remove_file(file_missing, version)
+        backend.remove_file('/missing.txt', version)
+    # `path` without leading '/'
+    with pytest.raises(ValueError, match=error_invalid_path):
+        backend.remove_file(file_invalid_path, version)
     # `path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
         backend.remove_file(file_invalid_char, version)
 
     # --- split ---
+    # `path` without leading '/'
+    with pytest.raises(ValueError, match=error_invalid_path):
+        backend.split(file_invalid_path)
     # `path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
         backend.split(file_invalid_char)
 
     # --- versions ---
+    # `path` without leading '/'
+    with pytest.raises(ValueError, match=error_invalid_path):
+        backend.versions(file_invalid_path)
     # `path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
         backend.versions(file_invalid_char)
@@ -314,8 +340,8 @@ def test_errors(tmpdir, backend):
 @pytest.mark.parametrize(
     'path, version',
     [
-        ('file.txt', '1.0.0'),
-        ('folder/test.txt', '1.0.0'),
+        ('/file.txt', '1.0.0'),
+        ('/folder/test.txt', '1.0.0'),
     ]
 )
 @pytest.mark.parametrize(
@@ -338,22 +364,22 @@ def test_exists(tmpdir, path, version, backend):
     [
         (
             'file',
-            'file',
+            '/file',
             '1.0.0',
         ),
         (
             'file.ext',
-            'file.ext',
+            '/file.ext',
             '1.0.0',
         ),
         (
             os.path.join('dir', 'to', 'file.ext'),
-            'dir/to/file.ext',
+            '/dir/to/file.ext',
             '1.0.0',
         ),
         (
             os.path.join('dir.to', 'file.ext'),
-            'dir.to/file.ext',
+            '/dir.to/file.ext',
             '1.0.0',
         ),
     ],
@@ -394,37 +420,37 @@ def test_ls(tmpdir, backend):
     assert backend.ls('/') == []
 
     root = [
-        ('file.bar', '1.0.0'),
-        ('file.bar', '2.0.0'),
-        ('file.foo', '1.0.0'),
+        ('/file.bar', '1.0.0'),
+        ('/file.bar', '2.0.0'),
+        ('/file.foo', '1.0.0'),
     ]
     root_latest = [
-        ('file.bar', '2.0.0'),
-        ('file.foo', '1.0.0'),
+        ('/file.bar', '2.0.0'),
+        ('/file.foo', '1.0.0'),
     ]
     root_foo = [
-        ('file.foo', '1.0.0'),
+        ('/file.foo', '1.0.0'),
     ]
     root_bar = [
-        ('file.bar', '1.0.0'),
-        ('file.bar', '2.0.0'),
+        ('/file.bar', '1.0.0'),
+        ('/file.bar', '2.0.0'),
     ]
     root_bar_latest = [
-        ('file.bar', '2.0.0'),
+        ('/file.bar', '2.0.0'),
     ]
     sub = [
-        ('sub/file.foo', '1.0.0'),
-        ('sub/file.foo', '2.0.0'),
+        ('/sub/file.foo', '1.0.0'),
+        ('/sub/file.foo', '2.0.0'),
     ]
     sub_latest = [
-        ('sub/file.foo', '2.0.0'),
+        ('/sub/file.foo', '2.0.0'),
     ]
     hidden = [
-        ('.sub/.file.foo', '1.0.0'),
-        ('.sub/.file.foo', '2.0.0'),
+        ('/.sub/.file.foo', '1.0.0'),
+        ('/.sub/.file.foo', '2.0.0'),
     ]
     hidden_latest = [
-        ('.sub/.file.foo', '2.0.0'),
+        ('/.sub/.file.foo', '2.0.0'),
     ]
 
     # create content
@@ -445,18 +471,6 @@ def test_ls(tmpdir, backend):
         ('/', True, None, root_latest + sub_latest + hidden_latest),
         ('/', False, '*.foo', root_foo + sub + hidden),
         ('/', True, '*.foo', root_foo + sub_latest + hidden_latest),
-        ('sub/', False, None, sub),
-        ('sub/', True, None, sub_latest),
-        ('sub/', False, '*.bar', []),
-        ('sub/', True, '*.bar', []),
-        ('.sub/', False, None, hidden),
-        ('.sub/', True, None, hidden_latest),
-        ('file.bar', False, None, root_bar),
-        ('file.bar', True, None, root_bar_latest),
-        ('sub/file.foo', False, None, sub),
-        ('sub/file.foo', True, None, sub_latest),
-        ('.sub/.file.foo', False, None, hidden),
-        ('.sub/.file.foo', True, None, hidden_latest),
         ('/sub/', False, None, sub),
         ('/sub/', True, None, sub_latest),
         ('/sub/', False, '*.bar', []),
@@ -480,11 +494,35 @@ def test_ls(tmpdir, backend):
 @pytest.mark.parametrize(
     'paths, expected',
     [
-        ([''], ''),
-        (['', ''], ''),
-        (['file'], 'file'),
-        (['root', 'file'], 'root/file'),
-        (['', 'root', None, '', 'file', ''], 'root/file'),
+        (['/'], '/'),
+        (['/', ''], '/'),
+        (['/file'], '/file'),
+        (['/file/'], '/file/'),
+        (['/root', 'file'], '/root/file'),
+        (['/root', 'file/'], '/root/file/'),
+        (['/', 'root', None, '', 'file', ''], '/root/file'),
+        (['/', 'root', None, '', 'file', '/'], '/root/file/'),
+        (['/', 'root', None, '', 'file', '/', ''], '/root/file/'),
+        pytest.param(
+            [''],
+            None,
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+        pytest.param(
+            ['file'],
+            None,
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+        pytest.param(
+            ['sub/file'],
+            None,
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+        pytest.param(
+            ['', '/file'],
+            None,
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
     ]
 )
 @pytest.mark.parametrize(
@@ -500,8 +538,8 @@ def test_join(paths, expected, backend):
 @pytest.mark.parametrize(
     'dst_path',
     [
-        'file.ext',
-        'sub/file.ext'
+        '/file.ext',
+        '/sub/file.ext'
     ]
 )
 @pytest.mark.parametrize(

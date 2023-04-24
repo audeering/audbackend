@@ -15,6 +15,7 @@ def test_errors(tmpdir, backend, no_artifactory_access_rights):
         audeer.path(tmpdir, 'file.txt')
     )
     remote_file = backend.join(
+        '/',
         audeer.uid()[:8],
         'file.txt',
     )
