@@ -38,6 +38,10 @@ def cleanup_artifactory():
     (https://github.com/audeering/audbackend/issues/97),
     we try to clean up the host
     everytime we run the tests.
+    If this fails
+    a ``RuntimeError`` is raised
+    and the user then needs to clean up
+    the repository manually.
 
     """
 
@@ -56,8 +60,13 @@ def cleanup_artifactory():
         for repo in repos:
             try:
                 audbackend.delete(name, host, repo)
-            except audbackend.BackendError:
-                pass
+            except audbackend.BackendError as ex:
+                raise RuntimeError(
+                    f'Cleaning up of repo {repo} failed. '
+                    f'Please try to clean up manually with: '
+                    f"'audbackend.delete({name}, {host}, {repo})' ."
+                    f'The original error message was {ex}.'
+                )
 
 
 @pytest.fixture(scope='function', autouse=False)
