@@ -57,16 +57,23 @@ def cleanup_artifactory():
             repo for repo in repos
             if repo.startswith(f'unittest-{pytest.UID}')
         ]
+        remaining_repos = repos.copy()
         for repo in repos:
             try:
                 audbackend.delete(name, host, repo)
+                remaining_repos.remove(repo)
             except audbackend.BackendError as ex:
-                raise RuntimeError(
-                    f'Cleaning up of repo {repo} failed. '
-                    f'Please try to clean up manually with: '
-                    f"'audbackend.delete({name}, {host}, {repo})' ."
-                    f'The original error message was {ex}.'
+                error_msg = (
+                    f'Cleaning up of repo {repo} failed.\n'
+                    'Please delete remaining repositories manually with:\n'
                 )
+                for remaining_repo in remaining_repos:
+                    error_msg += (
+                        f"'audbackend.delete({name}, {host}, "
+                        f"{remaining_repo})',\n"
+                    )
+                error_msg += f'The original error message was {ex}.'
+                raise RuntimeError(error_msg)
 
 
 @pytest.fixture(scope='function', autouse=False)
