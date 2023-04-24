@@ -1,4 +1,5 @@
 import os
+import time
 
 import pytest
 
@@ -21,45 +22,62 @@ pytest.BACKENDS = [
     'file-system',
 ]
 
+# UID for test session
+# Repositories on the host will be named
+# unittest-<session-uid>-<repository-uid>
+pytest.UID = audeer.uid()[:8]
+
+
+@pytest.fixture(scope='session', autouse=True)
+def cleanup_artifactory():
+    r"""Remove letover unit test repositories on Artifactory.
+
+    As removing a unit test repsoitory
+    in the ``backend()`` fixture
+    might fail
+    (https://github.com/audeering/audbackend/issues/97),
+    we try to clean up the host
+    everytime we run the tests.
+
+    """
+
+    yield
+
+    # Delete leftover repositories
+    name = 'artifactory'
+    host = pytest.HOSTS[name]
+    r = audfactory.rest_api_get(f'{host}/api/repositories')
+    if r.status_code == 200:
+        repos = [entry['key'] for entry in r.json()]
+        repos = [
+            repo for repo in repos
+            if repo.startswith(f'unittest-{pytest.UID}')
+        ]
+        for repo in repos:
+            try:
+                audbackend.delete(name, host, repo)
+            except audbackend.BackendError:
+                pass
+
 
 @pytest.fixture(scope='function', autouse=False)
 def backend(request):
-    r"""Create and delete a repository on the backend.
-
-    Deleting a repository might fail on Artifactory hosts,
-    hence we catch the error
-    and instead look for leftover repositories
-    at the beginning and clean try to clean them.
-
-    """
+    r"""Create and delete a repository on the backend."""
     name = request.param
     host = pytest.HOSTS[name]
     repository = f'unittest-{audeer.uid()[:8]}'
-
-    # Clean up possible left over repos on Artifactory host
-    if name == 'artifactory':
-        r = audfactory.rest_api_get(f'{host}/api/repositories')
-        if r.status_code == 200:
-            repos = [entry['key'] for entry in r.json()]
-            repos = [
-                repo for repo in repos
-                if repo != 'unittests-public' and repo.startswith('unittest-')
-            ]
-            for repo in repos:
-                try:
-                    audbackend.delete(name, host, repo)
-                except audbackend.BackendError:
-                    pass
 
     backend = audbackend.create(name, host, repository)
 
     yield backend
 
     # Deleting repositories on Artifactory might fail
-    try:
-        audbackend.delete(name, host, repository)
-    except audbackend.BackendError:
-        pass
+    for _ in range(3):
+        try:
+            audbackend.delete(name, host, repository)
+            break
+        except audbackend.BackendError:
+            time.sleep(1)
 
 
 @pytest.fixture(scope='package', autouse=True)
