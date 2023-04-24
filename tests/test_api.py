@@ -10,13 +10,13 @@ import audbackend
     [
         (
             'file-system',
-            pytest.HOSTS['file-system'],
+            'file-system',
             f'unittest-{audeer.uid()[:8]}',
             audbackend.FileSystem,
         ),
         (
             'artifactory',
-            pytest.HOSTS['artifactory'],
+            'artifactory',
             f'unittest-{audeer.uid()[:8]}',
             audbackend.Artifactory,
         ),
@@ -36,14 +36,17 @@ import audbackend
         ),
         pytest.param(  # invalid repository name
             'artifactory',
-            pytest.HOSTS['artifactory'],
+            'artifactory',
             'bad/repo',
             None,
             marks=pytest.mark.xfail(raises=audbackend.BackendError),
         ),
     ]
 )
-def test_api(name, host, repository, cls):
+def test_api(hosts, name, host, repository, cls):
+
+    if host is not None and host in hosts:
+        host = hosts[name]
 
     error_msg = (
         "A backend class with name 'bad' does not exist."

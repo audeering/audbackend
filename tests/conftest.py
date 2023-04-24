@@ -8,13 +8,6 @@ import audeer
 import audbackend
 
 
-pytest.ROOT = os.path.dirname(os.path.realpath(__file__))
-
-pytest.HOSTS = {
-    'artifactory': 'https://audeering.jfrog.io/artifactory',
-    'file-system': os.path.join(pytest.ROOT, 'host'),
-}
-
 # list of backends that will be tested by default
 pytest.BACKENDS = [
     'artifactory',
@@ -27,11 +20,19 @@ pytest.BACKENDS = [
 pytest.UID = audeer.uid()[:8]
 
 
+@pytest.fixture(scope='session', autouse=False)
+def hosts(tmp_path_factory):
+    return {
+        'artifactory': 'https://audeering.jfrog.io/artifactory',
+        'file-system': tmp_path_factory.mktemp('host').as_posix(),
+    }
+
+
 @pytest.fixture(scope='function', autouse=False)
-def backend(request):
-    r"""Create and delete a repository on the backend."""
+def backend(hosts, request):
+
     name = request.param
-    host = pytest.HOSTS[name]
+    host = hosts[name]
     repository = f'unittest-{pytest.UID}-{audeer.uid()[:8]}'
 
     backend = audbackend.create(name, host, repository)
@@ -55,20 +56,15 @@ def backend(request):
 
 
 @pytest.fixture(scope='package', autouse=True)
-def cleanup_session():
+def cleanup_coverage():
 
     # clean up old coverage files
     path = audeer.path(
-        pytest.ROOT,
+        os.path.dirname(os.path.realpath(__file__)),
         '.coverage.*',
     )
     for file in audeer.list_file_names(path):
         os.remove(file)
-
-    yield
-
-    if os.path.exists(pytest.HOSTS['file-system']):
-        os.rmdir(pytest.HOSTS['file-system'])
 
 
 @pytest.fixture(scope='function', autouse=False)
