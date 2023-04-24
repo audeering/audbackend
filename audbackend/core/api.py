@@ -199,7 +199,7 @@ def delete(
 
     Examples:
         >>> access('file-system', 'host', 'doctest').ls()
-        [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/name.ext', '1.0.0'), ('/name.ext', '2.0.0')]
+        [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
         >>> delete('file-system', 'host', 'doctest')
         >>> create('file-system', 'host', 'doctest').ls()
         []

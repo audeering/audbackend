@@ -25,7 +25,7 @@ def prepare_docstring_tests(doctest_namespace):
         backend.put_archive('.', [file], '/a.zip', '1.0.0')
         backend.put_file(file, '/a/b.ext', '1.0.0')
         for version in ['1.0.0', '2.0.0']:
-            backend.put_file(file, '/name.ext', version)
+            backend.put_file(file, '/f.ext', version)
 
         doctest_namespace['backend'] = backend
 

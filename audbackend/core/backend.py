@@ -71,7 +71,7 @@ class Backend:
                 or does not start with ``'/'``
 
         Examples:
-            >>> backend.checksum('/name.ext', '1.0.0')
+            >>> backend.checksum('/f.ext', '1.0.0')
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
@@ -134,7 +134,7 @@ class Backend:
                 or does not start with ``'/'``
 
         Examples:
-            >>> backend.exists('/name.ext', '1.0.0')
+            >>> backend.exists('/f.ext', '1.0.0')
             True
 
         """
@@ -251,7 +251,7 @@ class Backend:
         Examples:
             >>> os.path.exists('dst.pth')
             False
-            >>> _ = backend.get_file('/name.ext', 'dst.pth', '1.0.0')
+            >>> _ = backend.get_file('/f.ext', 'dst.pth', '1.0.0')
             >>> os.path.exists('dst.pth')
             True
 
@@ -299,12 +299,12 @@ class Backend:
                 or if joined path contains invalid character
 
         Examples:
-            >>> backend.join('/', 'name.ext')
-            '/name.ext'
-            >>> backend.join('/sub', 'name.ext')
-            '/sub/name.ext'
-            >>> backend.join('//sub//', '/', '', None, '/name.ext')
-            '/sub/name.ext'
+            >>> backend.join('/', 'f.ext')
+            '/f.ext'
+            >>> backend.join('/sub', 'f.ext')
+            '/sub/f.ext'
+            >>> backend.join('//sub//', '/', '', None, '/f.ext')
+            '/sub/f.ext'
 
         """
         path = utils.check_path(path, self.sep)
@@ -336,7 +336,7 @@ class Backend:
                 or does not start with ``'/'``
 
         Examples:
-            >>> backend.latest_version('/name.ext')
+            >>> backend.latest_version('/f.ext')
             '2.0.0'
 
         """
@@ -406,13 +406,13 @@ class Backend:
 
         Examples:
             >>> backend.ls()
-            [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/name.ext', '1.0.0'), ('/name.ext', '2.0.0')]
+            [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
             >>> backend.ls(latest_version=True)
-            [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/name.ext', '2.0.0')]
-            >>> backend.ls('/name.ext')
-            [('/name.ext', '1.0.0'), ('/name.ext', '2.0.0')]
+            [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '2.0.0')]
+            >>> backend.ls('/f.ext')
+            [('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
             >>> backend.ls(pattern='*.ext')
-            [('/a/b.ext', '1.0.0'), ('/name.ext', '1.0.0'), ('/name.ext', '2.0.0')]
+            [('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
             >>> backend.ls('/a/')
             [('/a/b.ext', '1.0.0')]
 
@@ -489,8 +489,8 @@ class Backend:
         Examples:
             >>> backend.exists('/a.tar.gz', '1.0.0')
             False
-            >>> backend.put_archive('.', ['src.pth'], '/name.tar.gz', '1.0.0')
-            >>> backend.exists('/name.tar.gz', '1.0.0')
+            >>> backend.put_archive('.', ['src.pth'], '/a.tar.gz', '1.0.0')
+            >>> backend.exists('/a.tar.gz', '1.0.0')
             True
 
         """
@@ -569,10 +569,10 @@ class Backend:
                 or does not start with ``'/'``
 
         Examples:
-            >>> backend.exists('/sub/name.ext', '3.0.0')
+            >>> backend.exists('/sub/f.ext', '3.0.0')
             False
-            >>> backend.put_file('src.pth', '/sub/name.ext', '3.0.0')
-            >>> backend.exists('/sub/name.ext', '3.0.0')
+            >>> backend.put_file('src.pth', '/sub/f.ext', '3.0.0')
+            >>> backend.exists('/sub/f.ext', '3.0.0')
             True
 
         """
@@ -619,10 +619,10 @@ class Backend:
                 or does not start with ``'/'``
 
         Examples:
-            >>> backend.exists('/name.ext', '1.0.0')
+            >>> backend.exists('/f.ext', '1.0.0')
             True
-            >>> backend.remove_file('/name.ext', '1.0.0')
-            >>> backend.exists('/name.ext', '1.0.0')
+            >>> backend.remove_file('/f.ext', '1.0.0')
+            >>> backend.exists('/f.ext', '1.0.0')
             False
 
         """
@@ -656,8 +656,8 @@ class Backend:
                 or does not start with ``'/'``
 
         Examples:
-            >>> backend.split('/sub/name.ext')
-            ('/sub', 'name.ext')
+            >>> backend.split('/sub/f.ext')
+            ('/sub', 'f.ext')
 
         """
         path = utils.check_path(path, self.sep)
@@ -692,7 +692,7 @@ class Backend:
                 or does not start with ``'/'``
 
         Examples:
-            >>> backend.versions('/name.ext')
+            >>> backend.versions('/f.ext')
             ['1.0.0', '2.0.0']
 
         """
