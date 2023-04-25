@@ -68,13 +68,14 @@ class Backend:
             BackendError: if an error is raised on the backend,
                 e.g. ``path`` does not exist
             ValueError: if ``path`` contains invalid character
+                or does not start with ``'/'``
 
         Examples:
-            >>> backend.checksum('name.ext', '1.0.0')
+            >>> backend.checksum('/f.ext', '1.0.0')
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
-        utils.check_path_for_allowed_chars(path)
+        path = utils.check_path(path, self.sep)
 
         return utils.call_function_on_backend(
             self._checksum,
@@ -130,13 +131,14 @@ class Backend:
                 and an error is raised on the backend,
                 e.g. ``path`` does not exist
             ValueError: if ``path`` contains invalid character
+                or does not start with ``'/'``
 
         Examples:
-            >>> backend.exists('name.ext', '1.0.0')
+            >>> backend.exists('/f.ext', '1.0.0')
             True
 
         """
-        utils.check_path_for_allowed_chars(path)
+        path = utils.check_path(path, self.sep)
 
         return utils.call_function_on_backend(
             self._exists,
@@ -180,13 +182,14 @@ class Backend:
             RuntimeError: if extension of ``src_path`` is not supported
             RuntimeError: if ``src_path`` is a malformed archive
             ValueError: if ``src_path`` contains invalid character
+                or does not start with ``'/'``
 
         Examples:
-            >>> backend.get_archive('a.zip', '.', '1.0.0')
+            >>> backend.get_archive('/a.zip', '.', '1.0.0')
             ['src.pth']
 
         """
-        utils.check_path_for_allowed_chars(src_path)
+        src_path = utils.check_path(src_path, self.sep)
 
         with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
 
@@ -243,16 +246,17 @@ class Backend:
             PermissionError: if the user lacks write permissions
                 for ``dst_path``
             ValueError: if ``src_path`` contains invalid character
+                or does not start with ``'/'``
 
         Examples:
             >>> os.path.exists('dst.pth')
             False
-            >>> _ = backend.get_file('name.ext', 'dst.pth', '1.0.0')
+            >>> _ = backend.get_file('/f.ext', 'dst.pth', '1.0.0')
             >>> os.path.exists('dst.pth')
             True
 
         """
-        utils.check_path_for_allowed_chars(src_path)
+        src_path = utils.check_path(src_path, self.sep)
 
         dst_path = audeer.path(dst_path)
         dst_root = os.path.dirname(dst_path)
@@ -290,19 +294,26 @@ class Backend:
             path joined by :attr:`Backend.sep`
 
         Raises:
-            ValueError: if joined path contains invalid character
+            ValueError: if ``path`` contains invalid character
+                or does not start with ``'/'``,
+                or if joined path contains invalid character
 
         Examples:
-            >>> backend.join('sub', 'name.ext')
-            'sub/name.ext'
+            >>> backend.join('/', 'f.ext')
+            '/f.ext'
+            >>> backend.join('/sub', 'f.ext')
+            '/sub/f.ext'
+            >>> backend.join('//sub//', '/', '', None, '/f.ext')
+            '/sub/f.ext'
 
         """
+        path = utils.check_path(path, self.sep)
+
         paths = [path] + [p for p in paths]
-        # skip part if '' or None
-        paths = [path for path in paths if path]
+        paths = [path for path in paths if path]  # remove empty or None
         path = self.sep.join(paths)
 
-        utils.check_path_for_allowed_chars(path)
+        path = utils.check_path(path, self.sep)
 
         return path
 
@@ -322,13 +333,14 @@ class Backend:
             BackendError: if an error is raised on the backend,
                 e.g. ``path`` does not exist
             ValueError: if ``path`` contains invalid character
+                or does not start with ``'/'``
 
         Examples:
-            >>> backend.latest_version('name.ext')
+            >>> backend.latest_version('/f.ext')
             '2.0.0'
 
         """
-        utils.check_path_for_allowed_chars(path)
+        path = utils.check_path(path, self.sep)
         vs = self.versions(path)
         return vs[-1]
 
@@ -357,11 +369,11 @@ class Backend:
         Returns a sorted list of tuples
         with path and version.
         If a full path
-        (e.g. ``sub/file.ext``)
+        (e.g. ``/sub/file.ext``)
         is provided,
         all versions of the path are returned.
         If a sub-path
-        (e.g. ``sub/``)
+        (e.g. ``/sub/``)
         is provided,
         all files that start with
         the sub-path are returned.
@@ -390,21 +402,22 @@ class Backend:
                 and an error is raised on the backend,
                 e.g. ``path`` does not exist
             ValueError: if ``path`` contains invalid character
+                or does not start with ``'/'``
 
         Examples:
             >>> backend.ls()
-            [('a.zip', '1.0.0'), ('a/b.ext', '1.0.0'), ('name.ext', '1.0.0'), ('name.ext', '2.0.0')]
+            [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
             >>> backend.ls(latest_version=True)
-            [('a.zip', '1.0.0'), ('a/b.ext', '1.0.0'), ('name.ext', '2.0.0')]
-            >>> backend.ls('name.ext')
-            [('name.ext', '1.0.0'), ('name.ext', '2.0.0')]
+            [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '2.0.0')]
+            >>> backend.ls('/f.ext')
+            [('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
             >>> backend.ls(pattern='*.ext')
-            [('a/b.ext', '1.0.0'), ('name.ext', '1.0.0'), ('name.ext', '2.0.0')]
-            >>> backend.ls('a/')
-            [('a/b.ext', '1.0.0')]
+            [('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
+            >>> backend.ls('/a/')
+            [('/a/b.ext', '1.0.0')]
 
         """  # noqa: E501
-        utils.check_path_for_allowed_chars(path)
+        path = utils.check_path(path, self.sep)
         paths = utils.call_function_on_backend(
             self._ls,
             path,
@@ -471,16 +484,17 @@ class Backend:
                 or one or more ``files`` do not exist
             RuntimeError: if extension of ``dst_path`` is not supported
             ValueError: if ``dst_path`` contains invalid character
+                or does not start with ``'/'``
 
         Examples:
-            >>> backend.exists('a.tar.gz', '1.0.0')
+            >>> backend.exists('/a.tar.gz', '1.0.0')
             False
-            >>> backend.put_archive('.', ['src.pth'], 'name.tar.gz', '1.0.0')
-            >>> backend.exists('name.tar.gz', '1.0.0')
+            >>> backend.put_archive('.', ['src.pth'], '/a.tar.gz', '1.0.0')
+            >>> backend.exists('/a.tar.gz', '1.0.0')
             True
 
         """
-        utils.check_path_for_allowed_chars(dst_path)
+        dst_path = utils.check_path(dst_path, self.sep)
         src_root = audeer.path(src_root)
 
         if not os.path.exists(src_root):
@@ -552,16 +566,17 @@ class Backend:
             BackendError: if an error is raised on the backend
             FileNotFoundError: if ``src_path`` does not exist
             ValueError: if ``dst_path`` contains invalid character
+                or does not start with ``'/'``
 
         Examples:
-            >>> backend.exists('sub/name.ext', '3.0.0')
+            >>> backend.exists('/sub/f.ext', '3.0.0')
             False
-            >>> backend.put_file('src.pth', 'sub/name.ext', '3.0.0')
-            >>> backend.exists('sub/name.ext', '3.0.0')
+            >>> backend.put_file('src.pth', '/sub/f.ext', '3.0.0')
+            >>> backend.exists('/sub/f.ext', '3.0.0')
             True
 
         """
-        utils.check_path_for_allowed_chars(dst_path)
+        dst_path = utils.check_path(dst_path, self.sep)
         if not os.path.exists(src_path):
             utils.raise_file_not_found_error(src_path)
 
@@ -601,16 +616,17 @@ class Backend:
             BackendError: if an error is raised on the backend,
                 e.g. ``path`` does not exist
             ValueError: if ``path`` contains invalid character
+                or does not start with ``'/'``
 
         Examples:
-            >>> backend.exists('name.ext', '1.0.0')
+            >>> backend.exists('/f.ext', '1.0.0')
             True
-            >>> backend.remove_file('name.ext', '1.0.0')
-            >>> backend.exists('name.ext', '1.0.0')
+            >>> backend.remove_file('/f.ext', '1.0.0')
+            >>> backend.exists('/f.ext', '1.0.0')
             False
 
         """
-        utils.check_path_for_allowed_chars(path)
+        path = utils.check_path(path, self.sep)
 
         utils.call_function_on_backend(
             self._remove_file,
@@ -627,7 +643,7 @@ class Backend:
             self,
             path: str,
     ) -> typing.Tuple[str, str]:
-        r"""Split path on backend into root and basename.
+        r"""Split path on backend into sub-path and basename.
 
         Args:
             path: path containing :attr:`Backend.sep` as separator
@@ -637,15 +653,22 @@ class Backend:
 
         Raises:
             ValueError: if ``path`` contains invalid character
+                or does not start with ``'/'``
 
         Examples:
-            >>> backend.split('sub/name.ext')
-            ('sub', 'name.ext')
+            >>> backend.split('/')
+            ('/', '')
+            >>> backend.split('/f.ext')
+            ('/', 'f.ext')
+            >>> backend.split('/sub/')
+            ('/sub/', '')
+            >>> backend.split('/sub//f.ext')
+            ('/sub/', 'f.ext')
 
         """
-        utils.check_path_for_allowed_chars(path)
+        path = utils.check_path(path, self.sep)
 
-        root = self.sep.join(path.split(self.sep)[:-1])
+        root = self.sep.join(path.split(self.sep)[:-1]) + self.sep
         basename = path.split(self.sep)[-1]
 
         return root, basename
@@ -672,9 +695,10 @@ class Backend:
                 and an error is raised on the backend,
                 e.g. ``path`` does not exist
             ValueError: if ``path`` contains invalid character
+                or does not start with ``'/'``
 
         Examples:
-            >>> backend.versions('name.ext')
+            >>> backend.versions('/f.ext')
             ['1.0.0', '2.0.0']
 
         """

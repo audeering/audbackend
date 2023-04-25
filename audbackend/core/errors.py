@@ -6,7 +6,7 @@ class BackendError(Exception):
 
     Examples:
         >>> try:
-        ...     backend.checksum('does-not-exist', '1.0.0')
+        ...     backend.checksum('/does/not/exist', '1.0.0')
         ... except BackendError as ex:
         ...     ex.exception
         FileNotFoundError(2, 'No such file or directory')

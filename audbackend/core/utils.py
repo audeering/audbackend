@@ -29,12 +29,30 @@ def call_function_on_backend(
             raise BackendError(ex)
 
 
-def check_path_for_allowed_chars(path):
+def check_path(path, sep) -> str:
+    r"""Check path."""
+
+    # Assert path starts with sep and does not contain invalid characters.
+    if not path.startswith(sep):
+        raise ValueError(
+            f"Invalid backend path '{path}', "
+            f"must start with '{sep}'."
+        )
     if path and BACKEND_ALLOWED_CHARS_COMPILED.fullmatch(path) is None:
         raise ValueError(
-            f"Invalid path name '{path}', "
+            f"Invalid backend path '{path}', "
             f"allowed characters are '{BACKEND_ALLOWED_CHARS}'."
         )
+
+    # Remove immediately consecutive seps
+    is_sub_path = path.endswith(sep)
+    paths = path.split(sep)
+    paths = [path for path in paths if path]
+    path = sep + sep.join(paths)
+    if is_sub_path and not path.endswith(sep):
+        path += sep
+
+    return path
 
 
 def md5(

@@ -50,10 +50,10 @@ class Artifactory(Backend):
 
         <host>/<repository>/<path>
         ->
-        <path>
+        /<path>
 
         """
-        path = path[len(str(self._repo.path)):]
+        path = path[len(str(self._repo.path)) - 1:]
         path = path.replace('/', self.sep)
         return path
 
@@ -144,7 +144,7 @@ class Artifactory(Backend):
 
         # <host>/<repository>/<root>/<name>
         # ->
-        # (<root>/<name>, <version>)
+        # (/<root>/<name>, <version>)
 
         result = []
         for p in paths:
@@ -155,6 +155,7 @@ class Artifactory(Backend):
             name = tokens[-1]
             version = tokens[-2]
             path = self.sep.join(tokens[:-2])
+            path = self.sep + path
             path = self.join(path, name)
 
             result.append((path, version))

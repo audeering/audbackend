@@ -48,10 +48,10 @@ class FileSystem(Backend):
 
         <host>/<repository>/<path>
         ->
-        <path>
+        /<path>
 
         """
-        path = path[len(self._root):]  # remove host and repo
+        path = path[len(self._root) - 1:]  # remove host and repo
         path = path.replace(os.path.sep, self.sep)
         return path
 
@@ -142,7 +142,7 @@ class FileSystem(Backend):
 
         # <host>/<repository>/<root>/<version>/<name>
         # ->
-        # (<root>/<name>, <version>)
+        # (/<root>/<name>, <version>)
 
         result = []
         for p in paths:
@@ -153,6 +153,7 @@ class FileSystem(Backend):
             name = tokens[-1]
             version = tokens[-2]
             path = self.sep.join(tokens[:-2])
+            path = self.sep + path
             path = self.join(path, name)
 
             result.append((path, version))
