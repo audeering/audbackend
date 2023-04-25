@@ -536,6 +536,42 @@ def test_join(paths, expected, backend):
 
 
 @pytest.mark.parametrize(
+    'path, expected',
+    [
+        ('/', ('/', '')),
+        ('/file', ('/', 'file')),
+        ('/root/', ('/root/', '')),
+        ('/root/file', ('/root/', 'file')),
+        ('/root/file/', ('/root/file/', '')),
+        ('//root///file', ('/root/', 'file')),
+        pytest.param(
+            '',
+            None,
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+        pytest.param(
+            'file',
+            None,
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+        pytest.param(
+            'sub/file',
+            None,
+            marks=pytest.mark.xfail(raises=ValueError),
+        ),
+    ]
+)
+@pytest.mark.parametrize(
+    'backend',
+    [
+        audbackend.Backend('host', 'repository'),
+    ]
+)
+def test_split(path, expected, backend):
+    assert backend.split(path) == expected
+
+
+@pytest.mark.parametrize(
     'dst_path',
     [
         '/file.ext',

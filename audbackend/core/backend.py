@@ -643,7 +643,7 @@ class Backend:
             self,
             path: str,
     ) -> typing.Tuple[str, str]:
-        r"""Split path on backend into root and basename.
+        r"""Split path on backend into sub-path and basename.
 
         Args:
             path: path containing :attr:`Backend.sep` as separator
@@ -656,13 +656,19 @@ class Backend:
                 or does not start with ``'/'``
 
         Examples:
+            >>> backend.split('/')
+            ('/', '')
+            >>> backend.split('/f.ext')
+            ('/', 'f.ext')
+            >>> backend.split('/sub/')
+            ('/sub/', '')
             >>> backend.split('/sub/f.ext')
-            ('/sub', 'f.ext')
+            ('/sub/', 'f.ext')
 
         """
         path = utils.check_path(path, self.sep)
 
-        root = self.sep.join(path.split(self.sep)[:-1])
+        root = self.sep.join(path.split(self.sep)[:-1]) + self.sep
         basename = path.split(self.sep)[-1]
 
         return root, basename
