@@ -662,7 +662,7 @@ class Backend:
             ('/', 'f.ext')
             >>> backend.split('/sub/')
             ('/sub/', '')
-            >>> backend.split('/sub/f.ext')
+            >>> backend.split('/sub//f.ext')
             ('/sub/', 'f.ext')
 
         """
