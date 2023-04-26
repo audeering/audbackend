@@ -56,24 +56,27 @@ def _authentication(host) -> typing.Tuple[str, str]:
     """
     username = os.getenv('ARTIFACTORY_USERNAME', None)
     apikey = os.getenv('ARTIFACTORY_API_KEY', None)
-    if apikey is None or username is None:  # pragma: no cover
+
+    if apikey is None or username is None:
+
         if host.startswith('http://'):
             host = host[7:]
         elif host.startswith('https://'):
             host = host[8:]
         if host.endswith('/'):
             host = host[:-1]
+
         config_entry = artifactory.get_global_config_entry(host)
-        if config_entry is None:
-            if username is None:
-                username = 'anonymous'
-            if apikey is None:
-                apikey = ''
-        else:
+
+        if config_entry is not None:
             if username is None:
                 username = config_entry['username']
             if apikey is None:
                 apikey = config_entry['password']
+
+    username = username if username is not None else 'anonymous'
+    apikey = apikey if apikey is not None else ''
+
     return username, apikey
 
 
@@ -98,15 +101,15 @@ def _deploy(
         )
         print(desc, end='\r')
 
-    md5 = utils.md5(src_path)
-
     if not dst_path.parent.exists():
         dst_path.parent.mkdir()
+
+    md5 = utils.md5(src_path)
     with open(src_path, 'rb') as fd:
         dst_path.deploy(fd, md5=md5)
 
     if verbose:  # pragma: no cover
-        # Final clearing of progress line
+        # Clear progress line
         print(audeer.format_display_message(' ', pbar=False), end='\r')
 
 
@@ -129,6 +132,7 @@ def _download(
     src_size = artifactory.ArtifactoryPath.stat(src_path).size
 
     with audeer.progress_bar(total=src_size, disable=not verbose) as pbar:
+
         desc = audeer.format_display_message(
             'Download {}'.format(os.path.basename(str(src_path))),
             pbar=True,
@@ -136,22 +140,16 @@ def _download(
         pbar.set_description_str(desc)
         pbar.refresh()
 
-        try:
-            dst_size = 0
-            with src_path.open() as src_fp:
-                with open(dst_path, 'wb') as dst_fp:
-                    while src_size > dst_size:
-                        data = src_fp.read(chunk)
-                        n_data = len(data)
-                        if n_data > 0:
-                            dst_fp.write(data)
-                            dst_size += n_data
-                            pbar.update(n_data)
-        except (KeyboardInterrupt, Exception):  # pragma: no cover
-            # Clean up broken artifact files
-            if os.path.exists(dst_path):
-                os.remove(dst_path)
-            raise
+        dst_size = 0
+        with src_path.open() as src_fp:
+            with open(dst_path, 'wb') as dst_fp:
+                while src_size > dst_size:
+                    data = src_fp.read(chunk)
+                    n_data = len(data)
+                    if n_data > 0:
+                        dst_fp.write(data)
+                        dst_size += n_data
+                        pbar.update(n_data)
 
 
 class Artifactory(Backend):
