@@ -10,6 +10,18 @@ from audbackend.core import utils
 from audbackend.core.backend import Backend
 
 
+def _artifactory_path(
+        path,
+        username,
+        apikey,
+) -> artifactory.ArtifactoryPath:
+    r"""Authenticate at Artifactory and get path object."""
+    return artifactory.ArtifactoryPath(
+        path,
+        auth=(username, apikey),
+    )
+
+
 def _authentication(host) -> typing.Tuple[str, str]:
     """Look for username and API key.
 
@@ -22,8 +34,8 @@ def _authentication(host) -> typing.Tuple[str, str]:
     :file:`~/.artifactory_python.cfg` config file.
     For that it removes ``http://`` or ``https://``
     from the beginning of ``url``
-    and everything that comes after ``/artifactory``.
-    E.g. for ``https://audeering.jfrog.io/artifactory/data-public/emodb``
+    and ``/`` from the end.
+    E.g. for ``https://audeering.jfrog.io/artifactory/`
     it will look for an entry in the config file under
     ``[audeering.jfrog.io/artifactory]``.
 
@@ -36,8 +48,7 @@ def _authentication(host) -> typing.Tuple[str, str]:
     you will be able to access the server this way.
 
     Args:
-        host: host address,
-            e.g. https://audeering.jfrog.io/artifactory
+        host: host address
 
     Returns:
         username and API key
@@ -50,13 +61,19 @@ def _authentication(host) -> typing.Tuple[str, str]:
             host = host[7:]
         elif host.startswith('https://'):
             host = host[8:]
+        if host.endswith('/'):
+            host = host[:-1]
         config_entry = artifactory.get_global_config_entry(host)
         if config_entry is None:
-            username = 'anonymous'
-            apikey = ''
+            if username is None:
+                username = 'anonymous'
+            if apikey is None:
+                apikey = ''
         else:
-            username = config_entry['username']
-            apikey = config_entry['password']
+            if username is None:
+                username = config_entry['username']
+            if apikey is None:
+                apikey = config_entry['password']
     return username, apikey
 
 
@@ -75,9 +92,13 @@ class Artifactory(Backend):
     ):
         super().__init__(host, repository)
 
-        self.username, self.apikey = _authentication(host)
-        self._artifactory = audfactory.path(self.host)
-        self._repo = self._artifactory.find_repository_local(self.repository)
+        self._username, self._apikey = _authentication(host)
+        path = _artifactory_path(
+            self.host,
+            self._username,
+            self._apikey,
+        )
+        self._repo = path.find_repository_local(self.repository)
 
     def _access(
             self,
@@ -93,7 +114,7 @@ class Artifactory(Backend):
     ) -> str:
         r"""MD5 checksum of file on backend."""
         path = self._path(path, version)
-        return audfactory.checksum(path)
+        return audfactory.checksum(str(path))
 
     def _collapse(
             self,
@@ -117,8 +138,13 @@ class Artifactory(Backend):
         if self._repo is not None:
             utils.raise_file_exists_error(str(self._repo.path))
 
+        path = _artifactory_path(
+            self.host,
+            self._username,
+            self._apikey,
+        )
         self._repo = dohq_artifactory.RepositoryLocal(
-            self._artifactory,
+            path,
             self.repository,
             package_type=dohq_artifactory.RepositoryLocal.GENERIC,
         )
@@ -137,7 +163,6 @@ class Artifactory(Backend):
     ) -> bool:
         r"""Check if file exists on backend."""
         path = self._path(path, version)
-        path = audfactory.path(path)
         return path.exists()
 
     def _expand(
@@ -166,7 +191,7 @@ class Artifactory(Backend):
     ):
         r"""Get file from backend."""
         src_path = self._path(src_path, version)
-        audfactory.download(src_path, dst_path, verbose=verbose)
+        audfactory.download(str(src_path), dst_path, verbose=verbose)
 
     def _ls(
             self,
@@ -177,7 +202,11 @@ class Artifactory(Backend):
         if path.endswith('/'):  # find files under sub-path
 
             path = self._expand(path)
-            path = audfactory.path(path)
+            path = _artifactory_path(
+                path,
+                self._username,
+                self._apikey,
+            )
             if not path.exists():
                 utils.raise_file_not_found_error(str(path))
             paths = [str(x) for x in path.glob("**/*") if x.is_file()]
@@ -190,7 +219,8 @@ class Artifactory(Backend):
             vs = [os.path.basename(str(f)) for f in root if f.is_dir]
 
             # filter out other files with same root and version
-            paths = [self._path(path, v) for v in vs if self._exists(path, v)]
+            paths = [str(self._path(path, v))
+                     for v in vs if self._exists(path, v)]
 
             if not paths:
                 utils.raise_file_not_found_error(path)
@@ -219,7 +249,7 @@ class Artifactory(Backend):
             self,
             path: str,
             version: str,
-    ) -> str:
+    ) -> artifactory.ArtifactoryPath:
         r"""Convert to backend path.
 
         <root>/<name>
@@ -230,6 +260,11 @@ class Artifactory(Backend):
         root, name = self.split(path)
         root = self._expand(root)
         path = f'{root}/{version}/{name}'
+        path = _artifactory_path(
+            path,
+            self._username,
+            self._apikey,
+        )
         return path
 
     def _put_file(
@@ -241,7 +276,7 @@ class Artifactory(Backend):
     ):
         r"""Put file to backend."""
         dst_path = self._path(dst_path, version)
-        audfactory.deploy(src_path, dst_path, verbose=verbose)
+        audfactory.deploy(src_path, str(dst_path), verbose=verbose)
 
     def _remove_file(
             self,
@@ -250,4 +285,4 @@ class Artifactory(Backend):
     ):
         r"""Remove file from backend."""
         path = self._path(path, version)
-        audfactory.path(path).unlink()
+        path.unlink()

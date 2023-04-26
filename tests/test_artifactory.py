@@ -9,7 +9,10 @@ import audeer
     ['artifactory'],
     indirect=True,
 )
-def test_errors(tmpdir, backend, no_artifactory_access_rights):
+def test_errors(tmpdir, backend):
+
+    backend._username = 'non-existing'
+    backend._apikey = 'non-existing'
 
     local_file = audeer.touch(
         audeer.path(tmpdir, 'file.txt')
