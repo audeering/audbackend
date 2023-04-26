@@ -21,10 +21,10 @@ pytest.UID = audeer.uid()[:8]
 
 
 @pytest.fixture(scope='session', autouse=False)
-def hosts(tmp_path_factory):
+def hosts(tmpdir_factory):
     return {
         'artifactory': 'https://audeering.jfrog.io/artifactory',
-        'file-system': tmp_path_factory.mktemp('host').as_posix(),
+        'file-system': str(tmpdir_factory.mktemp('host')),
     }
 
 
