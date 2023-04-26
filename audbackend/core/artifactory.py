@@ -1,11 +1,63 @@
 import os
+import typing
 
+import artifactory
 import dohq_artifactory
 
 import audfactory
 
 from audbackend.core import utils
 from audbackend.core.backend import Backend
+
+
+def _authentication(host) -> typing.Tuple[str, str]:
+    """Look for username and API key.
+
+    It first looks for the two environment variables
+    ``ARTIFACTORY_USERNAME`` and
+    ``ARTIFACTORY_API_KEY``.
+
+    If some of them or both are missing,
+    it tries to extract them from the
+    :file:`~/.artifactory_python.cfg` config file.
+    For that it removes ``http://`` or ``https://``
+    from the beginning of ``url``
+    and everything that comes after ``/artifactory``.
+    E.g. for ``https://audeering.jfrog.io/artifactory/data-public/emodb``
+    it will look for an entry in the config file under
+    ``[audeering.jfrog.io/artifactory]``.
+
+    If it cannot find the config file
+    or a matching entry in the config file
+    it will set the username to ``anonymous``
+    and the API key to an empty string.
+    If your Artifactory server is configured
+    to allow anonymous users
+    you will be able to access the server this way.
+
+    Args:
+        host: host address,
+            e.g. https://audeering.jfrog.io/artifactory
+
+    Returns:
+        username and API key
+
+    """
+    username = os.getenv('ARTIFACTORY_USERNAME', None)
+    apikey = os.getenv('ARTIFACTORY_API_KEY', None)
+    if apikey is None or username is None:  # pragma: no cover
+        if host.startswith('http://'):
+            host = host[7:]
+        elif host.startswith('https://'):
+            host = host[8:]
+        config_entry = artifactory.get_global_config_entry(host)
+        if config_entry is None:
+            username = 'anonymous'
+            apikey = ''
+        else:
+            username = config_entry['username']
+            apikey = config_entry['password']
+    return username, apikey
 
 
 class Artifactory(Backend):
@@ -23,6 +75,7 @@ class Artifactory(Backend):
     ):
         super().__init__(host, repository)
 
+        self.username, self.apikey = _authentication(host)
         self._artifactory = audfactory.path(self.host)
         self._repo = self._artifactory.find_repository_local(self.repository)
 
