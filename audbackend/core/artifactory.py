@@ -5,7 +5,6 @@ import artifactory
 import dohq_artifactory
 
 import audeer
-import audfactory
 
 from audbackend.core import utils
 from audbackend.core.backend import Backend
