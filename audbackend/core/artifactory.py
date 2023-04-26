@@ -114,7 +114,8 @@ class Artifactory(Backend):
     ) -> str:
         r"""MD5 checksum of file on backend."""
         path = self._path(path, version)
-        return audfactory.checksum(str(path))
+        checksum = artifactory.ArtifactoryPath.stat(path).md5
+        return checksum
 
     def _collapse(
             self,
@@ -215,7 +216,11 @@ class Artifactory(Backend):
 
             root, _ = self.split(path)
             root = self._expand(root)
-            root = audfactory.path(root)
+            root = _artifactory_path(
+                root,
+                self._username,
+                self._apikey,
+            )
             vs = [os.path.basename(str(f)) for f in root if f.is_dir]
 
             # filter out other files with same root and version
