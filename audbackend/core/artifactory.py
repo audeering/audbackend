@@ -25,19 +25,12 @@ def _artifactory_path(
 def _authentication(host) -> typing.Tuple[str, str]:
     """Look for username and API key.
 
-    It first looks for the two environment variables
+    Looks for the two environment variables
     ``ARTIFACTORY_USERNAME`` and
     ``ARTIFACTORY_API_KEY``.
 
-    If some of them or both are missing,
-    it tries to extract them from the
+    Missing values are extracted them from the
     :file:`~/.artifactory_python.cfg` config file.
-    For that it removes ``http://`` or ``https://``
-    from the beginning of ``url``
-    and ``/`` from the end.
-    E.g. for ``https://audeering.jfrog.io/artifactory/`
-    it will look for an entry in the config file under
-    ``[audeering.jfrog.io/artifactory]``.
 
     If it cannot find the config file
     or a matching entry in the config file
@@ -57,14 +50,7 @@ def _authentication(host) -> typing.Tuple[str, str]:
     username = os.getenv('ARTIFACTORY_USERNAME', None)
     apikey = os.getenv('ARTIFACTORY_API_KEY', None)
 
-    if apikey is None or username is None:
-
-        if host.startswith('http://'):
-            host = host[7:]
-        elif host.startswith('https://'):
-            host = host[8:]
-        if host.endswith('/'):
-            host = host[:-1]
+    if apikey is None or username is None:  # pragma: no cover
 
         config_entry = artifactory.get_global_config_entry(host)
 
