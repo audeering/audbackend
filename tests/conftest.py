@@ -1,4 +1,5 @@
 import os
+import time
 
 import pytest
 
@@ -20,19 +21,37 @@ pytest.BACKENDS = [
     'file-system',
 ]
 
+# UID for test session
+# Repositories on the host will be named
+# unittest-<session-uid>-<repository-uid>
+pytest.UID = audeer.uid()[:8]
+
 
 @pytest.fixture(scope='function', autouse=False)
 def backend(request):
-
+    r"""Create and delete a repository on the backend."""
     name = request.param
     host = pytest.HOSTS[name]
-    repository = f'unittest-{audeer.uid()[:8]}'
+    repository = f'unittest-{pytest.UID}-{audeer.uid()[:8]}'
 
     backend = audbackend.create(name, host, repository)
 
     yield backend
 
-    audbackend.delete(name, host, repository)
+    # Deleting repositories on Artifactory might fail
+    for n in range(3):
+        try:
+            audbackend.delete(name, host, repository)
+            break
+        except audbackend.BackendError:
+            if n == 2:
+                error_msg = (
+                    f'Cleaning up of repo {repository} failed.\n'
+                    'Please delete remaining repositories manually with:\n'
+                    f"'audbackend.delete({name}, {host}, {repository})'"
+                )
+                raise RuntimeError(error_msg)
+            time.sleep(1)
 
 
 @pytest.fixture(scope='package', autouse=True)
