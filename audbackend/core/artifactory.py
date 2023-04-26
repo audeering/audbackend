@@ -78,6 +78,42 @@ def _authentication(host) -> typing.Tuple[str, str]:
     return username, apikey
 
 
+def _deploy(
+        src_path: str,
+        dst_path: artifactory.ArtifactoryPath,
+        *,
+        verbose: bool = False,
+):
+    r"""Deploy local file as an artifact.
+
+    Args:
+        src_path: local file path
+        dst_path: path on Artifactory
+        verbose: show information on the upload process
+
+    """
+    if verbose:  # pragma: no cover
+        desc = audeer.format_display_message(
+            f'Deploy {src_path}',
+            pbar=False,
+        )
+        print(desc, end='\r')
+
+    md5 = utils.md5(src_path)
+
+    if not dst_path.parent.exists():
+        dst_path.parent.mkdir()
+    with open(src_path, "rb") as fobj:
+        dst_path.deploy(
+            fobj,
+            md5=md5,
+        )
+
+    if verbose:  # pragma: no cover
+        # Final clearing of progress line
+        print(audeer.format_display_message(' ', pbar=False), end='\r')
+
+
 def _download(
         src_path: artifactory.ArtifactoryPath,
         dst_path: str,
@@ -88,17 +124,10 @@ def _download(
     r"""Download an artifact.
 
     Args:
-        src_path: artifact URL
-        dst_path: path to store the artifact
+        src_path: local file path
+        dst_path: path on Artifactory
         chunk: amount of data read at once during the download
         verbose: show information on the download process
-
-    Returns:
-        path to local artifact
-
-    Raises:
-        RuntimeError: if artifact cannot be found,
-            or you don't have access rights to the artifact
 
     """
     src_size = artifactory.ArtifactoryPath.stat(src_path).size
@@ -127,8 +156,6 @@ def _download(
             if os.path.exists(dst_path):
                 os.remove(dst_path)  # pragma: no cover
             raise
-
-    return dst_path
 
 
 class Artifactory(Backend):
@@ -335,7 +362,7 @@ class Artifactory(Backend):
     ):
         r"""Put file to backend."""
         dst_path = self._path(dst_path, version)
-        audfactory.deploy(src_path, str(dst_path), verbose=verbose)
+        _deploy(src_path, dst_path, verbose=verbose)
 
     def _remove_file(
             self,
