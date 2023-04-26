@@ -102,11 +102,8 @@ def _deploy(
 
     if not dst_path.parent.exists():
         dst_path.parent.mkdir()
-    with open(src_path, "rb") as fobj:
-        dst_path.deploy(
-            fobj,
-            md5=md5,
-        )
+    with open(src_path, 'rb') as fd:
+        dst_path.deploy(fd, md5=md5)
 
     if verbose:  # pragma: no cover
         # Final clearing of progress line
@@ -119,7 +116,7 @@ def _download(
         *,
         chunk: int = 4 * 1024,
         verbose=False,
-) -> str:
+):
     r"""Download an artifact.
 
     Args:
@@ -150,10 +147,10 @@ def _download(
                             dst_fp.write(data)
                             dst_size += n_data
                             pbar.update(n_data)
-        except (KeyboardInterrupt, Exception):
+        except (KeyboardInterrupt, Exception):  # pragma: no cover
             # Clean up broken artifact files
             if os.path.exists(dst_path):
-                os.remove(dst_path)  # pragma: no cover
+                os.remove(dst_path)
             raise
 
 
