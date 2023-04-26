@@ -20,7 +20,7 @@ pytest.BACKENDS = [
 pytest.UID = audeer.uid()[:8]
 
 
-@pytest.fixture(scope='session', autouse=False)
+@pytest.fixture(scope='package', autouse=False)
 def hosts(tmpdir_factory):
     return {
         'artifactory': 'https://audeering.jfrog.io/artifactory',
