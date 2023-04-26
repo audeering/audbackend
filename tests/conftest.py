@@ -4,7 +4,6 @@ import time
 import pytest
 
 import audeer
-import audfactory
 
 import audbackend
 
@@ -28,54 +27,6 @@ pytest.BACKENDS = [
 pytest.UID = audeer.uid()[:8]
 
 
-@pytest.fixture(scope='session', autouse=True)
-def cleanup_artifactory():
-    r"""Remove letover unit test repositories on Artifactory.
-
-    As removing a unit test repsoitory
-    in the ``backend()`` fixture
-    might fail
-    (https://github.com/audeering/audbackend/issues/97),
-    we try to clean up the host
-    everytime we run the tests.
-    If this fails
-    a ``RuntimeError`` is raised
-    and the user then needs to clean up
-    the repository manually.
-
-    """
-
-    yield
-
-    # Delete leftover repositories
-    name = 'artifactory'
-    host = pytest.HOSTS[name]
-    r = audfactory.rest_api_get(f'{host}/api/repositories')
-    if r.status_code == 200:
-        repos = [entry['key'] for entry in r.json()]
-        repos = [
-            repo for repo in repos
-            if repo.startswith(f'unittest-{pytest.UID}')
-        ]
-        remaining_repos = repos.copy()
-        for repo in repos:
-            try:
-                audbackend.delete(name, host, repo)
-                remaining_repos.remove(repo)
-            except audbackend.BackendError as ex:
-                error_msg = (
-                    f'Cleaning up of repo {repo} failed.\n'
-                    'Please delete remaining repositories manually with:\n'
-                )
-                for remaining_repo in remaining_repos:
-                    error_msg += (
-                        f"'audbackend.delete({name}, {host}, "
-                        f"{remaining_repo})',\n"
-                    )
-                error_msg += f'The original error message was {ex}.'
-                raise RuntimeError(error_msg)
-
-
 @pytest.fixture(scope='function', autouse=False)
 def backend(request):
     r"""Create and delete a repository on the backend."""
@@ -88,11 +39,18 @@ def backend(request):
     yield backend
 
     # Deleting repositories on Artifactory might fail
-    for _ in range(3):
+    for n in range(3):
         try:
             audbackend.delete(name, host, repository)
             break
         except audbackend.BackendError:
+            if n == 2:
+                error_msg = (
+                    f'Cleaning up of repo {repository} failed.\n'
+                    'Please delete remaining repositories manually with:\n'
+                    f"'audbackend.delete({name}, {host}, {repository})'"
+                )
+                raise RuntimeError(error_msg)
             time.sleep(1)
 
 
