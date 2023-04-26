@@ -4,6 +4,7 @@ import typing
 import artifactory
 import dohq_artifactory
 
+import audeer
 import audfactory
 
 from audbackend.core import utils
@@ -75,6 +76,59 @@ def _authentication(host) -> typing.Tuple[str, str]:
             if apikey is None:
                 apikey = config_entry['password']
     return username, apikey
+
+
+def _download(
+        src_path: artifactory.ArtifactoryPath,
+        dst_path: str,
+        *,
+        chunk: int = 4 * 1024,
+        verbose=False,
+) -> str:
+    r"""Download an artifact.
+
+    Args:
+        src_path: artifact URL
+        dst_path: path to store the artifact
+        chunk: amount of data read at once during the download
+        verbose: show information on the download process
+
+    Returns:
+        path to local artifact
+
+    Raises:
+        RuntimeError: if artifact cannot be found,
+            or you don't have access rights to the artifact
+
+    """
+    src_size = artifactory.ArtifactoryPath.stat(src_path).size
+
+    with audeer.progress_bar(total=src_size, disable=not verbose) as pbar:
+        desc = audeer.format_display_message(
+            'Download {}'.format(os.path.basename(str(src_path))),
+            pbar=True,
+        )
+        pbar.set_description_str(desc)
+        pbar.refresh()
+
+        try:
+            dst_size = 0
+            with src_path.open() as src_fp:
+                with open(dst_path, 'wb') as dst_fp:
+                    while src_size > dst_size:
+                        data = src_fp.read(chunk)
+                        n_data = len(data)
+                        if n_data > 0:
+                            dst_fp.write(data)
+                            dst_size += n_data
+                            pbar.update(n_data)
+        except (KeyboardInterrupt, Exception):
+            # Clean up broken artifact files
+            if os.path.exists(dst_path):
+                os.remove(dst_path)  # pragma: no cover
+            raise
+
+    return dst_path
 
 
 class Artifactory(Backend):
@@ -192,7 +246,7 @@ class Artifactory(Backend):
     ):
         r"""Get file from backend."""
         src_path = self._path(src_path, version)
-        audfactory.download(str(src_path), dst_path, verbose=verbose)
+        _download(src_path, dst_path, verbose=verbose)
 
     def _ls(
             self,
