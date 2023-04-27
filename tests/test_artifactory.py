@@ -62,8 +62,8 @@ def test_authentication(tmpdir, hosts, hide_credentials):
     api_key = 'bad'
     with open(config_path, 'w') as fp:
         fp.write(f'[{host}]\n')
-        fp.write(f'username = {username}]\n')
-        fp.write(f'password = {api_key}]\n')
+        fp.write(f'username = {username}\n')
+        fp.write(f'password = {api_key}\n')
 
     with pytest.raises(dohq_artifactory.exception.ArtifactoryException):
         audbackend.Artifactory(host, 'repository')
