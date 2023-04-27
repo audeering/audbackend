@@ -40,9 +40,9 @@ def _authentication(host) -> typing.Tuple[str, str]:
 
         if config_entry is not None:
             if username is None:
-                username = config_entry['username']
+                username = config_entry.get('username', None)
             if api_key is None:
-                api_key = config_entry['password']
+                api_key = config_entry.get('password', None)
 
     if username is None:
         username = 'anonymous'
