@@ -1,7 +1,63 @@
+import os
+
+import dohq_artifactory
 import pytest
 
 import audbackend
 import audeer
+
+
+@pytest.fixture(scope='function', autouse=False)
+def hide_credentials():
+
+    defaults = {}
+
+    for key in [
+        'ARTIFACTORY_USERNAME',
+        'ARTIFACTORY_API_KEY',
+        'ARTIFACTORY_CONFIG_FILE',
+    ]:
+        defaults[key] = os.environ.get(key, None)
+
+    for key, value in defaults.items():
+        if value is not None:
+            del os.environ[key]
+
+    yield
+
+    for key, value in defaults.items():
+        if value is not None:
+            os.environ[key] = value
+        elif key in os.environ:
+            del os.environ[key]
+
+
+def test_authentication(tmpdir, hosts, hide_credentials):
+
+    host = hosts['artifactory']
+
+    # create empty config file
+
+    config_path = audeer.path(tmpdir, 'config.cfg')
+    os.environ['ARTIFACTORY_CONFIG_FILE'] = audeer.touch(config_path)
+
+    # default credentials
+
+    backend = audbackend.Artifactory(host, 'repository')
+    assert backend._username == 'anonymous'
+    assert backend._api_key == ''
+
+    # read from config file
+
+    username = 'bad'
+    api_key = 'bad'
+    with open(config_path, 'w') as fp:
+        fp.write(f'[{host}]\n')
+        fp.write(f'username = {username}]\n')
+        fp.write(f'password = {api_key}]\n')
+
+    with pytest.raises(dohq_artifactory.exception.ArtifactoryException):
+        audbackend.Artifactory(host, 'repository')
 
 
 @pytest.mark.parametrize(
@@ -12,7 +68,7 @@ import audeer
 def test_errors(tmpdir, backend):
 
     backend._username = 'non-existing'
-    backend._apikey = 'non-existing'
+    backend._api_key = 'non-existing'
 
     local_file = audeer.touch(
         audeer.path(tmpdir, 'file.txt')
