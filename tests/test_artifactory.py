@@ -47,7 +47,16 @@ def test_authentication(tmpdir, hosts, hide_credentials):
     assert backend._username == 'anonymous'
     assert backend._api_key == ''
 
-    # read from config file
+    # config file entry without username and password
+
+    with open(config_path, 'w') as fp:
+        fp.write(f'[{host}]\n')
+
+    backend = audbackend.Artifactory(host, 'repository')
+    assert backend._username == 'anonymous'
+    assert backend._api_key == ''
+
+    # config file entry with username and password
 
     username = 'bad'
     api_key = 'bad'
