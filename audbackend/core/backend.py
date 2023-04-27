@@ -231,6 +231,9 @@ class Backend:
     ) -> str:
         r"""Get file from backend.
 
+        The operation is silently skipped,
+        if a local file with the same checksum already exists.
+
         Args:
             src_path: path to file on backend
             dst_path: destination path to local file
@@ -263,19 +266,23 @@ class Backend:
 
         audeer.mkdir(dst_root)
         if (
-                not os.access(dst_root, os.W_OK) or
-                (os.path.exists(dst_path) and not os.access(dst_root, os.W_OK))
+            not os.access(dst_root, os.W_OK) or
+            (os.path.exists(dst_path) and not os.access(dst_root, os.W_OK))
         ):  # pragma: no Windows cover
             msg = f"Permission denied: '{dst_path}'"
             raise PermissionError(msg)
 
-        utils.call_function_on_backend(
-            self._get_file,
-            src_path,
-            dst_path,
-            version,
-            verbose,
-        )
+        if (
+            not os.path.exists(dst_path)
+            or utils.md5(dst_path) != self.checksum(src_path, version)
+        ):
+            utils.call_function_on_backend(
+                self._get_file,
+                src_path,
+                dst_path,
+                version,
+                verbose,
+            )
 
         return dst_path
 
