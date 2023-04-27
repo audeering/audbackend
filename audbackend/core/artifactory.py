@@ -136,7 +136,7 @@ class Artifactory(Backend):
         host: host address
         repository: repository name
 
-    .. _`config file`: https://github.com/devopshq/artifactory#global-configuration-file
+    .. _`config file`: https://devopshq.github.io/artifactory/#global-configuration-file
 
     """  # noqa: E501
     def __init__(
