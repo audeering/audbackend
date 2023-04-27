@@ -182,6 +182,7 @@ class FileSystem(Backend):
             src_path: str,
             dst_path: str,
             version: str,
+            checksum: str,
             verbose: bool,
     ):
         r"""Put file to backend."""
