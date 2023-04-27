@@ -49,7 +49,7 @@ def backend(hosts, request):
                 error_msg = (
                     f'Cleaning up of repo {repository} failed.\n'
                     'Please delete remaining repositories manually with:\n'
-                    f"'audbackend.delete({name}, {host}, {repository})'"
+                    f"audbackend.delete('{name}', '{host}', '{repository}')"
                 )
                 raise RuntimeError(error_msg)
             time.sleep(1)
