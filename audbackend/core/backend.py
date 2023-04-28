@@ -267,7 +267,7 @@ class Backend:
         audeer.mkdir(dst_root)
         if (
             not os.access(dst_root, os.W_OK) or
-            (os.path.exists(dst_path) and not os.access(dst_root, os.W_OK))
+            (os.path.exists(dst_path) and not os.access(dst_path, os.W_OK))
         ):  # pragma: no Windows cover
             msg = f"Permission denied: '{dst_path}'"
             raise PermissionError(msg)
