@@ -534,6 +534,7 @@ class Backend:
             src_path: str,
             dst_path: str,
             version: str,
+            checksum: str,
             verbose: bool,
     ):  # pragma: no cover
         r"""Put file to backend."""
@@ -580,16 +581,19 @@ class Backend:
         if not os.path.exists(src_path):
             utils.raise_file_not_found_error(src_path)
 
+        checksum = utils.md5(src_path)
+
         # skip if file with same checksum already exists
-        if not (
-            self.exists(dst_path, version)
-            and self.checksum(dst_path, version) == utils.md5(src_path)
+        if (
+            not self.exists(dst_path, version)
+            or self.checksum(dst_path, version) != checksum
         ):
             utils.call_function_on_backend(
                 self._put_file,
                 src_path,
                 dst_path,
                 version,
+                checksum,
                 verbose,
             )
 

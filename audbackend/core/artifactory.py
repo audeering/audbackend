@@ -55,6 +55,7 @@ def _authentication(host) -> typing.Tuple[str, str]:
 def _deploy(
         src_path: str,
         dst_path: artifactory.ArtifactoryPath,
+        checksum: str,
         *,
         verbose: bool = False,
 ):
@@ -70,9 +71,8 @@ def _deploy(
     if not dst_path.parent.exists():
         dst_path.parent.mkdir()
 
-    md5 = utils.md5(src_path)
     with open(src_path, 'rb') as fd:
-        dst_path.deploy(fd, md5=md5)
+        dst_path.deploy(fd, md5=checksum)
 
     if verbose:  # pragma: no cover
         # Clear progress line
@@ -331,11 +331,12 @@ class Artifactory(Backend):
             src_path: str,
             dst_path: str,
             version: str,
+            checksum: str,
             verbose: bool,
     ):
         r"""Put file to backend."""
         dst_path = self._path(dst_path, version)
-        _deploy(src_path, dst_path, verbose=verbose)
+        _deploy(src_path, dst_path, checksum, verbose=verbose)
 
     def _remove_file(
             self,
