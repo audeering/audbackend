@@ -138,7 +138,9 @@ def test_errors(tmpdir, backend):
     backend.put_file(src_path, remote_file, version)
     backend.put_archive(tmpdir, [local_file], archive, version)
 
-    # Create local read-only folder
+    # Create local read-only file and folder
+    file_read_only = audeer.touch(audeer.path(tmpdir, 'read-only-file.txt'))
+    os.chmod(file_read_only, stat.S_IRUSR)
     folder_read_only = audeer.mkdir(audeer.path(tmpdir, 'read-only-folder'))
     os.chmod(folder_read_only, stat.S_IRUSR)
 
@@ -158,8 +160,11 @@ def test_errors(tmpdir, backend):
         'An exception was raised by the backend, '
         'please see stack trace for further information.'
     )
-    error_read_only = (
+    error_read_only_folder = (
         f"Permission denied: '{os.path.join(folder_read_only, local_file)}'"
+    )
+    error_read_only_file = (
+        f"Permission denied: '{file_read_only}'"
     )
 
     # --- checksum ---
@@ -218,7 +223,7 @@ def test_errors(tmpdir, backend):
     # no write permissions to `dst_path`
     if not platform.system() == 'Windows':
         # Currently we don't know how to provoke permission error on Windows
-        with pytest.raises(PermissionError, match=error_read_only):
+        with pytest.raises(PermissionError, match=error_read_only_folder):
             backend.get_archive(archive, folder_read_only, version)
 
     # --- get_file ---
@@ -234,8 +239,10 @@ def test_errors(tmpdir, backend):
     # no write permissions to `dst_path`
     if not platform.system() == 'Windows':
         # Currently we don't know how to provoke permission error on Windows
+        with pytest.raises(PermissionError, match=error_read_only_file):
+            backend.get_file(remote_file, file_read_only, version)
         dst_path = audeer.path(folder_read_only, 'file.txt')
-        with pytest.raises(PermissionError, match=error_read_only):
+        with pytest.raises(PermissionError, match=error_read_only_folder):
             backend.get_file(remote_file, dst_path, version)
 
     # --- join ---
