@@ -162,6 +162,9 @@ class Backend:
         The archive type is derived from the extension of ``src_path``.
         See :func:`audeer.extract_archive` for supported extensions.
 
+        If ``dst_root`` does not exist,
+        it is created.
+
         Args:
             src_path: path to archive on backend
             dst_root: local destination directory
@@ -232,8 +235,15 @@ class Backend:
     ) -> str:
         r"""Get file from backend.
 
-        The operation is silently skipped,
-        if a local file with the same checksum already exists.
+        If the folder of
+        ``dst_path`` does not exist,
+        it is created.
+
+        If ``dst_path`` exists
+        with a different checksum,
+        it is overwritten,
+        or otherwise,
+        the operation is silently skipped.
 
         Args:
             src_path: path to file on backend
