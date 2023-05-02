@@ -9,70 +9,85 @@ import audbackend
 import audeer
 
 
+@pytest.fixture(scope='function', autouse=False)
+def tree(tmpdir, request):
+    r"""Create file tree."""
+
+    files = request.param
+    paths = []
+
+    for path in files:
+        if os.name == 'nt':
+            path = path.replace('/', os.path.sep)
+        if path.endswith(os.path.sep):
+            path = audeer.path(tmpdir, path)
+            path = audeer.mkdir(path)
+            path = path + os.path.sep
+            paths.append(path)
+        else:
+            path = audeer.path(tmpdir, path)
+            audeer.mkdir(os.path.dirname(path))
+            path = audeer.touch(path)
+            paths.append(path)
+
+    yield paths
+
+
 @pytest.mark.parametrize(
-    'files, name, folder, version, tmp_root',
+    'tree, archive, files, tmp_root, expected',
     [
-        (
+        (  # empty
+            ['file.ext', 'dir/to/file.ext'],
+            '/archive.zip',
             [],
-            'empty.zip',
             None,
-            '1.0.0',
-            None,
+            [],
         ),
-        (
+        (  # single file
+            ['file.ext', 'dir/to/file.ext'],
+            '/archive.zip',
             'file.ext',
-            'not-empty.zip',
             None,
-            '1.0.0',
-            None,
+            ['file.ext'],
         ),
-        (
+        (  # list
             ['file.ext', 'dir/to/file.ext'],
-            'not-empty.zip',
-            'group',
-            '1.0.0',
+            '/archive.zip',
+            ['file.ext'],
             None,
+            ['file.ext'],
         ),
-        (
+        (  # all files
             ['file.ext', 'dir/to/file.ext'],
-            'not-empty.zip',
-            'group',
-            '2.0.0',
+            '/archive.zip',
+            None,
             'tmp',
+            ['dir/to/file.ext', 'file.ext'],
         ),
-        (
+        (  # tar.gz
             ['file.ext', 'dir/to/file.ext'],
-            'not-empty.tar.gz',
-            'group',
-            '2.0.0',
+            '/archive.tar.gz',
+            None,
             'tmp',
+            ['dir/to/file.ext', 'file.ext'],
         ),
     ],
+    indirect=['tree'],
 )
 @pytest.mark.parametrize(
     'backend',
     pytest.BACKENDS,
     indirect=True,
 )
-def test_archive(tmpdir, files, name, folder, version, tmp_root, backend):
+def test_archive(tmpdir, tree, archive, files, tmp_root, backend, expected):
+
+    version = '1.0.0'
 
     if tmp_root is not None:
         tmp_root = audeer.path(tmpdir, tmp_root)
 
     if os.name == 'nt':
-        if isinstance(files, str):
-            files = files.replace('/', os.sep)
-        elif files:
-            files = [file.replace('/', os.sep) for file in files]
-
-    files_as_list = audeer.to_list(files)
-    for file in files_as_list:
-        path = os.path.join(tmpdir, file)
-        audeer.mkdir(os.path.dirname(path))
-        with open(path, 'w'):
-            pass
-
-    archive = backend.join('/test_archive', name)
+        expected = [file.replace('/', os.sep) for file in expected]
 
     # if a tmp_root is given but does not exist,
     # put_archive() should fail
@@ -125,7 +140,7 @@ def test_archive(tmpdir, files, name, folder, version, tmp_root, backend):
         tmpdir,
         version,
         tmp_root=tmp_root,
-    ) == files_as_list
+    ) == expected
 
 
 @pytest.mark.parametrize(

@@ -177,10 +177,11 @@ class Backend:
             BackendError: if an error is raised on the backend,
                 e.g. ``src_path`` does not exist
             FileNotFoundError: if ``tmp_root`` does not exist
+            NotADirectoryError: if ``dst_root`` is not a directory
             PermissionError: if the user lacks write permissions
                 for ``dst_path``
             RuntimeError: if extension of ``src_path`` is not supported
-            RuntimeError: if ``src_path`` is a malformed archive
+                or ``src_path`` is a malformed archive
             ValueError: if ``src_path`` contains invalid character
                 or does not start with ``'/'``
 
@@ -492,11 +493,11 @@ class Backend:
             FileNotFoundError: if ``src_root``,
                 ``tmp_root``,
                 or one or more ``files`` do not exist
-            RuntimeError: if extension of ``dst_path`` is not supported
+            RuntimeError: if ``dst_path`` does not end with
+                ``zip`` or ``tar.gz``
+                or a file in ``files`` is not below ``root``
             ValueError: if ``dst_path`` contains invalid character
                 or does not start with ``'/'``
-            ValueError: if ``files`` contains files
-                that are not below ``src_root``
 
         Examples:
             >>> backend.exists('/a.tar.gz', '1.0.0')
@@ -508,9 +509,6 @@ class Backend:
         """
         dst_path = utils.check_path(dst_path, self.sep)
         src_root = audeer.path(src_root)
-
-        if not os.path.exists(src_root):
-            utils.raise_file_not_found_error(src_root)
 
         if tmp_root is not None:
             tmp_root = audeer.path(tmp_root)
