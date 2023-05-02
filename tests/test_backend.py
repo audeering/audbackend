@@ -82,26 +82,26 @@ def test_archive(tmpdir, files, name, folder, version, tmp_root, backend):
         with pytest.raises(FileNotFoundError):
             backend.put_archive(
                 tmpdir,
-                files,
                 archive,
                 version,
+                files=files,
                 tmp_root=tmp_root,
             )
         audeer.mkdir(tmp_root)
 
     backend.put_archive(
         tmpdir,
-        files,
         archive,
         version,
+        files=files,
         tmp_root=tmp_root,
     )
     # operation will be skipped
     backend.put_archive(
         tmpdir,
-        files,
         archive,
         version,
+        files=files,
         tmp_root=tmp_root,
     )
     assert backend.exists(archive, version)
@@ -142,7 +142,7 @@ def test_errors(tmpdir, backend):
     version = '1.0.0'
     src_path = audeer.touch(audeer.path(tmpdir, local_file))
     backend.put_file(src_path, remote_file, version)
-    backend.put_archive(tmpdir, [local_file], archive, version)
+    backend.put_archive(tmpdir, archive, version, files=[local_file])
 
     # Create local read-only file and folder
     file_read_only = audeer.touch(audeer.path(tmpdir, 'read-only-file.txt'))
@@ -287,24 +287,34 @@ def test_errors(tmpdir, backend):
     with pytest.raises(FileNotFoundError, match=error_msg):
         backend.put_archive(
             audeer.path(tmpdir, '/missing/'),
-            local_file,
             archive,
             version,
+            files=local_file,
         )
     # `files` missing
     error_msg = 'No such file or directory: ...'
     with pytest.raises(FileNotFoundError, match=error_msg):
-        backend.put_archive(tmpdir, 'missing.txt', archive, version)
+        backend.put_archive(tmpdir, archive, version, files='missing.txt')
     # `dst_path` without leading '/'
     with pytest.raises(ValueError, match=error_invalid_path):
-        backend.put_archive(tmpdir, local_file, file_invalid_path, version)
+        backend.put_archive(
+            tmpdir,
+            file_invalid_path,
+            version,
+            files=local_file,
+        )
     # `dst_path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
-        backend.put_archive(tmpdir, local_file, file_invalid_char, version)
+        backend.put_archive(
+            tmpdir,
+            file_invalid_char,
+            version,
+            files=local_file,
+        )
     # extension of `dst_path` is not supported
     error_msg = 'You can only create a ZIP or TAR.GZ archive, not ...'
     with pytest.raises(RuntimeError, match=error_msg):
-        backend.put_archive(tmpdir, local_file, '/archive.bad', version)
+        backend.put_archive(tmpdir, '/archive.bad', version, files=local_file)
 
     # --- put_file ---
     # `src_path` does not exists

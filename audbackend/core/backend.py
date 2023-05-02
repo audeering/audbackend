@@ -501,7 +501,7 @@ class Backend:
         Examples:
             >>> backend.exists('/a.tar.gz', '1.0.0')
             False
-            >>> backend.put_archive('.', ['src.pth'], '/a.tar.gz', '1.0.0')
+            >>> backend.put_archive('.', '/a.tar.gz', '1.0.0')
             >>> backend.exists('/a.tar.gz', '1.0.0')
             True
 
@@ -516,37 +516,6 @@ class Backend:
             tmp_root = audeer.path(tmp_root)
             if not os.path.exists(tmp_root):
                 utils.raise_file_not_found_error(tmp_root)
-
-        if files is None:
-            files = audeer.list_file_names(
-                src_root,
-                basenames=True,
-                recursive=True,
-                hidden=True,
-            )
-        else:
-            files_org = audeer.to_list(files)
-
-            # convert to absolute path and
-            # check if all files exist below src_root
-            files = []
-            for file in files_org:
-                if not os.path.isabs(file):
-                    path = audeer.path(src_root, file)
-                else:
-                    path = audeer.path(file)
-                if not path.startswith(src_root):
-                    raise ValueError(
-                        f"Only files below {src_root} "
-                        f"can be included. "
-                        f"This is not the case with "
-                        f"'{file}'."
-                    )
-                if not os.path.exists(path):
-                    utils.raise_file_not_found_error(file)
-
-                # convert to relative path
-                files.append(file[len(src_root) + 1:])
 
         with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
 
