@@ -58,11 +58,11 @@ def tree(tmpdir, request):
             ['file.ext'],
         ),
         (
-            ['dir/to/file.ext', 'file.ext'],
+            ['file.ext', 'dir/to/file.ext'],
             '/archive.zip',
-            None,
+            ['file.ext', 'dir/to/file.ext'],
             'tmp',
-            ['dir/to/file.ext', 'file.ext'],
+            ['file.ext', 'dir/to/file.ext'],
         ),
         (  # all files
             ['file.ext', 'dir/to/file.ext'],
