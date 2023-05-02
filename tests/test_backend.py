@@ -59,7 +59,13 @@ def test_archive(tmpdir, files, name, folder, version, tmp_root, backend):
     if tmp_root is not None:
         tmp_root = audeer.path(tmpdir, tmp_root)
 
-    files_as_list = [files] if isinstance(files, str) else files
+    if os.name == 'nt':
+        if isinstance(files, str):
+            files = files.replace('/', os.sep)
+        elif files:
+            files = [file.replace('/', os.sep) for file in files]
+
+    files_as_list = audeer.to_list(files)
     for file in files_as_list:
         path = os.path.join(tmpdir, file)
         audeer.mkdir(os.path.dirname(path))
