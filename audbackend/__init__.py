@@ -10,7 +10,6 @@ from audbackend.core.backend import Backend
 from audbackend.core.errors import BackendError
 from audbackend.core.filesystem import FileSystem
 from audbackend.core.repository import Repository
-from audbackend.core.utils import md5
 
 
 __all__ = []

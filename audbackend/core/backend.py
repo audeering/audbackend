@@ -274,7 +274,7 @@ class Backend:
 
         if (
             not os.path.exists(dst_path)
-            or utils.md5(dst_path) != self.checksum(src_path, version)
+            or audeer.md5(dst_path) != self.checksum(src_path, version)
         ):
             utils.call_function_on_backend(
                 self._get_file,
@@ -588,7 +588,7 @@ class Backend:
         if not os.path.exists(src_path):
             utils.raise_file_not_found_error(src_path)
 
-        checksum = utils.md5(src_path)
+        checksum = audeer.md5(src_path)
 
         # skip if file with same checksum already exists
         if (
