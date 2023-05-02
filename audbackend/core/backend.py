@@ -75,7 +75,8 @@ class Backend:
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
-        path = utils.check_path(path, self.sep)
+        path = utils.check_path(path)
+        version = utils.check_version(version)
 
         return utils.call_function_on_backend(
             self._checksum,
@@ -138,7 +139,8 @@ class Backend:
             True
 
         """
-        path = utils.check_path(path, self.sep)
+        path = utils.check_path(path)
+        version = utils.check_version(version)
 
         return utils.call_function_on_backend(
             self._exists,
@@ -190,7 +192,8 @@ class Backend:
             ['src.pth']
 
         """
-        src_path = utils.check_path(src_path, self.sep)
+        src_path = utils.check_path(src_path)
+        version = utils.check_version(version)
 
         with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
 
@@ -260,7 +263,8 @@ class Backend:
             True
 
         """
-        src_path = utils.check_path(src_path, self.sep)
+        src_path = utils.check_path(src_path)
+        version = utils.check_version(version)
 
         dst_path = audeer.path(dst_path)
         dst_root = os.path.dirname(dst_path)
@@ -315,13 +319,13 @@ class Backend:
             '/sub/f.ext'
 
         """
-        path = utils.check_path(path, self.sep)
+        path = utils.check_path(path)
 
         paths = [path] + [p for p in paths]
         paths = [path for path in paths if path]  # remove empty or None
         path = self.sep.join(paths)
 
-        path = utils.check_path(path, self.sep)
+        path = utils.check_path(path)
 
         return path
 
@@ -348,7 +352,7 @@ class Backend:
             '2.0.0'
 
         """
-        path = utils.check_path(path, self.sep)
+        path = utils.check_path(path)
         vs = self.versions(path)
         return vs[-1]
 
@@ -425,7 +429,7 @@ class Backend:
             [('/a/b.ext', '1.0.0')]
 
         """  # noqa: E501
-        path = utils.check_path(path, self.sep)
+        path = utils.check_path(path)
         paths = utils.call_function_on_backend(
             self._ls,
             path,
@@ -507,7 +511,8 @@ class Backend:
             True
 
         """
-        dst_path = utils.check_path(dst_path, self.sep)
+        dst_path = utils.check_path(dst_path)
+        version = utils.check_version(version)
         src_root = audeer.path(src_root)
 
         if tmp_root is not None:
@@ -580,7 +585,9 @@ class Backend:
             True
 
         """
-        dst_path = utils.check_path(dst_path, self.sep)
+        dst_path = utils.check_path(dst_path)
+        version = utils.check_version(version)
+
         if not os.path.exists(src_path):
             utils.raise_file_not_found_error(src_path)
 
@@ -633,7 +640,8 @@ class Backend:
             False
 
         """
-        path = utils.check_path(path, self.sep)
+        path = utils.check_path(path)
+        version = utils.check_version(version)
 
         utils.call_function_on_backend(
             self._remove_file,
@@ -644,7 +652,7 @@ class Backend:
     @property
     def sep(self) -> str:
         r"""File separator on backend."""
-        return '/'
+        return utils.BACKEND_SEPARATOR
 
     def split(
             self,
@@ -673,7 +681,7 @@ class Backend:
             ('/sub/', 'f.ext')
 
         """
-        path = utils.check_path(path, self.sep)
+        path = utils.check_path(path)
 
         root = self.sep.join(path.split(self.sep)[:-1]) + self.sep
         basename = path.split(self.sep)[-1]
