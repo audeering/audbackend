@@ -181,7 +181,7 @@ def test_errors(tmpdir, backend):
     file_invalid_char = '/invalid/char.txt?'
     error_invalid_char = re.escape(
         f"Invalid backend path '{file_invalid_char}', "
-        f"allowed characters are [A-Za-z0-9/._-]."
+        f"does not match '[A-Za-z0-9/._-]+'."
     )
     error_backend = (
         'An exception was raised by the backend, '
@@ -198,7 +198,7 @@ def test_errors(tmpdir, backend):
     invalid_version = '1.0.?'
     error_invalid_version = re.escape(
         f"Invalid version '{invalid_version}', "
-        f"allowed characters are [A-Za-z0-9._-]."
+        f"does not match '[A-Za-z0-9._-]+'."
     )
 
     # --- checksum ---

@@ -67,8 +67,10 @@ class Backend:
         Raises:
             BackendError: if an error is raised on the backend,
                 e.g. ``path`` does not exist
-            ValueError: if ``path`` contains invalid character
-                or does not start with ``'/'``
+            ValueError: if ``path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``version`` is empty or
+                does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
             >>> backend.checksum('/f.ext', '1.0.0')
@@ -131,8 +133,10 @@ class Backend:
             BackendError: if ``suppress_backend_errors`` is ``False``
                 and an error is raised on the backend,
                 e.g. ``path`` does not exist
-            ValueError: if ``path`` contains invalid character
-                or does not start with ``'/'``
+            ValueError: if ``path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``version`` is empty or
+                does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
             >>> backend.exists('/f.ext', '1.0.0')
@@ -184,8 +188,10 @@ class Backend:
                 for ``dst_path``
             RuntimeError: if extension of ``src_path`` is not supported
                 or ``src_path`` is a malformed archive
-            ValueError: if ``src_path`` contains invalid character
-                or does not start with ``'/'``
+            ValueError: if ``src_path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``version`` is empty or
+                does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
             >>> backend.get_archive('/a.zip', '.', '1.0.0')
@@ -252,8 +258,10 @@ class Backend:
                 e.g. ``src_path`` does not exist
             PermissionError: if the user lacks write permissions
                 for ``dst_path``
-            ValueError: if ``src_path`` contains invalid character
-                or does not start with ``'/'``
+            ValueError: if ``src_path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``version`` is empty or
+                does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
             >>> os.path.exists('dst.pth')
@@ -344,8 +352,8 @@ class Backend:
         Raises:
             BackendError: if an error is raised on the backend,
                 e.g. ``path`` does not exist
-            ValueError: if ``path`` contains invalid character
-                or does not start with ``'/'``
+            ValueError: if ``path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
             >>> backend.latest_version('/f.ext')
@@ -413,8 +421,8 @@ class Backend:
             BackendError: if ``suppress_backend_errors`` is ``False``
                 and an error is raised on the backend,
                 e.g. ``path`` does not exist
-            ValueError: if ``path`` contains invalid character
-                or does not start with ``'/'``
+            ValueError: if ``path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
             >>> backend.ls()
@@ -500,8 +508,10 @@ class Backend:
             RuntimeError: if ``dst_path`` does not end with
                 ``zip`` or ``tar.gz``
                 or a file in ``files`` is not below ``root``
-            ValueError: if ``dst_path`` contains invalid character
-                or does not start with ``'/'``
+            ValueError: if ``dst_path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``version`` is empty or
+                does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
             >>> backend.exists('/a.tar.gz', '1.0.0')
@@ -574,8 +584,10 @@ class Backend:
         Raises:
             BackendError: if an error is raised on the backend
             FileNotFoundError: if ``src_path`` does not exist
-            ValueError: if ``dst_path`` contains invalid character
-                or does not start with ``'/'``
+            ValueError: if ``dst_path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``version`` is empty or
+                does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
             >>> backend.exists('/sub/f.ext', '3.0.0')
@@ -629,8 +641,10 @@ class Backend:
         Raises:
             BackendError: if an error is raised on the backend,
                 e.g. ``path`` does not exist
-            ValueError: if ``path`` contains invalid character
-                or does not start with ``'/'``
+            ValueError: if ``path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``version`` is empty or
+                does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
             >>> backend.exists('/f.ext', '1.0.0')
@@ -667,8 +681,8 @@ class Backend:
             tuple containing (root, basename)
 
         Raises:
-            ValueError: if ``path`` contains invalid character
-                or does not start with ``'/'``
+            ValueError: if ``path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
             >>> backend.split('/')
@@ -709,8 +723,8 @@ class Backend:
             BackendError: if ``suppress_backend_errors`` is ``False``
                 and an error is raised on the backend,
                 e.g. ``path`` does not exist
-            ValueError: if ``path`` contains invalid character
-                or does not start with ``'/'``
+            ValueError: if ``path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
             >>> backend.versions('/f.ext')
