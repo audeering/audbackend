@@ -9,70 +9,92 @@ import audbackend
 import audeer
 
 
+@pytest.fixture(scope='function', autouse=False)
+def tree(tmpdir, request):
+    r"""Create file tree."""
+
+    files = request.param
+    paths = []
+
+    for path in files:
+        if os.name == 'nt':
+            path = path.replace('/', os.path.sep)
+        if path.endswith(os.path.sep):
+            path = audeer.path(tmpdir, path)
+            path = audeer.mkdir(path)
+            path = path + os.path.sep
+            paths.append(path)
+        else:
+            path = audeer.path(tmpdir, path)
+            audeer.mkdir(os.path.dirname(path))
+            path = audeer.touch(path)
+            paths.append(path)
+
+    yield paths
+
+
 @pytest.mark.parametrize(
-    'files, name, folder, version, tmp_root',
+    'tree, archive, files, tmp_root, expected',
     [
-        (
+        (  # empty
+            ['file.ext', 'dir/to/file.ext'],
+            '/archive.zip',
             [],
-            'empty.zip',
             None,
-            '1.0.0',
-            None,
+            [],
         ),
-        (
+        (  # single file
+            ['file.ext', 'dir/to/file.ext'],
+            '/archive.zip',
             'file.ext',
-            'not-empty.zip',
             None,
-            '1.0.0',
+            ['file.ext'],
+        ),
+        (  # list
+            ['file.ext', 'dir/to/file.ext'],
+            '/archive.zip',
+            ['file.ext'],
             None,
+            ['file.ext'],
         ),
         (
             ['file.ext', 'dir/to/file.ext'],
-            'not-empty.zip',
-            'group',
-            '1.0.0',
-            None,
-        ),
-        (
+            '/archive.zip',
             ['file.ext', 'dir/to/file.ext'],
-            'not-empty.zip',
-            'group',
-            '2.0.0',
             'tmp',
-        ),
-        (
             ['file.ext', 'dir/to/file.ext'],
-            'not-empty.tar.gz',
-            'group',
-            '2.0.0',
+        ),
+        (  # all files
+            ['file.ext', 'dir/to/file.ext'],
+            '/archive.zip',
+            None,
             'tmp',
+            ['dir/to/file.ext', 'file.ext'],
+        ),
+        (  # tar.gz
+            ['file.ext', 'dir/to/file.ext'],
+            '/archive.tar.gz',
+            None,
+            'tmp',
+            ['dir/to/file.ext', 'file.ext'],
         ),
     ],
+    indirect=['tree'],
 )
 @pytest.mark.parametrize(
     'backend',
     pytest.BACKENDS,
     indirect=True,
 )
-def test_archive(tmpdir, files, name, folder, version, tmp_root, backend):
+def test_archive(tmpdir, tree, archive, files, tmp_root, backend, expected):
+
+    version = '1.0.0'
 
     if tmp_root is not None:
         tmp_root = audeer.path(tmpdir, tmp_root)
 
     if os.name == 'nt':
-        if isinstance(files, str):
-            files = files.replace('/', os.sep)
-        elif files:
-            files = [file.replace('/', os.sep) for file in files]
-
-    files_as_list = audeer.to_list(files)
-    for file in files_as_list:
-        path = os.path.join(tmpdir, file)
-        audeer.mkdir(os.path.dirname(path))
-        with open(path, 'w'):
-            pass
-
-    archive = backend.join('/test_archive', name)
+        expected = [file.replace('/', os.sep) for file in expected]
 
     # if a tmp_root is given but does not exist,
     # put_archive() should fail
@@ -82,26 +104,26 @@ def test_archive(tmpdir, files, name, folder, version, tmp_root, backend):
         with pytest.raises(FileNotFoundError):
             backend.put_archive(
                 tmpdir,
-                files,
                 archive,
                 version,
+                files=files,
                 tmp_root=tmp_root,
             )
         audeer.mkdir(tmp_root)
 
     backend.put_archive(
         tmpdir,
-        files,
         archive,
         version,
+        files=files,
         tmp_root=tmp_root,
     )
     # operation will be skipped
     backend.put_archive(
         tmpdir,
-        files,
         archive,
         version,
+        files=files,
         tmp_root=tmp_root,
     )
     assert backend.exists(archive, version)
@@ -125,7 +147,7 @@ def test_archive(tmpdir, files, name, folder, version, tmp_root, backend):
         tmpdir,
         version,
         tmp_root=tmp_root,
-    ) == files_as_list
+    ) == expected
 
 
 @pytest.mark.parametrize(
@@ -142,7 +164,7 @@ def test_errors(tmpdir, backend):
     version = '1.0.0'
     src_path = audeer.touch(audeer.path(tmpdir, local_file))
     backend.put_file(src_path, remote_file, version)
-    backend.put_archive(tmpdir, [local_file], archive, version)
+    backend.put_archive(tmpdir, archive, version, files=[local_file])
 
     # Create local read-only file and folder
     file_read_only = audeer.touch(audeer.path(tmpdir, 'read-only-file.txt'))
@@ -287,24 +309,34 @@ def test_errors(tmpdir, backend):
     with pytest.raises(FileNotFoundError, match=error_msg):
         backend.put_archive(
             audeer.path(tmpdir, '/missing/'),
-            local_file,
             archive,
             version,
+            files=local_file,
         )
     # `files` missing
     error_msg = 'No such file or directory: ...'
     with pytest.raises(FileNotFoundError, match=error_msg):
-        backend.put_archive(tmpdir, 'missing.txt', archive, version)
+        backend.put_archive(tmpdir, archive, version, files='missing.txt')
     # `dst_path` without leading '/'
     with pytest.raises(ValueError, match=error_invalid_path):
-        backend.put_archive(tmpdir, local_file, file_invalid_path, version)
+        backend.put_archive(
+            tmpdir,
+            file_invalid_path,
+            version,
+            files=local_file,
+        )
     # `dst_path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
-        backend.put_archive(tmpdir, local_file, file_invalid_char, version)
+        backend.put_archive(
+            tmpdir,
+            file_invalid_char,
+            version,
+            files=local_file,
+        )
     # extension of `dst_path` is not supported
     error_msg = 'You can only create a ZIP or TAR.GZ archive, not ...'
     with pytest.raises(RuntimeError, match=error_msg):
-        backend.put_archive(tmpdir, local_file, '/archive.bad', version)
+        backend.put_archive(tmpdir, '/archive.bad', version, files=local_file)
 
     # --- put_file ---
     # `src_path` does not exists

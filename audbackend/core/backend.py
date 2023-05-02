@@ -177,10 +177,11 @@ class Backend:
             BackendError: if an error is raised on the backend,
                 e.g. ``src_path`` does not exist
             FileNotFoundError: if ``tmp_root`` does not exist
+            NotADirectoryError: if ``dst_root`` is not a directory
             PermissionError: if the user lacks write permissions
                 for ``dst_path``
             RuntimeError: if extension of ``src_path`` is not supported
-            RuntimeError: if ``src_path`` is a malformed archive
+                or ``src_path`` is a malformed archive
             ValueError: if ``src_path`` contains invalid character
                 or does not start with ``'/'``
 
@@ -457,10 +458,10 @@ class Backend:
     def put_archive(
             self,
             src_root: str,
-            files: typing.Union[str, typing.Sequence[str]],
             dst_path: str,
             version: str,
             *,
+            files: typing.Union[str, typing.Sequence[str]] = None,
             tmp_root: str = None,
             verbose: bool = False,
     ):
@@ -475,11 +476,14 @@ class Backend:
 
         Args:
             src_root: local root directory where files are located.
-                Only folders and files below ``src_root``
-                will be included into the archive
-            files: relative path to file(s) from ``src_root``
+                By default,
+                all files below ``src_root``
+                will be included into the archive.
+                Use ``files`` to select specific files
             dst_path: path to archive on backend
             version: version string
+            files: file(s) to include into the archive.
+                Must exist within ``src_root``
             tmp_root: directory under which archive is temporarily created.
                 Defaults to temporary directory of system
             verbose: show debug messages
@@ -489,30 +493,22 @@ class Backend:
             FileNotFoundError: if ``src_root``,
                 ``tmp_root``,
                 or one or more ``files`` do not exist
-            RuntimeError: if extension of ``dst_path`` is not supported
+            RuntimeError: if ``dst_path`` does not end with
+                ``zip`` or ``tar.gz``
+                or a file in ``files`` is not below ``root``
             ValueError: if ``dst_path`` contains invalid character
                 or does not start with ``'/'``
 
         Examples:
             >>> backend.exists('/a.tar.gz', '1.0.0')
             False
-            >>> backend.put_archive('.', ['src.pth'], '/a.tar.gz', '1.0.0')
+            >>> backend.put_archive('.', '/a.tar.gz', '1.0.0')
             >>> backend.exists('/a.tar.gz', '1.0.0')
             True
 
         """
         dst_path = utils.check_path(dst_path, self.sep)
         src_root = audeer.path(src_root)
-
-        if not os.path.exists(src_root):
-            utils.raise_file_not_found_error(src_root)
-
-        files = audeer.to_list(files)
-
-        for file in files:
-            path = os.path.join(src_root, file)
-            if not os.path.exists(path):
-                utils.raise_file_not_found_error(path)
 
         if tmp_root is not None:
             tmp_root = audeer.path(tmp_root)
