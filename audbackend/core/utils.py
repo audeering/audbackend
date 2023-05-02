@@ -1,10 +1,7 @@
 import errno
-import hashlib
 import os
 import re
 import typing
-
-import audeer
 
 from audbackend.core.errors import BackendError
 
