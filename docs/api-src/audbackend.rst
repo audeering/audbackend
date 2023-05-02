@@ -40,5 +40,4 @@ the following classes and functions are available.
     available
     create
     delete
-    md5
     register

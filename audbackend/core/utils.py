@@ -55,43 +55,6 @@ def check_path(path, sep) -> str:
     return path
 
 
-def md5(
-        file: str,
-        chunk_size: int = 8192,
-) -> str:
-    r"""Calculate MD5 checksum.
-
-    Args:
-        file: path to file
-        chunk_size: chunk size (does not have an influence on the result)
-
-    Returns:
-        checksum
-
-    Examples:
-        >>> md5('src.pth')
-        'd41d8cd98f00b204e9800998ecf8427e'
-
-    """
-    file = audeer.path(file)
-    with open(file, 'rb') as fp:
-        hasher = hashlib.md5()
-        for chunk in md5_read_chunk(fp, chunk_size):
-            hasher.update(chunk)
-        return hasher.hexdigest()
-
-
-def md5_read_chunk(
-        fp: typing.IO,
-        chunk_size: int = 8192,
-):
-    while True:
-        data = fp.read(chunk_size)
-        if not data:
-            break
-        yield data
-
-
 def raise_file_exists_error(path: str):
     raise FileExistsError(
         errno.EEXIST,

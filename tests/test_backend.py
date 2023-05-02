@@ -416,7 +416,7 @@ def test_file(tmpdir, src_path, dst_path, version, backend):
 
     backend.get_file(dst_path, src_path, version)
     assert os.path.exists(src_path)
-    assert backend.checksum(dst_path, version) == audbackend.md5(src_path)
+    assert backend.checksum(dst_path, version) == audeer.md5(src_path)
 
     backend.remove_file(dst_path, version)
     assert not backend.exists(dst_path, version)
