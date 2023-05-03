@@ -519,6 +519,7 @@ class Backend:
             FileNotFoundError: if ``src_root``,
                 ``tmp_root``,
                 or one or more ``files`` do not exist
+            NotADirectoryError: if ``src_root`` is not a folder
             RuntimeError: if ``dst_path`` does not end with
                 ``zip`` or ``tar.gz``
                 or a file in ``files`` is not below ``root``

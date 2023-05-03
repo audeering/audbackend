@@ -201,10 +201,7 @@ def test_errors(tmpdir, backend):
         f"Invalid version '{invalid_version}', "
         f"does not match '[A-Za-z0-9._-]+'."
     )
-    if platform.system() == 'Windows':
-        error_is_a_folder = "Is a directory: "
-    else:
-        error_is_a_folder = f"Is a directory: '{local_folder}'"
+    error_not_a_folder = f"Not a directory: '{local_path}'"
 
     # --- checksum ---
     # `path` missing
@@ -279,6 +276,9 @@ def test_errors(tmpdir, backend):
         # Currently we don't know how to provoke permission error on Windows
         with pytest.raises(PermissionError, match=error_read_only_folder):
             backend.get_archive(archive, folder_read_only, version)
+    # `dst_path` is not a directory
+    with pytest.raises(NotADirectoryError, match=error_not_a_folder):
+        backend.get_archive(archive, local_path, version)
 
     # --- get_file ---
     # `src_path` missing
@@ -347,6 +347,9 @@ def test_errors(tmpdir, backend):
             version,
             files=local_file,
         )
+    # `src_root` is not a directory
+    with pytest.raises(NotADirectoryError, match=error_not_a_folder):
+        backend.put_archive(local_path, archive, version)
     # `files` missing
     error_msg = 'No such file or directory: ...'
     with pytest.raises(FileNotFoundError, match=error_msg):
