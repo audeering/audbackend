@@ -42,6 +42,50 @@ class Backend:
         """
         raise NotImplementedError()
 
+    def _author(
+            self,
+            path: str,
+            version: str,
+    ) -> str:  # pragma: no cover
+        r"""Get author of file on backend."""
+        raise NotImplementedError()
+
+    def author(
+            self,
+            path: str,
+            version: str,
+    ) -> str:
+        r"""Get author of file on backend.
+
+        Args:
+            path: path to file on backend
+            version: version string
+
+        Returns:
+            author
+
+        Raises:
+            BackendError: if an error is raised on the backend,
+                e.g. ``path`` does not exist
+            ValueError: if ``path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``version`` is empty or
+                does not match ``'[A-Za-z0-9._-]+'``
+
+        Examples:
+              >>> backend.author('/f.ext', '1.0.0')
+              'author'
+
+        """
+        path = utils.check_path(path)
+        version = utils.check_version(version)
+
+        return utils.call_function_on_backend(
+            self._author,
+            path,
+            version,
+        )
+
     def _checksum(
             self,
             path: str,

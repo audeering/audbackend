@@ -85,7 +85,7 @@ def access(
 
     Examples:
         >>> access('file-system', 'host', 'doctest')
-        ('audbackend.core.filesystem.FileSystem', 'host', 'doctest')
+        ('audbackend.core.conftest.DoctestFileSystem', 'host', 'doctest')
 
     """
     backend = _backend(name, host, repository)
@@ -109,7 +109,7 @@ def available() -> typing.Dict[str, typing.List[Backend]]:
         >>> list(available())
         ['artifactory', 'file-system']
         >>> available()['file-system']
-        [('audbackend.core.filesystem.FileSystem', 'host', 'doctest')]
+        [('audbackend.core.conftest.DoctestFileSystem', 'host', 'doctest')]
 
     """  # noqa: E501
     result = {}
@@ -165,7 +165,7 @@ def create(
 
     Examples:
         >>> create('file-system', 'host', 'repository')
-        ('audbackend.core.filesystem.FileSystem', 'host', 'repository')
+        ('audbackend.core.conftest.DoctestFileSystem', 'host', 'repository')
 
     """
     backend = _backend(name, host, repository)

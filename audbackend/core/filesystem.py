@@ -1,4 +1,5 @@
 import os
+import pwd
 import shutil
 
 import audeer
@@ -30,6 +31,16 @@ class FileSystem(Backend):
         r"""Access existing repository."""
         if not os.path.exists(self._root):
             utils.raise_file_not_found_error(self._root)
+
+    def _author(
+            self,
+            path: str,
+            version: str,
+    ) -> str:
+        r"""Author of file on backend."""
+        path = self._path(path, version)
+        author = pwd.getpwuid(os.stat(path).st_uid).pw_name
+        return author
 
     def _checksum(
             self,

@@ -1,3 +1,4 @@
+import getpass
 import os
 import time
 
@@ -37,6 +38,18 @@ def hosts(tmpdir_factory):
         'file-system': str(tmpdir_factory.mktemp('host')),
         'single-folder': str(tmpdir_factory.mktemp('host')),
     }
+
+
+@pytest.fixture(scope='function', autouse=False)
+def author(request):
+
+    name = request.param
+    if name == 'artifactory':
+        author = 'audeering-unittest'
+    else:
+        author = getpass.getuser()
+
+    yield author
 
 
 @pytest.fixture(scope='function', autouse=False)
