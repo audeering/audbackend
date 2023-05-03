@@ -31,11 +31,13 @@ def register_single_folder():
 
 @pytest.fixture(scope='package', autouse=False)
 def hosts(tmpdir_factory):
-    return {
+    d = {
         'artifactory': 'https://audeering.jfrog.io/artifactory',
         'file-system': str(tmpdir_factory.mktemp('host')),
-        'single-folder': str(tmpdir_factory.mktemp('host')),
     }
+    if os.name != 'nt':
+        d['single-folder'] = str(tmpdir_factory.mktemp('host'))
+    return d
 
 
 @pytest.fixture(scope='function', autouse=False)
