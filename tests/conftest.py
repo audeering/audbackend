@@ -7,12 +7,16 @@ import audeer
 
 import audbackend
 
+from singlefolder import SingleFolder
+
 
 # list of backends that will be tested by default
 pytest.BACKENDS = [
     'artifactory',
     'file-system',
 ]
+if os.name != 'nt':
+    pytest.BACKENDS.append('single-folder')
 
 # UID for test session
 # Repositories on the host will be named
@@ -20,11 +24,18 @@ pytest.BACKENDS = [
 pytest.UID = audeer.uid()[:8]
 
 
+@pytest.fixture(scope='package', autouse=True)
+def register_single_folder():
+    if os.name != 'nt':
+        audbackend.register('single-folder', SingleFolder)
+
+
 @pytest.fixture(scope='package', autouse=False)
 def hosts(tmpdir_factory):
     return {
         'artifactory': 'https://audeering.jfrog.io/artifactory',
         'file-system': str(tmpdir_factory.mktemp('host')),
+        'single-folder': str(tmpdir_factory.mktemp('host')),
     }
 
 
