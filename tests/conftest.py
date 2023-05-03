@@ -25,7 +25,8 @@ pytest.UID = audeer.uid()[:8]
 
 @pytest.fixture(scope='package', autouse=True)
 def register_single_folder():
-    audbackend.register('single-folder', SingleFolder)
+    if os.name != 'nt':
+        audbackend.register('single-folder', SingleFolder)
 
 
 @pytest.fixture(scope='package', autouse=False)
