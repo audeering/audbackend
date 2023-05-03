@@ -14,8 +14,9 @@ from singlefolder import SingleFolder
 pytest.BACKENDS = [
     'artifactory',
     'file-system',
-    'single-folder',
 ]
+if os.name != 'nt':
+    pytest.BACKENDS.append('single-folder')
 
 # UID for test session
 # Repositories on the host will be named
@@ -31,13 +32,11 @@ def register_single_folder():
 
 @pytest.fixture(scope='package', autouse=False)
 def hosts(tmpdir_factory):
-    d = {
+    return {
         'artifactory': 'https://audeering.jfrog.io/artifactory',
         'file-system': str(tmpdir_factory.mktemp('host')),
+        'single-folder': str(tmpdir_factory.mktemp('host')),
     }
-    if os.name != 'nt':
-        d['single-folder'] = str(tmpdir_factory.mktemp('host'))
-    return d
 
 
 @pytest.fixture(scope='function', autouse=False)
