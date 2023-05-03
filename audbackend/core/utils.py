@@ -86,3 +86,11 @@ def raise_file_not_found_error(path: str):
         os.strerror(errno.ENOENT),
         path,
     )
+
+
+def raise_is_a_directory(path: str):
+    raise IsADirectoryError(
+        errno.EISDIR,
+        os.strerror(errno.EISDIR),
+        path,
+    )
