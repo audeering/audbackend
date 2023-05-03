@@ -266,6 +266,7 @@ class Backend:
         Raises:
             BackendError: if an error is raised on the backend,
                 e.g. ``src_path`` does not exist
+            IsADirectoryError: if ``dst_path`` points to an existing folder
             PermissionError: if the user lacks write permissions
                 for ``dst_path``
             ValueError: if ``src_path`` does not start with ``'/'`` or
@@ -285,9 +286,12 @@ class Backend:
         version = utils.check_version(version)
 
         dst_path = audeer.path(dst_path)
-        dst_root = os.path.dirname(dst_path)
+        if os.path.isdir(dst_path):
+            raise utils.raise_is_a_directory(dst_path)
 
+        dst_root = os.path.dirname(dst_path)
         audeer.mkdir(dst_root)
+
         if (
             not os.access(dst_root, os.W_OK) or
             (os.path.exists(dst_path) and not os.access(dst_path, os.W_OK))

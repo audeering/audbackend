@@ -161,6 +161,7 @@ def test_errors(tmpdir, backend):
     archive = '/archive.zip'
     local_file = 'file.txt'
     local_path = audeer.touch(audeer.path(tmpdir, local_file))
+    local_folder = audeer.mkdir(audeer.path(tmpdir, 'folder'))
     remote_file = f'/{local_file}'
     version = '1.0.0'
     backend.put_file(local_path, remote_file, version)
@@ -200,6 +201,7 @@ def test_errors(tmpdir, backend):
         f"Invalid version '{invalid_version}', "
         f"does not match '[A-Za-z0-9._-]+'."
     )
+    error_folder_exists = f"Is a directory: '{local_folder}'"
 
     # --- checksum ---
     # `path` missing
@@ -298,6 +300,9 @@ def test_errors(tmpdir, backend):
         dst_path = audeer.path(folder_read_only, 'file.txt')
         with pytest.raises(PermissionError, match=error_read_only_folder):
             backend.get_file(remote_file, dst_path, version)
+    # `dst_path` is an existing folder
+    with pytest.raises(IsADirectoryError, match=error_folder_exists):
+        backend.get_file(remote_file, local_folder, version)
 
     # --- join ---
     # joined path without leading '/'
