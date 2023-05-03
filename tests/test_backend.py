@@ -271,12 +271,12 @@ def test_errors(tmpdir, backend):
     )
     with pytest.raises(RuntimeError, match=error_msg):
         backend.get_archive('/malformed.zip', tmpdir, version)
-    # no write permissions to `dst_path`
+    # no write permissions to `dst_root`
     if not platform.system() == 'Windows':
         # Currently we don't know how to provoke permission error on Windows
         with pytest.raises(PermissionError, match=error_read_only_folder):
             backend.get_archive(archive, folder_read_only, version)
-    # `dst_path` is not a directory
+    # `dst_root` is not a directory
     with pytest.raises(NotADirectoryError, match=error_not_a_folder):
         backend.get_archive(archive, local_path, version)
 
