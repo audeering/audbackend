@@ -254,6 +254,10 @@ class Backend:
         or otherwise,
         the operation is silently skipped.
 
+        To ensure the file is completely retrieved,
+        it is first stored in a temporary directory
+        and afterwards moved to ``dst_path``.
+
         Args:
             src_path: path to file on backend
             dst_path: destination path to local file
@@ -303,13 +307,18 @@ class Backend:
             not os.path.exists(dst_path)
             or audeer.md5(dst_path) != self.checksum(src_path, version)
         ):
-            utils.call_function_on_backend(
-                self._get_file,
-                src_path,
-                dst_path,
-                version,
-                verbose,
-            )
+            # get file to a temporary directory first,
+            # only on success move to final destination
+            with tempfile.TemporaryDirectory(dir=dst_root) as tmp:
+                tmp_path = audeer.path(tmp, '~')
+                utils.call_function_on_backend(
+                    self._get_file,
+                    src_path,
+                    tmp_path,
+                    version,
+                    verbose,
+                )
+                audeer.move_file(tmp_path, dst_path)
 
         return dst_path
 
