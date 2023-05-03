@@ -201,7 +201,10 @@ def test_errors(tmpdir, backend):
         f"Invalid version '{invalid_version}', "
         f"does not match '[A-Za-z0-9._-]+'."
     )
-    error_not_a_folder = re.escape(f"Not a directory: '{local_path}'")
+    if platform.system() == 'Windows':
+        error_not_a_folder = f"Not a directory: "
+    else:
+        error_not_a_folder = f"Not a directory: '{local_path}'"
 
     # --- checksum ---
     # `path` missing
