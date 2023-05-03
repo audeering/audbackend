@@ -74,7 +74,7 @@ class Backend:
 
         Examples:
               >>> backend.author('/f.ext', '1.0.0')
-              'author'
+              'doctest'
 
         """
         path = utils.check_path(path)

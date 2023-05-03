@@ -13,7 +13,7 @@ class DoctestFileSystem(audbackend.FileSystem):
             path: str,
             version: str,
     ):
-        return 'author'
+        return 'doctest'
 
 
 @pytest.fixture(scope='function', autouse=True)
