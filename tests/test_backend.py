@@ -160,10 +160,10 @@ def test_errors(tmpdir, backend):
     # Ensure we have one file and one archive published on the backend
     archive = '/archive.zip'
     local_file = 'file.txt'
+    local_path = audeer.touch(audeer.path(tmpdir, local_file))
     remote_file = f'/{local_file}'
     version = '1.0.0'
-    src_path = audeer.touch(audeer.path(tmpdir, local_file))
-    backend.put_file(src_path, remote_file, version)
+    backend.put_file(local_path, remote_file, version)
     backend.put_archive(tmpdir, archive, version, files=[local_file])
 
     # Create local read-only file and folder
@@ -172,8 +172,7 @@ def test_errors(tmpdir, backend):
     folder_read_only = audeer.mkdir(audeer.path(tmpdir, 'read-only-folder'))
     os.chmod(folder_read_only, stat.S_IRUSR)
 
-    # File names and error messages
-    # for common errors
+    # Invalid file names / versions and error messages
     file_invalid_path = 'invalid/path.txt'
     error_invalid_path = re.escape(
         f"Invalid backend path '{file_invalid_path}', "
@@ -182,7 +181,7 @@ def test_errors(tmpdir, backend):
     file_invalid_char = '/invalid/char.txt?'
     error_invalid_char = re.escape(
         f"Invalid backend path '{file_invalid_char}', "
-        f"allowed characters are '[A-Za-z0-9/._-]+'."
+        f"does not match '[A-Za-z0-9/._-]+'."
     )
     error_backend = (
         'An exception was raised by the backend, '
@@ -194,6 +193,13 @@ def test_errors(tmpdir, backend):
     error_read_only_file = (
         f"Permission denied: '{file_read_only}'"
     )
+    empty_version = ''
+    error_empty_version = 'Version must not be empty.'
+    invalid_version = '1.0.?'
+    error_invalid_version = re.escape(
+        f"Invalid version '{invalid_version}', "
+        f"does not match '[A-Za-z0-9._-]+'."
+    )
 
     # --- checksum ---
     # `path` missing
@@ -202,6 +208,11 @@ def test_errors(tmpdir, backend):
     # `path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
         backend.checksum(file_invalid_char, version)
+    # invalid version
+    with pytest.raises(ValueError, match=error_empty_version):
+        backend.checksum(remote_file, empty_version)
+    with pytest.raises(ValueError, match=error_invalid_version):
+        backend.checksum(remote_file, invalid_version)
 
     # --- exists ---
     # `path` without leading '/'
@@ -210,6 +221,11 @@ def test_errors(tmpdir, backend):
     # `path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
         backend.exists(file_invalid_char, version)
+    # invalid version
+    with pytest.raises(ValueError, match=error_empty_version):
+        backend.exists(remote_file, empty_version)
+    with pytest.raises(ValueError, match=error_invalid_version):
+        backend.exists(remote_file, invalid_version)
 
     # --- get_archive ---
     # `src_path` missing
@@ -221,6 +237,11 @@ def test_errors(tmpdir, backend):
     # `src_path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
         backend.get_archive(file_invalid_char, tmpdir, version)
+    # invalid version
+    with pytest.raises(ValueError, match=error_empty_version):
+        backend.get_archive(archive, tmpdir, empty_version)
+    with pytest.raises(ValueError, match=error_invalid_version):
+        backend.get_archive(archive, tmpdir, invalid_version)
     # `tmp_root` does not exist
     if platform.system() == 'Windows':
         error_msg = (
@@ -264,6 +285,11 @@ def test_errors(tmpdir, backend):
     # `src_path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
         backend.get_file(file_invalid_char, tmpdir, version)
+    # invalid version
+    with pytest.raises(ValueError, match=error_empty_version):
+        backend.get_file(remote_file, local_file, empty_version)
+    with pytest.raises(ValueError, match=error_invalid_version):
+        backend.get_file(remote_file, local_file, invalid_version)
     # no write permissions to `dst_path`
     if not platform.system() == 'Windows':
         # Currently we don't know how to provoke permission error on Windows
@@ -333,6 +359,11 @@ def test_errors(tmpdir, backend):
             version,
             files=local_file,
         )
+    # invalid version
+    with pytest.raises(ValueError, match=error_empty_version):
+        backend.put_archive(tmpdir, archive, empty_version)
+    with pytest.raises(ValueError, match=error_invalid_version):
+        backend.put_archive(tmpdir, archive, invalid_version)
     # extension of `dst_path` is not supported
     error_msg = 'You can only create a ZIP or TAR.GZ archive, not ...'
     with pytest.raises(RuntimeError, match=error_msg):
@@ -349,10 +380,15 @@ def test_errors(tmpdir, backend):
         )
     # `dst_path` without leading '/'
     with pytest.raises(ValueError, match=error_invalid_path):
-        backend.put_file(src_path, file_invalid_path, version)
+        backend.put_file(local_path, file_invalid_path, version)
     # `dst_path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
-        backend.put_file(src_path, file_invalid_char, version)
+        backend.put_file(local_path, file_invalid_char, version)
+    # invalid version
+    with pytest.raises(ValueError, match=error_empty_version):
+        backend.put_file(local_path, remote_file, empty_version)
+    with pytest.raises(ValueError, match=error_invalid_version):
+        backend.put_file(local_path, remote_file, invalid_version)
 
     # --- remove_file ---
     # `path` does not exists
@@ -364,6 +400,11 @@ def test_errors(tmpdir, backend):
     # `path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
         backend.remove_file(file_invalid_char, version)
+    # invalid version
+    with pytest.raises(ValueError, match=error_empty_version):
+        backend.remove_file(remote_file, empty_version)
+    with pytest.raises(ValueError, match=error_invalid_version):
+        backend.remove_file(remote_file, invalid_version)
 
     # --- split ---
     # `path` without leading '/'

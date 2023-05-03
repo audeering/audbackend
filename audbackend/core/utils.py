@@ -9,6 +9,11 @@ from audbackend.core.errors import BackendError
 BACKEND_ALLOWED_CHARS = '[A-Za-z0-9/._-]+'
 BACKEND_ALLOWED_CHARS_COMPILED = re.compile(BACKEND_ALLOWED_CHARS)
 
+BACKEND_SEPARATOR = '/'
+
+VERSION_ALLOWED_CHARS = BACKEND_ALLOWED_CHARS.replace(BACKEND_SEPARATOR, '')
+VERSION_ALLOWED_CHARS_COMPILED = re.compile(VERSION_ALLOWED_CHARS)
+
 
 def call_function_on_backend(
         function: typing.Callable,
@@ -26,30 +31,45 @@ def call_function_on_backend(
             raise BackendError(ex)
 
 
-def check_path(path, sep) -> str:
+def check_path(path: str) -> str:
     r"""Check path."""
 
     # Assert path starts with sep and does not contain invalid characters.
-    if not path.startswith(sep):
+    if not path.startswith(BACKEND_SEPARATOR):
         raise ValueError(
             f"Invalid backend path '{path}', "
-            f"must start with '{sep}'."
+            f"must start with '{BACKEND_SEPARATOR}'."
         )
     if path and BACKEND_ALLOWED_CHARS_COMPILED.fullmatch(path) is None:
         raise ValueError(
             f"Invalid backend path '{path}', "
-            f"allowed characters are '{BACKEND_ALLOWED_CHARS}'."
+            f"does not match '{BACKEND_ALLOWED_CHARS}'."
         )
 
     # Remove immediately consecutive seps
-    is_sub_path = path.endswith(sep)
-    paths = path.split(sep)
+    is_sub_path = path.endswith(BACKEND_SEPARATOR)
+    paths = path.split(BACKEND_SEPARATOR)
     paths = [path for path in paths if path]
-    path = sep + sep.join(paths)
-    if is_sub_path and not path.endswith(sep):
-        path += sep
+    path = BACKEND_SEPARATOR + BACKEND_SEPARATOR.join(paths)
+    if is_sub_path and not path.endswith(BACKEND_SEPARATOR):
+        path += BACKEND_SEPARATOR
 
     return path
+
+
+def check_version(version: str) -> str:
+    r"""Check version."""
+
+    # Assert version is not empty and does not contain invalid characters.
+    if not version:
+        raise ValueError('Version must not be empty.')
+    if VERSION_ALLOWED_CHARS_COMPILED.fullmatch(version) is None:
+        raise ValueError(
+            f"Invalid version '{version}', "
+            f"does not match '{VERSION_ALLOWED_CHARS}'."
+        )
+
+    return version
 
 
 def raise_file_exists_error(path: str):
