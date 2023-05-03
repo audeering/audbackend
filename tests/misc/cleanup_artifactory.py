@@ -1,19 +1,19 @@
 # File to delete all repositories on the server
 # that start with `unittest-`.
 #
-# NOTE:
-# * it is important to only call this script
-#   when no test pipeline is running
-# * you need to install `audfactory` to execute this script
+# NOTE: it is important to only call this script
+# when no test pipeline is running
+
+import requests
 
 import audbackend
-import audfactory
 
 
 name = 'artifactory'
 host = 'https://audeering.jfrog.io/artifactory'
 
-r = audfactory.rest_api_get(f'{host}/api/repositories')
+username, api_key = audbackend.core.artifactory._authentication(host)
+r = requests.get(f'{host}/api/repositories', auth=(username, api_key))
 
 if r.status_code == 200:
     repos = [entry['key'] for entry in r.json()]
