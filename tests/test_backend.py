@@ -201,7 +201,7 @@ def test_errors(tmpdir, backend):
         f"Invalid version '{invalid_version}', "
         f"does not match '[A-Za-z0-9._-]+'."
     )
-    error_folder_exists = f"Is a directory: '{local_folder}'"
+    error_is_a_folder = f"Is a directory: '{local_folder}'"
 
     # --- checksum ---
     # `path` missing
@@ -301,7 +301,7 @@ def test_errors(tmpdir, backend):
         with pytest.raises(PermissionError, match=error_read_only_folder):
             backend.get_file(remote_file, dst_path, version)
     # `dst_path` is an existing folder
-    with pytest.raises(IsADirectoryError, match=error_folder_exists):
+    with pytest.raises(IsADirectoryError, match=error_is_a_folder):
         backend.get_file(remote_file, local_folder, version)
 
     # --- join ---
@@ -383,6 +383,9 @@ def test_errors(tmpdir, backend):
             remote_file,
             version,
         )
+    # `src_path` is a folder
+    with pytest.raises(IsADirectoryError, match=error_is_a_folder):
+        backend.put_file(local_folder, remote_file, version)
     # `dst_path` without leading '/'
     with pytest.raises(ValueError, match=error_invalid_path):
         backend.put_file(local_path, file_invalid_path, version)

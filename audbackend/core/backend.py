@@ -598,6 +598,7 @@ class Backend:
         Raises:
             BackendError: if an error is raised on the backend
             FileNotFoundError: if ``src_path`` does not exist
+            IsADirectoryError: if ``src_path`` is a folder
             ValueError: if ``dst_path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
@@ -616,6 +617,8 @@ class Backend:
 
         if not os.path.exists(src_path):
             utils.raise_file_not_found_error(src_path)
+        elif os.path.isdir(src_path):
+            raise utils.raise_is_a_directory(src_path)
 
         checksum = audeer.md5(src_path)
 
