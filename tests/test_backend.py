@@ -202,6 +202,10 @@ def test_errors(tmpdir, backend):
         f"does not match '[A-Za-z0-9._-]+'."
     )
     if platform.system() == 'Windows':
+        error_is_a_folder = "Is a directory: "
+    else:
+        error_is_a_folder = f"Is a directory: '{local_folder}'"
+    if platform.system() == 'Windows':
         error_not_a_folder = "Not a directory: "
     else:
         error_not_a_folder = f"Not a directory: '{local_path}'"
