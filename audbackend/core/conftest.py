@@ -8,6 +8,10 @@ import audeer
 
 
 class DoctestFileSystem(audbackend.FileSystem):
+
+    def __repr__(self) -> str:
+        return str(('audbackend.core.FileSystem', self.host, self.repository))
+
     def _author(
             self,
             path: str,
