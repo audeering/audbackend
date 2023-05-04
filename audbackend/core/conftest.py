@@ -12,7 +12,7 @@ class DoctestFileSystem(audbackend.FileSystem):
     def __repr__(self) -> str:
         return str(('audbackend.core.FileSystem', self.host, self.repository))
 
-    def _author(
+    def _owner(
             self,
             path: str,
             version: str,

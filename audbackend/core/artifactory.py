@@ -161,16 +161,6 @@ class Artifactory(Backend):
         if self._repo is None:
             utils.raise_file_not_found_error(str(self._repo.path))
 
-    def _author(
-            self,
-            path: str,
-            version: str,
-    ) -> str:
-        r"""Get author of file on backend."""
-        path = self._path(path, version)
-        author = path.stat().modified_by
-        return author
-
     def _checksum(
             self,
             path: str,
@@ -313,6 +303,16 @@ class Artifactory(Backend):
             result.append((path, version))
 
         return result
+
+    def _owner(
+            self,
+            path: str,
+            version: str,
+    ) -> str:
+        r"""Get owner of file on backend."""
+        path = self._path(path, version)
+        owner = path.stat().modified_by
+        return owner
 
     def _path(
             self,

@@ -492,11 +492,11 @@ def test_exists(tmpdir, path, version, backend):
     ],
 )
 @pytest.mark.parametrize(
-    'backend, author',
+    'backend, owner',
     [(name, name) for name in pytest.BACKENDS],
     indirect=True,
 )
-def test_file(tmpdir, src_path, dst_path, version, backend, author):
+def test_file(tmpdir, src_path, dst_path, version, backend, owner):
 
     src_path = audeer.path(tmpdir, src_path)
     audeer.mkdir(os.path.dirname(src_path))
@@ -511,7 +511,7 @@ def test_file(tmpdir, src_path, dst_path, version, backend, author):
     backend.get_file(dst_path, src_path, version)
     assert os.path.exists(src_path)
     assert backend.checksum(dst_path, version) == audeer.md5(src_path)
-    assert backend.author(dst_path, version) == author
+    assert backend.owner(dst_path, version) == owner
 
     backend.remove_file(dst_path, version)
     assert not backend.exists(dst_path, version)

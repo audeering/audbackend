@@ -71,15 +71,6 @@ class SingleFolder(audbackend.Backend):
         with self.Map(self._path, self._lock):
             pass
 
-    def _author(
-            self,
-            path: str,
-            version: str,
-    ):
-        with self.Map(self._path, self._lock) as m:
-            p = m[path][version][0]
-            return audbackend.core.utils.file_owner(p)
-
     def _checksum(
             self,
             path: str,
@@ -146,6 +137,15 @@ class SingleFolder(audbackend.Backend):
                 raise audbackend.core.utils.raise_file_not_found_error(path)
 
             return ls
+
+    def _owner(
+            self,
+            path: str,
+            version: str,
+    ):
+        with self.Map(self._path, self._lock) as m:
+            p = m[path][version][0]
+            return audbackend.core.utils.file_owner(p)
 
     def _put_file(
             self,

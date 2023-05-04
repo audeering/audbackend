@@ -41,19 +41,19 @@ def hosts(tmpdir_factory):
 
 
 @pytest.fixture(scope='function', autouse=False)
-def author(request):
-    r"""Return expected author values."""
+def owner(request):
+    r"""Return expected owner value."""
 
     name = request.param
     if name == 'artifactory':
-        author = 'audeering-unittest'
+        owner = 'audeering-unittest'
     else:
         if os.name == 'nt':
-            author = 'Administrators'
+            owner = 'Administrators'
         else:
-            author = getpass.getuser()
+            owner = getpass.getuser()
 
-    yield author
+    yield owner
 
 
 @pytest.fixture(scope='function', autouse=False)
