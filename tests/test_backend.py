@@ -513,7 +513,7 @@ def test_file(tmpdir, src_path, dst_path, version, backend, owner):
     assert os.path.exists(src_path)
     assert backend.checksum(dst_path, version) == audeer.md5(src_path)
     assert backend.owner(dst_path, version) == owner
-    date = datetime.datetime.today().strftime('%Y/%m/%d')
+    date = datetime.datetime.today().strftime('%Y-%m-%d')
     assert backend.date(dst_path, version) == date
 
     backend.remove_file(dst_path, version)

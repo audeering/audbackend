@@ -124,7 +124,7 @@ class Backend:
             version: version string
 
         Returns:
-            date in format ``'yyyy/mm/dd'``
+            date in format ``'yyyy-mm-dd'``
 
         Raises:
             BackendError: if an error is raised on the backend,
@@ -136,7 +136,7 @@ class Backend:
 
         Examples:
               >>> backend.date('/f.ext', '1.0.0')
-              '1991/02/20'
+              '1991-02-20'
 
         """
         path = utils.check_path(path)

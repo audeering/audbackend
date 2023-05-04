@@ -74,7 +74,7 @@ def check_version(version: str) -> str:
 
 
 def date_format(date: datetime.datetime) -> str:
-    return date.strftime('%Y/%m/%d')
+    return date.strftime('%Y-%m-%d')
 
 
 def file_owner(path: str) -> str:
