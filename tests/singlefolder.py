@@ -1,5 +1,4 @@
 import os
-import pwd
 import shelve
 import shutil
 import threading
@@ -78,7 +77,8 @@ class SingleFolder(audbackend.Backend):
             version: str,
     ):
         with self.Map(self._path, self._lock) as m:
-            return pwd.getpwuid(os.stat(m[path][version][0]).st_uid).pw_name
+            p = m[path][version][0]
+            return audbackend.core.utils.file_owner(p)
 
     def _checksum(
             self,

@@ -72,6 +72,27 @@ def check_version(version: str) -> str:
     return version
 
 
+def file_owner(path: str) -> str:
+    r"""Get file owner."""
+
+    if os.name == 'nt':
+
+        import win32security
+        sd = win32security.GetFileSecurity(
+            path,
+            win32security.OWNER_SECURITY_INFORMATION,
+        )
+        owner_sid = sd.GetSecurityDescriptorOwner()
+        owner, _, _ = win32security.LookupAccountSid(None, owner_sid)
+
+    else:
+
+        import pwd
+        owner = pwd.getpwuid(os.stat(path).st_uid).pw_name
+
+    return owner
+
+
 def raise_file_exists_error(path: str):
     raise FileExistsError(
         errno.EEXIST,

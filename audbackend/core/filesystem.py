@@ -1,5 +1,4 @@
 import os
-import pwd
 import shutil
 
 import audeer
@@ -39,7 +38,7 @@ class FileSystem(Backend):
     ) -> str:
         r"""Author of file on backend."""
         path = self._path(path, version)
-        author = pwd.getpwuid(os.stat(path).st_uid).pw_name
+        author = utils.file_owner(path)
         return author
 
     def _checksum(
