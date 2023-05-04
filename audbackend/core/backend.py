@@ -124,7 +124,7 @@ class Backend:
             version: version string
 
         Returns:
-            date in format ``'YY/mm/dd'``
+            date in format ``'YYYY/mm/dd'``
 
         Raises:
             BackendError: if an error is raised on the backend,
