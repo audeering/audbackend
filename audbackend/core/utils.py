@@ -75,7 +75,7 @@ def check_version(version: str) -> str:
 def file_owner(path: str) -> str:
     r"""Get file owner."""
 
-    if os.name == 'nt':
+    if os.name == 'nt':  # pragma: Windows only cover
 
         import win32security
         sd = win32security.GetFileSecurity(
@@ -85,7 +85,7 @@ def file_owner(path: str) -> str:
         owner_sid = sd.GetSecurityDescriptorOwner()
         owner, _, _ = win32security.LookupAccountSid(None, owner_sid)
 
-    else:
+    else:  # pragma: no Windows cover
 
         import pwd
         owner = pwd.getpwuid(os.stat(path).st_uid).pw_name
