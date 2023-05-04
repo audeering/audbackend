@@ -160,6 +160,16 @@ class FileSystem(Backend):
 
         return result
 
+    def _owner(
+            self,
+            path: str,
+            version: str,
+    ) -> str:
+        r"""Get owner of file on backend."""
+        path = self._path(path, version)
+        owner = utils.file_owner(path)
+        return owner
+
     def _path(
             self,
             path: str,

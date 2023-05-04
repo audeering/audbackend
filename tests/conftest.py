@@ -1,3 +1,4 @@
+import getpass
 import os
 import time
 
@@ -37,6 +38,22 @@ def hosts(tmpdir_factory):
         'file-system': str(tmpdir_factory.mktemp('host')),
         'single-folder': str(tmpdir_factory.mktemp('host')),
     }
+
+
+@pytest.fixture(scope='function', autouse=False)
+def owner(request):
+    r"""Return expected owner value."""
+
+    name = request.param
+    if name == 'artifactory':
+        owner = 'audeering-unittest'
+    else:
+        if os.name == 'nt':
+            owner = 'Administrators'
+        else:
+            owner = getpass.getuser()
+
+    yield owner
 
 
 @pytest.fixture(scope='function', autouse=False)

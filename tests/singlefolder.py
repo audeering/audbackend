@@ -138,6 +138,15 @@ class SingleFolder(audbackend.Backend):
 
             return ls
 
+    def _owner(
+            self,
+            path: str,
+            version: str,
+    ):
+        with self.Map(self._path, self._lock) as m:
+            p = m[path][version][0]
+            return audbackend.core.utils.file_owner(p)
+
     def _put_file(
             self,
             src_path: str,

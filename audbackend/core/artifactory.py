@@ -304,6 +304,16 @@ class Artifactory(Backend):
 
         return result
 
+    def _owner(
+            self,
+            path: str,
+            version: str,
+    ) -> str:
+        r"""Get owner of file on backend."""
+        path = self._path(path, version)
+        owner = path.stat().modified_by
+        return owner
+
     def _path(
             self,
             path: str,

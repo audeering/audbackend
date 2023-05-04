@@ -7,6 +7,20 @@ import audbackend
 import audeer
 
 
+class DoctestFileSystem(audbackend.FileSystem):
+
+    def __repr__(self) -> str:
+        name = 'audbackend.core.filesystem.FileSystem'
+        return str((name, self.host, self.repository))
+
+    def _owner(
+            self,
+            path: str,
+            version: str,
+    ):
+        return 'doctest'
+
+
 @pytest.fixture(scope='function', autouse=True)
 def prepare_docstring_tests(doctest_namespace):
 
@@ -18,6 +32,7 @@ def prepare_docstring_tests(doctest_namespace):
         host = 'host'
         repository = 'doctest'
 
+        audbackend.register('file-system', DoctestFileSystem)
         backend = audbackend.create('file-system', host, repository)
 
         file = 'src.pth'
@@ -32,5 +47,6 @@ def prepare_docstring_tests(doctest_namespace):
         yield
 
         audbackend.delete('file-system', host, repository)
+        audbackend.register('file-system', audbackend.FileSystem)
 
         os.chdir(current_dir)
