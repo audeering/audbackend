@@ -75,7 +75,7 @@ def check_version(version: str) -> str:
 def file_owner(path: str) -> str:
     r"""Get file owner."""
 
-    if os.name == 'nt':  # pragma: Windows only cover
+    if os.name == 'nt':  # pragma: no cover
 
         import win32security
         sd = win32security.GetFileSecurity(
