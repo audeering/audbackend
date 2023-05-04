@@ -104,7 +104,7 @@ class Backend:
         r"""Get date of file on backend.
 
         * Return empty string if date cannot be determined
-        * Format should be '%Y/%m/%d'
+        * Format should be '%Y-%m-%d'
 
         """
         raise NotImplementedError()
