@@ -13,11 +13,18 @@ class DoctestFileSystem(audbackend.FileSystem):
         name = 'audbackend.core.filesystem.FileSystem'
         return str((name, self.host, self.repository))
 
+    def _date(
+            self,
+            path: str,
+            version: str,
+    ) -> str:
+        return '1991/02/20'
+
     def _owner(
             self,
             path: str,
             version: str,
-    ):
+    ) -> str:
         return 'doctest'
 
 
