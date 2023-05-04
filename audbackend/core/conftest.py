@@ -1,3 +1,4 @@
+import datetime
 import os
 import tempfile
 
@@ -13,11 +14,20 @@ class DoctestFileSystem(audbackend.FileSystem):
         name = 'audbackend.core.filesystem.FileSystem'
         return str((name, self.host, self.repository))
 
+    def _date(
+            self,
+            path: str,
+            version: str,
+    ) -> str:
+        date = datetime.datetime(1991, 2, 20)
+        date = audbackend.core.utils.date_format(date)
+        return date
+
     def _owner(
             self,
             path: str,
             version: str,
-    ):
+    ) -> str:
         return 'doctest'
 
 

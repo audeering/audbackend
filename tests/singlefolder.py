@@ -1,3 +1,4 @@
+import datetime
 import os
 import shelve
 import shutil
@@ -86,6 +87,18 @@ class SingleFolder(audbackend.Backend):
             raise audbackend.core.utils.raise_file_exists_error(self._path)
         with self.Map(self._path, self._lock, flag='n'):
             pass
+
+    def _date(
+            self,
+            path: str,
+            version: str,
+    ) -> str:
+        with self.Map(self._path, self._lock) as m:
+            p = m[path][version][0]
+            date = os.path.getmtime(p)
+            date = datetime.datetime.fromtimestamp(date)
+            date = audbackend.core.utils.date_format(date)
+            return date
 
     def _delete(
             self,

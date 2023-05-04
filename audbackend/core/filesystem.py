@@ -1,3 +1,4 @@
+import datetime
 import os
 import shutil
 
@@ -63,6 +64,18 @@ class FileSystem(Backend):
             utils.raise_file_exists_error(self._root)
 
         audeer.mkdir(self._root)
+
+    def _date(
+            self,
+            path: str,
+            version: str,
+    ) -> str:
+        r"""Get last modification date of file on backend."""
+        path = self._path(path, version)
+        date = os.path.getmtime(path)
+        date = datetime.datetime.fromtimestamp(date)
+        date = utils.date_format(date)
+        return date
 
     def _delete(
             self,

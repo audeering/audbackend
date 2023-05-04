@@ -96,6 +96,58 @@ class Backend:
         """
         raise NotImplementedError()
 
+    def _date(
+            self,
+            path: str,
+            version: str,
+    ) -> str:  # pragma: no cover
+        r"""Get date of file on backend.
+
+        * Return empty string if date cannot be determined
+        * Format should be '%Y-%m-%d'
+
+        """
+        raise NotImplementedError()
+
+    def date(
+            self,
+            path: str,
+            version: str,
+    ) -> str:
+        r"""Get last modification date of file on backend.
+
+        If the date cannot be determined,
+        an empty string is returned.
+
+        Args:
+            path: path to file on backend
+            version: version string
+
+        Returns:
+            date in format ``'yyyy-mm-dd'``
+
+        Raises:
+            BackendError: if an error is raised on the backend,
+                e.g. ``path`` does not exist
+            ValueError: if ``path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``version`` is empty or
+                does not match ``'[A-Za-z0-9._-]+'``
+
+        Examples:
+              >>> backend.date('/f.ext', '1.0.0')
+              '1991-02-20'
+
+        """
+        path = utils.check_path(path)
+        version = utils.check_version(version)
+
+        return utils.call_function_on_backend(
+            self._date,
+            path,
+            version,
+        )
+
     def _delete(
             self,
     ):  # pragma: no cover

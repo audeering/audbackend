@@ -1,3 +1,4 @@
+import datetime
 import errno
 import os
 import re
@@ -70,6 +71,10 @@ def check_version(version: str) -> str:
         )
 
     return version
+
+
+def date_format(date: datetime.datetime) -> str:
+    return date.strftime('%Y-%m-%d')
 
 
 def file_owner(path: str) -> str:
