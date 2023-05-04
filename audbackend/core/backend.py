@@ -47,7 +47,11 @@ class Backend:
             path: str,
             version: str,
     ) -> str:  # pragma: no cover
-        r"""Get author of file on backend."""
+        r"""Get author of file on backend.
+
+        Return empty string if author cannot be determined.
+
+        """
         raise NotImplementedError()
 
     def author(
@@ -56,6 +60,10 @@ class Backend:
             version: str,
     ) -> str:
         r"""Get author of file on backend.
+
+        If the author of the file
+        cannot be determined,
+        an empty string is returned.
 
         Args:
             path: path to file on backend
