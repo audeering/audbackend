@@ -47,7 +47,10 @@ def author(request):
     if name == 'artifactory':
         author = 'audeering-unittest'
     else:
-        author = getpass.getuser()
+        if os.name == 'nt':
+            author = 'Administrators'
+        else:
+            author = getpass.getuser()
 
     yield author
 
