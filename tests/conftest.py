@@ -42,6 +42,7 @@ def hosts(tmpdir_factory):
 
 @pytest.fixture(scope='function', autouse=False)
 def author(request):
+    r"""Return expected author values."""
 
     name = request.param
     if name == 'artifactory':
