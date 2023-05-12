@@ -79,9 +79,7 @@ def test_errors(tmpdir, backend):
     backend._username = 'non-existing'
     backend._api_key = 'non-existing'
 
-    local_file = audeer.touch(
-        audeer.path(tmpdir, 'file.txt')
-    )
+    local_file = audeer.touch(audeer.path(tmpdir, 'file.txt'))
     remote_file = backend.join(
         '/',
         audeer.uid()[:8],
@@ -125,3 +123,36 @@ def test_errors(tmpdir, backend):
         remote_file,
         suppress_backend_errors=True,
     ) == []
+
+
+@pytest.mark.parametrize(
+    'backend',
+    ['artifactory'],
+    indirect=True,
+)
+@pytest.mark.parametrize(
+    'file, version, extension, expected',
+    [
+        ('/file.tar.gz', '1.0.0', None, 'file.tar/1.0.0/file.tar-1.0.0.gz'),
+        ('/file.tar.gz', '1.0.0', 'tar.gz', 'file/1.0.0/file-1.0.0.tar.gz'),
+        ('/.tar.gz', '1.0.0', None, '.tar/1.0.0/.tar-1.0.0.gz'),
+        ('/.tar', '1.0.0', None, '.tar/1.0.0/.tar-1.0.0'),
+        ('/tar', '1.0.0', None, 'tar/1.0.0/tar-1.0.0'),
+        pytest.param(  # empty basename
+            '/.tar.gz', '1.0.0', 'tar.gz', None,
+            marks=pytest.mark.xfail(raises=audbackend.BackendError),
+        ),
+    ]
+)
+def test_extension(tmpdir, backend, file, extension, version, expected):
+
+    if extension is not None:
+        backend.extensions.append(extension)
+
+    src_path = audeer.touch(audeer.path(tmpdir, 'tmp'))
+    backend.put_file(src_path, file, version)
+
+    url = f'{str(backend._repo.path)}{expected}'
+    assert str(backend._path(file, version)) == url
+    assert backend.ls(file) == [(file, version)]
+    assert backend.ls() == [(file, version)]

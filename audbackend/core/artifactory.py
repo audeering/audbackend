@@ -155,13 +155,14 @@ class Artifactory(Backend):
         self._repo = path.find_repository_local(self.repository)
 
         self.extensions = []
-        r"""List with custom extensions.
-        
+        r"""Custom extensions.
+
         By default,
         the string after the last dot
         will be used as extension.
-        To recognize custom extensions including dots,
-        they must be added to this list.
+        To recognize extensions that include dots
+        (e.g. 'tar.gz'),
+        add them to this list.
 
         """
 
@@ -304,9 +305,6 @@ class Artifactory(Backend):
             paths = [str(self._path(path, v))
                      for v in vs if self._exists(path, v)]
 
-            if not paths:
-                utils.raise_file_not_found_error(path)
-
         # <host>/<repository>/<root>/<base>/<version>/<base>-<version>.<ext>
         # ->
         # (/<root>/<base>.<ext>, <version>)
@@ -401,6 +399,15 @@ class Artifactory(Backend):
             ext = audeer.file_extension(name)
 
         base = audeer.replace_file_extension(name, '', ext=ext)
+
+        if not base:
+            raise RuntimeError(
+                f"Cannot derive a valid basename from "
+                f"'{name}' "
+                f"when extension is set to "
+                f"'{ext}'."
+            )
+
         if ext:
             ext = f'.{ext}'
 

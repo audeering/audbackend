@@ -335,9 +335,11 @@ def test_errors(tmpdir, backend):
         backend.latest_version(file_invalid_char)
 
     # --- ls ---
-    # `path` missing
+    # `path` does not exist
     with pytest.raises(audbackend.BackendError, match=error_backend):
         backend.ls('/missing/')
+    with pytest.raises(audbackend.BackendError, match=error_backend):
+        backend.ls('/missing.txt')
     # joined path without leading '/'
     with pytest.raises(ValueError, match=error_invalid_path):
         backend.ls(file_invalid_path)
