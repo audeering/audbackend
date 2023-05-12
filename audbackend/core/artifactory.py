@@ -154,6 +154,17 @@ class Artifactory(Backend):
         )
         self._repo = path.find_repository_local(self.repository)
 
+        self.extensions = []
+        r"""List of extensions.
+        
+        By default,
+        the string after the last dot
+        will be used as extension.
+        To recognize extensions with dots,
+        add them to this list.
+
+        """
+
     def _access(
             self,
     ):
@@ -332,14 +343,15 @@ class Artifactory(Backend):
     ) -> artifactory.ArtifactoryPath:
         r"""Convert to backend path.
 
-        <root>/<name>
+        <root>/<name>.<ext>
         ->
-        <host>/<repository>/<root>/<version>/<name>
+        <host>/<repository>/<root>/<name>/<version>/<name>-<version>.<ext>
 
         """
         root, name = self.split(path)
         root = self._expand(root)
-        path = f'{root}/{version}/{name}'
+        path = f'{root}{version}/{name}'
+        print(path)
         path = _artifactory_path(
             path,
             self._username,
