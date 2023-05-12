@@ -155,13 +155,13 @@ class Artifactory(Backend):
         self._repo = path.find_repository_local(self.repository)
 
         self.extensions = []
-        r"""List of extensions.
+        r"""List with custom extensions.
         
         By default,
         the string after the last dot
         will be used as extension.
-        To recognize extensions with dots,
-        add them to this list.
+        To recognize custom extensions including dots,
+        they must be added to this list.
 
         """
 
@@ -290,8 +290,9 @@ class Artifactory(Backend):
 
         else:  # find versions of path
 
-            root, _ = self.split(path)
-            root = self._expand(root)
+            root, name = self.split(path)
+            base, _ = self._split_ext(name)
+            root = f'{self._expand(root)}{base}'
             root = _artifactory_path(
                 root,
                 self._username,
@@ -306,9 +307,9 @@ class Artifactory(Backend):
             if not paths:
                 utils.raise_file_not_found_error(path)
 
-        # <host>/<repository>/<root>/<name>
+        # <host>/<repository>/<root>/<base>/<version>/<base>-<version>.<ext>
         # ->
-        # (/<root>/<name>, <version>)
+        # (/<root>/<base>.<ext>, <version>)
 
         result = []
         for p in paths:
@@ -318,7 +319,10 @@ class Artifactory(Backend):
 
             name = tokens[-1]
             version = tokens[-2]
-            path = self.sep.join(tokens[:-2])
+            base = tokens[-3]
+            ext = name[len(base) + len(version) + 1:]
+            name = f'{base}{ext}'
+            path = self.sep.join(tokens[:-3])
             path = self.sep + path
             path = self.join(path, name)
 
@@ -343,15 +347,16 @@ class Artifactory(Backend):
     ) -> artifactory.ArtifactoryPath:
         r"""Convert to backend path.
 
-        <root>/<name>.<ext>
+        <root>/<base>.<ext>
         ->
-        <host>/<repository>/<root>/<name>/<version>/<name>-<version>.<ext>
+        <host>/<repository>/<root>/<base>/<version>/<name>-<version>.<ext>
 
         """
         root, name = self.split(path)
+        base, ext = self._split_ext(name)
+
         root = self._expand(root)
-        path = f'{root}{version}/{name}'
-        print(path)
+        path = f'{root}{base}/{version}/{base}-{version}{ext}'
         path = _artifactory_path(
             path,
             self._username,
@@ -379,3 +384,24 @@ class Artifactory(Backend):
         r"""Remove file from backend."""
         path = self._path(path, version)
         path.unlink()
+
+    def _split_ext(
+            self,
+            name: str,
+    ) -> typing.Tuple[str, str]:
+        r"""Split name into basename and extension."""
+
+        ext = None
+        for custom_ext in self.extensions:
+            # check for custom extension ...
+            if name.endswith(f'.{custom_ext}'):
+                ext = custom_ext
+        if ext is None:
+            # ... otherwise use last string after dot
+            ext = audeer.file_extension(name)
+
+        base = audeer.replace_file_extension(name, '', ext=ext)
+        if ext:
+            ext = f'.{ext}'
+
+        return base, ext
