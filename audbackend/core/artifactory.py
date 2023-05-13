@@ -305,6 +305,9 @@ class Artifactory(Backend):
             paths = [str(self._path(path, v))
                      for v in vs if self._exists(path, v)]
 
+            if not paths:
+                utils.raise_file_not_found_error(path)
+
         # <host>/<repository>/<root>/<base>/<version>/<base>-<version>.<ext>
         # ->
         # (/<root>/<base>.<ext>, <version>)

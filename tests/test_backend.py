@@ -340,6 +340,12 @@ def test_errors(tmpdir, backend):
         backend.ls('/missing/')
     with pytest.raises(audbackend.BackendError, match=error_backend):
         backend.ls('/missing.txt')
+    remote_file_with_wrong_ext = audeer.replace_file_extension(
+        remote_file,
+        'missing',
+    )
+    with pytest.raises(audbackend.BackendError, match=error_backend):
+        backend.ls(remote_file_with_wrong_ext)
     # joined path without leading '/'
     with pytest.raises(ValueError, match=error_invalid_path):
         backend.ls(file_invalid_path)
