@@ -135,16 +135,14 @@ def test_errors(tmpdir, backend):
     [
         ('/file.tar.gz', '1.0.0', None, 'file.tar/1.0.0/file.tar-1.0.0.gz'),
         ('/file.tar.gz', '1.0.0', 'tar.gz', 'file/1.0.0/file-1.0.0.tar.gz'),
+        ('/.tar.gz', '1.0.0', 'tar.gz', '.tar/1.0.0/.tar-1.0.0.gz'),
+        ('/tar.gz', '1.0.0', 'tar.gz', 'tar/1.0.0/tar-1.0.0.gz'),
         ('/.tar.gz', '1.0.0', None, '.tar/1.0.0/.tar-1.0.0.gz'),
         ('/.tar', '1.0.0', None, '.tar/1.0.0/.tar-1.0.0'),
         ('/tar', '1.0.0', None, 'tar/1.0.0/tar-1.0.0'),
-        pytest.param(  # empty basename
-            '/.tar.gz', '1.0.0', 'tar.gz', None,
-            marks=pytest.mark.xfail(raises=audbackend.BackendError),
-        ),
     ]
 )
-def test_extension(tmpdir, backend, file, extension, version, expected):
+def test_extension(tmpdir, backend, file, version, extension, expected):
 
     if extension is not None:
         backend.extensions.append(extension)

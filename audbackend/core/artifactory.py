@@ -391,22 +391,16 @@ class Artifactory(Backend):
 
         ext = None
         for custom_ext in self.extensions:
-            # check for custom extension ...
-            if name.endswith(f'.{custom_ext}'):
+            # check for custom extension
+            # ensure basename is not empty
+            if name[1:].endswith(f'.{custom_ext}'):
                 ext = custom_ext
         if ext is None:
-            # ... otherwise use last string after dot
+            # if no custom extension is found
+            # use last string after dot
             ext = audeer.file_extension(name)
 
         base = audeer.replace_file_extension(name, '', ext=ext)
-
-        if not base:
-            raise RuntimeError(
-                f"Cannot derive a valid basename from "
-                f"'{name}' "
-                f"when extension is set to "
-                f"'{ext}'."
-            )
 
         if ext:
             ext = f'.{ext}'
