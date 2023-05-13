@@ -157,12 +157,32 @@ class Artifactory(Backend):
         self.extensions = []
         r"""Custom extensions.
 
+        On Artifactory files are stored
+        under the following structure:
+        ``'.../<name-wo-ext>/<version>/<name-wo-ext>-<version>.<ext>'``.
         By default,
-        the string after the last dot
-        will be used as extension.
-        To recognize extensions that include dots
-        (e.g. 'tar.gz'),
-        add them to this list.
+        the extension
+        ``<ext>``
+        is set the string after the last dot.
+        I.e.,
+        the backend path
+        ``'.../file.tar.gz'``
+        will translate into
+        ``'.../file.tar/1.0.0/file.tar-1.0.0.gz'``.
+        However,
+        by defining custom extensions
+        it is possible to overwrite
+        the default behavior.
+        E.g.,
+        with
+        ``backend.extensions.append('tar.gz')``
+        it is ensured that
+        ``'tar.gz'``
+        will be recognized as an extension
+        and the backend path
+        ``'.../file.tar.gz'``
+        will then translate into
+        ``'.../file/1.0.0/file-1.0.0.tar.gz'``.
 
         """
 
