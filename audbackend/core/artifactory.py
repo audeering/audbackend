@@ -32,9 +32,12 @@ def _authentication(host) -> typing.Tuple[str, str]:
         'ARTIFACTORY_CONFIG_FILE',
         artifactory.default_config_path,
     )
+    config_file = audeer.path(config_file)
 
-    if api_key is None or username is None:
-
+    if (
+            os.path.exists(config_file) and
+            (api_key is None or username is None)
+    ):
         config = artifactory.read_config(config_file)
         config_entry = artifactory.get_config_entry(config, host)
 

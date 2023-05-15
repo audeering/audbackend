@@ -35,14 +35,18 @@ def hide_credentials():
 def test_authentication(tmpdir, hosts, hide_credentials):
 
     host = hosts['artifactory']
-
-    # create empty config file
-
     config_path = audeer.path(tmpdir, 'config.cfg')
-    os.environ['ARTIFACTORY_CONFIG_FILE'] = audeer.touch(config_path)
+    os.environ['ARTIFACTORY_CONFIG_FILE'] = config_path
 
-    # default credentials
+    # config file does not exist
 
+    backend = audbackend.Artifactory(host, 'repository')
+    assert backend._username == 'anonymous'
+    assert backend._api_key == ''
+
+    # config file is empty
+
+    audeer.touch(config_path)
     backend = audbackend.Artifactory(host, 'repository')
     assert backend._username == 'anonymous'
     assert backend._api_key == ''
