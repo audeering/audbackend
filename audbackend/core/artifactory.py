@@ -304,7 +304,12 @@ class Artifactory(Backend):
             )
             if not path.exists():
                 utils.raise_file_not_found_error(str(path))
-            paths = [str(x) for x in path.glob("**/*") if x.is_file()]
+            path = str(path)
+
+            # listing all path on repository
+            # is faster than path.glob('**/*')
+            paths = [str(x) for x in self._repo]
+            paths = [x for x in paths if x.startswith(path)]
 
         else:  # find versions of path
 
