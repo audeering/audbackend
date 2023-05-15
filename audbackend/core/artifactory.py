@@ -383,7 +383,7 @@ class Artifactory(Backend):
 
         <root>/<name>
         ->
-         <host>/<repository>/<root>/<version>/<name>
+        <host>/<repository>/<root>/<version>/<name>
 
         or legacy:
 
