@@ -131,21 +131,21 @@ def test_errors(tmpdir, backend):
     indirect=True,
 )
 @pytest.mark.parametrize(
-    'file, version, extension, expected',
+    'file, version, extensions, expected',
     [
         ('/file.tar.gz', '1.0.0', None, 'file.tar/1.0.0/file.tar-1.0.0.gz'),
-        ('/file.tar.gz', '1.0.0', 'tar.gz', 'file/1.0.0/file-1.0.0.tar.gz'),
-        ('/.tar.gz', '1.0.0', 'tar.gz', '.tar/1.0.0/.tar-1.0.0.gz'),
-        ('/tar.gz', '1.0.0', 'tar.gz', 'tar/1.0.0/tar-1.0.0.gz'),
+        ('/file.tar.gz', '1.0.0', ['tar.gz'], 'file/1.0.0/file-1.0.0.tar.gz'),
+        ('/.tar.gz', '1.0.0', ['tar.gz'], '.tar/1.0.0/.tar-1.0.0.gz'),
+        ('/tar.gz', '1.0.0', ['tar.gz'], 'tar/1.0.0/tar-1.0.0.gz'),
         ('/.tar.gz', '1.0.0', None, '.tar/1.0.0/.tar-1.0.0.gz'),
         ('/.tar', '1.0.0', None, '.tar/1.0.0/.tar-1.0.0'),
         ('/tar', '1.0.0', None, 'tar/1.0.0/tar-1.0.0'),
     ]
 )
-def test_extension(tmpdir, backend, file, version, extension, expected):
+def test_legacy_file_structure(tmpdir, backend, file, version, extensions,
+                               expected):
 
-    if extension is not None:
-        backend.extensions.append(extension)
+    backend._use_legacy_file_structure(extensions=extensions)
 
     src_path = audeer.touch(audeer.path(tmpdir, 'tmp'))
     backend.put_file(src_path, file, version)

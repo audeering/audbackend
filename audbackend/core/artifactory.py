@@ -154,37 +154,10 @@ class Artifactory(Backend):
         )
         self._repo = path.find_repository_local(self.repository)
 
-        self.extensions = []
-        r"""Custom extensions.
-
-        On Artifactory files are stored
-        under the following structure:
-        ``'.../<name-wo-ext>/<version>/<name-wo-ext>-<version>.<ext>'``.
-        By default,
-        the extension
-        ``<ext>``
-        is set the string after the last dot.
-        I.e.,
-        the backend path
-        ``'.../file.tar.gz'``
-        will translate into
-        ``'.../file.tar/1.0.0/file.tar-1.0.0.gz'``.
-        However,
-        by defining custom extensions
-        it is possible to overwrite
-        the default behavior.
-        E.g.,
-        with
-        ``backend.extensions.append('tar.gz')``
-        it is ensured that
-        ``'tar.gz'``
-        will be recognized as an extension
-        and the backend path
-        ``'.../file.tar.gz'``
-        will then translate into
-        ``'.../file/1.0.0/file-1.0.0.tar.gz'``.
-
-        """
+        # to support legacy file structure
+        # see _use_legacy_file_structure()
+        self._legacy_extensions = None
+        self._legacy_file_structure = False
 
     def _access(
             self,
@@ -291,6 +264,30 @@ class Artifactory(Backend):
         src_path = self._path(src_path, version)
         _download(src_path, dst_path, verbose=verbose)
 
+    def _legacy_split_ext(
+            self,
+            name: str,
+    ) -> typing.Tuple[str, str]:
+        r"""Split name into basename and extension."""
+
+        ext = None
+        for custom_ext in self._legacy_extensions:
+            # check for custom extension
+            # ensure basename is not empty
+            if name[1:].endswith(f'.{custom_ext}'):
+                ext = custom_ext
+        if ext is None:
+            # if no custom extension is found
+            # use last string after dot
+            ext = audeer.file_extension(name)
+
+        base = audeer.replace_file_extension(name, '', ext=ext)
+
+        if ext:
+            ext = f'.{ext}'
+
+        return base, ext
+
     def _ls(
             self,
             path: str,
@@ -312,8 +309,13 @@ class Artifactory(Backend):
         else:  # find versions of path
 
             root, name = self.split(path)
-            base, _ = self._split_ext(name)
-            root = f'{self._expand(root)}{base}'
+
+            if self._legacy_file_structure:
+                base, _ = self._legacy_split_ext(name)
+                root = f'{self._expand(root)}{base}'
+            else:
+                root = self._expand(root)
+
             root = _artifactory_path(
                 root,
                 self._username,
@@ -328,6 +330,12 @@ class Artifactory(Backend):
             if not paths:
                 utils.raise_file_not_found_error(path)
 
+        # <host>/<repository>/<root>/<name>
+        # ->
+        # (/<root>/<name>, <version>)
+        #
+        # or legacy:
+        #
         # <host>/<repository>/<root>/<base>/<version>/<base>-<version>.<ext>
         # ->
         # (/<root>/<base>.<ext>, <version>)
@@ -340,10 +348,15 @@ class Artifactory(Backend):
 
             name = tokens[-1]
             version = tokens[-2]
-            base = tokens[-3]
-            ext = name[len(base) + len(version) + 1:]
-            name = f'{base}{ext}'
-            path = self.sep.join(tokens[:-3])
+
+            if self._legacy_file_structure:
+                base = tokens[-3]
+                ext = name[len(base) + len(version) + 1:]
+                name = f'{base}{ext}'
+                path = self.sep.join(tokens[:-3])
+            else:
+                path = self.sep.join(tokens[:-2])
+
             path = self.sep + path
             path = self.join(path, name)
 
@@ -368,16 +381,26 @@ class Artifactory(Backend):
     ) -> artifactory.ArtifactoryPath:
         r"""Convert to backend path.
 
+        <root>/<name>
+        ->
+         <host>/<repository>/<root>/<version>/<name>
+
+        or legacy:
+
         <root>/<base>.<ext>
         ->
         <host>/<repository>/<root>/<base>/<version>/<name>-<version>.<ext>
 
         """
         root, name = self.split(path)
-        base, ext = self._split_ext(name)
-
         root = self._expand(root)
-        path = f'{root}{base}/{version}/{base}-{version}{ext}'
+
+        if self._legacy_file_structure:
+            base, ext = self._legacy_split_ext(name)
+            path = f'{root}{base}/{version}/{base}-{version}{ext}'
+        else:
+            path = f'{root}{version}/{name}'
+
         path = _artifactory_path(
             path,
             self._username,
@@ -406,26 +429,42 @@ class Artifactory(Backend):
         path = self._path(path, version)
         path.unlink()
 
-    def _split_ext(
+    def _use_legacy_file_structure(
             self,
-            name: str,
-    ) -> typing.Tuple[str, str]:
-        r"""Split name into basename and extension."""
+            *,
+            extensions: typing.List[str] = None,
+    ):
+        r"""Use legacy file structure.
 
-        ext = None
-        for custom_ext in self.extensions:
-            # check for custom extension
-            # ensure basename is not empty
-            if name[1:].endswith(f'.{custom_ext}'):
-                ext = custom_ext
-        if ext is None:
-            # if no custom extension is found
-            # use last string after dot
-            ext = audeer.file_extension(name)
+        Stores files under
+        ``'.../<name-wo-ext>/<version>/<name-wo-ext>-<version>.<ext>'``
+        instead of
+        ``'.../<version>/<name>'``.
+        By default,
+        the extension
+        ``<ext>``
+        is set the string after the last dot.
+        I.e.,
+        the backend path
+        ``'.../file.tar.gz'``
+        will translate into
+        ``'.../file.tar/1.0.0/file.tar-1.0.0.gz'``.
+        However,
+        by passing a list with custom extensions
+        it is possible to overwrite
+        the default behavior
+        for certain extensions.
+        E.g.,
+        with
+        ``backend._use_legacy_file_structure(extensions=['tar.gz'])``
+        it is ensured that
+        ``'tar.gz'``
+        will be recognized as an extension
+        and the backend path
+        ``'.../file.tar.gz'``
+        will then translate into
+        ``'.../file/1.0.0/file-1.0.0.tar.gz'``.
 
-        base = audeer.replace_file_extension(name, '', ext=ext)
-
-        if ext:
-            ext = f'.{ext}'
-
-        return base, ext
+        """
+        self._legacy_file_structure = True
+        self._legacy_extensions = extensions or []
