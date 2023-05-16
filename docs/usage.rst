@@ -231,6 +231,7 @@ to the file.
 .. jupyter-execute::
 
     import datetime
+    import getpass
 
     @add_method(SQLite)
     def _put_file(
@@ -248,7 +249,7 @@ to the file.
                 INSERT INTO data (path, checksum, content, date, owner, version)
                 VALUES (?, ?, ?, ?, ?, ?)
             '''
-            owner = os.getlogin()
+            owner = getpass.getuser()
             date = datetime.datetime.today().strftime('%Y-%m-%d')
             data = (dst_path, checksum, content, date, owner, version)
             db.execute(query, data)
