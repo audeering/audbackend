@@ -1,6 +1,7 @@
 import datetime
 import os
 import shutil
+import typing
 
 import audeer
 
@@ -123,7 +124,7 @@ class FileSystem(Backend):
     def _ls(
             self,
             path: str,
-    ):
+    ) -> typing.List[typing.Tuple[str, str]]:
         r"""List all files under (sub-)path."""
 
         if path.endswith('/'):  # find files under sub-path

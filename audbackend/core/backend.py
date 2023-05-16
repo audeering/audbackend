@@ -442,7 +442,7 @@ class Backend:
     def _ls(
             self,
             path: str,
-    ) -> typing.List[typing.Tuple[str, str, str]]:  # pragma: no cover
+    ) -> typing.List[typing.Tuple[str, str]]:  # pragma: no cover
         r"""List all files under (sub-)path.
 
         * If path does not exist an error should be raised
