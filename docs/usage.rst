@@ -3,20 +3,23 @@ Usage
 
 The aim of
 :mod:`audbackend`
-is to provide an abstract layer
-to interface with different
-file storage systems.
-Instead of directly communicating
-with a specific file system,
-the abstract class
-:class:`audbackend.Backend`.
-This allows users to
-execute the same code
-on different systems.
-For instance,
-in this tutorial
-we create a backend that
-stores files into
+is to provide an
+abstract interface for
+any kind of file storage system.
+Even those,
+that have not been
+invented yet :)
+
+This tutorial is divided
+into two parts.
+In the first part,
+we show the basic usage
+by means of a
+standard file system.
+In the second part,
+we take a deep dive
+and develop a backend
+that stores files into
 a SQLite_ database.
 
 .. set temporal working directory
@@ -46,29 +49,251 @@ a SQLite_ database.
         return decorator
 
 
-To implement a new backend
-we derive from
-:class:`audbackend.Backend`.
-The constructor takes two arguments:
+Basic usage
+-----------
 
-* ``host``: the host address
-* ``repository``: the repository name
+The heart of
+:mod:`audbackend`
+is the class
+:class:`audbackend.Backend`,
+which provides an abstract
+interface to communicate
+with a storage system.
+The class
+:class:`audbackend.FileSystem`
+implements
+:class:`audbackend.Backend`
+for a standard file system.
 
-In addition we add two hidden class variables:
+
+We start by registering the class
+(in fact,
+the class is registered
+by default,
+but it doesn't hurt
+if we do it again).
+
+.. jupyter-execute::
+
+    import audbackend
+
+    audbackend.register('file-system', audbackend.FileSystem)
+
+
+We create an instance
+and provide two arguments:
+
+* ``host``: the host address,
+  in this case a folder on our file-system
+* ``repository``: the repository name,
+  in this case a sub-folder within the ``host`` folder.
+  It is possible to have several repositories
+  on the same host.
+
+.. jupyter-execute::
+
+    audbackend.create('file-system', './host', 'repo')
+
+
+This will create an empty repository
+(in our case the folder `./<host>/<repo>/`).
+Once create we can access it with:
+
+.. jupyter-execute::
+
+    backend = audbackend.access('file-system', './host', 'repo')
+
+
+To put a file on the backend,
+we provide two path arguments.
+
+* ``src_path``: path to a file on the local file system.
+  This is the file we want to store on the backend.
+* ``dst_path``: virtual path that represents the file on the backend.
+  It serves an alias that is understood by all backends.
+
+:mod:`audbackend`
+allows to store different
+versions of a file.
+So we also have to provide a
+``version`` string.
+Backend path and version
+provide a unique identifier
+to the file.
+
+We create a temporal file
+with some content and
+put put a copy of it on the backend.
+
+.. jupyter-execute::
+
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        src_path = os.path.join(tmp, '~')
+        with open(src_path, 'w') as fp:
+            fp.write('Hello world')
+        backend.put_file(src_path, '/file.txt', '1.0.0')
+
+
+We check if the file exists on the backend.
+
+.. jupyter-execute::
+
+    backend.exists('/file.txt', '1.0.0')
+
+
+And access its meta information.
+
+.. jupyter-execute::
+
+    backend.checksum('/file.txt', '1.0.0')
+
+.. jupyter-execute::
+
+    backend.date('/file.txt', '1.0.0')
+
+.. jupyter-execute::
+
+    backend.owner('/file.txt', '1.0.0')
+
+
+We retrieve the file
+from the backend
+and verify it has
+the expected content.
+
+.. jupyter-execute::
+
+    path = backend.get_file('/file.txt', 'local.txt', '1.0.0')
+    with open(path, 'r') as fp:
+        display(fp.read())
+
+
+Then we modify it and
+put it again on the backend
+with a new version.
+
+.. jupyter-execute::
+
+    with open(path, 'a') as fp:
+        fp.write('. Goodbye!')
+    backend.put_file(path, '/file.txt', '2.0.0')
+
+
+It is possible to upload
+one or more files
+as an archive.
+(note that we store the archive
+under the sub-path ``'/a/'``).
+
+.. jupyter-execute::
+
+    backend.put_archive('.', '/a/file.zip', '2.0.0', files=[path])
+
+
+And we can automatically extract the archive
+when we fetch it from the backend.
+
+.. jupyter-execute::
+
+    paths = backend.get_archive('/a/file.zip', '.', '2.0.0')
+    with open(paths[0], 'r') as fp:
+        display(fp.read())
+
+
+We can inspect the files
+on a backend.
+This will a return
+a list with tuples
+``(path, version)``.
+It is also possible to list
+all files that starts with
+a specific sub-path
+(must end on ``'/'``).
+
+.. jupyter-execute::
+
+    backend.ls('/')
+
+.. jupyter-execute::
+
+    backend.ls('/a/')
+
+.. jupyter-execute::
+
+    backend.ls('/file.txt')
+
+.. jupyter-execute::
+
+    backend.ls('/file.txt', latest_version=True)
+
+
+We can also directly request
+the version(s) of a path.
+
+.. jupyter-execute::
+
+    backend.versions('/file.txt')
+
+.. jupyter-execute::
+
+    backend.latest_version('/file.txt')
+
+
+We can delete files
+from a backend.
+
+.. jupyter-execute::
+
+    backend.remove_file('/file.txt', '2.0.0')
+    backend.remove_file('/a/file.zip', '2.0.0')
+    backend.ls('/')
+
+
+Or remove the whole repository
+with all its content.
+
+.. jupyter-execute::
+
+    audbackend.delete('file-system', 'host', 'repo')
+
+
+If we now try to access the repository,
+an error of type
+:class:`audbackend.BackendError`
+is raised,
+which wraps the original
+exception thrown by the backend.
+
+.. jupyter-execute::
+
+    try:
+        audbackend.access('file-system', 'host', 'repo')
+    except audbackend.BackendError as ex:
+        display(str(ex.exception))
+
+
+Development
+-----------
+
+In the previous section
+we have used an existing
+backend implementation.
+Now we develop a new backend
+that implements
+a SQLite_ database.
+
+We call the class ``SQLite``.
+It derives from
+:class:`audbackend.Backend`
+and we add two more variables
+in the constructor:
 
 * ``_path``: the path of the database,
   which we create from the host and repository,
   namely ``'<host>/<repository>/db'``.
 * ``_db``: connection object to the database.
-
-To ensure the connection to the database
-is properly closed,
-we also implement a destructor method.
-There are of course more methods
-we have to implement,
-but for the sake of clarity
-we will dynamically add
-them when needed.
 
 .. jupyter-execute::
 
@@ -86,9 +311,28 @@ them when needed.
             self._path = audeer.path(host, repository, 'db')
             self._db = None
 
-        def __del__(self):
-            if self._db is not None:
-                self._db.close()
+
+Obviously,
+this is not yet a fully
+functional backend implementation.
+But for the sake of clarity,
+we will dynamically add
+more methods one after another.
+
+For instance,
+to ensure the connection to the database
+is properly closed,
+we add a destructor method.
+This is not mandatory
+and whether it is needed
+depends on the backend.
+
+.. jupyter-execute::
+
+    @add_method(SQLite)
+    def __del__(self):
+        if self._db is not None:
+            self._db.close()
 
 
 We now register our new backend class
@@ -148,12 +392,10 @@ stored on our backend:
             db.execute(query)
 
 
-Now we create the host
-and instantiate an instance.
+Now we create an instance.
 
 .. jupyter-execute::
 
-    os.mkdir('host')
     audbackend.create('sql', 'host', 'repo')
 
 
@@ -179,8 +421,7 @@ it is not found).
     backend = audbackend.access('sql', 'host', 'repo')
 
 
-Now that we have an instance
-of the database,
+Next,
 we implement a method to check
 if a file exists.
 
@@ -206,27 +447,8 @@ if a file exists.
     backend.exists('/file.txt', '1.0.0')
 
 
-Next,
-we implement
-a method to upload
-files to our backend.
-The function takes
-two path arguments:
-
-* ``src_path``: path to a file on the local file system.
-  This is the file we want to store on the backend.
-* ``dst_path``: virtual path that represents the file on the backend.
-  It is called virtual because it is
-  the same on all backends,
-  while under the hood backends
-  may use a completely different structure.
-
-When a file is put on the backend
-it exists independent of the original file.
-The backend path and
-``version`` string
-provide a unique identifier
-to the file.
+And a method that uploads
+a file to our backend.
 
 .. jupyter-execute::
 
@@ -255,25 +477,20 @@ to the file.
             db.execute(query, data)
 
 
-We create a temporal file
-with some content and
-upload it to the backend:
+Let's put a file on the backend.
 
 .. jupyter-execute::
-
-    import tempfile
 
     with tempfile.TemporaryDirectory() as tmp:
         src_path = os.path.join(tmp, '~')
         with open(src_path, 'w') as fp:
-            fp.write('Hello world')
+            fp.write('SQLite rocks!')
         backend.put_file(src_path, '/file.txt', '1.0.0')
     backend.exists('/file.txt', '1.0.0')
 
 
-To access meta information
-about a file on the backend,
-we implement three more methods.
+We need three more functions
+to access its meta information.
 
 .. jupyter-execute::
 
@@ -335,9 +552,8 @@ we implement three more methods.
 
 Finally,
 we implement a method
-to retrieve files
-from the backend
-and store it into a local file.
+to fetch a file
+from the backend.
 
 .. jupyter-execute::
 
@@ -360,8 +576,8 @@ and store it into a local file.
                 fp.write(content)
 
 
-We get a copy from the backend
-and verify in contains the expected content.
+Let's verify the file we put on the backend
+contains the expected content.
 
 .. jupyter-execute::
 
@@ -370,53 +586,9 @@ and verify in contains the expected content.
         display(fp.read())
 
 
-Then we modify it and
-store it again on the backend,
-but under a different version.
-
-.. jupyter-execute::
-
-    with open(path, 'a') as fp:
-        fp.write('. Goodbye!')
-    backend.put_file(path, '/file.txt', '2.0.0')
-
-
-We can also upload
-the file as an archive
-under a different sub-path
-(``'/a/'``).
-
-.. jupyter-execute::
-
-    backend.put_archive('.', '/a/file.zip', '2.0.0', files=[path])
-
-
-It is possible to automatically extract an archive
-when retrieving it from backend.
-
-.. jupyter-execute::
-
-    paths = backend.get_archive('/a/file.zip', '.', '2.0.0')
-    with open(paths[0], 'r') as fp:
-        display(fp.read())
-
-
 To inspect the files
 on our backend
-we add a listing method.
-The return value
-of the method is
-list with tuples
-``(path, version)``.
-It is possible to list
-files for a sub-path
-(ends on ``'/'``).
-In that case,
-we return all paths
-that start with that sub-path
-(or raise an error
-if it does not exist).
-
+we provide a listing method.
 
 .. jupyter-execute::
 
@@ -454,33 +626,20 @@ if it does not exist).
         return ls
 
 
-Some examples how to use the method.
+Let's test it.
 
 .. jupyter-execute::
 
-    display(
-        backend.ls('/'),
-        backend.ls('/a/'),
-        backend.ls('/file.txt'),
-        backend.ls('/file.txt', latest_version=True),
-    )
-
-
-It is also possible
-to directly request the version(s)
-of a path.
+    backend.ls('/')
 
 .. jupyter-execute::
 
-    display(
-        backend.versions('/file.txt'),
-        backend.latest_version('/file.txt'),
-    )
+    backend.ls('/file.txt')
 
 
-We also want to delete files
-from our backend,
-so we implement an according method.
+To delete a file
+from our backend
+requires another method.
 
 .. jupyter-execute::
 
@@ -499,12 +658,11 @@ so we implement an according method.
             db.execute(query)
 
     backend.remove_file('/file.txt', '2.0.0')
-    backend.remove_file('/a/file.zip', '2.0.0')
     backend.ls('/')
 
 
 Finally,
-we add one more method that
+we add a method that
 deletes the database
 and removes the repository
 (or raises an error
@@ -528,13 +686,8 @@ if the database does not exist).
     audbackend.delete('sql', 'host', 'repo')
 
 
-To verify we really have
-delete the repository,
-we try to access it.
-This will raise a
-:class:`audbackend.BackendError`,
-which wraps the original
-exception by the backend.
+Let's check if the repository
+is really gone.
 
 .. jupyter-execute::
 
