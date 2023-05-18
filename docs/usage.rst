@@ -49,8 +49,8 @@ a SQLite_ database.
         return decorator
 
 
-Basic usage
------------
+Basics
+------
 
 The heart of
 :mod:`audbackend`
