@@ -84,20 +84,21 @@ We create an instance
 and provide two arguments:
 
 * ``host``: the host address,
-  in this case a folder on our file-system
+  in this case a folder on the local file system.
 * ``repository``: the repository name,
-  in this case a sub-folder within the ``host`` folder.
-  It is possible to have several repositories
-  on the same host.
+  in this case a sub-folder within the ``host`` folder
+  (it is possible to have several repositories
+  on the same host).
 
 .. jupyter-execute::
 
-    audbackend.create('file-system', './host', 'repo')
+    backend = audbackend.create('file-system', './host', 'repo')
 
 
 This will create an empty repository
-(in our case the folder `./<host>/<repo>/`).
-Once create we can access it with:
+(in our case the folder ``'./<host>/<repo>/'``).
+To access an existing repository,
+we would do:
 
 .. jupyter-execute::
 
@@ -110,20 +111,19 @@ we provide two path arguments.
 * ``src_path``: path to a file on the local file system.
   This is the file we want to store on the backend.
 * ``dst_path``: virtual path that represents the file on the backend.
-  It serves an alias that is understood by all backends.
+  It serves as an alias that is understood by all backends.
 
+With
 :mod:`audbackend`
-allows to store different
+we can store different
 versions of a file.
-So we also have to provide a
-``version`` string.
-Backend path and version
+Hence,
+we attach a
+``version`` string
+to the backend path.
+Together they
 provide a unique identifier
 to the file.
-
-We create a temporal file
-with some content and
-put put a copy of it on the backend.
 
 .. jupyter-execute::
 
@@ -158,7 +158,7 @@ And access its meta information.
     backend.owner('/file.txt', '1.0.0')
 
 
-We retrieve the file
+We fetch the file
 from the backend
 and verify it has
 the expected content.
@@ -171,8 +171,7 @@ the expected content.
 
 
 Then we modify it and
-put it again on the backend
-with a new version.
+publish it under a new version.
 
 .. jupyter-execute::
 
@@ -184,16 +183,19 @@ with a new version.
 It is possible to upload
 one or more files
 as an archive.
-(note that we store the archive
-under the sub-path ``'/a/'``).
+Here,
+we compress the file
+we just modified
+and put it under
+the sub-path ``'/a/'``.
 
 .. jupyter-execute::
 
     backend.put_archive('.', '/a/file.zip', '2.0.0', files=[path])
 
 
-And we can automatically extract the archive
-when we fetch it from the backend.
+When we get an archive from the backend
+we can automatically extract it.
 
 .. jupyter-execute::
 
@@ -202,15 +204,17 @@ when we fetch it from the backend.
         display(fp.read())
 
 
-We can inspect the files
+We can list the files
 on a backend.
-This will a return
-a list with tuples
+The result is
+a sequence of tuples
 ``(path, version)``.
-It is also possible to list
-all files that starts with
-a specific sub-path
-(must end on ``'/'``).
+If we provide
+a sub-path
+(must end on ``'/'``),
+a list with files that
+start with the sub-path
+is returned.
 
 .. jupyter-execute::
 
@@ -241,7 +245,7 @@ the version(s) of a path.
     backend.latest_version('/file.txt')
 
 
-We can delete files
+And we can remove files
 from a backend.
 
 .. jupyter-execute::
@@ -251,7 +255,7 @@ from a backend.
     backend.ls('/')
 
 
-Or remove the whole repository
+Or even delete the whole repository
 with all its content.
 
 .. jupyter-execute::
@@ -396,7 +400,7 @@ Now we create an instance.
 
 .. jupyter-execute::
 
-    audbackend.create('sql', 'host', 'repo')
+    backend = audbackend.create('sql', 'host', 'repo')
 
 
 We also add a method to access
