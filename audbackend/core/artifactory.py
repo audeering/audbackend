@@ -32,9 +32,12 @@ def _authentication(host) -> typing.Tuple[str, str]:
         'ARTIFACTORY_CONFIG_FILE',
         artifactory.default_config_path,
     )
+    config_file = audeer.path(config_file)
 
-    if api_key is None or username is None:
-
+    if (
+            os.path.exists(config_file) and
+            (api_key is None or username is None)
+    ):
         config = artifactory.read_config(config_file)
         config_entry = artifactory.get_config_entry(config, host)
 
@@ -154,6 +157,11 @@ class Artifactory(Backend):
         )
         self._repo = path.find_repository_local(self.repository)
 
+        # to support legacy file structure
+        # see _use_legacy_file_structure()
+        self._legacy_extensions = []
+        self._legacy_file_structure = False
+
     def _access(
             self,
     ):
@@ -259,6 +267,30 @@ class Artifactory(Backend):
         src_path = self._path(src_path, version)
         _download(src_path, dst_path, verbose=verbose)
 
+    def _legacy_split_ext(
+            self,
+            name: str,
+    ) -> typing.Tuple[str, str]:
+        r"""Split name into basename and extension."""
+
+        ext = None
+        for custom_ext in self._legacy_extensions:
+            # check for custom extension
+            # ensure basename is not empty
+            if name[1:].endswith(f'.{custom_ext}'):
+                ext = custom_ext
+        if ext is None:
+            # if no custom extension is found
+            # use last string after dot
+            ext = audeer.file_extension(name)
+
+        base = audeer.replace_file_extension(name, '', ext=ext)
+
+        if ext:
+            ext = f'.{ext}'
+
+        return base, ext
+
     def _ls(
             self,
             path: str,
@@ -275,12 +307,19 @@ class Artifactory(Backend):
             )
             if not path.exists():
                 utils.raise_file_not_found_error(str(path))
+
             paths = [str(x) for x in path.glob("**/*") if x.is_file()]
 
         else:  # find versions of path
 
-            root, _ = self.split(path)
-            root = self._expand(root)
+            root, name = self.split(path)
+
+            if self._legacy_file_structure:
+                base, _ = self._legacy_split_ext(name)
+                root = f'{self._expand(root)}{base}'
+            else:
+                root = self._expand(root)
+
             root = _artifactory_path(
                 root,
                 self._username,
@@ -298,6 +337,12 @@ class Artifactory(Backend):
         # <host>/<repository>/<root>/<name>
         # ->
         # (/<root>/<name>, <version>)
+        #
+        # or legacy:
+        #
+        # <host>/<repository>/<root>/<base>/<version>/<base>-<version>.<ext>
+        # ->
+        # (/<root>/<base>.<ext>, <version>)
 
         result = []
         for p in paths:
@@ -307,7 +352,15 @@ class Artifactory(Backend):
 
             name = tokens[-1]
             version = tokens[-2]
-            path = self.sep.join(tokens[:-2])
+
+            if self._legacy_file_structure:
+                base = tokens[-3]
+                ext = name[len(base) + len(version) + 1:]
+                name = f'{base}{ext}'
+                path = self.sep.join(tokens[:-3])
+            else:
+                path = self.sep.join(tokens[:-2])
+
             path = self.sep + path
             path = self.join(path, name)
 
@@ -336,10 +389,22 @@ class Artifactory(Backend):
         ->
         <host>/<repository>/<root>/<version>/<name>
 
+        or legacy:
+
+        <root>/<base>.<ext>
+        ->
+        <host>/<repository>/<root>/<base>/<version>/<name>-<version>.<ext>
+
         """
         root, name = self.split(path)
         root = self._expand(root)
-        path = f'{root}/{version}/{name}'
+
+        if self._legacy_file_structure:
+            base, ext = self._legacy_split_ext(name)
+            path = f'{root}{base}/{version}/{base}-{version}{ext}'
+        else:
+            path = f'{root}{version}/{name}'
+
         path = _artifactory_path(
             path,
             self._username,
@@ -367,3 +432,43 @@ class Artifactory(Backend):
         r"""Remove file from backend."""
         path = self._path(path, version)
         path.unlink()
+
+    def _use_legacy_file_structure(
+            self,
+            *,
+            extensions: typing.List[str] = None,
+    ):
+        r"""Use legacy file structure.
+
+        Stores files under
+        ``'.../<name-wo-ext>/<version>/<name-wo-ext>-<version>.<ext>'``
+        instead of
+        ``'.../<version>/<name>'``.
+        By default,
+        the extension
+        ``<ext>``
+        is set to the string after the last dot.
+        I.e.,
+        the backend path
+        ``'.../file.tar.gz'``
+        will translate into
+        ``'.../file.tar/1.0.0/file.tar-1.0.0.gz'``.
+        However,
+        by passing a list with custom extensions
+        it is possible to overwrite
+        the default behavior
+        for certain extensions.
+        E.g.,
+        with
+        ``backend._use_legacy_file_structure(extensions=['tar.gz'])``
+        it is ensured that
+        ``'tar.gz'``
+        will be recognized as an extension
+        and the backend path
+        ``'.../file.tar.gz'``
+        will then translate into
+        ``'.../file/1.0.0/file-1.0.0.tar.gz'``.
+
+        """
+        self._legacy_file_structure = True
+        self._legacy_extensions = extensions or []

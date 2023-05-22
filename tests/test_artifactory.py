@@ -35,14 +35,18 @@ def hide_credentials():
 def test_authentication(tmpdir, hosts, hide_credentials):
 
     host = hosts['artifactory']
-
-    # create empty config file
-
     config_path = audeer.path(tmpdir, 'config.cfg')
-    os.environ['ARTIFACTORY_CONFIG_FILE'] = audeer.touch(config_path)
+    os.environ['ARTIFACTORY_CONFIG_FILE'] = config_path
 
-    # default credentials
+    # config file does not exist
 
+    backend = audbackend.Artifactory(host, 'repository')
+    assert backend._username == 'anonymous'
+    assert backend._api_key == ''
+
+    # config file is empty
+
+    audeer.touch(config_path)
     backend = audbackend.Artifactory(host, 'repository')
     assert backend._username == 'anonymous'
     assert backend._api_key == ''
@@ -79,9 +83,7 @@ def test_errors(tmpdir, backend):
     backend._username = 'non-existing'
     backend._api_key = 'non-existing'
 
-    local_file = audeer.touch(
-        audeer.path(tmpdir, 'file.txt')
-    )
+    local_file = audeer.touch(audeer.path(tmpdir, 'file.txt'))
     remote_file = backend.join(
         '/',
         audeer.uid()[:8],
@@ -125,3 +127,35 @@ def test_errors(tmpdir, backend):
         remote_file,
         suppress_backend_errors=True,
     ) == []
+
+
+@pytest.mark.parametrize(
+    'backend',
+    ['artifactory'],
+    indirect=True,
+)
+@pytest.mark.parametrize(
+    'file, version, extensions, expected',
+    [
+        ('/file.tar.gz', '1.0.0', None, 'file.tar/1.0.0/file.tar-1.0.0.gz'),
+        ('/file.tar.gz', '1.0.0', [], 'file.tar/1.0.0/file.tar-1.0.0.gz'),
+        ('/file.tar.gz', '1.0.0', ['tar.gz'], 'file/1.0.0/file-1.0.0.tar.gz'),
+        ('/.tar.gz', '1.0.0', ['tar.gz'], '.tar/1.0.0/.tar-1.0.0.gz'),
+        ('/tar.gz', '1.0.0', ['tar.gz'], 'tar/1.0.0/tar-1.0.0.gz'),
+        ('/.tar.gz', '1.0.0', None, '.tar/1.0.0/.tar-1.0.0.gz'),
+        ('/.tar', '1.0.0', None, '.tar/1.0.0/.tar-1.0.0'),
+        ('/tar', '1.0.0', None, 'tar/1.0.0/tar-1.0.0'),
+    ]
+)
+def test_legacy_file_structure(tmpdir, backend, file, version, extensions,
+                               expected):
+
+    backend._use_legacy_file_structure(extensions=extensions)
+
+    src_path = audeer.touch(audeer.path(tmpdir, 'tmp'))
+    backend.put_file(src_path, file, version)
+
+    url = f'{str(backend._repo.path)}{expected}'
+    assert str(backend._path(file, version)) == url
+    assert backend.ls(file) == [(file, version)]
+    assert backend.ls() == [(file, version)]
