@@ -447,7 +447,7 @@ class Artifactory(Backend):
         By default,
         the extension
         ``<ext>``
-        is set the string after the last dot.
+        is set to the string after the last dot.
         I.e.,
         the backend path
         ``'.../file.tar.gz'``
