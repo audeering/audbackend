@@ -159,7 +159,7 @@ class Artifactory(Backend):
 
         # to support legacy file structure
         # see _use_legacy_file_structure()
-        self._legacy_extensions = None
+        self._legacy_extensions = []
         self._legacy_file_structure = False
 
     def _access(
