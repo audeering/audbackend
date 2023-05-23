@@ -12,11 +12,11 @@ invented yet :)
 
 This tutorial is divided
 into two parts.
-In the first part,
+Under :ref:`file-system-example`,
 we show the basic usage
 by means of a
 standard file system.
-In the second part,
+Under :ref:`develop-new-backend`,
 we take a deep dive
 and develop a backend
 that stores files into
@@ -33,24 +33,11 @@ a SQLite_ database.
     _tmp_root = audeer.mkdir(os.path.join('docs', 'tmp'))
     os.chdir(_tmp_root)
 
-.. helper functions
-.. jupyter-execute::
-    :hide-code:
 
-    import functools
+.. _file-system-example:
 
-    def add_method(cls):
-        def decorator(func):
-            @functools.wraps(func)
-            def wrapper(self, *args, **kwargs):
-                return func(self, *args, **kwargs)
-            setattr(cls, func.__name__, wrapper)
-            return func
-        return decorator
-
-
-Basics
-------
+File-system example
+-------------------
 
 The heart of
 :mod:`audbackend`
@@ -191,7 +178,7 @@ on the backend.
 
 .. jupyter-execute::
 
-    backend.put_archive('.', '/a/file.zip', '2.0.0', files=[path])
+    backend.put_archive('.', '/a/file.zip', '1.0.0', files=[path])
 
 
 When we get an archive from the backend
@@ -201,7 +188,7 @@ instead of :meth:`audbackend.FileSystem.get_file`.
 
 .. jupyter-execute::
 
-    paths = backend.get_archive('/a/file.zip', '.', '2.0.0')
+    paths = backend.get_archive('/a/file.zip', '.', '1.0.0')
     with open(paths[0], 'r') as fp:
         display(fp.read())
 
@@ -253,7 +240,7 @@ from a backend.
 .. jupyter-execute::
 
     backend.remove_file('/file.txt', '2.0.0')
-    backend.remove_file('/a/file.zip', '2.0.0')
+    backend.remove_file('/a/file.zip', '1.0.0')
     backend.ls('/')
 
 
@@ -280,8 +267,10 @@ exception thrown by the backend.
         display(str(ex.exception))
 
 
-Development
------------
+.. _develop-new-backend:
+
+Develop new backend
+-------------------
 
 In the previous section
 we have used an existing
@@ -342,7 +331,20 @@ functional backend implementation.
 But for the sake of clarity,
 we will dynamically add
 the required methods one after another
-using the ``@add_method()`` decorator.
+using a dedicated decorator:
+
+.. jupyter-execute::
+
+    import functools
+
+    def add_method(cls):
+        def decorator(func):
+            @functools.wraps(func)
+            def wrapper(self, *args, **kwargs):
+                return func(self, *args, **kwargs)
+            setattr(cls, func.__name__, wrapper)
+            return func
+        return decorator
 
 For instance,
 to ensure the connection to the database
