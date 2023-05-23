@@ -76,8 +76,10 @@ def backend(hosts, request):
             if n == 2:
                 error_msg = (
                     f'Cleaning up of repo {repository} failed.\n'
-                    'Please delete remaining repositories manually with:\n'
-                    f"audbackend.delete('{name}', '{host}', '{repository}')"
+                    'Please delete remaining repositories manually \n'
+                    'by running the following command \n'
+                    'when no tests are actively running:\n'
+                    f"python tests/misc/cleanup_artifactory.py"
                 )
                 raise RuntimeError(error_msg)
             time.sleep(1)
