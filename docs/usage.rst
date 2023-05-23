@@ -89,8 +89,15 @@ we provide two arguments:
 
 This will create an empty repository
 (in our case the folder ``'./host/repo/'``).
-To access an existing repository,
+To view all available instances,
 we would do:
+
+.. jupyter-execute::
+
+    audbackend.available()
+
+
+We can access an existing instance with:
 
 .. jupyter-execute::
 
