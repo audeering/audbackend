@@ -629,6 +629,8 @@ we provide a listing method.
 
         with self._db as db:
             if path.endswith('/'):
+                # path is sub-path;
+                # list all files and versions under sub-path
                 query = f'''
                     SELECT path, version
                     FROM data
@@ -637,6 +639,8 @@ we provide a listing method.
                 '''
                 ls = db.execute(query, [path]).fetchall()
             else:
+                # path is file
+                # list all versions of file
                 query = f'''
                     SELECT path, version
                     FROM data
@@ -645,6 +649,7 @@ we provide a listing method.
                 ls = db.execute(query).fetchall()
 
         if not ls and not path == '/':
+            # path has to exists if not root
             raise FileNotFoundError(
                 errno.ENOENT,
                 os.strerror(errno.ENOENT),
