@@ -67,8 +67,13 @@ if we do it again).
     audbackend.register('file-system', audbackend.FileSystem)
 
 
-We create an instance
-and provide two arguments:
+To make sure we can keep track
+of all existing backend instances,
+we use :func:`audbackend.create`
+to instantiate a backend
+instead of calling the class ourselves.
+When creating the instance
+we provide two arguments:
 
 * ``host``: the host address,
   in this case a folder on the local file system.
