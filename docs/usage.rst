@@ -96,7 +96,7 @@ and provide two arguments:
 
 
 This will create an empty repository
-(in our case the folder ``'./<host>/<repo>/'``).
+(in our case the folder ``'./host/repo/'``).
 To access an existing repository,
 we would do:
 
@@ -130,7 +130,7 @@ to the file.
     import tempfile
 
     with tempfile.TemporaryDirectory() as tmp:
-        src_path = os.path.join(tmp, '~')
+        src_path = os.path.join(tmp, 'file.txt')
         with open(src_path, 'w') as fp:
             fp.write('Hello world')
         backend.put_file(src_path, '/file.txt', '1.0.0')
@@ -184,10 +184,10 @@ It is possible to upload
 one or more files
 as an archive.
 Here,
-we compress the file
-we just modified
-and put it under
-the sub-path ``'/a/'``.
+we select the modified file
+and put the archive
+under the sub-path ``'/a/'``
+on the backend.
 
 .. jupyter-execute::
 
@@ -195,7 +195,9 @@ the sub-path ``'/a/'``.
 
 
 When we get an archive from the backend
-we can automatically extract it.
+we can automatically extract it,
+by using :meth:`audbackend.FileSystem.get_archive`
+instead of :meth:`audbackend.FileSystem.get_file`.
 
 .. jupyter-execute::
 
@@ -288,21 +290,39 @@ Now we develop a new backend
 that implements
 a SQLite_ database.
 
+A new backend
+should be implemented as a class
+deriving from
+:class:`audbackend.Backend`.
+As can be seen in the file
+:file:`audbackend/core/backend.py`,
+we need to implement the following private methods:
+
+* ``_access()``
+* ``_checksum()``
+* ``_create()``
+* ``_date()``
+* ``_delete()``
+* ``_exists()``
+* ``_get_file()``
+* ``_ls()``
+* ``_owner()``
+* ``_put_file()``
+* ``_remove_file()``
+
 We call the class ``SQLite``.
-It derives from
-:class:`audbackend.Backend`
-and we add two more variables
+and we add two more attributes
 in the constructor:
 
 * ``_path``: the path of the database,
-  which we create from the host and repository,
+  which we derive from the host and repository,
   namely ``'<host>/<repository>/db'``.
 * ``_db``: connection object to the database.
 
 .. jupyter-execute::
 
     import audbackend
-    import audeer
+    import os
 
     class SQLite(audbackend.Backend):
 
@@ -312,7 +332,7 @@ in the constructor:
                 repository: str,
         ):
             super().__init__(host, repository)
-            self._path = audeer.path(host, repository, 'db')
+            self._path = os.path.join(host, repository, 'db')
             self._db = None
 
 
@@ -321,7 +341,8 @@ this is not yet a fully
 functional backend implementation.
 But for the sake of clarity,
 we will dynamically add
-more methods one after another.
+the required methods one after another
+using the ``@add_method()`` decorator.
 
 For instance,
 to ensure the connection to the database
@@ -486,7 +507,7 @@ Let's put a file on the backend.
 .. jupyter-execute::
 
     with tempfile.TemporaryDirectory() as tmp:
-        src_path = os.path.join(tmp, '~')
+        src_path = os.path.join(tmp, 'file.txt')
         with open(src_path, 'w') as fp:
             fp.write('SQLite rocks!')
         backend.put_file(src_path, '/file.txt', '1.0.0')
@@ -529,8 +550,8 @@ to access its meta information.
                 FROM data
                 WHERE path="{path}" AND version="{version}"
             '''
-            checksum = db.execute(query).fetchone()[0]
-        return checksum
+            date = db.execute(query).fetchone()[0]
+        return date
 
     backend.date('/file.txt', '1.0.0')
 
@@ -548,8 +569,8 @@ to access its meta information.
                 FROM data
                 WHERE path="{path}" AND version="{version}"
             '''
-            checksum = db.execute(query).fetchone()[0]
-        return checksum
+            owner = db.execute(query).fetchone()[0]
+        return owner
 
     backend.owner('/file.txt', '1.0.0')
 
@@ -563,12 +584,12 @@ from the backend.
 
     @add_method(SQLite)
     def _get_file(
-                self,
-                src_path: str,
-                dst_path: str,
-                version: str,
-                verbose: bool,
-        ):
+            self,
+            src_path: str,
+            dst_path: str,
+            version: str,
+            verbose: bool,
+    ):
         with self._db as db:
             query = f'''
                 SELECT content
@@ -661,7 +682,7 @@ requires another method.
             '''
             db.execute(query)
 
-    backend.remove_file('/file.txt', '2.0.0')
+    backend.remove_file('/file.txt', '1.0.0')
     backend.ls('/')
 
 
