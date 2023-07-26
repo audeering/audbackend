@@ -120,6 +120,14 @@ To execute the tests, simply run::
 
     python -m pytest
 
+It might be that the cleanup process
+after or during the tests
+fails.
+To remove leftover files on the Artifactory server
+run::
+
+    python tests/misc/cleanup_artifactory.py
+
 .. _pytest: https://pytest.org
 
 
