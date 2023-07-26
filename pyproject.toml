@@ -11,6 +11,7 @@ readme = 'README.rst'
 license = {file = 'LICENSE'}
 keywords = [
     'artifactory',
+    'filesystem',
 ]
 classifiers = [
     'Development Status :: 5 - Production/Stable',
@@ -28,7 +29,7 @@ classifiers = [
 dependencies = [
     'audeer >=1.20.0',
     'dohq-artifactory >=0.8.1',
-    'pywin32; platform_system=="Windows"'
+    'pywin32; sys_platform == "win32"'
 ]
 # Get version dynamically from git
 # (needs setuptools_scm tools config below)
