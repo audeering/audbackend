@@ -98,6 +98,13 @@ cache-dir = '.cache/ruff'
 '__init__.py' = [
     'F401',  # * imported but unused
 ]
+'audbackend/core/conftest.py' = [
+    'D101',  # Missing docstring in public class
+    'D105',  # Missing docstring in magic method
+]
+'tests/singlefolder.py' = [
+    'D105',  # Missing docstring in magic method
+]
 
 
 # ----- I: isort -----

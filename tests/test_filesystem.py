@@ -1,5 +1,6 @@
-import audeer
 import pytest
+
+import audeer
 
 import audbackend
 

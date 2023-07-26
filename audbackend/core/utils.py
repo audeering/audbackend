@@ -34,7 +34,6 @@ def call_function_on_backend(
 
 def check_path(path: str) -> str:
     r"""Check path."""
-
     # Assert path starts with sep and does not contain invalid characters.
     if not path.startswith(BACKEND_SEPARATOR):
         raise ValueError(
@@ -60,7 +59,6 @@ def check_path(path: str) -> str:
 
 def check_version(version: str) -> str:
     r"""Check version."""
-
     # Assert version is not empty and does not contain invalid characters.
     if not version:
         raise ValueError('Version must not be empty.')
@@ -79,7 +77,6 @@ def date_format(date: datetime.datetime) -> str:
 
 def file_owner(path: str) -> str:
     r"""Get file owner."""
-
     if os.name == 'nt':  # pragma: no cover
 
         import win32security

@@ -6,14 +6,14 @@ import stat
 
 import pytest
 
-import audbackend
 import audeer
+
+import audbackend
 
 
 @pytest.fixture(scope='function', autouse=False)
 def tree(tmpdir, request):
     r"""Create file tree."""
-
     files = request.param
     paths = []
 

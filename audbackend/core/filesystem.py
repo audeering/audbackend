@@ -126,7 +126,6 @@ class FileSystem(Backend):
             path: str,
     ) -> typing.List[typing.Tuple[str, str]]:
         r"""List all files under (sub-)path."""
-
         if path.endswith('/'):  # find files under sub-path
 
             path = self._expand(path)
