@@ -3,12 +3,11 @@ import os
 import time
 
 import pytest
+from singlefolder import SingleFolder
 
 import audeer
 
 import audbackend
-
-from singlefolder import SingleFolder
 
 
 # list of backends that will be tested by default
@@ -43,7 +42,6 @@ def hosts(tmpdir_factory):
 @pytest.fixture(scope='function', autouse=False)
 def owner(request):
     r"""Return expected owner value."""
-
     name = request.param
     if name == 'artifactory':
         owner = 'audeering-unittest'

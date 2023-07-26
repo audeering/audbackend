@@ -4,8 +4,9 @@ import tempfile
 
 import pytest
 
-import audbackend
 import audeer
+
+import audbackend
 
 
 class DoctestFileSystem(audbackend.FileSystem):

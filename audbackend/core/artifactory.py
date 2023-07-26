@@ -16,7 +16,6 @@ def _artifactory_path(
         apikey,
 ) -> artifactory.ArtifactoryPath:
     r"""Authenticate at Artifactory and get path object."""
-
     return artifactory.ArtifactoryPath(
         path,
         auth=(username, apikey),
@@ -25,7 +24,6 @@ def _artifactory_path(
 
 def _authentication(host) -> typing.Tuple[str, str]:
     """Look for username and API key."""
-
     username = os.getenv('ARTIFACTORY_USERNAME', None)
     api_key = os.getenv('ARTIFACTORY_API_KEY', None)
     config_file = os.getenv(
@@ -63,7 +61,6 @@ def _deploy(
         verbose: bool = False,
 ):
     r"""Deploy local file as an artifact."""
-
     if verbose:  # pragma: no cover
         desc = audeer.format_display_message(
             f'Deploy {src_path}',
@@ -90,7 +87,6 @@ def _download(
         verbose=False,
 ):
     r"""Download an artifact."""
-
     src_size = artifactory.ArtifactoryPath.stat(src_path).size
 
     with audeer.progress_bar(total=src_size, disable=not verbose) as pbar:
@@ -272,7 +268,6 @@ class Artifactory(Backend):
             name: str,
     ) -> typing.Tuple[str, str]:
         r"""Split name into basename and extension."""
-
         ext = None
         for custom_ext in self._legacy_extensions:
             # check for custom extension
@@ -296,7 +291,6 @@ class Artifactory(Backend):
             path: str,
     ) -> typing.List[typing.Tuple[str, str]]:
         r"""List all files under (sub-)path."""
-
         if path.endswith('/'):  # find files under sub-path
 
             path = self._expand(path)

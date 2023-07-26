@@ -1,9 +1,9 @@
 import typing
 
+from audbackend.core import utils
 from audbackend.core.artifactory import Artifactory
 from audbackend.core.backend import Backend
 from audbackend.core.filesystem import FileSystem
-from audbackend.core import utils
 
 
 backends = {}
@@ -22,7 +22,6 @@ def _backend(
         repository: str,
 ) -> Backend:
     r"""Get backend instance."""
-
     if name not in backend_registry:
         raise ValueError(
             f"A backend class with name "

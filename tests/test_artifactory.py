@@ -3,8 +3,9 @@ import os
 import dohq_artifactory
 import pytest
 
-import audbackend
 import audeer
+
+import audbackend
 
 
 @pytest.fixture(scope='function', autouse=False)

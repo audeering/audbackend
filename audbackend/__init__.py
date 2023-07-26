@@ -1,10 +1,8 @@
-from audbackend.core.api import (
-    access,
-    available,
-    create,
-    delete,
-    register,
-)
+from audbackend.core.api import access
+from audbackend.core.api import available
+from audbackend.core.api import create
+from audbackend.core.api import delete
+from audbackend.core.api import register
 from audbackend.core.artifactory import Artifactory
 from audbackend.core.backend import Backend
 from audbackend.core.errors import BackendError

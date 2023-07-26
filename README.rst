@@ -20,14 +20,14 @@ Have a look at the installation_ instructions.
 .. |tests| image:: https://github.com/audeering/audbackend/workflows/Test/badge.svg
     :target: https://github.com/audeering/audbackend/actions?query=workflow%3ATest
     :alt: Test status
-.. |coverage| image:: https://codecov.io/gh/audeering/audbackend/branch/master/graph/badge.svg?token=pCTgGG7Sd1
+.. |coverage| image:: https://codecov.io/gh/audeering/audbackend/branch/main/graph/badge.svg?token=pCTgGG7Sd1
     :target: https://codecov.io/gh/audeering/audbackend/
     :alt: code coverage
 .. |docs| image:: https://img.shields.io/pypi/v/audbackend?label=docs
     :target: https://audeering.github.io/audbackend/
     :alt: audbackend's documentation
 .. |license| image:: https://img.shields.io/badge/license-MIT-green.svg
-    :target: https://github.com/audeering/audbackend/blob/master/LICENSE
+    :target: https://github.com/audeering/audbackend/blob/main/LICENSE
     :alt: audbackend's MIT license
 .. |python-versions| image:: https://img.shields.io/pypi/pyversions/audbackend.svg
     :target: https://pypi.org/project/audbackend/
