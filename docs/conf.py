@@ -32,12 +32,13 @@ exclude_patterns = [
 templates_path = ['_templates']
 pygments_style = None
 extensions = [
+    'jupyter_sphinx',
     'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon',  # support for Google-style docstrings
+    'sphinx.ext.napoleon',
     'sphinx.ext.autosummary',
-    'sphinx_autodoc_typehints',
-    'sphinx.ext.viewcode',
     'sphinx.ext.intersphinx',
+    'sphinx.ext.viewcode',
+    'sphinx_autodoc_typehints',
     'sphinx_copybutton',
 ]
 
