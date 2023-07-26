@@ -4,8 +4,9 @@ import typing
 
 import pytest
 
-import audbackend
 import audeer
+
+import audbackend
 
 
 def md5(

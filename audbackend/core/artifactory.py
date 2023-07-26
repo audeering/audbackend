@@ -1,6 +1,7 @@
+import typing
+
 import dohq_artifactory
 import requests
-import typing
 
 import audfactory
 

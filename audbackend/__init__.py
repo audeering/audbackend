@@ -1,7 +1,5 @@
-from audbackend.core.api import (
-    create,
-    register,
-)
+from audbackend.core.api import create
+from audbackend.core.api import register
 from audbackend.core.artifactory import Artifactory
 from audbackend.core.backend import Backend
 from audbackend.core.filesystem import FileSystem

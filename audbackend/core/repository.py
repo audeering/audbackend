@@ -30,7 +30,7 @@ class Repository:
         self.backend = backend
         r"""Repository backend."""
 
-    def __repr__(self):
+    def __repr__(self):  # noqa: D105
         return (
             f"Repository("
             f"'{self.name}', "
