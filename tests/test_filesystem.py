@@ -76,6 +76,8 @@ def test_get_file_interrupt(tmpdir, bad_file_system, backend):
 def test_legacy_file_structure(tmpdir, backend, file, version, extensions,
                                expected):
 
+    expected = expected.replace('/', os.path.sep)
+
     backend._use_legacy_file_structure(extensions=extensions)
 
     src_path = audeer.touch(audeer.path(tmpdir, 'tmp'))
