@@ -26,6 +26,11 @@ class FileSystem(Backend):
 
         self._root = audeer.path(host, repository) + os.sep
 
+        # to support legacy file structure
+        # see _use_legacy_file_structure()
+        self._legacy_extensions = []
+        self._legacy_file_structure = False
+
     def _access(
             self,
     ):
@@ -121,6 +126,29 @@ class FileSystem(Backend):
         src_path = self._path(src_path, version)
         shutil.copy(src_path, dst_path)
 
+    def _legacy_split_ext(
+            self,
+            name: str,
+    ) -> typing.Tuple[str, str]:
+        r"""Split name into basename and extension."""
+        ext = None
+        for custom_ext in self._legacy_extensions:
+            # check for custom extension
+            # ensure basename is not empty
+            if name[1:].endswith(f'.{custom_ext}'):
+                ext = custom_ext
+        if ext is None:
+            # if no custom extension is found
+            # use last string after dot
+            ext = audeer.file_extension(name)
+
+        base = audeer.replace_file_extension(name, '', ext=ext)
+
+        if ext:
+            ext = f'.{ext}'
+
+        return base, ext
+
     def _ls(
             self,
             path: str,
@@ -139,8 +167,14 @@ class FileSystem(Backend):
 
         else:  # find versions of path
 
-            root, _ = self.split(path)
-            root = self._expand(root)
+            root, name = self.split(path)
+
+            if self._legacy_file_structure:
+                base, _ = self._legacy_split_ext(name)
+                root = f'{self._expand(root)}{base}'
+            else:
+                root = self._expand(root)
+
             vs = audeer.list_dir_names(
                 root,
                 basenames=True,
@@ -165,7 +199,15 @@ class FileSystem(Backend):
 
             name = tokens[-1]
             version = tokens[-2]
-            path = self.sep.join(tokens[:-2])
+
+            if self._legacy_file_structure:
+                base = tokens[-3]
+                ext = name[len(base) + len(version) + 1:]
+                name = f'{base}{ext}'
+                path = self.sep.join(tokens[:-3])
+            else:
+                path = self.sep.join(tokens[:-2])
+
             path = self.sep + path
             path = self.join(path, name)
 
@@ -197,7 +239,13 @@ class FileSystem(Backend):
         """
         root, name = self.split(path)
         root = self._expand(root)
-        path = os.path.join(root, version, name)
+
+        if self._legacy_file_structure:
+            base, ext = self._legacy_split_ext(name)
+            path = os.path.join(root, base, version, f'{base}-{version}{ext}')
+        else:
+            path = os.path.join(root, version, name)
+
         return path
 
     def _put_file(
@@ -221,3 +269,43 @@ class FileSystem(Backend):
         r"""Remove file from backend."""
         path = self._path(path, version)
         os.remove(path)
+
+    def _use_legacy_file_structure(
+            self,
+            *,
+            extensions: typing.List[str] = None,
+    ):
+        r"""Use legacy file structure.
+
+        Stores files under
+        ``'.../<name-wo-ext>/<version>/<name-wo-ext>-<version>.<ext>'``
+        instead of
+        ``'.../<version>/<name>'``.
+        By default,
+        the extension
+        ``<ext>``
+        is set to the string after the last dot.
+        I.e.,
+        the backend path
+        ``'.../file.tar.gz'``
+        will translate into
+        ``'.../file.tar/1.0.0/file.tar-1.0.0.gz'``.
+        However,
+        by passing a list with custom extensions
+        it is possible to overwrite
+        the default behavior
+        for certain extensions.
+        E.g.,
+        with
+        ``backend._use_legacy_file_structure(extensions=['tar.gz'])``
+        it is ensured that
+        ``'tar.gz'``
+        will be recognized as an extension
+        and the backend path
+        ``'.../file.tar.gz'``
+        will then translate into
+        ``'.../file/1.0.0/file-1.0.0.tar.gz'``.
+
+        """
+        self._legacy_file_structure = True
+        self._legacy_extensions = extensions or []
