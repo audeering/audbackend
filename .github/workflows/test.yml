@@ -28,12 +28,23 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
+    - name: Update pip
       run: |
         python -V
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+
+    - name: Install packages with file-system backend
+      run: |
+        pip install -e .
         pip install -r tests/requirements.txt
+
+    - name: Test file-system only package
+      run: |
+        python -m pytest tests/test_filesystem.py
+
+    - name: Install package with all dependencies
+      run: |
+        pip install -r requirements.txt
 
     - name: Test with pytest
       env:
