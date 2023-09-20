@@ -1,7 +1,6 @@
 import typing
 
 from audbackend.core import utils
-from audbackend.core.artifactory import Artifactory
 from audbackend.core.backend import Backend
 from audbackend.core.filesystem import FileSystem
 
@@ -9,10 +8,7 @@ from audbackend.core.filesystem import FileSystem
 backends = {}
 r"""Backend cache."""
 
-backend_registry = {
-    'file-system': FileSystem,
-    'artifactory': Artifactory,
-}
+backend_registry = {}
 r"""Backend registry."""
 
 
@@ -230,5 +226,11 @@ def register(
     backend_registry[name] = cls
 
 
-register('artifactory', Artifactory)
 register('file-system', FileSystem)
+
+# Register optional backends
+try:
+    from audbackend.core.artifactory import Artifactory
+    register('artifactory', Artifactory)
+except ImportError:  # pragma: no cover
+    pass
