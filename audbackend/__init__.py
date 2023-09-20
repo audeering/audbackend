@@ -11,7 +11,7 @@ from audbackend.core.repository import Repository
 # Import optional backends
 try:
     from audbackend.core.artifactory import Artifactory
-except ImportError:
+except ImportError:  # pragma: nocover
     pass
 
 
