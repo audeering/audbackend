@@ -40,7 +40,7 @@ jobs:
 
     - name: Test file-system only package
       run: |
-        python -m pytest --cov-append tests/test_filesystem.py
+        python -m pytest --cov-fail-under=10 tests/test_filesystem.py
 
     - name: Install package with all dependencies
       run: |
