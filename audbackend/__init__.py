@@ -10,7 +10,7 @@ from audbackend.core.repository import Repository
 
 # Import optional backends
 try:
-    from audbackend.core.artifactory import Artifactory  # noqa: I001
+    from audbackend.core.artifactory import Artifactory
 except ImportError:
     pass
 
