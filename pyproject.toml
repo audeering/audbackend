@@ -28,12 +28,20 @@ classifiers = [
 ]
 dependencies = [
     'audeer >=1.20.0',
-    'dohq-artifactory >=0.8.1',
     'pywin32; sys_platform == "win32"'
 ]
 # Get version dynamically from git
 # (needs setuptools_scm tools config below)
 dynamic = ['version']
+
+[project.optional-dependencies]
+artifactory = [
+    'dohq-artifactory >=0.8.1',
+]
+all = [
+    'dohq-artifactory >=0.8.1',
+]
+
 
 [project.urls]
 repository = 'https://github.com/audeering/audbackend/'

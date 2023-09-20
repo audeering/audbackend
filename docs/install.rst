@@ -9,3 +9,17 @@ To install :mod:`audbackend` run:
     $ # virtualenv --python=python3 ${HOME}/.envs/audbackend
     $ # source ${HOME}/.envs/audbackend/bin/activate
     $ pip install audbackend
+
+Per default,
+only the file-system backend will be installed.
+To install all backends run:
+
+.. code-block:: bash
+
+    $ pip install audbackend[all]
+
+or select single backends, e.g.
+
+.. code-block:: bash
+
+    $ pip install audbackend[artifactory]
