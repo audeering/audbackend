@@ -40,7 +40,7 @@ jobs:
 
     - name: Test file-system only package
       run: |
-        python -m pytest --cov-fail-under=0 tests/test_filesystem.py
+        python -m pytest --cov-fail-under=0 tests/test_filesystem_only.py tests/test_filesystem.py
 
     - name: Install package with all dependencies
       run: |
