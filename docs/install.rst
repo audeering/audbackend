@@ -10,7 +10,7 @@ To install :mod:`audbackend` run:
     $ # source ${HOME}/.envs/audbackend/bin/activate
     $ pip install audbackend
 
-Per default,
+By default,
 only the :class:`audbackend.FileSystem` backend will be installed.
 To install all backends run:
 
