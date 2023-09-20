@@ -232,5 +232,5 @@ register('file-system', FileSystem)
 try:
     from audbackend.core.artifactory import Artifactory
     register('artifactory', Artifactory)
-except ImportError:  # pragma: nocover
+except ImportError:  # pragma: no cover
     pass
