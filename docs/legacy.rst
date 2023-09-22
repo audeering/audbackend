@@ -23,7 +23,7 @@ in version 1.0.0
 of :mod:`audbackend`.
 
 Before a file ``/sub/file.txt``
-for version ``1.0.0``
+with version ``1.0.0``
 was stored under
 
 .. code-block::
@@ -65,9 +65,7 @@ and check that it is stored as expected.
     import tempfile
 
     with tempfile.TemporaryDirectory() as tmp:
-        src_path = os.path.join(tmp, 'file.txt')
-        with open(src_path, 'w') as fp:
-            fp.write('Hello world')
+        audeer.touch(audeer.path(tmp, 'file.txt'))
         backend.put_archive(tmp, '/file.tar.gz', '1.0.0')
 
     audeer.list_file_names('./host', recursive=True, basenames=True)
