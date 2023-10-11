@@ -22,7 +22,8 @@ and :class:`audbackend.Artifactory`
 in version 1.0.0
 of :mod:`audbackend`.
 
-Before a file ``/sub/file.txt``
+Before,
+a file ``/sub/file.txt``
 with version ``1.0.0``
 was stored under
 
