@@ -31,7 +31,7 @@ was stored under
 
     /sub/file/1.0.0/file-1.0.0.txt
 
-and is now stored under
+Now it is stored under
 
 .. code-block::
 
