@@ -37,13 +37,14 @@ Now it is stored under
 
     /sub/1.0.0/file.txt
 
-If you need to continue
-with the old file structure
-in your application,
-you can configure :mod:`audbackend` accordingly
-by calling the hidden method
+To force the old file structure
+call the hidden method
 ``_use_legacy_file_structure()``
 after instantiating the backend.
+We recommend this 
+for existing repositories
+that store files
+under the old structure.
 If you have to store files
 that contain a dot
 in its file extension,
