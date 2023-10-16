@@ -1,0 +1,6 @@
+﻿access\(\)
+==========
+
+.. currentmodule:: audbackend
+
+.. autofunction:: audbackend.access

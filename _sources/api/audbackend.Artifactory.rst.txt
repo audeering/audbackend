@@ -1,0 +1,76 @@
+﻿Artifactory
+===========
+
+.. currentmodule:: audbackend
+
+.. autoclass:: Artifactory
+
+
+checksum\(\)
+------------
+.. automethod:: Artifactory.checksum
+    
+date\(\)
+--------
+.. automethod:: Artifactory.date
+    
+exists\(\)
+----------
+.. automethod:: Artifactory.exists
+    
+get\_archive\(\)
+----------------
+.. automethod:: Artifactory.get_archive
+    
+get\_file\(\)
+-------------
+.. automethod:: Artifactory.get_file
+    
+host
+----
+.. autoattribute:: Artifactory.host
+    
+join\(\)
+--------
+.. automethod:: Artifactory.join
+    
+latest\_version\(\)
+-------------------
+.. automethod:: Artifactory.latest_version
+    
+ls\(\)
+------
+.. automethod:: Artifactory.ls
+    
+owner\(\)
+---------
+.. automethod:: Artifactory.owner
+    
+put\_archive\(\)
+----------------
+.. automethod:: Artifactory.put_archive
+    
+put\_file\(\)
+-------------
+.. automethod:: Artifactory.put_file
+    
+remove\_file\(\)
+----------------
+.. automethod:: Artifactory.remove_file
+    
+repository
+----------
+.. autoattribute:: Artifactory.repository
+    
+sep
+---
+.. autoattribute:: Artifactory.sep
+    
+split\(\)
+---------
+.. automethod:: Artifactory.split
+    
+versions\(\)
+------------
+.. automethod:: Artifactory.versions
+    

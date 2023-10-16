@@ -1,0 +1,6 @@
+﻿create\(\)
+==========
+
+.. currentmodule:: audbackend
+
+.. autofunction:: audbackend.create

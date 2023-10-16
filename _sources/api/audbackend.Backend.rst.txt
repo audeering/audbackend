@@ -1,0 +1,76 @@
+﻿Backend
+=======
+
+.. currentmodule:: audbackend
+
+.. autoclass:: Backend
+
+
+checksum\(\)
+------------
+.. automethod:: Backend.checksum
+    
+date\(\)
+--------
+.. automethod:: Backend.date
+    
+exists\(\)
+----------
+.. automethod:: Backend.exists
+    
+get\_archive\(\)
+----------------
+.. automethod:: Backend.get_archive
+    
+get\_file\(\)
+-------------
+.. automethod:: Backend.get_file
+    
+host
+----
+.. autoattribute:: Backend.host
+    
+join\(\)
+--------
+.. automethod:: Backend.join
+    
+latest\_version\(\)
+-------------------
+.. automethod:: Backend.latest_version
+    
+ls\(\)
+------
+.. automethod:: Backend.ls
+    
+owner\(\)
+---------
+.. automethod:: Backend.owner
+    
+put\_archive\(\)
+----------------
+.. automethod:: Backend.put_archive
+    
+put\_file\(\)
+-------------
+.. automethod:: Backend.put_file
+    
+remove\_file\(\)
+----------------
+.. automethod:: Backend.remove_file
+    
+repository
+----------
+.. autoattribute:: Backend.repository
+    
+sep
+---
+.. autoattribute:: Backend.sep
+    
+split\(\)
+---------
+.. automethod:: Backend.split
+    
+versions\(\)
+------------
+.. automethod:: Backend.versions
+    

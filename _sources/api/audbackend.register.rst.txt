@@ -1,0 +1,6 @@
+﻿register\(\)
+============
+
+.. currentmodule:: audbackend
+
+.. autofunction:: audbackend.register

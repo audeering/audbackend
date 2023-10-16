@@ -1,0 +1,76 @@
+﻿FileSystem
+==========
+
+.. currentmodule:: audbackend
+
+.. autoclass:: FileSystem
+
+
+checksum\(\)
+------------
+.. automethod:: FileSystem.checksum
+    
+date\(\)
+--------
+.. automethod:: FileSystem.date
+    
+exists\(\)
+----------
+.. automethod:: FileSystem.exists
+    
+get\_archive\(\)
+----------------
+.. automethod:: FileSystem.get_archive
+    
+get\_file\(\)
+-------------
+.. automethod:: FileSystem.get_file
+    
+host
+----
+.. autoattribute:: FileSystem.host
+    
+join\(\)
+--------
+.. automethod:: FileSystem.join
+    
+latest\_version\(\)
+-------------------
+.. automethod:: FileSystem.latest_version
+    
+ls\(\)
+------
+.. automethod:: FileSystem.ls
+    
+owner\(\)
+---------
+.. automethod:: FileSystem.owner
+    
+put\_archive\(\)
+----------------
+.. automethod:: FileSystem.put_archive
+    
+put\_file\(\)
+-------------
+.. automethod:: FileSystem.put_file
+    
+remove\_file\(\)
+----------------
+.. automethod:: FileSystem.remove_file
+    
+repository
+----------
+.. autoattribute:: FileSystem.repository
+    
+sep
+---
+.. autoattribute:: FileSystem.sep
+    
+split\(\)
+---------
+.. automethod:: FileSystem.split
+    
+versions\(\)
+------------
+.. automethod:: FileSystem.versions
+    

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; audbackend Documentation</title>
+  <title>Index &mdash; Documentation</title>
   
 
   
@@ -28,6 +28,8 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/audeering.css" type="text/css" />
+  <link rel="stylesheet" href="_static/jupyter-sphinx.css" type="text/css" />
+  <link rel="stylesheet" href="_static/thebelab.css" type="text/css" />
   <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" />
@@ -63,7 +65,7 @@
             
             
               <div class="version">
-                0.3.18
+                1.0.0
               </div>
             
           
@@ -90,11 +92,12 @@
               <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="authentication.html">Authentication</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="legacy.html">Legacy backends</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="api.html">audbackend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/audbackend.html">audbackend</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Index</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Development</span></p>
@@ -144,6 +147,7 @@
  <a href="#A"><strong>A</strong></a>
  | <a href="#B"><strong>B</strong></a>
  | <a href="#C"><strong>C</strong></a>
+ | <a href="#D"><strong>D</strong></a>
  | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
@@ -152,6 +156,7 @@
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
@@ -161,7 +166,9 @@
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#audbackend.Artifactory">Artifactory (class in audbackend)</a>
+      <li><a href="api/audbackend.access.html#audbackend.access">access() (in module audbackend)</a>
+</li>
+      <li><a href="api/audbackend.Artifactory.html#audbackend.Artifactory">Artifactory (class in audbackend)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -169,20 +176,24 @@
     audbackend
 
       <ul>
-        <li><a href="api.html#module-audbackend">module</a>
+        <li><a href="api/audbackend.html#module-audbackend">module</a>
 </li>
       </ul></li>
+      <li><a href="api/audbackend.available.html#audbackend.available">available() (in module audbackend)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#audbackend.Repository.backend">backend (audbackend.Repository attribute)</a>
+      <li><a href="api/audbackend.Repository.html#audbackend.Repository.backend">backend (audbackend.Repository attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#audbackend.Backend">Backend (class in audbackend)</a>
+      <li><a href="api/audbackend.Backend.html#audbackend.Backend">Backend (class in audbackend)</a>
+</li>
+      <li><a href="api/audbackend.BackendError.html#audbackend.BackendError">BackendError</a>
 </li>
   </ul></td>
 </tr></table>
@@ -190,11 +201,35 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#audbackend.Backend.checksum">checksum() (audbackend.Backend method)</a>
+      <li><a href="api/audbackend.Artifactory.html#audbackend.Artifactory.checksum">checksum() (audbackend.Artifactory method)</a>
+
+      <ul>
+        <li><a href="api/audbackend.Backend.html#audbackend.Backend.checksum">(audbackend.Backend method)</a>
 </li>
+        <li><a href="api/audbackend.FileSystem.html#audbackend.FileSystem.checksum">(audbackend.FileSystem method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#audbackend.create">create() (in module audbackend)</a>
+      <li><a href="api/audbackend.create.html#audbackend.create">create() (in module audbackend)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="D">D</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/audbackend.Artifactory.html#audbackend.Artifactory.date">date() (audbackend.Artifactory method)</a>
+
+      <ul>
+        <li><a href="api/audbackend.Backend.html#audbackend.Backend.date">(audbackend.Backend method)</a>
+</li>
+        <li><a href="api/audbackend.FileSystem.html#audbackend.FileSystem.date">(audbackend.FileSystem method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/audbackend.delete.html#audbackend.delete">delete() (in module audbackend)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -202,15 +237,21 @@
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#audbackend.Backend.exists">exists() (audbackend.Backend method)</a>
+      <li><a href="api/audbackend.Artifactory.html#audbackend.Artifactory.exists">exists() (audbackend.Artifactory method)</a>
+
+      <ul>
+        <li><a href="api/audbackend.Backend.html#audbackend.Backend.exists">(audbackend.Backend method)</a>
 </li>
+        <li><a href="api/audbackend.FileSystem.html#audbackend.FileSystem.exists">(audbackend.FileSystem method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#audbackend.FileSystem">FileSystem (class in audbackend)</a>
+      <li><a href="api/audbackend.FileSystem.html#audbackend.FileSystem">FileSystem (class in audbackend)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -218,24 +259,38 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#audbackend.Backend.get_archive">get_archive() (audbackend.Backend method)</a>
+      <li><a href="api/audbackend.Artifactory.html#audbackend.Artifactory.get_archive">get_archive() (audbackend.Artifactory method)</a>
+
+      <ul>
+        <li><a href="api/audbackend.Backend.html#audbackend.Backend.get_archive">(audbackend.Backend method)</a>
 </li>
+        <li><a href="api/audbackend.FileSystem.html#audbackend.FileSystem.get_archive">(audbackend.FileSystem method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#audbackend.Backend.get_file">get_file() (audbackend.Backend method)</a>
+      <li><a href="api/audbackend.Artifactory.html#audbackend.Artifactory.get_file">get_file() (audbackend.Artifactory method)</a>
+
+      <ul>
+        <li><a href="api/audbackend.Backend.html#audbackend.Backend.get_file">(audbackend.Backend method)</a>
 </li>
-      <li><a href="api.html#audbackend.Backend.glob">glob() (audbackend.Backend method)</a>
+        <li><a href="api/audbackend.FileSystem.html#audbackend.FileSystem.get_file">(audbackend.FileSystem method)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="H">H</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#audbackend.Backend.host">host (audbackend.Backend attribute)</a>
+      <li><a href="api/audbackend.Artifactory.html#audbackend.Artifactory.host">host (audbackend.Artifactory attribute)</a>
 
       <ul>
-        <li><a href="api.html#audbackend.Repository.host">(audbackend.Repository attribute)</a>
+        <li><a href="api/audbackend.Backend.html#audbackend.Backend.host">(audbackend.Backend attribute)</a>
+</li>
+        <li><a href="api/audbackend.FileSystem.html#audbackend.FileSystem.host">(audbackend.FileSystem attribute)</a>
+</li>
+        <li><a href="api/audbackend.Repository.html#audbackend.Repository.host">(audbackend.Repository attribute)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -244,35 +299,49 @@
 <h2 id="J">J</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#audbackend.Backend.join">join() (audbackend.Backend method)</a>
+      <li><a href="api/audbackend.Artifactory.html#audbackend.Artifactory.join">join() (audbackend.Artifactory method)</a>
+
+      <ul>
+        <li><a href="api/audbackend.Backend.html#audbackend.Backend.join">(audbackend.Backend method)</a>
 </li>
+        <li><a href="api/audbackend.FileSystem.html#audbackend.FileSystem.join">(audbackend.FileSystem method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#audbackend.Backend.latest_version">latest_version() (audbackend.Backend method)</a>
+      <li><a href="api/audbackend.Artifactory.html#audbackend.Artifactory.latest_version">latest_version() (audbackend.Artifactory method)</a>
+
+      <ul>
+        <li><a href="api/audbackend.Backend.html#audbackend.Backend.latest_version">(audbackend.Backend method)</a>
 </li>
+        <li><a href="api/audbackend.FileSystem.html#audbackend.FileSystem.latest_version">(audbackend.FileSystem method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#audbackend.Backend.ls">ls() (audbackend.Backend method)</a>
+      <li><a href="api/audbackend.Artifactory.html#audbackend.Artifactory.ls">ls() (audbackend.Artifactory method)</a>
+
+      <ul>
+        <li><a href="api/audbackend.Backend.html#audbackend.Backend.ls">(audbackend.Backend method)</a>
 </li>
+        <li><a href="api/audbackend.FileSystem.html#audbackend.FileSystem.ls">(audbackend.FileSystem method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#audbackend.md5">md5() (in module audbackend)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     module
 
       <ul>
-        <li><a href="api.html#module-audbackend">audbackend</a>
+        <li><a href="api/audbackend.html#module-audbackend">audbackend</a>
 </li>
       </ul></li>
   </ul></td>
@@ -281,37 +350,73 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#audbackend.Repository.name">name (audbackend.Repository attribute)</a>
+      <li><a href="api/audbackend.Repository.html#audbackend.Repository.name">name (audbackend.Repository attribute)</a>
 </li>
+  </ul></td>
+</tr></table>
+
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/audbackend.Artifactory.html#audbackend.Artifactory.owner">owner() (audbackend.Artifactory method)</a>
+
+      <ul>
+        <li><a href="api/audbackend.Backend.html#audbackend.Backend.owner">(audbackend.Backend method)</a>
+</li>
+        <li><a href="api/audbackend.FileSystem.html#audbackend.FileSystem.owner">(audbackend.FileSystem method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#audbackend.Backend.path">path() (audbackend.Backend method)</a>
+      <li><a href="api/audbackend.Artifactory.html#audbackend.Artifactory.put_archive">put_archive() (audbackend.Artifactory method)</a>
+
+      <ul>
+        <li><a href="api/audbackend.Backend.html#audbackend.Backend.put_archive">(audbackend.Backend method)</a>
 </li>
+        <li><a href="api/audbackend.FileSystem.html#audbackend.FileSystem.put_archive">(audbackend.FileSystem method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#audbackend.Backend.put_archive">put_archive() (audbackend.Backend method)</a>
+      <li><a href="api/audbackend.Artifactory.html#audbackend.Artifactory.put_file">put_file() (audbackend.Artifactory method)</a>
+
+      <ul>
+        <li><a href="api/audbackend.Backend.html#audbackend.Backend.put_file">(audbackend.Backend method)</a>
 </li>
-      <li><a href="api.html#audbackend.Backend.put_file">put_file() (audbackend.Backend method)</a>
+        <li><a href="api/audbackend.FileSystem.html#audbackend.FileSystem.put_file">(audbackend.FileSystem method)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#audbackend.register">register() (in module audbackend)</a>
+      <li><a href="api/audbackend.register.html#audbackend.register">register() (in module audbackend)</a>
 </li>
-      <li><a href="api.html#audbackend.Backend.remove_file">remove_file() (audbackend.Backend method)</a>
+      <li><a href="api/audbackend.Artifactory.html#audbackend.Artifactory.remove_file">remove_file() (audbackend.Artifactory method)</a>
+
+      <ul>
+        <li><a href="api/audbackend.Backend.html#audbackend.Backend.remove_file">(audbackend.Backend method)</a>
 </li>
+        <li><a href="api/audbackend.FileSystem.html#audbackend.FileSystem.remove_file">(audbackend.FileSystem method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#audbackend.Backend.repository">repository (audbackend.Backend attribute)</a>
+      <li><a href="api/audbackend.Artifactory.html#audbackend.Artifactory.repository">repository (audbackend.Artifactory attribute)</a>
+
+      <ul>
+        <li><a href="api/audbackend.Backend.html#audbackend.Backend.repository">(audbackend.Backend attribute)</a>
 </li>
-      <li><a href="api.html#audbackend.Repository">Repository (class in audbackend)</a>
+        <li><a href="api/audbackend.FileSystem.html#audbackend.FileSystem.repository">(audbackend.FileSystem attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="api/audbackend.Repository.html#audbackend.Repository">Repository (class in audbackend)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -319,20 +424,38 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#audbackend.Backend.sep">sep (audbackend.Backend property)</a>
+      <li><a href="api/audbackend.Artifactory.html#audbackend.Artifactory.sep">sep (audbackend.Artifactory attribute)</a>
+
+      <ul>
+        <li><a href="api/audbackend.Backend.html#audbackend.Backend.sep">(audbackend.Backend attribute)</a>
 </li>
+        <li><a href="api/audbackend.FileSystem.html#audbackend.FileSystem.sep">(audbackend.FileSystem attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#audbackend.Backend.split">split() (audbackend.Backend method)</a>
+      <li><a href="api/audbackend.Artifactory.html#audbackend.Artifactory.split">split() (audbackend.Artifactory method)</a>
+
+      <ul>
+        <li><a href="api/audbackend.Backend.html#audbackend.Backend.split">(audbackend.Backend method)</a>
 </li>
+        <li><a href="api/audbackend.FileSystem.html#audbackend.FileSystem.split">(audbackend.FileSystem method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#audbackend.Backend.versions">versions() (audbackend.Backend method)</a>
+      <li><a href="api/audbackend.Artifactory.html#audbackend.Artifactory.versions">versions() (audbackend.Artifactory method)</a>
+
+      <ul>
+        <li><a href="api/audbackend.Backend.html#audbackend.Backend.versions">(audbackend.Backend method)</a>
 </li>
+        <li><a href="api/audbackend.FileSystem.html#audbackend.FileSystem.versions">(audbackend.FileSystem method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -351,7 +474,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2023/02/17 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2023/10/16 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -389,8 +512,11 @@
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/thebelab-helper.js"></script>
         <script src="_static/clipboard.min.js"></script>
         <script src="_static/copybutton.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
     
 
   

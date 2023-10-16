@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>audbackend.core.backend &mdash; audbackend Documentation</title>
+  <title>audbackend.core.backend &mdash; Documentation</title>
   
 
   
@@ -28,6 +28,8 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/audeering.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/jupyter-sphinx.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/thebelab.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
@@ -63,7 +65,7 @@
             
             
               <div class="version">
-                0.3.18
+                1.0.0
               </div>
             
           
@@ -90,11 +92,12 @@
               <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../authentication.html">Authentication</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../legacy.html">Legacy backends</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../api.html">audbackend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/audbackend.html">audbackend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../genindex.html">Index</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Development</span></p>
@@ -138,7 +141,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for audbackend.core.backend</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">errno</span>
+<span></span><span class="kn">import</span> <span class="nn">fnmatch</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">import</span> <span class="nn">typing</span>
@@ -148,7 +151,7 @@
 <span class="kn">from</span> <span class="nn">audbackend.core</span> <span class="kn">import</span> <span class="n">utils</span>
 
 
-<div class="viewcode-block" id="Backend"><a class="viewcode-back" href="../../../api.html#audbackend.Backend">[docs]</a><span class="k">class</span> <span class="nc">Backend</span><span class="p">:</span>
+<div class="viewcode-block" id="Backend"><a class="viewcode-back" href="../../../api/audbackend.Backend.html#audbackend.Backend">[docs]</a><span class="k">class</span> <span class="nc">Backend</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Abstract backend.</span>
 
 <span class="sd">    A backend stores files and archives.</span>
@@ -168,72 +171,185 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">repository</span> <span class="o">=</span> <span class="n">repository</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Repository name.&quot;&quot;&quot;</span>
 
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>  <span class="c1"># noqa: D105</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__module__</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_access</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+    <span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Access existing repository.</span>
+
+<span class="sd">        * If repository does not exist an error should be raised</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
     <span class="k">def</span> <span class="nf">_checksum</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;MD5 checksum of file on backend.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Backend.checksum"><a class="viewcode-back" href="../../../api.html#audbackend.Backend.checksum">[docs]</a>    <span class="k">def</span> <span class="nf">checksum</span><span class="p">(</span>
+<div class="viewcode-block" id="Backend.checksum"><a class="viewcode-back" href="../../../api/audbackend.Backend.html#audbackend.Backend.checksum">[docs]</a>    <span class="k">def</span> <span class="nf">checksum</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-            <span class="o">*</span><span class="p">,</span>
-            <span class="n">ext</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get MD5 checksum for file on backend.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            path: path to file on backend</span>
 <span class="sd">            version: version string</span>
-<span class="sd">            ext: file extension, if ``None`` uses characters after last dot</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            MD5 checksum</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            FileNotFoundError: if file does not exist on backend</span>
+<span class="sd">            BackendError: if an error is raised on the backend,</span>
+<span class="sd">                e.g. ``path`` does not exist</span>
+<span class="sd">            ValueError: if ``path`` does not start with ``&#39;/&#39;`` or</span>
+<span class="sd">                does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            ValueError: if ``version`` is empty or</span>
+<span class="sd">                does not match ``&#39;[A-Za-z0-9._-]+&#39;``</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; backend.checksum(&#39;/f.ext&#39;, &#39;1.0.0&#39;)</span>
+<span class="sd">            &#39;d41d8cd98f00b204e9800998ecf8427e&#39;</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">backend_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="n">ext</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_version</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exists</span><span class="p">(</span><span class="n">backend_path</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
-                <span class="n">errno</span><span class="o">.</span><span class="n">ENOENT</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="o">.</span><span class="n">ENOENT</span><span class="p">),</span> <span class="n">path</span><span class="p">,</span>
-            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">utils</span><span class="o">.</span><span class="n">call_function_on_backend</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_checksum</span><span class="p">,</span>
+            <span class="n">path</span><span class="p">,</span>
+            <span class="n">version</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checksum</span><span class="p">(</span><span class="n">backend_path</span><span class="p">)</span></div>
+    <span class="k">def</span> <span class="nf">_create</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+    <span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Create a new repository.</span>
+
+<span class="sd">        * If repository exists already an error should be raised</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_date</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get date of file on backend.</span>
+
+<span class="sd">        * Return empty string if date cannot be determined</span>
+<span class="sd">        * Format should be &#39;%Y-%m-%d&#39;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Backend.date"><a class="viewcode-back" href="../../../api/audbackend.Backend.html#audbackend.Backend.date">[docs]</a>    <span class="k">def</span> <span class="nf">date</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get last modification date of file on backend.</span>
+
+<span class="sd">        If the date cannot be determined,</span>
+<span class="sd">        an empty string is returned.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: path to file on backend</span>
+<span class="sd">            version: version string</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            date in format ``&#39;yyyy-mm-dd&#39;``</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            BackendError: if an error is raised on the backend,</span>
+<span class="sd">                e.g. ``path`` does not exist</span>
+<span class="sd">            ValueError: if ``path`` does not start with ``&#39;/&#39;`` or</span>
+<span class="sd">                does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            ValueError: if ``version`` is empty or</span>
+<span class="sd">                does not match ``&#39;[A-Za-z0-9._-]+&#39;``</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">              &gt;&gt;&gt; backend.date(&#39;/f.ext&#39;, &#39;1.0.0&#39;)</span>
+<span class="sd">              &#39;1991-02-20&#39;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_version</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">utils</span><span class="o">.</span><span class="n">call_function_on_backend</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_date</span><span class="p">,</span>
+            <span class="n">path</span><span class="p">,</span>
+            <span class="n">version</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_delete</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+    <span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Delete repository and all its content.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_exists</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Check if file exists on backend.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Backend.exists"><a class="viewcode-back" href="../../../api.html#audbackend.Backend.exists">[docs]</a>    <span class="k">def</span> <span class="nf">exists</span><span class="p">(</span>
+<div class="viewcode-block" id="Backend.exists"><a class="viewcode-back" href="../../../api/audbackend.Backend.html#audbackend.Backend.exists">[docs]</a>    <span class="k">def</span> <span class="nf">exists</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="o">*</span><span class="p">,</span>
-            <span class="n">ext</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">suppress_backend_errors</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Check if file exists on backend.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            path: path to file on backend</span>
 <span class="sd">            version: version string</span>
-<span class="sd">            ext: file extension, if ``None`` uses characters after last dot</span>
+<span class="sd">            suppress_backend_errors: if set to ``True``,</span>
+<span class="sd">                silently catch errors raised on the backend</span>
+<span class="sd">                and return ``False``</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            ``True`` if file exists</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="n">ext</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exists</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+<span class="sd">        Raises:</span>
+<span class="sd">            BackendError: if ``suppress_backend_errors`` is ``False``</span>
+<span class="sd">                and an error is raised on the backend,</span>
+<span class="sd">                e.g. ``path`` does not exist</span>
+<span class="sd">            ValueError: if ``path`` does not start with ``&#39;/&#39;`` or</span>
+<span class="sd">                does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            ValueError: if ``version`` is empty or</span>
+<span class="sd">                does not match ``&#39;[A-Za-z0-9._-]+&#39;``</span>
 
-<div class="viewcode-block" id="Backend.get_archive"><a class="viewcode-back" href="../../../api.html#audbackend.Backend.get_archive">[docs]</a>    <span class="k">def</span> <span class="nf">get_archive</span><span class="p">(</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; backend.exists(&#39;/f.ext&#39;, &#39;1.0.0&#39;)</span>
+<span class="sd">            True</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_version</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">utils</span><span class="o">.</span><span class="n">call_function_on_backend</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_exists</span><span class="p">,</span>
+            <span class="n">path</span><span class="p">,</span>
+            <span class="n">version</span><span class="p">,</span>
+            <span class="n">suppress_backend_errors</span><span class="o">=</span><span class="n">suppress_backend_errors</span><span class="p">,</span>
+            <span class="n">fallback_return_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Backend.get_archive"><a class="viewcode-back" href="../../../api/audbackend.Backend.html#audbackend.Backend.get_archive">[docs]</a>    <span class="k">def</span> <span class="nf">get_archive</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">dst_root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -244,9 +360,14 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get archive from backend and extract.</span>
 
+<span class="sd">        The archive type is derived from the extension of ``src_path``.</span>
+<span class="sd">        See :func:`audeer.extract_archive` for supported extensions.</span>
+
+<span class="sd">        If ``dst_root`` does not exist,</span>
+<span class="sd">        it is created.</span>
+
 <span class="sd">        Args:</span>
-<span class="sd">            src_path: path to archive on backend without extension,</span>
-<span class="sd">                e.g. ``media/archive1``</span>
+<span class="sd">            src_path: path to archive on backend</span>
 <span class="sd">            dst_root: local destination directory</span>
 <span class="sd">            version: version string</span>
 <span class="sd">            tmp_root: directory under which archive is temporarily extracted.</span>
@@ -257,23 +378,41 @@
 <span class="sd">            extracted files</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            FileNotFoundError: if archive does not exist on backend</span>
+<span class="sd">            BackendError: if an error is raised on the backend,</span>
+<span class="sd">                e.g. ``src_path`` does not exist</span>
 <span class="sd">            FileNotFoundError: if ``tmp_root`` does not exist</span>
+<span class="sd">            NotADirectoryError: if ``dst_root`` is not a directory</span>
+<span class="sd">            PermissionError: if the user lacks write permissions</span>
+<span class="sd">                for ``dst_path``</span>
+<span class="sd">            RuntimeError: if extension of ``src_path`` is not supported</span>
+<span class="sd">                or ``src_path`` is a malformed archive</span>
+<span class="sd">            ValueError: if ``src_path`` does not start with ``&#39;/&#39;`` or</span>
+<span class="sd">                does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            ValueError: if ``version`` is empty or</span>
+<span class="sd">                does not match ``&#39;[A-Za-z0-9._-]+&#39;``</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; backend.get_archive(&#39;/a.zip&#39;, &#39;.&#39;, &#39;1.0.0&#39;)</span>
+<span class="sd">            [&#39;src.pth&#39;]</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">src_path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_path</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_version</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
+
         <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">tmp_root</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
+
             <span class="n">tmp_root</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">dst_root</span><span class="p">))</span>
-            <span class="n">remote_archive</span> <span class="o">=</span> <span class="n">src_path</span> <span class="o">+</span> <span class="s1">&#39;.zip&#39;</span>
             <span class="n">local_archive</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
                 <span class="n">tmp_root</span><span class="p">,</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">remote_archive</span><span class="p">),</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">src_path</span><span class="p">),</span>
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span>
-                <span class="n">remote_archive</span><span class="p">,</span>
+                <span class="n">src_path</span><span class="p">,</span>
                 <span class="n">local_archive</span><span class="p">,</span>
                 <span class="n">version</span><span class="p">,</span>
                 <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
             <span class="p">)</span>
+
             <span class="k">return</span> <span class="n">audeer</span><span class="o">.</span><span class="n">extract_archive</span><span class="p">(</span>
                 <span class="n">local_archive</span><span class="p">,</span>
                 <span class="n">dst_root</span><span class="p">,</span>
@@ -284,76 +423,101 @@
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="p">):</span>  <span class="c1"># pragma: no cover</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get file from backend.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Backend.get_file"><a class="viewcode-back" href="../../../api.html#audbackend.Backend.get_file">[docs]</a>    <span class="k">def</span> <span class="nf">get_file</span><span class="p">(</span>
+<div class="viewcode-block" id="Backend.get_file"><a class="viewcode-back" href="../../../api/audbackend.Backend.html#audbackend.Backend.get_file">[docs]</a>    <span class="k">def</span> <span class="nf">get_file</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="o">*</span><span class="p">,</span>
-            <span class="n">ext</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="p">):</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get file from backend.</span>
+
+<span class="sd">        If the folder of</span>
+<span class="sd">        ``dst_path`` does not exist,</span>
+<span class="sd">        it is created.</span>
+
+<span class="sd">        If ``dst_path`` exists</span>
+<span class="sd">        with a different checksum,</span>
+<span class="sd">        it is overwritten,</span>
+<span class="sd">        or otherwise,</span>
+<span class="sd">        the operation is silently skipped.</span>
+
+<span class="sd">        To ensure the file is completely retrieved,</span>
+<span class="sd">        it is first stored in a temporary directory</span>
+<span class="sd">        and afterwards moved to ``dst_path``.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            src_path: path to file on backend</span>
 <span class="sd">            dst_path: destination path to local file</span>
 <span class="sd">            version: version string</span>
-<span class="sd">            ext: file extension, if ``None`` uses characters after last dot</span>
 <span class="sd">            verbose: show debug messages</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            full path to local file</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            FileNotFoundError: if file does not exist on backend</span>
+<span class="sd">            BackendError: if an error is raised on the backend,</span>
+<span class="sd">                e.g. ``src_path`` does not exist</span>
+<span class="sd">            IsADirectoryError: if ``dst_path`` points to an existing folder</span>
+<span class="sd">            PermissionError: if the user lacks write permissions</span>
+<span class="sd">                for ``dst_path``</span>
+<span class="sd">            ValueError: if ``src_path`` does not start with ``&#39;/&#39;`` or</span>
+<span class="sd">                does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            ValueError: if ``version`` is empty or</span>
+<span class="sd">                does not match ``&#39;[A-Za-z0-9._-]+&#39;``</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; os.path.exists(&#39;dst.pth&#39;)</span>
+<span class="sd">            False</span>
+<span class="sd">            &gt;&gt;&gt; _ = backend.get_file(&#39;/f.ext&#39;, &#39;dst.pth&#39;, &#39;1.0.0&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; os.path.exists(&#39;dst.pth&#39;)</span>
+<span class="sd">            True</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">src_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="n">ext</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exists</span><span class="p">(</span><span class="n">src_path</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
-                <span class="n">errno</span><span class="o">.</span><span class="n">ENOENT</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="o">.</span><span class="n">ENOENT</span><span class="p">),</span> <span class="n">src_path</span><span class="p">,</span>
-            <span class="p">)</span>
+        <span class="n">src_path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_path</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_version</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
 
-        <span class="n">dst_path</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">safe_path</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span>
-        <span class="n">audeer</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">dst_path</span><span class="p">))</span>
+        <span class="n">dst_path</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">dst_path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">raise_is_a_directory</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_get_file</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span></div>
+        <span class="n">dst_root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span>
+        <span class="n">audeer</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">dst_root</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_glob</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-            <span class="n">folder</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>  <span class="c1"># pragma: no cover</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return matching files names.&quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">dst_root</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">W_OK</span><span class="p">)</span> <span class="ow">or</span>
+            <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">dst_path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">W_OK</span><span class="p">))</span>
+        <span class="p">):</span>  <span class="c1"># pragma: no Windows cover</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Permission denied: &#39;</span><span class="si">{</span><span class="n">dst_path</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+            <span class="k">raise</span> <span class="ne">PermissionError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Backend.glob"><a class="viewcode-back" href="../../../api.html#audbackend.Backend.glob">[docs]</a>    <span class="k">def</span> <span class="nf">glob</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-            <span class="o">*</span><span class="p">,</span>
-            <span class="n">folder</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Return matching files names.</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="n">audeer</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">checksum</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="c1"># get file to a temporary directory first,</span>
+            <span class="c1"># only on success move to final destination</span>
+            <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">dst_root</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
+                <span class="n">tmp_path</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="s1">&#39;~&#39;</span><span class="p">)</span>
+                <span class="n">utils</span><span class="o">.</span><span class="n">call_function_on_backend</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_get_file</span><span class="p">,</span>
+                    <span class="n">src_path</span><span class="p">,</span>
+                    <span class="n">tmp_path</span><span class="p">,</span>
+                    <span class="n">version</span><span class="p">,</span>
+                    <span class="n">verbose</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">audeer</span><span class="o">.</span><span class="n">move_file</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">)</span>
 
-<span class="sd">        Use ``&#39;**&#39;`` to scan into sub-directories.</span>
+        <span class="k">return</span> <span class="n">dst_path</span></div>
 
-<span class="sd">        Args:</span>
-<span class="sd">            pattern: pattern string</span>
-<span class="sd">            folder: search under this folder</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            matching files on backend</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_glob</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">folder</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="Backend.join"><a class="viewcode-back" href="../../../api.html#audbackend.Backend.join">[docs]</a>    <span class="k">def</span> <span class="nf">join</span><span class="p">(</span>
+<div class="viewcode-block" id="Backend.join"><a class="viewcode-back" href="../../../api/audbackend.Backend.html#audbackend.Backend.join">[docs]</a>    <span class="k">def</span> <span class="nf">join</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="o">*</span><span class="n">paths</span><span class="p">,</span>
@@ -367,143 +531,226 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            path joined by :attr:`Backend.sep`</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">path</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">]</span>
-        <span class="c1"># skip part if &#39;&#39; or None</span>
-        <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">path</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span> <span class="k">if</span> <span class="n">path</span><span class="p">]</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span></div>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: if ``path`` contains invalid character</span>
+<span class="sd">                or does not start with ``&#39;/&#39;``,</span>
+<span class="sd">                or if joined path contains invalid character</span>
 
-<div class="viewcode-block" id="Backend.latest_version"><a class="viewcode-back" href="../../../api.html#audbackend.Backend.latest_version">[docs]</a>    <span class="k">def</span> <span class="nf">latest_version</span><span class="p">(</span>
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; backend.join(&#39;/&#39;, &#39;f.ext&#39;)</span>
+<span class="sd">            &#39;/f.ext&#39;</span>
+<span class="sd">            &gt;&gt;&gt; backend.join(&#39;/sub&#39;, &#39;f.ext&#39;)</span>
+<span class="sd">            &#39;/sub/f.ext&#39;</span>
+<span class="sd">            &gt;&gt;&gt; backend.join(&#39;//sub//&#39;, &#39;/&#39;, &#39;&#39;, None, &#39;/f.ext&#39;)</span>
+<span class="sd">            &#39;/sub/f.ext&#39;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">path</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">]</span>
+        <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">path</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span> <span class="k">if</span> <span class="n">path</span><span class="p">]</span>  <span class="c1"># remove empty or None</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span>
+
+        <span class="n">path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">path</span></div>
+
+<div class="viewcode-block" id="Backend.latest_version"><a class="viewcode-back" href="../../../api/audbackend.Backend.html#audbackend.Backend.latest_version">[docs]</a>    <span class="k">def</span> <span class="nf">latest_version</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-            <span class="o">*</span><span class="p">,</span>
-            <span class="n">ext</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Latest version of a file.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            path: relative path to file in repository</span>
-<span class="sd">            ext: file extension, if ``None`` uses characters after last dot</span>
+<span class="sd">            path: path to file on backend</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            version string</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            RuntimeError: if file does not exist on backend</span>
+<span class="sd">            BackendError: if an error is raised on the backend,</span>
+<span class="sd">                e.g. ``path`` does not exist</span>
+<span class="sd">            ValueError: if ``path`` does not start with ``&#39;/&#39;`` or</span>
+<span class="sd">                does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; backend.latest_version(&#39;/f.ext&#39;)</span>
+<span class="sd">            &#39;2.0.0&#39;</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">vs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">versions</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="n">ext</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">vs</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Cannot find a version for &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&#39; in &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">,</span>
-            <span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">vs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">versions</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">vs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
 
     <span class="k">def</span> <span class="nf">_ls</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;List content of path.&quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>  <span class="c1"># pragma: no cover</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;List all files under (sub-)path.</span>
 
-<div class="viewcode-block" id="Backend.ls"><a class="viewcode-back" href="../../../api.html#audbackend.Backend.ls">[docs]</a>    <span class="k">def</span> <span class="nf">ls</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;List content of path.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            path: relative path to folder in repository</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            folder content</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            RuntimeError: if ``path`` does not exist on backend</span>
+<span class="sd">        * If path does not exist an error should be raised</span>
+<span class="sd">        * If path ends on `/` it is a sub-path</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ls</span><span class="p">(</span><span class="n">path</span><span class="p">))</span></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_path</span><span class="p">(</span>
+<div class="viewcode-block" id="Backend.ls"><a class="viewcode-back" href="../../../api/audbackend.Backend.html#audbackend.Backend.ls">[docs]</a>    <span class="k">def</span> <span class="nf">ls</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
-            <span class="n">folder</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-            <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-            <span class="n">ext</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span><span class="p">,</span>
+            <span class="o">*</span><span class="p">,</span>
+            <span class="n">latest_version</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">suppress_backend_errors</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;List files on backend.</span>
+
+<span class="sd">        Returns a sorted list of tuples</span>
+<span class="sd">        with path and version.</span>
+<span class="sd">        If a full path</span>
+<span class="sd">        (e.g. ``/sub/file.ext``)</span>
+<span class="sd">        is provided,</span>
+<span class="sd">        all versions of the path are returned.</span>
+<span class="sd">        If a sub-path</span>
+<span class="sd">        (e.g. ``/sub/``)</span>
+<span class="sd">        is provided,</span>
+<span class="sd">        all files that start with</span>
+<span class="sd">        the sub-path are returned.</span>
+<span class="sd">        When ``path`` is set to ``&#39;/&#39;``</span>
+<span class="sd">        a (possibly empty) list with</span>
+<span class="sd">        all files on the backend is returned.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: path or sub-path</span>
+<span class="sd">                (if it ends with ``&#39;/&#39;``)</span>
+<span class="sd">                on backend</span>
+<span class="sd">            latest_version: if multiple versions of a file exist,</span>
+<span class="sd">                only include the latest</span>
+<span class="sd">            pattern: if not ``None``,</span>
+<span class="sd">                return only files matching the pattern string,</span>
+<span class="sd">                see :func:`fnmatch.fnmatch`</span>
+<span class="sd">            suppress_backend_errors: if set to ``True``,</span>
+<span class="sd">                silently catch errors raised on the backend</span>
+<span class="sd">                and return an empty list</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list of tuples (path, version)</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            BackendError: if ``suppress_backend_errors`` is ``False``</span>
+<span class="sd">                and an error is raised on the backend,</span>
+<span class="sd">                e.g. ``path`` does not exist</span>
+<span class="sd">            ValueError: if ``path`` does not start with ``&#39;/&#39;`` or</span>
+<span class="sd">                does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; backend.ls()</span>
+<span class="sd">            [(&#39;/a.zip&#39;, &#39;1.0.0&#39;), (&#39;/a/b.ext&#39;, &#39;1.0.0&#39;), (&#39;/f.ext&#39;, &#39;1.0.0&#39;), (&#39;/f.ext&#39;, &#39;2.0.0&#39;)]</span>
+<span class="sd">            &gt;&gt;&gt; backend.ls(latest_version=True)</span>
+<span class="sd">            [(&#39;/a.zip&#39;, &#39;1.0.0&#39;), (&#39;/a/b.ext&#39;, &#39;1.0.0&#39;), (&#39;/f.ext&#39;, &#39;2.0.0&#39;)]</span>
+<span class="sd">            &gt;&gt;&gt; backend.ls(&#39;/f.ext&#39;)</span>
+<span class="sd">            [(&#39;/f.ext&#39;, &#39;1.0.0&#39;), (&#39;/f.ext&#39;, &#39;2.0.0&#39;)]</span>
+<span class="sd">            &gt;&gt;&gt; backend.ls(pattern=&#39;*.ext&#39;)</span>
+<span class="sd">            [(&#39;/a/b.ext&#39;, &#39;1.0.0&#39;), (&#39;/f.ext&#39;, &#39;1.0.0&#39;), (&#39;/f.ext&#39;, &#39;2.0.0&#39;)]</span>
+<span class="sd">            &gt;&gt;&gt; backend.ls(&#39;/a/&#39;)</span>
+<span class="sd">            [(&#39;/a/b.ext&#39;, &#39;1.0.0&#39;)]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">paths</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">call_function_on_backend</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ls</span><span class="p">,</span>
+            <span class="n">path</span><span class="p">,</span>
+            <span class="n">suppress_backend_errors</span><span class="o">=</span><span class="n">suppress_backend_errors</span><span class="p">,</span>
+            <span class="n">fallback_return_value</span><span class="o">=</span><span class="p">[],</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">paths</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">paths</span>
+
+        <span class="n">paths</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">pattern</span><span class="p">:</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="p">[(</span><span class="n">p</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">paths</span> <span class="k">if</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">fnmatch</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">pattern</span><span class="p">)]</span>
+
+        <span class="k">if</span> <span class="n">latest_version</span><span class="p">:</span>
+            <span class="c1"># d[path] = [&#39;1.0.0&#39;, &#39;2.0.0&#39;]</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">p</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+                    <span class="n">d</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">d</span><span class="p">[</span><span class="n">p</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="c1"># d[path] = &#39;2.0.0&#39;</span>
+            <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">vs</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">d</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">sort_versions</span><span class="p">(</span><span class="n">vs</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="c1"># [(path, &#39;2.0.0&#39;)]</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="p">[(</span><span class="n">p</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+
+        <span class="k">return</span> <span class="n">paths</span></div>
+
+    <span class="k">def</span> <span class="nf">_owner</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;File path on backend.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get owner of file on backend.</span>
+
+<span class="sd">        * Return empty string if owner cannot be determined</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Backend.path"><a class="viewcode-back" href="../../../api.html#audbackend.Backend.path">[docs]</a>    <span class="k">def</span> <span class="nf">path</span><span class="p">(</span>
+<div class="viewcode-block" id="Backend.owner"><a class="viewcode-back" href="../../../api/audbackend.Backend.html#audbackend.Backend.owner">[docs]</a>    <span class="k">def</span> <span class="nf">owner</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-            <span class="o">*</span><span class="p">,</span>
-            <span class="n">ext</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;File path on backend.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get owner of file on backend.</span>
 
-<span class="sd">        This converts a file path on the backend</span>
-<span class="sd">        from the form it is presented to a user</span>
-<span class="sd">        to the actual path on the backend storage.</span>
+<span class="sd">        If the owner of the file</span>
+<span class="sd">        cannot be determined,</span>
+<span class="sd">        an empty string is returned.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            path: relative path to file in repository</span>
+<span class="sd">            path: path to file on backend</span>
 <span class="sd">            version: version string</span>
-<span class="sd">            ext: file extension, if ``None`` uses characters after last dot</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            file path on backend</span>
+<span class="sd">            owner</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            ValueError: if ``path`` contains invalid character</span>
-<span class="sd">            ValueError: if ``path`` does not end on file extension</span>
+<span class="sd">            BackendError: if an error is raised on the backend,</span>
+<span class="sd">                e.g. ``path`` does not exist</span>
+<span class="sd">            ValueError: if ``path`` does not start with ``&#39;/&#39;`` or</span>
+<span class="sd">                does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            ValueError: if ``version`` is empty or</span>
+<span class="sd">                does not match ``&#39;[A-Za-z0-9._-]+&#39;``</span>
 
-<span class="sd">        Example:</span>
-<span class="sd">            &gt;&gt;&gt; import audbackend</span>
-<span class="sd">            &gt;&gt;&gt; backend = audbackend.FileSystem(&#39;~/my-host&#39;, &#39;data&#39;)</span>
-<span class="sd">            &gt;&gt;&gt; path = backend.path(&#39;media/archive1.zip&#39;, &#39;1.0.0&#39;)</span>
-<span class="sd">            &gt;&gt;&gt; os.path.basename(path)</span>
-<span class="sd">            &#39;archive1-1.0.0.zip&#39;</span>
-<span class="sd">            &gt;&gt;&gt; path = backend.path(</span>
-<span class="sd">            ...     &#39;media/archive1.tar.gz&#39;,</span>
-<span class="sd">            ...     &#39;1.0.0&#39;,</span>
-<span class="sd">            ...     ext=&#39;tar.gz&#39;,</span>
-<span class="sd">            ... )</span>
-<span class="sd">            &gt;&gt;&gt; os.path.basename(path)</span>
-<span class="sd">            &#39;archive1-1.0.0.tar.gz&#39;</span>
+<span class="sd">        Examples:</span>
+<span class="sd">              &gt;&gt;&gt; backend.owner(&#39;/f.ext&#39;, &#39;1.0.0&#39;)</span>
+<span class="sd">              &#39;doctest&#39;</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">utils</span><span class="o">.</span><span class="n">check_path_for_allowed_chars</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-        <span class="n">folder</span><span class="p">,</span> <span class="n">file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">ext</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">name</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">ext</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="n">file</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">ext</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
-                <span class="n">ext</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">ext</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">ext</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Invalid path name &#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&#39;, &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;does not end on &#39;</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
-                <span class="p">)</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="n">file</span><span class="p">[:</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">ext</span><span class="p">)]</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">ext</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span></div>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_version</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Backend.put_archive"><a class="viewcode-back" href="../../../api.html#audbackend.Backend.put_archive">[docs]</a>    <span class="k">def</span> <span class="nf">put_archive</span><span class="p">(</span>
+        <span class="k">return</span> <span class="n">utils</span><span class="o">.</span><span class="n">call_function_on_backend</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span><span class="p">,</span>
+            <span class="n">path</span><span class="p">,</span>
+            <span class="n">version</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Backend.put_archive"><a class="viewcode-back" href="../../../api/audbackend.Backend.html#audbackend.Backend.put_archive">[docs]</a>    <span class="k">def</span> <span class="nf">put_archive</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">src_root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-            <span class="n">files</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span>
             <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="o">*</span><span class="p">,</span>
+            <span class="n">files</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">tmp_root</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Create archive and put on backend.</span>
+
+<span class="sd">        The archive type is derived from the extension of ``dst_path``.</span>
+<span class="sd">        See :func:`audeer.create_archive` for supported extensions.</span>
 
 <span class="sd">        The operation is silently skipped,</span>
 <span class="sd">        if an archive with the same checksum</span>
@@ -511,50 +758,62 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            src_root: local root directory where files are located.</span>
-<span class="sd">                Only folders and files below ``src_root``</span>
-<span class="sd">                will be included into the archive</span>
-<span class="sd">            files: relative path to file(s) from ``src_root``</span>
-<span class="sd">            dst_path: path to archive on backend without extension,</span>
-<span class="sd">                e.g. ``media/archive1``</span>
+<span class="sd">                By default,</span>
+<span class="sd">                all files below ``src_root``</span>
+<span class="sd">                will be included into the archive.</span>
+<span class="sd">                Use ``files`` to select specific files</span>
+<span class="sd">            dst_path: path to archive on backend</span>
 <span class="sd">            version: version string</span>
+<span class="sd">            files: file(s) to include into the archive.</span>
+<span class="sd">                Must exist within ``src_root``</span>
 <span class="sd">            tmp_root: directory under which archive is temporarily created.</span>
 <span class="sd">                Defaults to temporary directory of system</span>
 <span class="sd">            verbose: show debug messages</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            archive path on backend</span>
-
 <span class="sd">        Raises:</span>
-<span class="sd">            FileNotFoundError: if one or more files do not exist</span>
-<span class="sd">            FileNotFoundError: if ``tmp_root`` does not exist</span>
+<span class="sd">            BackendError: if an error is raised on the backend</span>
+<span class="sd">            FileNotFoundError: if ``src_root``,</span>
+<span class="sd">                ``tmp_root``,</span>
+<span class="sd">                or one or more ``files`` do not exist</span>
+<span class="sd">            NotADirectoryError: if ``src_root`` is not a folder</span>
+<span class="sd">            RuntimeError: if ``dst_path`` does not end with</span>
+<span class="sd">                ``zip`` or ``tar.gz``</span>
+<span class="sd">                or a file in ``files`` is not below ``root``</span>
+<span class="sd">            ValueError: if ``dst_path`` does not start with ``&#39;/&#39;`` or</span>
+<span class="sd">                does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            ValueError: if ``version`` is empty or</span>
+<span class="sd">                does not match ``&#39;[A-Za-z0-9._-]+&#39;``</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; backend.exists(&#39;/a.tar.gz&#39;, &#39;1.0.0&#39;)</span>
+<span class="sd">            False</span>
+<span class="sd">            &gt;&gt;&gt; backend.put_archive(&#39;.&#39;, &#39;/a.tar.gz&#39;, &#39;1.0.0&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; backend.exists(&#39;/a.tar.gz&#39;, &#39;1.0.0&#39;)</span>
+<span class="sd">            True</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">utils</span><span class="o">.</span><span class="n">check_path_for_allowed_chars</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span>
-        <span class="n">src_root</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">safe_path</span><span class="p">(</span><span class="n">src_root</span><span class="p">)</span>
+        <span class="n">dst_path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_path</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_version</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
+        <span class="n">src_root</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">src_root</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="n">files</span><span class="p">]</span>
-
-        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
-            <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">src_root</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
-                    <span class="n">errno</span><span class="o">.</span><span class="n">ENOENT</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="o">.</span><span class="n">ENOENT</span><span class="p">),</span> <span class="n">path</span><span class="p">,</span>
-                <span class="p">)</span>
+        <span class="k">if</span> <span class="n">tmp_root</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">tmp_root</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">tmp_root</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">tmp_root</span><span class="p">):</span>
+                <span class="n">utils</span><span class="o">.</span><span class="n">raise_file_not_found_error</span><span class="p">(</span><span class="n">tmp_root</span><span class="p">)</span>
 
         <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">tmp_root</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
-            <span class="n">_</span><span class="p">,</span> <span class="n">archive_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span>
-            <span class="n">archive</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">archive_name</span><span class="si">}</span><span class="s1">-</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s1">.zip&#39;</span><span class="p">)</span>
+
+            <span class="n">archive</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">dst_path</span><span class="p">))</span>
             <span class="n">audeer</span><span class="o">.</span><span class="n">create_archive</span><span class="p">(</span>
                 <span class="n">src_root</span><span class="p">,</span>
                 <span class="n">files</span><span class="p">,</span>
                 <span class="n">archive</span><span class="p">,</span>
                 <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="n">remote_archive</span> <span class="o">=</span> <span class="n">dst_path</span> <span class="o">+</span> <span class="s1">&#39;.zip&#39;</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">put_file</span><span class="p">(</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">put_file</span><span class="p">(</span>
                 <span class="n">archive</span><span class="p">,</span>
-                <span class="n">remote_archive</span><span class="p">,</span>
+                <span class="n">dst_path</span><span class="p">,</span>
                 <span class="n">version</span><span class="p">,</span>
                 <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
             <span class="p">)</span></div>
@@ -563,18 +822,19 @@
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">checksum</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="p">):</span>  <span class="c1"># pragma: no cover</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Put file to backend.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Backend.put_file"><a class="viewcode-back" href="../../../api.html#audbackend.Backend.put_file">[docs]</a>    <span class="k">def</span> <span class="nf">put_file</span><span class="p">(</span>
+<div class="viewcode-block" id="Backend.put_file"><a class="viewcode-back" href="../../../api/audbackend.Backend.html#audbackend.Backend.put_file">[docs]</a>    <span class="k">def</span> <span class="nf">put_file</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="o">*</span><span class="p">,</span>
-            <span class="n">ext</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Put file on backend.</span>
@@ -587,119 +847,167 @@
 <span class="sd">            src_path: path to local file</span>
 <span class="sd">            dst_path: path to file on backend</span>
 <span class="sd">            version: version string</span>
-<span class="sd">            ext: file extension, if ``None`` uses characters after last dot</span>
 <span class="sd">            verbose: show debug messages</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            file path on backend</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            FileNotFoundError: if local file does not exist</span>
+<span class="sd">            BackendError: if an error is raised on the backend</span>
+<span class="sd">            FileNotFoundError: if ``src_path`` does not exist</span>
+<span class="sd">            IsADirectoryError: if ``src_path`` is a folder</span>
+<span class="sd">            ValueError: if ``dst_path`` does not start with ``&#39;/&#39;`` or</span>
+<span class="sd">                does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            ValueError: if ``version`` is empty or</span>
+<span class="sd">                does not match ``&#39;[A-Za-z0-9._-]+&#39;``</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; backend.exists(&#39;/sub/f.ext&#39;, &#39;3.0.0&#39;)</span>
+<span class="sd">            False</span>
+<span class="sd">            &gt;&gt;&gt; backend.put_file(&#39;src.pth&#39;, &#39;/sub/f.ext&#39;, &#39;3.0.0&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; backend.exists(&#39;/sub/f.ext&#39;, &#39;3.0.0&#39;)</span>
+<span class="sd">            True</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dst_path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_path</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_version</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">src_path</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
-                <span class="n">errno</span><span class="o">.</span><span class="n">ENOENT</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="o">.</span><span class="n">ENOENT</span><span class="p">),</span> <span class="n">src_path</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="n">utils</span><span class="o">.</span><span class="n">raise_file_not_found_error</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">src_path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">raise_is_a_directory</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
 
-        <span class="n">dst_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">dst_path</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="n">ext</span><span class="p">)</span>
+        <span class="n">checksum</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
 
-        <span class="c1"># skip if file with same checksum exists on backend</span>
-        <span class="n">skip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exists</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span> <span class="ow">and</span> \
-            <span class="n">utils</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checksum</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">skip</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_put_file</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">dst_path</span></div>
+        <span class="c1"># skip if file with same checksum already exists</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dst_path</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">checksum</span><span class="p">(</span><span class="n">dst_path</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span> <span class="o">!=</span> <span class="n">checksum</span>
+        <span class="p">):</span>
+            <span class="n">utils</span><span class="o">.</span><span class="n">call_function_on_backend</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_put_file</span><span class="p">,</span>
+                <span class="n">src_path</span><span class="p">,</span>
+                <span class="n">dst_path</span><span class="p">,</span>
+                <span class="n">version</span><span class="p">,</span>
+                <span class="n">checksum</span><span class="p">,</span>
+                <span class="n">verbose</span><span class="p">,</span>
+            <span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_remove_file</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">):</span>  <span class="c1"># pragma: no cover</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Remove file from backend.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Backend.remove_file"><a class="viewcode-back" href="../../../api.html#audbackend.Backend.remove_file">[docs]</a>    <span class="k">def</span> <span class="nf">remove_file</span><span class="p">(</span>
+<div class="viewcode-block" id="Backend.remove_file"><a class="viewcode-back" href="../../../api/audbackend.Backend.html#audbackend.Backend.remove_file">[docs]</a>    <span class="k">def</span> <span class="nf">remove_file</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-            <span class="o">*</span><span class="p">,</span>
-            <span class="n">ext</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Remove file from backend.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            path: path to file on backend</span>
 <span class="sd">            version: version string</span>
-<span class="sd">            ext: file extension, if ``None`` uses characters after last dot</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            path of removed file on backend</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            FileNotFoundError: if file does not exist on backend</span>
+<span class="sd">            BackendError: if an error is raised on the backend,</span>
+<span class="sd">                e.g. ``path`` does not exist</span>
+<span class="sd">            ValueError: if ``path`` does not start with ``&#39;/&#39;`` or</span>
+<span class="sd">                does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            ValueError: if ``version`` is empty or</span>
+<span class="sd">                does not match ``&#39;[A-Za-z0-9._-]+&#39;``</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; backend.exists(&#39;/f.ext&#39;, &#39;1.0.0&#39;)</span>
+<span class="sd">            True</span>
+<span class="sd">            &gt;&gt;&gt; backend.remove_file(&#39;/f.ext&#39;, &#39;1.0.0&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; backend.exists(&#39;/f.ext&#39;, &#39;1.0.0&#39;)</span>
+<span class="sd">            False</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="n">ext</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
-                <span class="n">errno</span><span class="o">.</span><span class="n">ENOENT</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="o">.</span><span class="n">ENOENT</span><span class="p">),</span> <span class="n">path</span><span class="p">,</span>
-            <span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_version</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_remove_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">path</span></div>
+        <span class="n">utils</span><span class="o">.</span><span class="n">call_function_on_backend</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_remove_file</span><span class="p">,</span>
+            <span class="n">path</span><span class="p">,</span>
+            <span class="n">version</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">sep</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;File separator on backend.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="s1">&#39;/&#39;</span>
+        <span class="k">return</span> <span class="n">utils</span><span class="o">.</span><span class="n">BACKEND_SEPARATOR</span>
 
-<div class="viewcode-block" id="Backend.split"><a class="viewcode-back" href="../../../api.html#audbackend.Backend.split">[docs]</a>    <span class="k">def</span> <span class="nf">split</span><span class="p">(</span>
+<div class="viewcode-block" id="Backend.split"><a class="viewcode-back" href="../../../api/audbackend.Backend.html#audbackend.Backend.split">[docs]</a>    <span class="k">def</span> <span class="nf">split</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Split path on backend into folder and basename.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Split path on backend into sub-path and basename.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            path: path containing :attr:`Backend.sep` as separator</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            tuple containing (folder, basename)</span>
+<span class="sd">            tuple containing (root, basename)</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: if ``path`` does not start with ``&#39;/&#39;`` or</span>
+<span class="sd">                does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; backend.split(&#39;/&#39;)</span>
+<span class="sd">            (&#39;/&#39;, &#39;&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; backend.split(&#39;/f.ext&#39;)</span>
+<span class="sd">            (&#39;/&#39;, &#39;f.ext&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; backend.split(&#39;/sub/&#39;)</span>
+<span class="sd">            (&#39;/sub/&#39;, &#39;&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; backend.split(&#39;/sub//f.ext&#39;)</span>
+<span class="sd">            (&#39;/sub/&#39;, &#39;f.ext&#39;)</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">folder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="n">root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">sep</span>
         <span class="n">basename</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">folder</span><span class="p">,</span> <span class="n">basename</span></div>
 
-    <span class="k">def</span> <span class="nf">_versions</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">folder</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-            <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>  <span class="c1"># pragma: no cover</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Versions of a file.&quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">root</span><span class="p">,</span> <span class="n">basename</span></div>
 
-<div class="viewcode-block" id="Backend.versions"><a class="viewcode-back" href="../../../api.html#audbackend.Backend.versions">[docs]</a>    <span class="k">def</span> <span class="nf">versions</span><span class="p">(</span>
+<div class="viewcode-block" id="Backend.versions"><a class="viewcode-back" href="../../../api/audbackend.Backend.html#audbackend.Backend.versions">[docs]</a>    <span class="k">def</span> <span class="nf">versions</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="o">*</span><span class="p">,</span>
-            <span class="n">ext</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">suppress_backend_errors</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Versions of a file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            path: path to file on backend</span>
-<span class="sd">            ext: file extension, if ``None`` uses characters after last dot</span>
+<span class="sd">            suppress_backend_errors: if set to ``True``,</span>
+<span class="sd">                silently catch errors raised on the backend</span>
+<span class="sd">                and return an empty list</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            list of versions in ascending order</span>
 
+<span class="sd">        Raises:</span>
+<span class="sd">            BackendError: if ``suppress_backend_errors`` is ``False``</span>
+<span class="sd">                and an error is raised on the backend,</span>
+<span class="sd">                e.g. ``path`` does not exist</span>
+<span class="sd">            ValueError: if ``path`` does not start with ``&#39;/&#39;`` or</span>
+<span class="sd">                does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; backend.versions(&#39;/f.ext&#39;)</span>
+<span class="sd">            [&#39;1.0.0&#39;, &#39;2.0.0&#39;]</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">folder</span><span class="p">,</span> <span class="n">file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">basename_wo_ext</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="n">ext</span><span class="p">)</span>
-        <span class="n">vs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_versions</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">audeer</span><span class="o">.</span><span class="n">sort_versions</span><span class="p">(</span><span class="n">vs</span><span class="p">)</span></div></div>
+        <span class="n">paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">suppress_backend_errors</span><span class="o">=</span><span class="n">suppress_backend_errors</span><span class="p">)</span>
+        <span class="n">vs</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">vs</span></div></div>
 </pre></div>
 
            </div>
@@ -715,7 +1023,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2023/02/17 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2023/10/16 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -753,8 +1061,11 @@
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
         <script src="../../../_static/sphinx_highlight.js"></script>
+        <script src="../../../_static/thebelab-helper.js"></script>
         <script src="../../../_static/clipboard.min.js"></script>
         <script src="../../../_static/copybutton.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
     
 
   

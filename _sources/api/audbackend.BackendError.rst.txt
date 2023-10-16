@@ -1,0 +1,6 @@
+﻿BackendError
+============
+
+.. currentmodule:: audbackend
+
+.. autoexception:: audbackend.BackendError
