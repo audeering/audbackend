@@ -32,7 +32,7 @@ Version 1.0.0 (2023-10-16)
 * Changed: ``audbackend.Backend.get_file()`` uses a temporary directory
   to avoid corrupted files if operation is interrupted
 * Changed: ``audbackend.Backend.get_file()``
-  and ``audbackend.Backend.put_file()`` raises ``IsADirectoryError``
+  and ``audbackend.Backend.put_file()`` raise ``IsADirectoryError``
 * Changed: ``audbackend.put_archive()`` raises ``NotADirectoryError``
 * Changed: make ``files`` an optional argument of
   ``audbackend.Backend.put_archive()``
