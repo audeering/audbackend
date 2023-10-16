@@ -11,13 +11,14 @@ Version 1.0.0 (2023-10-16)
 --------------------------
 
 * Added:
-  ``audbackend.Artifactory._use_legacy_file_structure()``,
   ``audbackend.Backend.access()``,
   ``audbackend.Backend.available()``,
   ``audbackend.Backend.date()``,
   ``audbackend.Backend.delete()``,
   ``audbackend.Backend.owner()``
+* Added:
   ``audbackend.FileSystem._use_legacy_file_structure()``
+  to support file structure of existing repositories
 * Added: ``audbackend.BackendError`` class to capture errors raised by backend
 * Added: ``pattern`` argument to ``audbackend.Backend.ls()``
 * Added: docstring examples and usage section
