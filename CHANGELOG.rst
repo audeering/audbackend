@@ -7,6 +7,58 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 1.0.0 (2023-10-16)
+--------------------------
+
+* Added:
+  ``audbackend.Artifactory._use_legacy_file_structure()``,
+  ``audbackend.Backend.access()``,
+  ``audbackend.Backend.available()``,
+  ``audbackend.Backend.date()``,
+  ``audbackend.Backend.delete()``,
+  ``audbackend.Backend.owner()``
+  ``audbackend.FileSystem._use_legacy_file_structure()``
+* Added: ``audbackend.BackendError`` class to capture errors raised by backend
+* Added: ``pattern`` argument to ``audbackend.Backend.ls()``
+* Added: docstring examples and usage section
+* Changed: ``audbackend.create()`` raises error if repository exists
+  (``audbackend.access()`` should be used instead)
+* Changed: ``audbackend.Backend.get_archive()``
+  and ``audbackend.Backend.put_archive()``
+  support same archive types as ``audeer.create_archive()``
+* Changed: ``audbackend.Backend.get_file()``
+  skips operation if file with same checksum exists on local file system
+* Changed: ``audbackend.Backend.get_file()`` uses a temporary directory
+  to avoid corrupted files if operation is interrupted
+* Changed: ``audbackend.Backend.get_file()``
+  and ``audbackend.Backend.put_file()`` raises ``IsADirectoryError``
+* Changed: ``audbackend.put_archive()`` raises ``NotADirectoryError``
+* Changed: make ``files`` an optional argument of
+  ``audbackend.Backend.put_archive()``
+* Changed: ``audbackend.Backend.put_file()``
+  passes checksum to implementation to avoid re-calculation
+* Changed: ``audbackend.Backend.join()`` and ``audbackend.Backend.split()``
+* Changed: ``audbackend.Backend.ls()`` returns list of ``(path, ext, version)``
+* Changed: ``audbackend.Backend.ls()`` accepts full path
+  check for invalid characters
+* Changed: calculate checksum with ``audeer.md5()``
+* Changed: file structure on ``audbackend.FileSystem``
+  and ``audbackend.Artifactory`` from
+  ``/sub/file/1.0.0/file-1.0.0.txt``
+  to
+  ``/sub/1.0.0/file.txt``
+* Changed: remove ``ext`` argument
+* Changed: backend path must start with ``'/'``
+* Changed: version must be non-empty and may not contain invalid characters
+* Changed: option to install only specific backends
+  and their dependencies
+* Removed:
+  ``audbackend.Backend.glob()``,
+  ``audbackend.Backend.path()``
+* Removed: support for ``Python 3.7``
+* Removed: dependency to ``audfactory``
+
+
 Version 0.3.18 (2023-02-17)
 ---------------------------
 
