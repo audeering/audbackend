@@ -39,9 +39,9 @@ Version 1.0.0 (2023-10-16)
 * Changed: ``audbackend.Backend.put_file()``
   passes checksum to implementation to avoid re-calculation
 * Changed: ``audbackend.Backend.join()`` and ``audbackend.Backend.split()``
+  check for invalid characters
 * Changed: ``audbackend.Backend.ls()`` returns list of ``(path, ext, version)``
 * Changed: ``audbackend.Backend.ls()`` accepts full path
-  check for invalid characters
 * Changed: calculate checksum with ``audeer.md5()``
 * Changed: file structure on ``audbackend.FileSystem``
   and ``audbackend.Artifactory`` from
