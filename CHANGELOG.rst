@@ -57,7 +57,7 @@ Version 1.0.0 (2023-10-16)
   ``audbackend.Backend.glob()``,
   ``audbackend.Backend.path()``
 * Removed: support for ``Python 3.7``
-* Removed: dependency to ``audfactory``
+* Removed: dependency on ``audfactory``
 
 
 Version 0.3.18 (2023-02-17)
