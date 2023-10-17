@@ -275,7 +275,7 @@ class Artifactory(Backend):
             # check for custom extension
             # ensure basename is not empty
             if self._legacy_file_structure_regex:
-                pattern = f'\.({custom_ext})$'
+                pattern = rf'\.({custom_ext})$'
                 match = re.search(pattern, name[1:])
                 if match:
                     ext = match.group(1)
