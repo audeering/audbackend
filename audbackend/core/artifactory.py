@@ -72,7 +72,7 @@ def _deploy(
         dst_path.parent.mkdir()
 
     with open(src_path, 'rb') as fd:
-        dst_path.deploy(fd, md5=checksum)
+        dst_path.deploy(fd, md5=checksum, quote_parameters=True)
 
     if verbose:  # pragma: no cover
         # Clear progress line
