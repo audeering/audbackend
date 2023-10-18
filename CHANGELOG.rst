@@ -7,6 +7,16 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 1.0.1 (2023-10-18)
+--------------------------
+
+* Added: ``regex`` argument
+  to ``audbackend.Backend._use_legacy_file_structure()``
+  to support providing regex pattern
+  in the ``extensions`` argument
+* Changed: depend on ``dohq-artifactory>=0.9.0``
+
+
 Version 1.0.0 (2023-10-16)
 --------------------------
 
