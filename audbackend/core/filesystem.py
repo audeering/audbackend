@@ -1,5 +1,6 @@
 import datetime
 import os
+import re
 import shutil
 import typing
 
@@ -30,6 +31,7 @@ class FileSystem(Backend):
         # see _use_legacy_file_structure()
         self._legacy_extensions = []
         self._legacy_file_structure = False
+        self._legacy_file_structure_regex = False
 
     def _access(
             self,
@@ -135,7 +137,12 @@ class FileSystem(Backend):
         for custom_ext in self._legacy_extensions:
             # check for custom extension
             # ensure basename is not empty
-            if name[1:].endswith(f'.{custom_ext}'):
+            if self._legacy_file_structure_regex:
+                pattern = rf'\.({custom_ext})$'
+                match = re.search(pattern, name[1:])
+                if match:
+                    ext = match.group(1)
+            elif name[1:].endswith(f'.{custom_ext}'):
                 ext = custom_ext
         if ext is None:
             # if no custom extension is found
@@ -274,6 +281,7 @@ class FileSystem(Backend):
             self,
             *,
             extensions: typing.List[str] = None,
+            regex: bool = False,
     ):
         r"""Use legacy file structure.
 
@@ -305,7 +313,18 @@ class FileSystem(Backend):
         ``'.../file.tar.gz'``
         will then translate into
         ``'.../file/1.0.0/file-1.0.0.tar.gz'``.
+        If ``regex`` is set to ``True``,
+        the extensions are treated as regular expressions.
+        E.g.
+        with
+        ``backend._use_legacy_file_structure(extensions=['\d+.tar.gz'],
+        regex=True)``
+        the backend path
+        ``'.../file.99.tar.gz'``
+        will translate into
+        ``'.../file/1.0.0/file-1.0.0.99.tar.gz'``.
 
         """
         self._legacy_file_structure = True
         self._legacy_extensions = extensions or []
+        self._legacy_file_structure_regex = regex

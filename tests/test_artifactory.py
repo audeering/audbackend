@@ -136,22 +136,77 @@ def test_errors(tmpdir, backend):
     indirect=True,
 )
 @pytest.mark.parametrize(
-    'file, version, extensions, expected',
+    'file, version, extensions, regex, expected',
     [
-        ('/file.tar.gz', '1.0.0', None, 'file.tar/1.0.0/file.tar-1.0.0.gz'),
-        ('/file.tar.gz', '1.0.0', [], 'file.tar/1.0.0/file.tar-1.0.0.gz'),
-        ('/file.tar.gz', '1.0.0', ['tar.gz'], 'file/1.0.0/file-1.0.0.tar.gz'),
-        ('/.tar.gz', '1.0.0', ['tar.gz'], '.tar/1.0.0/.tar-1.0.0.gz'),
-        ('/tar.gz', '1.0.0', ['tar.gz'], 'tar/1.0.0/tar-1.0.0.gz'),
-        ('/.tar.gz', '1.0.0', None, '.tar/1.0.0/.tar-1.0.0.gz'),
-        ('/.tar', '1.0.0', None, '.tar/1.0.0/.tar-1.0.0'),
-        ('/tar', '1.0.0', None, 'tar/1.0.0/tar-1.0.0'),
+        (
+            '/file.tar.gz', '1.0.0', None, False,
+            'file.tar/1.0.0/file.tar-1.0.0.gz',
+        ),
+        (
+            '/file.tar.gz', '1.0.0', [], False,
+            'file.tar/1.0.0/file.tar-1.0.0.gz',
+        ),
+        (
+            '/file.tar.gz', '1.0.0', ['tar.gz'], False,
+            'file/1.0.0/file-1.0.0.tar.gz',
+        ),
+        (
+            '/.tar.gz', '1.0.0', ['tar.gz'], False,
+            '.tar/1.0.0/.tar-1.0.0.gz',
+        ),
+        (
+            '/tar.gz', '1.0.0', ['tar.gz'], False,
+            'tar/1.0.0/tar-1.0.0.gz',
+        ),
+        (
+            '/.tar.gz', '1.0.0', None, False,
+            '.tar/1.0.0/.tar-1.0.0.gz',
+        ),
+        (
+            '/.tar', '1.0.0', None, False,
+            '.tar/1.0.0/.tar-1.0.0',
+        ),
+        (
+            '/tar', '1.0.0', None, False,
+            'tar/1.0.0/tar-1.0.0',
+        ),
+        # test regex
+        (
+            '/file.0.tar.gz', '1.0.0', [r'\d+.tar.gz'], False,
+            'file.0.tar/1.0.0/file.0.tar-1.0.0.gz',
+        ),
+        (
+            '/file.0.tar.gz', '1.0.0', [r'\d+.tar.gz'], True,
+            'file/1.0.0/file-1.0.0.0.tar.gz',
+        ),
+        (
+            '/file.99.tar.gz', '1.0.0', [r'\d+.tar.gz'], True,
+            'file/1.0.0/file-1.0.0.99.tar.gz',
+        ),
+        (
+            '/file.prediction.99.tar.gz', '1.0.0',
+            [r'prediction.\d+.tar.gz', r'truth.tar.gz'], True,
+            'file/1.0.0/file-1.0.0.prediction.99.tar.gz',
+        ),
+        (
+            '/file.truth.tar.gz', '1.0.0',
+            [r'prediction.\d+.tar.gz', r'truth.tar.gz'], True,
+            'file/1.0.0/file-1.0.0.truth.tar.gz',
+        ),
+        (
+            '/file.99.tar.gz', '1.0.0', [r'(\d+.)?tar.gz'], True,
+            'file/1.0.0/file-1.0.0.99.tar.gz',
+        ),
+        (
+            '/file.tar.gz', '1.0.0', [r'(\d+.)?tar.gz'], True,
+            'file/1.0.0/file-1.0.0.tar.gz',
+        ),
     ]
 )
 def test_legacy_file_structure(tmpdir, backend, file, version, extensions,
-                               expected):
+                               regex, expected):
 
-    backend._use_legacy_file_structure(extensions=extensions)
+    backend._use_legacy_file_structure(extensions=extensions, regex=regex)
 
     src_path = audeer.touch(audeer.path(tmpdir, 'tmp'))
     backend.put_file(src_path, file, version)
