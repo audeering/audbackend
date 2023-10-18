@@ -109,11 +109,13 @@ def test_get_file_interrupt(tmpdir, bad_file_system, backend):
             'file/1.0.0/file-1.0.0.99.tar.gz',
         ),
         (
-            '/file.prediction.99.tar.gz', '1.0.0', [r'prediction.\d+.tar.gz', r'truth.tar.gz'], True,
+            '/file.prediction.99.tar.gz', '1.0.0',
+            [r'prediction.\d+.tar.gz', r'truth.tar.gz'], True,
             'file/1.0.0/file-1.0.0.prediction.99.tar.gz',
         ),
         (
-            '/file.truth.tar.gz', '1.0.0', [r'prediction.\d+.tar.gz', r'truth.tar.gz'], True,
+            '/file.truth.tar.gz', '1.0.0',
+            [r'prediction.\d+.tar.gz', r'truth.tar.gz'], True,
             'file/1.0.0/file-1.0.0.truth.tar.gz',
         ),
         (
@@ -124,7 +126,6 @@ def test_get_file_interrupt(tmpdir, bad_file_system, backend):
             '/file.tar.gz', '1.0.0', [r'(\d+.)?tar.gz'], True,
             'file/1.0.0/file-1.0.0.tar.gz',
         ),
-
     ]
 )
 def test_legacy_file_structure(tmpdir, backend, file, version, extensions,
