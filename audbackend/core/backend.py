@@ -508,6 +508,8 @@ class Backend:
             [('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
             >>> backend.ls(pattern='*.ext')
             [('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
+            >>> backend.ls(pattern='b.*')
+            [('/a/b.ext', '1.0.0')]
             >>> backend.ls('/a/')
             [('/a/b.ext', '1.0.0')]
 
@@ -525,7 +527,10 @@ class Backend:
         paths = sorted(paths)
 
         if pattern:
-            paths = [(p, v) for p, v in paths if fnmatch.fnmatch(p, pattern)]
+            paths = [
+                (p, v) for p, v in paths
+                if fnmatch.fnmatch(os.path.basename(p), pattern)
+            ]
 
         if latest_version:
             # d[path] = ['1.0.0', '2.0.0']
