@@ -594,6 +594,8 @@ def test_ls(tmpdir, backend):
         ('/sub/', True, None, sub_latest),
         ('/sub/', False, '*.bar', []),
         ('/sub/', True, '*.bar', []),
+        ('/sub/', False, 'file.*', sub),
+        ('/sub/', True, 'file.*', sub_latest),
         ('/.sub/', False, None, hidden),
         ('/.sub/', True, None, hidden_latest),
         ('/file.bar', False, None, root_bar),
