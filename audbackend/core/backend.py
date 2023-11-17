@@ -184,7 +184,7 @@ class Backend:
         Raises:
             BackendError: if ``suppress_backend_errors`` is ``False``
                 and an error is raised on the backend,
-                e.g. ``path`` does not exist
+                e.g. due to a connection timeout
             ValueError: if ``path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
