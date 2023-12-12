@@ -24,6 +24,19 @@ if os.name != 'nt':
 pytest.UID = audeer.uid()[:8]
 
 
+@pytest.fixture(scope='function', autouse=False)
+def anonymous():
+    current_user = os.environ['ARTIFACTORY_USERNAME']
+    current_key = os.environ['ARTIFACTORY_API_KEY']
+    os.environ['ARTIFACTORY_USERNAME'] = 'anonymous'
+    os.environ['ARTIFACTORY_API_KEY'] = ''
+
+    yield
+
+    os.environ['ARTIFACTORY_USERNAME'] = current_user
+    os.environ['ARTIFACTORY_API_KEY'] = current_key
+
+
 @pytest.fixture(scope='package', autouse=True)
 def register_single_folder():
     if os.name != 'nt':

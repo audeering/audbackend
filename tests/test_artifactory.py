@@ -137,7 +137,7 @@ def test_errors(tmpdir, backend):
         'data-private',
     ],
 )
-def test_empty_repo(hosts, repo):
+def test_empty_repo(anonymous, hosts, repo):
     # Test accessing two repos in a row,
     # whereby the first one might lead to an error
     #
