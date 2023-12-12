@@ -130,17 +130,28 @@ def test_errors(tmpdir, backend):
     ) == []
 
 
-def test_empty_repo(hosts):
+@pytest.mark.parametrize(
+    'repo',
+    [
+        'data-empty',
+        'data-private',
+    ],
+)
+def test_empty_repo(hosts, repo):
     # Test accessing two repos in a row,
-    # and the first is an empty one
+    # whereby the first one might lead to an error
+    #
     host = hosts['artifactory']
-    backend = audbackend.Artifactory(host, 'data-empty')
-    files = backend.ls('/')
-    assert len(files) == 0
+    backend = audbackend.Artifactory(host, repo)
+    for path in backend._repo.path:
+        # This should not be reached
+        assert False
     backend = audbackend.Artifactory(host, 'data-public')
     backend._use_legacy_file_structure()
-    files = backend.ls('/emodb/db/', latest_version=True)
-    assert len(files) == 2
+    databases = []
+    for path in backend._repo.path:
+        databases.append(path.name)
+    assert databases == ['emodb']
 
 
 @pytest.mark.parametrize(
