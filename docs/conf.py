@@ -1,6 +1,4 @@
 from datetime import date
-import os
-import shutil
 
 import toml
 
@@ -30,17 +28,15 @@ exclude_patterns = [
     'Thumbs.db',
     '.DS_Store',
 ]
-templates_path = ['_templates']
 pygments_style = None
 extensions = [
     'jupyter_sphinx',
-    'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
-    'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
     'sphinx_autodoc_typehints',
     'sphinx_copybutton',
+    'sphinx_apipages',
 ]
 
 napoleon_use_ivar = True  # List of class attributes
@@ -59,10 +55,6 @@ autodoc_mock_imports = [
     'pandas',
 ]
 
-# Disable auto-generation of TOC entries in the API
-# https://github.com/sphinx-doc/sphinx/issues/6316
-toc_object_entries = False
-
 
 # HTML --------------------------------------------------------------------
 html_theme = 'sphinx_audeering_theme'
@@ -75,15 +67,3 @@ html_context = {
     'display_github': True,
 }
 html_title = title
-
-
-# Copy API (sub-)module RST files to docs/api/ folder ---------------------
-audeer.rmdir('api')
-audeer.mkdir('api')
-api_src_files = audeer.list_file_names('api-src')
-api_dst_files = [
-    audeer.path('api', os.path.basename(src_file))
-    for src_file in api_src_files
-]
-for src_file, dst_file in zip(api_src_files, api_dst_files):
-    shutil.copyfile(src_file, dst_file)
