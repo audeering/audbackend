@@ -714,9 +714,9 @@ class Backend:
 
         if self._legacy_file_structure:
             base, ext = self._legacy_split_ext(name)
-            path = os.path.join(root, base, version, f'{base}-{version}{ext}')
+            path = self.join(root, base, version, f'{base}-{version}{ext}')
         else:
-            path = os.path.join(root, version, name)
+            path = self.join(root, version, name)
 
         return path
 
