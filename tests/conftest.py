@@ -44,7 +44,9 @@ def owner(request):
     r"""Return expected owner value."""
     name = request.param
     if name == 'artifactory':
-        owner = 'audeering-unittest'
+        owner = audbackend.core.artifactory._authentication(
+            'audeering.jfrog.io/artifactory'
+        )[0]
     else:
         if os.name == 'nt':
             owner = 'Administrators'
