@@ -139,6 +139,6 @@ def test_legacy_file_structure(tmpdir, backend, file, version, extensions,
     backend.put_file(src_path, file, version)
 
     path = os.path.join(backend._root, expected)
-    assert str(backend._path(file, version)) == path
+    assert backend._expand(backend._path_with_version(file, version)) == path
     assert backend.ls(file) == [(file, version)]
     assert backend.ls() == [(file, version)]

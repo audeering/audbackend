@@ -121,7 +121,7 @@ class FileSystem(Backend):
             self,
             path: str,
     ) -> typing.List[str]:
-        r"""List all files under (sub-)path."""
+        r"""List all files under sub-path."""
 
         path = self._expand(path)
         if not os.path.exists(path):
