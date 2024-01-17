@@ -572,10 +572,22 @@ class Backend:
                 depth = root.count('/') + 2
                 name, ext = self._legacy_split_ext(file)
                 match = re.compile(rf'{name}-\d+\.\d+.\d+{ext}')
-                paths = [p for p in paths if p.count('/') == depth and match.match(os.path.basename(p))]
+                paths = [
+                    p for p in paths
+                    if (
+                           p.count('/') == depth and
+                           match.match(os.path.basename(p))
+                    )
+                ]
             else:
                 depth = root.count('/') + 1
-                paths = [p for p in paths if p.count('/') == depth and os.path.basename(p) == file]
+                paths = [
+                    p for p in paths
+                    if (
+                        p.count('/') == depth and
+                        os.path.basename(p) == file
+                    )
+                ]
 
             if not paths and not suppress_backend_errors:
                 # since the backend does no longer raise an error

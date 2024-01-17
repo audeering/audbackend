@@ -1,5 +1,4 @@
 import os
-import re
 import typing
 
 import artifactory
@@ -265,7 +264,6 @@ class Artifactory(Backend):
             path: str,
     ) -> typing.List[str]:
         r"""List all files under sub-path."""
-
         path = self._path(path)
         path = _artifactory_path(
             path,
