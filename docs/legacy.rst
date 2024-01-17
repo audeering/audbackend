@@ -16,11 +16,7 @@ Legacy backends
 ===============
 
 The file structure on the backend
-has changed for
-:class:`audbackend.FileSystem`
-and :class:`audbackend.Artifactory`
-in version 1.0.0
-of :mod:`audbackend`.
+has changed with version 1.0.0.
 
 Before,
 a file ``/sub/file.txt``
