@@ -213,6 +213,6 @@ def test_legacy_file_structure(tmpdir, backend, file, version, extensions,
     backend.put_file(src_path, file, version)
 
     url = f'{str(backend._repo.path)}{expected}'
-    assert str(backend._path(file, version)) == url
+    assert backend._expand(backend._path_with_version(file, version)) == url
     assert backend.ls(file) == [(file, version)]
     assert backend.ls() == [(file, version)]

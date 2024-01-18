@@ -396,7 +396,6 @@ stored on our backend:
 * ``content``: the binary content
 * ``date``: the date when the file was added
 * ``owner``: the owner of the file
-* ``version``: the version of the file
 
 .. jupyter-execute::
 
@@ -423,8 +422,7 @@ stored on our backend:
                 content BLOB NOT NULL,
                 date TEXT NOT NULL,
                 owner TEXT NOT NULL,
-                version TEXT NOT NULL,
-                PRIMARY KEY (path, version)
+                PRIMARY KEY (path)
             );
         '''
         with self._db as db:
@@ -470,14 +468,13 @@ if a file exists.
     def _exists(
             self,
             path: str,
-            version: str,
     ) -> bool:
         with self._db as db:
             query = f'''
                 SELECT EXISTS (
                     SELECT 1
                         FROM data
-                        WHERE path="{path}" AND version="{version}"
+                        WHERE path="{path}"
                 );
             '''
             result = db.execute(query).fetchone()[0] == 1
@@ -499,7 +496,6 @@ a file to our backend.
             self,
             src_path: str,
             dst_path: str,
-            version: str,
             checksum: str,
             verbose: bool,
     ):
@@ -507,12 +503,12 @@ a file to our backend.
             with open(src_path, 'rb') as file:
                 content = file.read()
             query = '''
-                INSERT INTO data (path, checksum, content, date, owner, version)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO data (path, checksum, content, date, owner)
+                VALUES (?, ?, ?, ?, ?)
             '''
             owner = getpass.getuser()
             date = datetime.datetime.today().strftime('%Y-%m-%d')
-            data = (dst_path, checksum, content, date, owner, version)
+            data = (dst_path, checksum, content, date, owner)
             db.execute(query, data)
 
 
@@ -537,13 +533,12 @@ to access its meta information.
     def _checksum(
             self,
             path: str,
-            version: str,
     ) -> str:
         with self._db as db:
             query = f'''
                 SELECT checksum
                 FROM data
-                WHERE path="{path}" AND version="{version}"
+                WHERE path="{path}"
             '''
             checksum = db.execute(query).fetchone()[0]
         return checksum
@@ -556,13 +551,12 @@ to access its meta information.
     def _date(
             self,
             path: str,
-            version: str,
     ) -> str:
         with self._db as db:
             query = f'''
                 SELECT date
                 FROM data
-                WHERE path="{path}" AND version="{version}"
+                WHERE path="{path}"
             '''
             date = db.execute(query).fetchone()[0]
         return date
@@ -575,13 +569,12 @@ to access its meta information.
     def _owner(
             self,
             path: str,
-            version: str,
     ) -> str:
         with self._db as db:
             query = f'''
                 SELECT owner
                 FROM data
-                WHERE path="{path}" AND version="{version}"
+                WHERE path="{path}"
             '''
             owner = db.execute(query).fetchone()[0]
         return owner
@@ -601,14 +594,13 @@ from the backend.
             self,
             src_path: str,
             dst_path: str,
-            version: str,
             verbose: bool,
     ):
         with self._db as db:
             query = f'''
                 SELECT content
                 FROM data
-                WHERE path="{src_path}" AND version="{version}"
+                WHERE path="{src_path}"
             '''
             content = db.execute(query).fetchone()[0]
             with open(dst_path, 'wb') as fp:
@@ -637,28 +629,19 @@ we provide a listing method.
     def _ls(
             self,
             path: str,
-    ) -> typing.List[typing.Tuple[str, str]]:
+    ) -> typing.List[str]:
 
         with self._db as db:
-            if path.endswith('/'):
-                # path is sub-path;
-                # list all files and versions under sub-path
-                query = f'''
-                    SELECT path, version
-                    FROM data
-                    WHERE path
-                    LIKE ? || "%"
-                '''
-                ls = db.execute(query, [path]).fetchall()
-            else:
-                # path is file
-                # list all versions of file
-                query = f'''
-                    SELECT path, version
-                    FROM data
-                    WHERE path="{path}"
-                '''
-                ls = db.execute(query).fetchall()
+
+            # list all files and versions under sub-path
+            query = f'''
+                SELECT path
+                FROM data
+                WHERE path
+                LIKE ? || "%"
+            '''
+            ls = db.execute(query, [path]).fetchall()
+            ls = [x[0] for x in ls]
 
         if not ls and not path == '/':
             # path has to exists if not root
@@ -667,6 +650,7 @@ we provide a listing method.
                 os.strerror(errno.ENOENT),
                 path,
             )
+
         return ls
 
 
@@ -691,13 +675,12 @@ requires another method.
     def _remove_file(
             self,
             path: str,
-            version: str,
     ):
         with self._db as db:
             query = f'''
                 DELETE
                 FROM data
-                WHERE path="{path}" AND version="{version}"
+                WHERE path="{path}"
             '''
             db.execute(query)
 

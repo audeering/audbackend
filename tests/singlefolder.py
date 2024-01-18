@@ -18,8 +18,7 @@ class SingleFolder(audbackend.Backend):
     A serialized dictionary
     stores the dependency between
     backend path and the names.
-    It also stores the version
-    and checksum for every file.
+    It also stores checksum for every file.
 
     """
     class Map:
@@ -75,10 +74,9 @@ class SingleFolder(audbackend.Backend):
     def _checksum(
             self,
             path: str,
-            version: str,
     ) -> str:
         with self.Map(self._path, self._lock) as m:
-            return m[path][version][1]
+            return m[path][1]
 
     def _create(
             self,
@@ -91,10 +89,9 @@ class SingleFolder(audbackend.Backend):
     def _date(
             self,
             path: str,
-            version: str,
     ) -> str:
         with self.Map(self._path, self._lock) as m:
-            p = m[path][version][0]
+            p = m[path][0]
             date = os.path.getmtime(p)
             date = datetime.datetime.fromtimestamp(date)
             date = audbackend.core.utils.date_format(date)
@@ -111,40 +108,31 @@ class SingleFolder(audbackend.Backend):
     def _exists(
             self,
             path: str,
-            version: str,
     ) -> bool:
         with self.Map(self._path, self._lock) as m:
-            return path in m and version in m[path]
+            return path in m
 
     def _get_file(
             self,
             src_path: str,
             dst_path: str,
-            version: str,
             verbose: bool,
     ):
         with self.Map(self._path, self._lock) as m:
-            shutil.copy(m[src_path][version][0], dst_path)
+            shutil.copy(m[src_path][0], dst_path)
 
     def _ls(
             self,
             path: str,
-    ) -> typing.List[typing.Tuple[str, str]]:
+    ) -> typing.List[str]:
 
         with self.Map(self._path, self._lock) as m:
 
             ls = []
 
-            if path.endswith('/'):
-                for p in m:
-                    if p.startswith(path):
-                        for v in m[p]:
-                            ls.append((p, v))
-            else:
-                for p in m:
-                    if p == path:
-                        for v in m[p]:
-                            ls.append((p, v))
+            for p in m:
+                if p.startswith(path):
+                    ls.append(p)
 
             if not ls and not path == '/':
                 raise audbackend.core.utils.raise_file_not_found_error(path)
@@ -154,17 +142,15 @@ class SingleFolder(audbackend.Backend):
     def _owner(
             self,
             path: str,
-            version: str,
     ):
         with self.Map(self._path, self._lock) as m:
-            p = m[path][version][0]
+            p = m[path][0]
             return audbackend.core.utils.file_owner(p)
 
     def _put_file(
             self,
             src_path: str,
             dst_path: str,
-            version: str,
             checksum: str,
             verbose: bool,
     ):
@@ -172,21 +158,16 @@ class SingleFolder(audbackend.Backend):
 
             if dst_path not in m:
                 m[dst_path] = {}
-
-            if version not in m[dst_path]:
                 p = audeer.path(self._root, audeer.uid()[:8])
-                m[dst_path][version] = (p, checksum)
+                m[dst_path] = (p, checksum)
 
-            shutil.copy(src_path, m[dst_path][version][0])
+            shutil.copy(src_path, m[dst_path][0])
 
     def _remove_file(
             self,
             path: str,
-            version: str,
     ):
         with self.Map(self._path, self._lock) as m:
 
-            os.remove(m[path][version][0])
-            m[path].pop(version)
-            if not m[path]:
-                m.pop(path)
+            os.remove(m[path][0])
+            m.pop(path)
