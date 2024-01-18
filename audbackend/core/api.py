@@ -2,6 +2,7 @@ import typing
 
 from audbackend.core import utils
 from audbackend.core.backend import Backend
+from audbackend.core.backend import VersionedBackend
 from audbackend.core.filesystem import FileSystem
 
 
@@ -16,7 +17,9 @@ def _backend(
         name: str,
         host: str,
         repository: str,
-) -> Backend:
+        *,
+        versioned: bool = True
+) -> typing.Union[Backend, VersionedBackend]:
     r"""Get backend instance."""
     if name not in backend_registry:
         raise ValueError(
@@ -31,20 +34,26 @@ def _backend(
     if host not in backends[name]:
         backends[name][host] = {}
     if repository not in backends[name][host]:
-        backends[name][host][repository] = utils.call_function_on_backend(
+        backend = utils.call_function_on_backend(
             backend_registry[name],
             host,
             repository,
         )
+        backends[name][host][repository] = backend
 
-    return backends[name][host][repository]
+    backend = backends[name][host][repository]
+    if versioned:
+        backend = VersionedBackend(backend)
+    return backend
 
 
 def access(
         name: str,
         host: str,
         repository: str,
-) -> Backend:
+        *,
+        versioned: bool = True,
+) -> typing.Union[Backend, VersionedBackend]:
     r"""Access repository.
 
     Returns a backend instance
@@ -83,7 +92,7 @@ def access(
         ('audbackend.core.filesystem.FileSystem', 'host', 'doctest')
 
     """
-    backend = _backend(name, host, repository)
+    backend = _backend(name, host, repository, versioned=versioned)
     utils.call_function_on_backend(backend._access)
     return backend
 
@@ -123,7 +132,9 @@ def create(
         name: str,
         host: str,
         repository: str,
-) -> Backend:
+        *,
+        versioned: bool = True,
+) -> typing.Union[Backend, VersionedBackend]:
     r"""Create repository.
 
     Creates the ``repository``
@@ -163,7 +174,7 @@ def create(
         ('audbackend.core.filesystem.FileSystem', 'host', 'repository')
 
     """
-    backend = _backend(name, host, repository)
+    backend = _backend(name, host, repository, versioned=versioned)
     utils.call_function_on_backend(backend._create)
     return backend
 

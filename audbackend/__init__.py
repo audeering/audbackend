@@ -4,6 +4,7 @@ from audbackend.core.api import create
 from audbackend.core.api import delete
 from audbackend.core.api import register
 from audbackend.core.backend import Backend
+from audbackend.core.backend import VersionedBackend
 from audbackend.core.errors import BackendError
 from audbackend.core.filesystem import FileSystem
 from audbackend.core.repository import Repository
