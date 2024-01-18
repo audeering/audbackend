@@ -432,7 +432,6 @@ class Backend:
             '2.0.0'
 
         """
-        path = utils.check_path(path)
         vs = self.versions(path)
         return vs[-1]
 
