@@ -18,7 +18,6 @@ class DoctestFileSystem(audbackend.FileSystem):
     def _date(
             self,
             path: str,
-            version: str,
     ) -> str:
         date = datetime.datetime(1991, 2, 20)
         date = audbackend.core.utils.date_format(date)
@@ -27,7 +26,6 @@ class DoctestFileSystem(audbackend.FileSystem):
     def _owner(
             self,
             path: str,
-            version: str,
     ) -> str:
         return 'doctest'
 
