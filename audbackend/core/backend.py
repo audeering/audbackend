@@ -469,7 +469,11 @@ class Backend:
     ) -> typing.List[str]:  # pragma: no cover
         r"""List all files under sub-path.
 
-        * If path does not exist an error should be raised
+        If ``path`` is ``'/'`` and no files exist on the repository,
+        an empty list should be returned
+        Otherwise,
+        if ``path`` does not exist or no files are found under ``path``,
+        an error should be raised.
 
         """
         raise NotImplementedError()
