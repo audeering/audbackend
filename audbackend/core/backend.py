@@ -85,8 +85,6 @@ class Backend:
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
-        path = utils.check_path(path)
-        version = utils.check_version(version)
         path_with_version = self._path_with_version(path, version)
 
         return utils.call_function_on_backend(
@@ -146,8 +144,6 @@ class Backend:
               '1991-02-20'
 
         """
-        path = utils.check_path(path)
-        version = utils.check_version(version)
         path_with_version = self._path_with_version(path, version)
 
         return utils.call_function_on_backend(
@@ -201,8 +197,6 @@ class Backend:
             True
 
         """
-        path = utils.check_path(path)
-        version = utils.check_version(version)
         path_with_version = self._path_with_version(path, version)
 
         return utils.call_function_on_backend(
@@ -343,8 +337,6 @@ class Backend:
             True
 
         """
-        src_path = utils.check_path(src_path)
-        version = utils.check_version(version)
         src_path_with_version = self._path_with_version(src_path, version)
 
         dst_path = audeer.path(dst_path)
@@ -689,8 +681,6 @@ class Backend:
               'doctest'
 
         """
-        path = utils.check_path(path)
-        version = utils.check_version(version)
         path_with_version = self._path_with_version(path, version)
 
         return utils.call_function_on_backend(
@@ -705,11 +695,20 @@ class Backend:
     ) -> str:
         r"""Convert to versioned path.
 
-        <root>/<name>
+        <root>/<base><ext>
         ->
-        <root>/<version>/<name>
+        <root>/<version>/<base><ext>
+
+        or legacy:
+
+        <root>/<base><ext>
+        ->
+        <root>/<base>/<version>/<base>-<version><ext>
 
         """
+        path = utils.check_path(path)
+        version = utils.check_version(version)
+
         root, name = self.split(path)
 
         if self._legacy_file_structure:
@@ -851,8 +850,6 @@ class Backend:
             True
 
         """
-        dst_path = utils.check_path(dst_path)
-        version = utils.check_version(version)
         dst_path_with_version = self._path_with_version(dst_path, version)
 
         if not os.path.exists(src_path):
@@ -909,8 +906,6 @@ class Backend:
             False
 
         """
-        path = utils.check_path(path)
-        version = utils.check_version(version)
         path_with_version = self._path_with_version(path, version)
 
         utils.call_function_on_backend(
