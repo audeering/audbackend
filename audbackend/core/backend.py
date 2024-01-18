@@ -1,11 +1,14 @@
+import errno
 import fnmatch
 import os
+import re
 import tempfile
 import typing
 
 import audeer
 
 from audbackend.core import utils
+from audbackend.core.errors import BackendError
 
 
 class Backend:
@@ -28,6 +31,12 @@ class Backend:
         self.repository = repository
         r"""Repository name."""
 
+        # to support legacy file structure
+        # see _use_legacy_file_structure()
+        self._legacy_extensions = []
+        self._legacy_file_structure = False
+        self._legacy_file_structure_regex = False
+
     def __repr__(self) -> str:  # noqa: D105
         name = f'{self.__class__.__module__}.{self.__class__.__name__}'
         return str((name, self.host, self.repository))
@@ -45,7 +54,6 @@ class Backend:
     def _checksum(
             self,
             path: str,
-            version: str,
     ) -> str:  # pragma: no cover
         r"""MD5 checksum of file on backend."""
         raise NotImplementedError()
@@ -77,13 +85,11 @@ class Backend:
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
-        path = utils.check_path(path)
-        version = utils.check_version(version)
+        path_with_version = self._path_with_version(path, version)
 
         return utils.call_function_on_backend(
             self._checksum,
-            path,
-            version,
+            path_with_version,
         )
 
     def _create(
@@ -99,7 +105,6 @@ class Backend:
     def _date(
             self,
             path: str,
-            version: str,
     ) -> str:  # pragma: no cover
         r"""Get date of file on backend.
 
@@ -139,13 +144,11 @@ class Backend:
               '1991-02-20'
 
         """
-        path = utils.check_path(path)
-        version = utils.check_version(version)
+        path_with_version = self._path_with_version(path, version)
 
         return utils.call_function_on_backend(
             self._date,
-            path,
-            version,
+            path_with_version,
         )
 
     def _delete(
@@ -157,7 +160,6 @@ class Backend:
     def _exists(
             self,
             path: str,
-            version: str,
     ) -> bool:  # pragma: no cover
         r"""Check if file exists on backend."""
         raise NotImplementedError()
@@ -195,13 +197,11 @@ class Backend:
             True
 
         """
-        path = utils.check_path(path)
-        version = utils.check_version(version)
+        path_with_version = self._path_with_version(path, version)
 
         return utils.call_function_on_backend(
             self._exists,
-            path,
-            version,
+            path_with_version,
             suppress_backend_errors=suppress_backend_errors,
             fallback_return_value=False,
         )
@@ -280,7 +280,6 @@ class Backend:
             self,
             src_path: str,
             dst_path: str,
-            version: str,
             verbose: bool,
     ):  # pragma: no cover
         r"""Get file from backend."""
@@ -338,8 +337,7 @@ class Backend:
             True
 
         """
-        src_path = utils.check_path(src_path)
-        version = utils.check_version(version)
+        src_path_with_version = self._path_with_version(src_path, version)
 
         dst_path = audeer.path(dst_path)
         if os.path.isdir(dst_path):
@@ -365,9 +363,8 @@ class Backend:
                 tmp_path = audeer.path(tmp, '~')
                 utils.call_function_on_backend(
                     self._get_file,
-                    src_path,
+                    src_path_with_version,
                     tmp_path,
-                    version,
                     verbose,
                 )
                 audeer.move_file(tmp_path, dst_path)
@@ -435,18 +432,48 @@ class Backend:
             '2.0.0'
 
         """
-        path = utils.check_path(path)
         vs = self.versions(path)
         return vs[-1]
+
+    def _legacy_split_ext(
+            self,
+            name: str,
+    ) -> typing.Tuple[str, str]:
+        r"""Split name into basename and extension."""
+        ext = None
+        for custom_ext in self._legacy_extensions:
+            # check for custom extension
+            # ensure basename is not empty
+            if self._legacy_file_structure_regex:
+                pattern = rf'\.({custom_ext})$'
+                match = re.search(pattern, name[1:])
+                if match:
+                    ext = match.group(1)
+            elif name[1:].endswith(f'.{custom_ext}'):
+                ext = custom_ext
+        if ext is None:
+            # if no custom extension is found
+            # use last string after dot
+            ext = audeer.file_extension(name)
+
+        base = audeer.replace_file_extension(name, '', ext=ext)
+
+        if ext:
+            ext = f'.{ext}'
+
+        return base, ext
 
     def _ls(
             self,
             path: str,
-    ) -> typing.List[typing.Tuple[str, str]]:  # pragma: no cover
-        r"""List all files under (sub-)path.
+    ) -> typing.List[str]:  # pragma: no cover
+        r"""List all files under sub-path.
 
-        * If path does not exist an error should be raised
-        * If path ends on `/` it is a sub-path
+        If ``path`` is ``'/'`` and no files exist on the repository,
+        an empty list should be returned
+        Otherwise,
+        if ``path`` does not exist or no files are found under ``path``,
+        an error should be raised.
 
         """
         raise NotImplementedError()
@@ -515,27 +542,95 @@ class Backend:
 
         """  # noqa: E501
         path = utils.check_path(path)
-        paths = utils.call_function_on_backend(
-            self._ls,
-            path,
-            suppress_backend_errors=suppress_backend_errors,
-            fallback_return_value=[],
-        )
-        if not paths:
-            return paths
 
-        paths = sorted(paths)
+        if path.endswith('/'):  # find files under sub-path
+
+            paths = utils.call_function_on_backend(
+                self._ls,
+                path,
+                suppress_backend_errors=suppress_backend_errors,
+                fallback_return_value=[],
+            )
+
+        else:  # find versions of path
+
+            root, file = self.split(path)
+            paths = utils.call_function_on_backend(
+                self._ls,
+                root,
+                suppress_backend_errors=suppress_backend_errors,
+                fallback_return_value=[],
+            )
+
+            # filter for '/root/version/file'
+            if self._legacy_file_structure:
+                depth = root.count('/') + 2
+                name, ext = self._legacy_split_ext(file)
+                match = re.compile(rf'{name}-\d+\.\d+.\d+{ext}')
+                paths = [
+                    p for p in paths
+                    if (
+                           p.count('/') == depth and
+                           match.match(os.path.basename(p))
+                    )
+                ]
+            else:
+                depth = root.count('/') + 1
+                paths = [
+                    p for p in paths
+                    if (
+                        p.count('/') == depth and
+                        os.path.basename(p) == file
+                    )
+                ]
+
+            if not paths and not suppress_backend_errors:
+                # since the backend does no longer raise an error
+                # if the path does not exist
+                # we have to do it
+                ex = FileNotFoundError(
+                    errno.ENOENT,
+                    os.strerror(errno.ENOENT),
+                    path,
+                )
+                raise BackendError(ex)
+
+        if not paths:
+            return []
+
+        paths_and_versions = []
+        for p in paths:
+
+            tokens = p.split(self.sep)
+
+            name = tokens[-1]
+            version = tokens[-2]
+
+            if self._legacy_file_structure:
+                base = tokens[-3]
+                ext = name[len(base) + len(version) + 1:]
+                name = f'{base}{ext}'
+                path = self.sep.join(tokens[:-3])
+            else:
+                path = self.sep.join(tokens[:-2])
+
+            path = self.sep + path
+            path = self.join(path, name)
+
+            paths_and_versions.append((path, version))
+
+        paths_and_versions = sorted(paths_and_versions)
 
         if pattern:
-            paths = [
-                (p, v) for p, v in paths
+            paths_and_versions = [
+                (p, v) for p, v in paths_and_versions
                 if fnmatch.fnmatch(os.path.basename(p), pattern)
             ]
 
         if latest_version:
             # d[path] = ['1.0.0', '2.0.0']
             d = {}
-            for p, v in paths:
+            for p, v in paths_and_versions:
                 if p not in d:
                     d[p] = []
                 d[p].append(v)
@@ -543,14 +638,13 @@ class Backend:
             for p, vs in d.items():
                 d[p] = audeer.sort_versions(vs)[-1]
             # [(path, '2.0.0')]
-            paths = [(p, v) for p, v in d.items()]
+            paths_and_versions = [(p, v) for p, v in d.items()]
 
-        return paths
+        return paths_and_versions
 
     def _owner(
             self,
             path: str,
-            version: str,
     ) -> str:  # pragma: no cover
         r"""Get owner of file on backend.
 
@@ -590,14 +684,43 @@ class Backend:
               'doctest'
 
         """
-        path = utils.check_path(path)
-        version = utils.check_version(version)
+        path_with_version = self._path_with_version(path, version)
 
         return utils.call_function_on_backend(
             self._owner,
-            path,
-            version,
+            path_with_version,
         )
+
+    def _path_with_version(
+            self,
+            path: str,
+            version: str,
+    ) -> str:
+        r"""Convert to versioned path.
+
+        <root>/<base><ext>
+        ->
+        <root>/<version>/<base><ext>
+
+        or legacy:
+
+        <root>/<base><ext>
+        ->
+        <root>/<base>/<version>/<base>-<version><ext>
+
+        """
+        path = utils.check_path(path)
+        version = utils.check_version(version)
+
+        root, name = self.split(path)
+
+        if self._legacy_file_structure:
+            base, ext = self._legacy_split_ext(name)
+            path = self.join(root, base, version, f'{base}-{version}{ext}')
+        else:
+            path = self.join(root, version, name)
+
+        return path
 
     def put_archive(
             self,
@@ -684,7 +807,6 @@ class Backend:
             self,
             src_path: str,
             dst_path: str,
-            version: str,
             checksum: str,
             verbose: bool,
     ):  # pragma: no cover
@@ -731,8 +853,7 @@ class Backend:
             True
 
         """
-        dst_path = utils.check_path(dst_path)
-        version = utils.check_version(version)
+        dst_path_with_version = self._path_with_version(dst_path, version)
 
         if not os.path.exists(src_path):
             utils.raise_file_not_found_error(src_path)
@@ -749,8 +870,7 @@ class Backend:
             utils.call_function_on_backend(
                 self._put_file,
                 src_path,
-                dst_path,
-                version,
+                dst_path_with_version,
                 checksum,
                 verbose,
             )
@@ -758,7 +878,6 @@ class Backend:
     def _remove_file(
             self,
             path: str,
-            version: str,
     ):  # pragma: no cover
         r"""Remove file from backend."""
         raise NotImplementedError()
@@ -790,13 +909,11 @@ class Backend:
             False
 
         """
-        path = utils.check_path(path)
-        version = utils.check_version(version)
+        path_with_version = self._path_with_version(path, version)
 
         utils.call_function_on_backend(
             self._remove_file,
-            path,
-            version,
+            path_with_version,
         )
 
     @property
@@ -870,3 +987,55 @@ class Backend:
         paths = self.ls(path, suppress_backend_errors=suppress_backend_errors)
         vs = [v for _, v in paths]
         return vs
+
+    def _use_legacy_file_structure(
+            self,
+            *,
+            extensions: typing.List[str] = None,
+            regex: bool = False,
+    ):
+        r"""Use legacy file structure.
+
+        Stores files under
+        ``'.../<name-wo-ext>/<version>/<name-wo-ext>-<version>.<ext>'``
+        instead of
+        ``'.../<version>/<name>'``.
+        By default,
+        the extension
+        ``<ext>``
+        is set to the string after the last dot.
+        I.e.,
+        the backend path
+        ``'.../file.tar.gz'``
+        will translate into
+        ``'.../file.tar/1.0.0/file.tar-1.0.0.gz'``.
+        However,
+        by passing a list with custom extensions
+        it is possible to overwrite
+        the default behavior
+        for certain extensions.
+        E.g.,
+        with
+        ``backend._use_legacy_file_structure(extensions=['tar.gz'])``
+        it is ensured that
+        ``'tar.gz'``
+        will be recognized as an extension
+        and the backend path
+        ``'.../file.tar.gz'``
+        will then translate into
+        ``'.../file/1.0.0/file-1.0.0.tar.gz'``.
+        If ``regex`` is set to ``True``,
+        the extensions are treated as regular expressions.
+        E.g.
+        with
+        ``backend._use_legacy_file_structure(extensions=['\d+.tar.gz'],
+        regex=True)``
+        the backend path
+        ``'.../file.99.tar.gz'``
+        will translate into
+        ``'.../file/1.0.0/file-1.0.0.99.tar.gz'``.
+
+        """
+        self._legacy_file_structure = True
+        self._legacy_extensions = extensions or []
+        self._legacy_file_structure_regex = regex
