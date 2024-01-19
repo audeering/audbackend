@@ -212,6 +212,9 @@ def test_legacy_file_structure(tmpdir, interface, file, version, extensions,
     interface.put_file(src_path, file, version)
 
     url = f'{str(interface.backend._repo.path)}{expected}'
-    assert interface.backend._expand(interface._path_with_version(file, version)) == url
+    url_expected = interface.backend._expand(
+        interface._path_with_version(file, version),
+    )
+    assert url_expected == url
     assert interface.ls(file) == [(file, version)]
     assert interface.ls() == [(file, version)]

@@ -463,29 +463,16 @@ def test_ls(tmpdir, interface):
         '/file.bar',
         '/file.foo',
     ]
-    root_latest = [
-        '/file.bar',
-        '/file.foo',
-    ]
     root_foo = [
         '/file.foo',
     ]
     root_bar = [
         '/file.bar',
     ]
-    root_bar_latest = [
-        '/file.bar',
-    ]
     sub = [
         '/sub/file.foo',
     ]
-    sub_latest = [
-        '/sub/file.foo',
-    ]
     hidden = [
-        '/.sub/.file.foo',
-    ]
-    hidden_latest = [
         '/.sub/.file.foo',
     ]
 

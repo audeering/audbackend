@@ -50,7 +50,12 @@ def prepare_docstring_tests(doctest_namespace):
 
         # unversioned interface
 
-        unversioned = audbackend.create('file-system', 'host', 'unversioned', versioned=False)
+        unversioned = audbackend.create(
+            'file-system',
+            'host',
+            'unversioned',
+            versioned=False,
+        )
         unversioned.put_archive('.', '/a.zip', files=[file])
         unversioned.put_file(file, '/a/b.ext')
         unversioned.put_file(file, '/f.ext')
@@ -58,7 +63,12 @@ def prepare_docstring_tests(doctest_namespace):
 
         # versioned interface
 
-        versioned = audbackend.create('file-system', 'host', 'versioned', versioned=True)
+        versioned = audbackend.create(
+            'file-system',
+            'host',
+            'versioned',
+            versioned=True,
+        )
         versioned.put_archive('.', '/a.zip', '1.0.0', files=[file])
         versioned.put_file(file, '/a/b.ext', '1.0.0')
         for version in ['1.0.0', '2.0.0']:

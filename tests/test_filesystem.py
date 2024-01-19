@@ -138,6 +138,9 @@ def test_legacy_file_structure(tmpdir, interface, file, version, extensions,
     interface.put_file(src_path, file, version)
 
     path = os.path.join(interface.backend._root, expected)
-    assert interface.backend._expand(interface._path_with_version(file, version)) == path
+    path_expected = interface.backend._expand(
+        interface._path_with_version(file, version),
+    )
+    assert path_expected == path
     assert interface.ls(file) == [(file, version)]
     assert interface.ls() == [(file, version)]

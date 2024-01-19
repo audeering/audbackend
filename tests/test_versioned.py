@@ -260,7 +260,12 @@ def test_errors(tmpdir, interface):
     else:
         error_msg = "No such file or directory: 'non-existing/..."
     with pytest.raises(FileNotFoundError, match=error_msg):
-        interface.get_archive(archive, tmpdir, version, tmp_root='non-existing')
+        interface.get_archive(
+            archive,
+            tmpdir,
+            version,
+            tmp_root='non-existing',
+        )
     # extension of `src_path` is not supported
     error_msg = 'You can only extract ZIP and TAR.GZ files, ...'
     interface.put_file(
@@ -394,7 +399,12 @@ def test_errors(tmpdir, interface):
     # extension of `dst_path` is not supported
     error_msg = 'You can only create a ZIP or TAR.GZ archive, not ...'
     with pytest.raises(RuntimeError, match=error_msg):
-        interface.put_archive(tmpdir, '/archive.bad', version, files=local_file)
+        interface.put_archive(
+            tmpdir,
+            '/archive.bad',
+            version,
+            files=local_file,
+        )
 
     # --- put_file ---
     # `src_path` does not exists

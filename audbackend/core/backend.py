@@ -436,7 +436,8 @@ class Backend:
 
         if pattern:
             paths = [
-                p for p in paths if fnmatch.fnmatch(os.path.basename(p), pattern)
+                p for p in paths
+                if fnmatch.fnmatch(os.path.basename(p), pattern)
             ]
 
         return paths
@@ -555,7 +556,6 @@ class Backend:
             verbose: bool = False,
     ):
         r"""Put file on backend.
-
 
         The operation is silently skipped,
         if a file with the same checksum

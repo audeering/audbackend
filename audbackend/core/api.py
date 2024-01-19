@@ -2,9 +2,9 @@ import typing
 
 from audbackend.core import utils
 from audbackend.core.backend import Backend
+from audbackend.core.filesystem import FileSystem
 from audbackend.core.interface import Unversioned
 from audbackend.core.interface import Versioned
-from audbackend.core.filesystem import FileSystem
 
 
 backends = {}

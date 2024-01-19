@@ -1,6 +1,5 @@
 import os
 import re
-import tempfile
 import typing
 
 import audeer
@@ -214,7 +213,10 @@ class Unversioned(Interface):
             True
 
         """
-        return self.backend.exists(path, suppress_backend_errors=suppress_backend_errors)
+        return self.backend.exists(
+            path,
+            suppress_backend_errors=suppress_backend_errors,
+        )
 
     def get_archive(
             self,
@@ -259,7 +261,12 @@ class Unversioned(Interface):
             ['src.pth']
 
         """
-        return self.backend.get_archive(src_path, dst_root, tmp_root=tmp_root, verbose=verbose)
+        return self.backend.get_archive(
+            src_path,
+            dst_root,
+            tmp_root=tmp_root,
+            verbose=verbose,
+        )
 
     def get_file(
             self,
@@ -369,7 +376,11 @@ class Unversioned(Interface):
             ['/a/b.ext']
 
         """  # noqa: E501
-        return self.backend.ls(path, pattern=pattern, suppress_backend_errors=suppress_backend_errors)
+        return self.backend.ls(
+            path,
+            pattern=pattern,
+            suppress_backend_errors=suppress_backend_errors,
+        )
 
     def owner(
             self,
@@ -451,7 +462,13 @@ class Unversioned(Interface):
             True
 
         """
-        self.backend.put_archive(src_root, dst_path, files=files, tmp_root=tmp_root, verbose=verbose)
+        self.backend.put_archive(
+            src_root,
+            dst_path,
+            files=files,
+            tmp_root=tmp_root,
+            verbose=verbose,
+        )
 
     def put_file(
             self,
@@ -634,7 +651,10 @@ class Versioned(Interface):
 
         """
         path_with_version = self._path_with_version(path, version)
-        return self.backend.exists(path_with_version, suppress_backend_errors=suppress_backend_errors)
+        return self.backend.exists(
+            path_with_version,
+            suppress_backend_errors=suppress_backend_errors,
+        )
 
     def get_archive(
             self,
@@ -684,7 +704,12 @@ class Versioned(Interface):
 
         """
         src_path_with_version = self._path_with_version(src_path, version)
-        return self.backend.get_archive(src_path_with_version, dst_root, tmp_root=tmp_root, verbose=verbose)
+        return self.backend.get_archive(
+            src_path_with_version,
+            dst_root,
+            tmp_root=tmp_root,
+            verbose=verbose,
+        )
 
     def get_file(
             self,
@@ -739,7 +764,11 @@ class Versioned(Interface):
 
         """
         src_path_with_version = self._path_with_version(src_path, version)
-        return self.backend.get_file(src_path_with_version, dst_path, verbose=verbose)
+        return self.backend.get_file(
+            src_path_with_version,
+            dst_path,
+            verbose=verbose,
+        )
 
     def latest_version(
             self,
@@ -832,13 +861,21 @@ class Versioned(Interface):
         """  # noqa: E501
         if path.endswith('/'):  # find files under sub-path
 
-            paths = self.backend.ls(path, pattern=pattern, suppress_backend_errors=suppress_backend_errors)
+            paths = self.backend.ls(
+                path,
+                pattern=pattern,
+                suppress_backend_errors=suppress_backend_errors,
+            )
 
         else:  # find versions of path
 
             root, file = self.split(path)
 
-            paths = self.backend.ls(root, pattern=pattern, suppress_backend_errors=suppress_backend_errors)
+            paths = self.backend.ls(
+                root,
+                pattern=pattern,
+                suppress_backend_errors=suppress_backend_errors,
+            )
 
             # filter for '/root/version/file'
             if self._legacy_file_structure:
@@ -1005,7 +1042,13 @@ class Versioned(Interface):
 
         """
         dst_path_with_version = self._path_with_version(dst_path, version)
-        self.backend.put_archive(src_root, dst_path_with_version, files=files, tmp_root=tmp_root, verbose=verbose)
+        self.backend.put_archive(
+            src_root,
+            dst_path_with_version,
+            files=files,
+            tmp_root=tmp_root,
+            verbose=verbose,
+        )
 
     def put_file(
             self,
@@ -1048,7 +1091,11 @@ class Versioned(Interface):
 
         """
         dst_path_with_version = self._path_with_version(dst_path, version)
-        return self.backend.put_file(src_path, dst_path_with_version, verbose=verbose)
+        return self.backend.put_file(
+            src_path,
+            dst_path_with_version,
+            verbose=verbose,
+        )
 
     def remove_file(
             self,
