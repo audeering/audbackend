@@ -10,103 +10,10 @@ from audbackend.core import utils
 from audbackend.core.errors import BackendError
 
 
-class Base:
-    r"""Base class."""
-
-    def __repr__(self) -> str:  # noqa: D105
-        name = f'{self.__class__.__module__}.{self.__class__.__name__}'
-        return str((name, self.host, self.repository))
-
-    def join(
-            self,
-            path: str,
-            *paths,
-    ) -> str:
-        r"""Join to path on backend.
-
-        Args:
-            path: first part of path
-            *paths: additional parts of path
-
-        Returns:
-            path joined by :attr:`Backend.sep`
-
-        Raises:
-            ValueError: if ``path`` contains invalid character
-                or does not start with ``'/'``,
-                or if joined path contains invalid character
-
-        Examples:
-            >>> backend.join('/', 'f.ext')
-            '/f.ext'
-            >>> backend.join('/sub', 'f.ext')
-            '/sub/f.ext'
-            >>> backend.join('//sub//', '/', '', None, '/f.ext')
-            '/sub/f.ext'
-
-        """
-        path = utils.check_path(path)
-
-        paths = [path] + [p for p in paths]
-        paths = [path for path in paths if path]  # remove empty or None
-        path = self.sep.join(paths)
-
-        path = utils.check_path(path)
-
-        return path
-
-    @property
-    def sep(self) -> str:
-        r"""File separator on backend.
-
-        Returns: file separator
-
-        """
-        return utils.BACKEND_SEPARATOR
-
-    def split(
-            self,
-            path: str,
-    ) -> typing.Tuple[str, str]:
-        r"""Split path on backend into sub-path and basename.
-
-        Args:
-            path: path containing :attr:`Backend.sep` as separator
-
-        Returns:
-            tuple containing (root, basename)
-
-        Raises:
-            ValueError: if ``path`` does not start with ``'/'`` or
-                does not match ``'[A-Za-z0-9/._-]+'``
-
-        Examples:
-            >>> backend.split('/')
-            ('/', '')
-            >>> backend.split('/f.ext')
-            ('/', 'f.ext')
-            >>> backend.split('/sub/')
-            ('/sub/', '')
-            >>> backend.split('/sub//f.ext')
-            ('/sub/', 'f.ext')
-
-        """
-        path = utils.check_path(path)
-
-        root = self.sep.join(path.split(self.sep)[:-1]) + self.sep
-        basename = path.split(self.sep)[-1]
-
-        return root, basename
-
-
-class Backend(Base):
+class Backend:
     r"""Abstract backend.
 
-    Implement class to create a new backend.
-
-    Args:
-        host: host address
-        repository: repository name
+    Derive from this class to implement a new backend.
 
     """
     def __init__(
@@ -115,9 +22,11 @@ class Backend(Base):
             repository: str,
     ):
         self.host = host
-        r"""Host path."""
         self.repository = repository
-        r"""Repository name."""
+
+    def __repr__(self) -> str:  # noqa: D105
+        name = f'{self.__class__.__module__}.{self.__class__.__name__}'
+        return str((name, self.host, self.repository))
 
     def _access(
             self,
@@ -253,6 +162,22 @@ class Backend(Base):
                 audeer.move_file(tmp_path, dst_path)
 
         return dst_path
+
+    def join(
+            self,
+            path: str,
+            *paths,
+    ) -> str:
+        r"""Join to path on backend."""
+        path = utils.check_path(path)
+
+        paths = [path] + [p for p in paths]
+        paths = [path for path in paths if path]  # remove empty or None
+        path = self.sep.join(paths)
+
+        path = utils.check_path(path)
+
+        return path
 
     def _ls(
             self,
@@ -393,3 +318,20 @@ class Backend(Base):
             self._remove_file,
             path,
         )
+
+    @property
+    def sep(self) -> str:
+        r"""File separator on backend."""
+        return utils.BACKEND_SEPARATOR
+
+    def split(
+            self,
+            path: str,
+    ) -> typing.Tuple[str, str]:
+        r"""Split path on backend into sub-path and basename."""
+        path = utils.check_path(path)
+
+        root = self.sep.join(path.split(self.sep)[:-1]) + self.sep
+        basename = path.split(self.sep)[-1]
+
+        return root, basename

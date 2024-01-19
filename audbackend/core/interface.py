@@ -8,11 +8,10 @@ import audeer
 
 from audbackend.core import utils
 from audbackend.core.backend import Backend
-from audbackend.core.backend import Base
 from audbackend.core.errors import BackendError
 
 
-class Interface(Base):
+class Interface:
     r"""Backend interface.
 
     Args:
@@ -25,6 +24,9 @@ class Interface(Base):
     ):
         self._backend = backend
 
+    def __repr__(self) -> str:  # noqa: D105
+        return repr(self.backend)
+
     @property
     def backend(self) -> Backend:
         r"""Backend object.
@@ -33,6 +35,92 @@ class Interface(Base):
 
         """
         return self._backend
+
+    @property
+    def host(self) -> str:
+        r"""Host path.
+
+        Returns: host path
+
+        """
+        return self.backend.host
+
+    def join(
+            self,
+            path: str,
+            *paths,
+    ) -> str:
+        r"""Join to path on backend.
+
+        Args:
+            path: first part of path
+            *paths: additional parts of path
+
+        Returns:
+            path joined by :attr:`Backend.sep`
+
+        Raises:
+            ValueError: if ``path`` contains invalid character
+                or does not start with ``'/'``,
+                or if joined path contains invalid character
+
+        Examples:
+            >>> backend.join('/', 'f.ext')
+            '/f.ext'
+            >>> backend.join('/sub', 'f.ext')
+            '/sub/f.ext'
+            >>> backend.join('//sub//', '/', '', None, '/f.ext')
+            '/sub/f.ext'
+
+        """
+        return self.backend.join(path, *paths)
+
+    @property
+    def repository(self) -> str:
+        r"""Repository name.
+
+        Returns: repository name
+
+        """
+        return self.backend.repository
+
+    @property
+    def sep(self) -> str:
+        r"""File separator on backend.
+
+        Returns: file separator
+
+        """
+        return self.backend.sep
+
+    def split(
+            self,
+            path: str,
+    ) -> typing.Tuple[str, str]:
+        r"""Split path on backend into sub-path and basename.
+
+        Args:
+            path: path containing :attr:`Backend.sep` as separator
+
+        Returns:
+            tuple containing (root, basename)
+
+        Raises:
+            ValueError: if ``path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+
+        Examples:
+            >>> backend.split('/')
+            ('/', '')
+            >>> backend.split('/f.ext')
+            ('/', 'f.ext')
+            >>> backend.split('/sub/')
+            ('/sub/', '')
+            >>> backend.split('/sub//f.ext')
+            ('/sub/', 'f.ext')
+
+        """
+        return self.backend.split(path)
 
 
 class Unversioned(Interface):
