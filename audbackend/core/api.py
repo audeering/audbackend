@@ -86,8 +86,10 @@ def access(
             has been registered
 
     Examples:
-        >>> access('file-system', 'host', 'doctest')
-        ('audbackend.core.filesystem.FileSystem', 'host', 'doctest')
+        >>> access('file-system', 'host', 'versioned')
+        ('audbackend.core.filesystem.FileSystem', 'host', 'versioned')
+        >>> access('file-system', 'host', 'unversioned', versioned=False)
+        ('audbackend.core.filesystem.FileSystem', 'host', 'unversioned')
 
     """
     backend = _backend(name, host, repository)
@@ -112,7 +114,7 @@ def available() -> typing.Dict[str, typing.List[Backend]]:
         >>> list(available())
         ['artifactory', 'file-system']
         >>> available()['file-system']
-        [('audbackend.core.filesystem.FileSystem', 'host', 'doctest')]
+        [('audbackend.core.filesystem.FileSystem', 'host', 'unversioned'), ('audbackend.core.filesystem.FileSystem', 'host', 'versioned')]
 
     """  # noqa: E501
     result = {}
@@ -205,10 +207,15 @@ def delete(
             has been registered
 
     Examples:
-        >>> access('file-system', 'host', 'doctest').ls()
+        >>> access('file-system', 'host', 'versioned').ls()
         [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-        >>> delete('file-system', 'host', 'doctest')
-        >>> create('file-system', 'host', 'doctest').ls()
+        >>> delete('file-system', 'host', 'versioned')
+        >>> create('file-system', 'host', 'versioned').ls()
+        []
+        >>> access('file-system', 'host', 'unversioned', versioned=False).ls()
+        ['/a.zip', '/a/b.ext', '/f.ext']
+        >>> delete('file-system', 'host', 'unversioned')
+        >>> create('file-system', 'host', 'unversioned').ls()
         []
 
     """  # noqa: E501

@@ -144,7 +144,7 @@ class Unversioned(Interface):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-            >>> backend.checksum('/f.ext')
+            >>> unversioned.checksum('/f.ext')
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
@@ -172,7 +172,7 @@ class Unversioned(Interface):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-              >>> backend.date('/f.ext')
+              >>> unversioned.date('/f.ext')
               '1991-02-20'
 
         """
@@ -205,7 +205,7 @@ class Unversioned(Interface):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
-            >>> backend.exists('/f.ext')
+            >>> unversioned.exists('/f.ext')
             True
 
         """
@@ -250,7 +250,7 @@ class Unversioned(Interface):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-            >>> backend.get_archive('/a.zip', '.')
+            >>> unversioned.get_archive('/a.zip', '.')
             ['src.pth']
 
         """
@@ -299,7 +299,7 @@ class Unversioned(Interface):
         Examples:
             >>> os.path.exists('dst.pth')
             False
-            >>> _ = backend.get_file('/f.ext', 'dst.pth')
+            >>> _ = unversioned.get_file('/f.ext', 'dst.pth')
             >>> os.path.exists('dst.pth')
             True
 
@@ -352,15 +352,15 @@ class Unversioned(Interface):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-            >>> backend.ls()
-            ['/a.zip', /a/b.ext', '/f.ext']
-            >>> backend.ls('/f.ext')
+            >>> unversioned.ls()
+            ['/a.zip', '/a/b.ext', '/f.ext']
+            >>> unversioned.ls('/f.ext')
             ['/f.ext']
-            >>> backend.ls(pattern='*.ext')
-            ['/a/b.ext', '/f.ext', '/f.ext']
-            >>> backend.ls(pattern='b.*')
+            >>> unversioned.ls(pattern='*.ext')
+            ['/a/b.ext', '/f.ext']
+            >>> unversioned.ls(pattern='b.*')
             ['/a/b.ext']
-            >>> backend.ls('/a/')
+            >>> unversioned.ls('/a/')
             ['/a/b.ext']
 
         """  # noqa: E501
@@ -389,7 +389,7 @@ class Unversioned(Interface):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-              >>> backend.owner('/f.ext')
+              >>> unversioned.owner('/f.ext')
               'doctest'
 
         """
@@ -439,10 +439,10 @@ class Unversioned(Interface):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-            >>> backend.exists('/a.tar.gz')
+            >>> unversioned.exists('/a.tar.gz')
             False
-            >>> backend.put_archive('.', '/a.tar.gz')
-            >>> backend.exists('/a.tar.gz')
+            >>> unversioned.put_archive('.', '/a.tar.gz')
+            >>> unversioned.exists('/a.tar.gz')
             True
 
         """
@@ -477,10 +477,10 @@ class Unversioned(Interface):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-            >>> backend.exists('/sub/f.ext')
+            >>> unversioned.exists('/sub/f.ext')
             False
-            >>> backend.put_file('src.pth', '/sub/f.ext')
-            >>> backend.exists('/sub/f.ext')
+            >>> unversioned.put_file('src.pth', '/sub/f.ext')
+            >>> unversioned.exists('/sub/f.ext')
             True
 
         """
@@ -502,10 +502,10 @@ class Unversioned(Interface):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-            >>> backend.exists('/f.ext')
+            >>> unversioned.exists('/f.ext')
             True
-            >>> backend.remove_file('/f.ext')
-            >>> backend.exists('/f.ext')
+            >>> unversioned.remove_file('/f.ext')
+            >>> unversioned.exists('/f.ext')
             False
 
         """
@@ -550,7 +550,7 @@ class Versioned(Interface):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
-            >>> backend.checksum('/f.ext', '1.0.0')
+            >>> versioned.checksum('/f.ext', '1.0.0')
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
@@ -583,7 +583,7 @@ class Versioned(Interface):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
-              >>> backend.date('/f.ext', '1.0.0')
+              >>> versioned.date('/f.ext', '1.0.0')
               '1991-02-20'
 
         """
@@ -619,7 +619,7 @@ class Versioned(Interface):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
-            >>> backend.exists('/f.ext', '1.0.0')
+            >>> versioned.exists('/f.ext', '1.0.0')
             True
 
         """
@@ -669,7 +669,7 @@ class Versioned(Interface):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
-            >>> backend.get_archive('/a.zip', '.', '1.0.0')
+            >>> versioned.get_archive('/a.zip', '.', '1.0.0')
             ['src.pth']
 
         """
@@ -723,7 +723,7 @@ class Versioned(Interface):
         Examples:
             >>> os.path.exists('dst.pth')
             False
-            >>> _ = backend.get_file('/f.ext', 'dst.pth', '1.0.0')
+            >>> _ = versioned.get_file('/f.ext', 'dst.pth', '1.0.0')
             >>> os.path.exists('dst.pth')
             True
 
@@ -750,7 +750,7 @@ class Versioned(Interface):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-            >>> backend.latest_version('/f.ext')
+            >>> versioned.latest_version('/f.ext')
             '2.0.0'
 
         """
@@ -806,17 +806,17 @@ class Versioned(Interface):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-            >>> backend.ls()
+            >>> versioned.ls()
             [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> backend.ls(latest_version=True)
+            >>> versioned.ls(latest_version=True)
             [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> backend.ls('/f.ext')
+            >>> versioned.ls('/f.ext')
             [('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> backend.ls(pattern='*.ext')
+            >>> versioned.ls(pattern='*.ext')
             [('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> backend.ls(pattern='b.*')
+            >>> versioned.ls(pattern='b.*')
             [('/a/b.ext', '1.0.0')]
-            >>> backend.ls('/a/')
+            >>> versioned.ls('/a/')
             [('/a/b.ext', '1.0.0')]
 
         """  # noqa: E501
@@ -932,7 +932,7 @@ class Versioned(Interface):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
-              >>> backend.owner('/f.ext', '1.0.0')
+              >>> versioned.owner('/f.ext', '1.0.0')
               'doctest'
 
         """
@@ -987,10 +987,10 @@ class Versioned(Interface):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
-            >>> backend.exists('/a.tar.gz', '1.0.0')
+            >>> versioned.exists('/a.tar.gz', '1.0.0')
             False
-            >>> backend.put_archive('.', '/a.tar.gz', '1.0.0')
-            >>> backend.exists('/a.tar.gz', '1.0.0')
+            >>> versioned.put_archive('.', '/a.tar.gz', '1.0.0')
+            >>> versioned.exists('/a.tar.gz', '1.0.0')
             True
 
         """
@@ -1030,10 +1030,10 @@ class Versioned(Interface):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
-            >>> backend.exists('/sub/f.ext', '3.0.0')
+            >>> versioned.exists('/sub/f.ext', '3.0.0')
             False
-            >>> backend.put_file('src.pth', '/sub/f.ext', '3.0.0')
-            >>> backend.exists('/sub/f.ext', '3.0.0')
+            >>> versioned.put_file('src.pth', '/sub/f.ext', '3.0.0')
+            >>> versioned.exists('/sub/f.ext', '3.0.0')
             True
 
         """
@@ -1060,10 +1060,10 @@ class Versioned(Interface):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
-            >>> backend.exists('/f.ext', '1.0.0')
+            >>> versioned.exists('/f.ext', '1.0.0')
             True
-            >>> backend.remove_file('/f.ext', '1.0.0')
-            >>> backend.exists('/f.ext', '1.0.0')
+            >>> versioned.remove_file('/f.ext', '1.0.0')
+            >>> versioned.exists('/f.ext', '1.0.0')
             False
 
         """
@@ -1095,7 +1095,7 @@ class Versioned(Interface):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-            >>> backend.versions('/f.ext')
+            >>> versioned.versions('/f.ext')
             ['1.0.0', '2.0.0']
 
         """

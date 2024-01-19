@@ -12,7 +12,7 @@ import audbackend
 
 # list of backends that will be tested by default
 pytest.BACKENDS = [
-    # 'artifactory',
+    'artifactory',
     'file-system',
 ]
 if os.name != 'nt':

@@ -38,24 +38,37 @@ def prepare_docstring_tests(doctest_namespace):
         current_dir = os.getcwd()
         os.chdir(tmp)
 
-        host = 'host'
-        repository = 'doctest'
-
-        audbackend.register('file-system', DoctestFileSystem)
-        backend = audbackend.create('file-system', host, repository)
-
         file = 'src.pth'
         audeer.touch(file)
-        backend.put_archive('.', '/a.zip', '1.0.0', files=[file])
-        backend.put_file(file, '/a/b.ext', '1.0.0')
-        for version in ['1.0.0', '2.0.0']:
-            backend.put_file(file, '/f.ext', version)
 
+        audbackend.register('file-system', DoctestFileSystem)
+
+        # backend
+
+        backend = audbackend.Backend('host', 'repository')
         doctest_namespace['backend'] = backend
+
+        # unversioned interface
+
+        unversioned = audbackend.create('file-system', 'host', 'unversioned', versioned=False)
+        unversioned.put_archive('.', '/a.zip', files=[file])
+        unversioned.put_file(file, '/a/b.ext')
+        unversioned.put_file(file, '/f.ext')
+        doctest_namespace['unversioned'] = unversioned
+
+        # versioned interface
+
+        versioned = audbackend.create('file-system', 'host', 'versioned', versioned=True)
+        versioned.put_archive('.', '/a.zip', '1.0.0', files=[file])
+        versioned.put_file(file, '/a/b.ext', '1.0.0')
+        for version in ['1.0.0', '2.0.0']:
+            versioned.put_file(file, '/f.ext', version)
+        doctest_namespace['versioned'] = versioned
 
         yield
 
-        audbackend.delete('file-system', host, repository)
+        audbackend.delete('file-system', 'host', 'unversioned')
+        audbackend.delete('file-system', 'host', 'versioned')
         audbackend.register('file-system', audbackend.FileSystem)
 
         os.chdir(current_dir)
