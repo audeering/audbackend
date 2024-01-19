@@ -43,8 +43,8 @@ import audbackend
         audbackend.Backend('host', 'repository'),
     ]
 )
-def test_join(paths, expected, backend):
-    assert backend.join(*paths) == expected
+def test_join(paths, expected, interface):
+    assert interface.join(*paths) == expected
 
 
 @pytest.mark.parametrize(
@@ -79,5 +79,5 @@ def test_join(paths, expected, backend):
         audbackend.Backend('host', 'repository'),
     ]
 )
-def test_split(path, expected, backend):
-    assert backend.split(path) == expected
+def test_split(path, expected, interface):
+    assert interface.split(path) == expected

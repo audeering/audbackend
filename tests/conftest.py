@@ -12,7 +12,7 @@ import audbackend
 
 # list of backends that will be tested by default
 pytest.BACKENDS = [
-    # 'artifactory',
+    'artifactory',
     'file-system',
 ]
 if os.name != 'nt':
@@ -61,7 +61,7 @@ def owner(request):
 
 
 @pytest.fixture(scope='function', autouse=False)
-def backend(hosts, request):
+def interface(hosts, request):
 
     name, versioned = request.param
     host = hosts[name]

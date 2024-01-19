@@ -28,11 +28,11 @@ def bad_file_system():
 
 
 @pytest.mark.parametrize(
-    'backend',
+    'interface',
     [('file-system', True)],
     indirect=True,
 )
-def test_get_file_interrupt(tmpdir, bad_file_system, backend):
+def test_get_file_interrupt(tmpdir, bad_file_system, interface):
 
     src_path = audeer.path(tmpdir, '~tmp')
 
@@ -40,7 +40,7 @@ def test_get_file_interrupt(tmpdir, bad_file_system, backend):
     with open(src_path, 'w') as fp:
         fp.write('remote')
     checksum_remote = audeer.md5(src_path)
-    backend.put_file(src_path, '/file', '1.0.0')
+    interface.put_file(src_path, '/file', '1.0.0')
 
     # change content of local file
     with open(src_path, 'w') as fp:
@@ -50,12 +50,12 @@ def test_get_file_interrupt(tmpdir, bad_file_system, backend):
 
     # try to read remote file, local file remains unchanged
     with pytest.raises(audbackend.BackendError):
-        backend.get_file('/file', src_path, '1.0.0')
+        interface.get_file('/file', src_path, '1.0.0')
     assert audeer.md5(src_path) == checksum_local
 
 
 @pytest.mark.parametrize(
-    'backend',
+    'interface',
     [('file-system', True)],
     indirect=True,
 )
@@ -127,17 +127,17 @@ def test_get_file_interrupt(tmpdir, bad_file_system, backend):
         ),
     ]
 )
-def test_legacy_file_structure(tmpdir, backend, file, version, extensions,
+def test_legacy_file_structure(tmpdir, interface, file, version, extensions,
                                regex, expected):
 
     expected = expected.replace('/', os.path.sep)
 
-    backend._use_legacy_file_structure(extensions=extensions, regex=regex)
+    interface._use_legacy_file_structure(extensions=extensions, regex=regex)
 
     src_path = audeer.touch(audeer.path(tmpdir, 'tmp'))
-    backend.put_file(src_path, file, version)
+    interface.put_file(src_path, file, version)
 
-    path = os.path.join(backend.backend._root, expected)
-    assert backend.backend._expand(backend._path_with_version(file, version)) == path
-    assert backend.ls(file) == [(file, version)]
-    assert backend.ls() == [(file, version)]
+    path = os.path.join(interface.backend._root, expected)
+    assert interface.backend._expand(interface._path_with_version(file, version)) == path
+    assert interface.ls(file) == [(file, version)]
+    assert interface.ls() == [(file, version)]
