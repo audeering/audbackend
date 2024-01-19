@@ -57,7 +57,11 @@ class Base:
 
     @property
     def sep(self) -> str:
-        r"""File separator on backend."""
+        r"""File separator on backend.
+
+        Returns: file separator
+
+        """
         return utils.BACKEND_SEPARATOR
 
     def split(

@@ -212,8 +212,8 @@ def delete(
         []
 
     """  # noqa: E501
-    backend = access(name, host, repository)
-    utils.call_function_on_backend(backend._delete)
+    interface = access(name, host, repository)
+    utils.call_function_on_backend(interface._backend._delete)
     backends[name][host].pop(repository)
 
 

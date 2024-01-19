@@ -11,13 +11,26 @@ from audbackend.core.backend import Base
 
 
 class Interface(Base):
-    r"""Versioned backend interface."""
+    r"""Backend interface.
 
+    Args:
+        backend: backend object
+
+    """
     def __init__(
             self,
             backend: Backend,
     ):
         self._backend = backend
+
+    @property
+    def backend(self) -> Backend:
+        r"""Backend object.
+
+        Returns: backend object
+
+        """
+        return self._backend
 
 
 class Unversioned(Interface):
@@ -46,7 +59,7 @@ class Unversioned(Interface):
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
-        return self._backend.checksum(path)
+        return self.backend.checksum(path)
 
     def date(
             self,
@@ -74,7 +87,7 @@ class Unversioned(Interface):
               '1991-02-20'
 
         """
-        return self._backend.date(path)
+        return self.backend.date(path)
 
     def exists(
             self,
@@ -107,7 +120,7 @@ class Unversioned(Interface):
             True
 
         """
-        return self._backend.exists(path, suppress_backend_errors=suppress_backend_errors)
+        return self.backend.exists(path, suppress_backend_errors=suppress_backend_errors)
 
     def get_archive(
             self,
@@ -161,7 +174,7 @@ class Unversioned(Interface):
                 tmp_root,
                 os.path.basename(src_path),
             )
-            self._backend.get_file(
+            self.backend.get_file(
                 src_path,
                 local_archive,
                 verbose=verbose,
@@ -221,7 +234,7 @@ class Unversioned(Interface):
             True
 
         """
-        return self._backend.get_file(src_path, dst_path, verbose=verbose)
+        return self.backend.get_file(src_path, dst_path, verbose=verbose)
 
     def ls(
             self,
@@ -281,7 +294,7 @@ class Unversioned(Interface):
             ['/a/b.ext']
 
         """  # noqa: E501
-        return self._backend.ls(path, pattern=pattern, suppress_backend_errors=suppress_backend_errors)
+        return self.backend.ls(path, pattern=pattern, suppress_backend_errors=suppress_backend_errors)
 
     def owner(
             self,
@@ -310,7 +323,7 @@ class Unversioned(Interface):
               'doctest'
 
         """
-        return self._backend.owner(path)
+        return self.backend.owner(path)
 
     def put_archive(
             self,
@@ -381,7 +394,7 @@ class Unversioned(Interface):
                 verbose=verbose,
             )
 
-            self._backend.put_file(
+            self.backend.put_file(
                 archive,
                 dst_path,
                 verbose=verbose,
@@ -423,7 +436,7 @@ class Unversioned(Interface):
             True
 
         """
-        self._backend.put_file(src_path, dst_path, verbose=verbose)
+        self.backend.put_file(src_path, dst_path, verbose=verbose)
 
     def remove_file(
             self,
@@ -448,7 +461,7 @@ class Unversioned(Interface):
             False
 
         """
-        self._backend.remove_file(path)
+        self.backend.remove_file(path)
 
 
 class Versioned(Interface):
@@ -495,7 +508,7 @@ class Versioned(Interface):
         """
         path_with_version = self._path_with_version(path, version)
 
-        return self._backend.checksum(path_with_version)
+        return self.backend.checksum(path_with_version)
 
     def date(
             self,
@@ -529,7 +542,7 @@ class Versioned(Interface):
         """
         path_with_version = self._path_with_version(path, version)
 
-        return self._backend.date(path_with_version)
+        return self.backend.date(path_with_version)
 
     def exists(
             self,
@@ -566,7 +579,7 @@ class Versioned(Interface):
         """
         path_with_version = self._path_with_version(path, version)
 
-        return self._backend.exists(path_with_version, suppress_backend_errors=suppress_backend_errors)
+        return self.backend.exists(path_with_version, suppress_backend_errors=suppress_backend_errors)
 
     def get_archive(
             self,
@@ -691,7 +704,7 @@ class Versioned(Interface):
         """
         src_path_with_version = self._path_with_version(src_path, version)
 
-        return self._backend.get_file(src_path_with_version, dst_path, verbose=verbose)
+        return self.backend.get_file(src_path_with_version, dst_path, verbose=verbose)
 
     def latest_version(
             self,
@@ -784,13 +797,13 @@ class Versioned(Interface):
         """  # noqa: E501
         if path.endswith('/'):  # find files under sub-path
 
-            paths = self._backend.ls(path, pattern=pattern, suppress_backend_errors=suppress_backend_errors)
+            paths = self.backend.ls(path, pattern=pattern, suppress_backend_errors=suppress_backend_errors)
 
         else:  # find versions of path
 
             root, file = self.split(path)
 
-            paths = self._backend.ls(root, pattern=pattern, suppress_backend_errors=suppress_backend_errors)
+            paths = self.backend.ls(root, pattern=pattern, suppress_backend_errors=suppress_backend_errors)
 
             # filter for '/root/version/file'
             if self._legacy_file_structure:
@@ -891,7 +904,7 @@ class Versioned(Interface):
         """
         path_with_version = self._path_with_version(path, version)
 
-        return self._backend.owner(path_with_version)
+        return self.backend.owner(path_with_version)
 
     def put_archive(
             self,
@@ -1016,7 +1029,7 @@ class Versioned(Interface):
         """
         dst_path_with_version = self._path_with_version(dst_path, version)
 
-        return self._backend.put_file(src_path, dst_path_with_version, verbose=verbose)
+        return self.backend.put_file(src_path, dst_path_with_version, verbose=verbose)
 
     def remove_file(
             self,
@@ -1047,7 +1060,7 @@ class Versioned(Interface):
         """
         path_with_version = self._path_with_version(path, version)
 
-        self._backend.remove_file(path_with_version)
+        self.backend.remove_file(path_with_version)
 
     def versions(
             self,
