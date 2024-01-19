@@ -1,4 +1,3 @@
-import errno
 import fnmatch
 import os
 import tempfile
@@ -50,6 +49,7 @@ class Backend:
             path: str,
     ) -> str:
         r"""MD5 checksum of file on backend."""
+        path = utils.check_path(path)
         return utils.call_function_on_backend(
             self._checksum,
             path,
@@ -82,6 +82,7 @@ class Backend:
             path: str,
     ) -> str:
         r"""Last modification date of file on backend."""
+        path = utils.check_path(path)
         return utils.call_function_on_backend(
             self._date,
             path,
@@ -107,6 +108,7 @@ class Backend:
             suppress_backend_errors: bool = False,
     ) -> bool:
         r"""Check if file exists on backend."""
+        path = utils.check_path(path)
         return utils.call_function_on_backend(
             self._exists,
             path,
@@ -131,6 +133,7 @@ class Backend:
             verbose: bool = False,
     ) -> str:
         r"""Get file from backend."""
+        src_path = utils.check_path(src_path)
         dst_path = audeer.path(dst_path)
         if os.path.isdir(dst_path):
             raise utils.raise_is_a_directory(dst_path)
@@ -202,7 +205,6 @@ class Backend:
             suppress_backend_errors: bool = False,
     ) -> typing.List[str]:
         r"""List files on backend."""
-
         path = utils.check_path(path)
 
         if path.endswith('/'):  # find files under sub-path
@@ -223,12 +225,10 @@ class Backend:
                     # since the backend does no longer raise an error
                     # if the path does not exist
                     # we have to do it
-                    ex = FileNotFoundError(
-                        errno.ENOENT,
-                        os.strerror(errno.ENOENT),
-                        path,
-                    )
-                    raise BackendError(ex)
+                    try:
+                        raise utils.raise_file_not_found_error(path)
+                    except FileNotFoundError as ex:
+                        raise BackendError(ex)
                 paths = []
 
         if not paths:
@@ -259,6 +259,7 @@ class Backend:
             path: str,
     ) -> str:
         r"""Owner of file on backend."""
+        path = utils.check_path(path)
         return utils.call_function_on_backend(
             self._owner,
             path,
@@ -282,6 +283,7 @@ class Backend:
             verbose: bool = False,
     ):
         r"""Put file on backend."""
+        dst_path = utils.check_path(dst_path)
         if not os.path.exists(src_path):
             utils.raise_file_not_found_error(src_path)
         elif os.path.isdir(src_path):
@@ -314,6 +316,7 @@ class Backend:
             path: str,
     ):
         r"""Remove file from backend."""
+        path = utils.check_path(path)
         utils.call_function_on_backend(
             self._remove_file,
             path,

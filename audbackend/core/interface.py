@@ -1,4 +1,3 @@
-import errno
 import os
 import re
 import tempfile
@@ -597,7 +596,6 @@ class Versioned(Interface):
 
         """
         path_with_version = self._path_with_version(path, version)
-
         return self.backend.checksum(path_with_version)
 
     def date(
@@ -631,7 +629,6 @@ class Versioned(Interface):
 
         """
         path_with_version = self._path_with_version(path, version)
-
         return self.backend.date(path_with_version)
 
     def exists(
@@ -668,7 +665,6 @@ class Versioned(Interface):
 
         """
         path_with_version = self._path_with_version(path, version)
-
         return self.backend.exists(path_with_version, suppress_backend_errors=suppress_backend_errors)
 
     def get_archive(
@@ -793,7 +789,6 @@ class Versioned(Interface):
 
         """
         src_path_with_version = self._path_with_version(src_path, version)
-
         return self.backend.get_file(src_path_with_version, dst_path, verbose=verbose)
 
     def latest_version(
@@ -921,12 +916,10 @@ class Versioned(Interface):
                 # since the backend does no longer raise an error
                 # if the path does not exist
                 # we have to do it
-                ex = FileNotFoundError(
-                    errno.ENOENT,
-                    os.strerror(errno.ENOENT),
-                    path,
-                )
-                raise BackendError(ex)
+                try:
+                    utils.raise_file_not_found_error(path)
+                except FileNotFoundError as ex:
+                    raise BackendError(ex)
 
         if not paths:
             return []
@@ -1004,7 +997,6 @@ class Versioned(Interface):
 
         """
         path_with_version = self._path_with_version(path, version)
-
         return self.backend.owner(path_with_version)
 
     def put_archive(
@@ -1129,7 +1121,6 @@ class Versioned(Interface):
 
         """
         dst_path_with_version = self._path_with_version(dst_path, version)
-
         return self.backend.put_file(src_path, dst_path_with_version, verbose=verbose)
 
     def remove_file(
@@ -1160,7 +1151,6 @@ class Versioned(Interface):
 
         """
         path_with_version = self._path_with_version(path, version)
-
         self.backend.remove_file(path_with_version)
 
     def versions(
@@ -1242,7 +1232,6 @@ class Versioned(Interface):
         <root>/<base>/<version>/<base>-<version><ext>
 
         """
-        path = utils.check_path(path)
         version = utils.check_version(version)
 
         root, name = self.split(path)
