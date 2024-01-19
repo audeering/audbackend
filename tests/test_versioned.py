@@ -515,7 +515,7 @@ def test_exists(tmpdir, path, version, interface):
 )
 @pytest.mark.parametrize(
     'interface, owner',
-    [(name, name) for name in pytest.VERSIONED],
+    [(x, x[0]) for x in pytest.VERSIONED],
     indirect=True,
 )
 def test_file(tmpdir, src_path, dst_path, version, interface, owner):
