@@ -123,7 +123,12 @@ class Interface:
 
 
 class Unversioned(Interface):
-    r"""Unversioned backend interface."""
+    r"""Unversioned backend interface.
+
+    Use this interface if you don't care about versioning.
+    For every backend path exactly one file exists on the backend.
+
+    """
 
     def checksum(
             self,
@@ -513,7 +518,12 @@ class Unversioned(Interface):
 
 
 class Versioned(Interface):
-    r"""Versioned backend interface."""
+    r"""Versioned backend interface.
+
+    Use this interface if you care about versioning.
+    For each file on the backend path one or more versions may exist.
+
+    """
 
     def __init__(
             self,
