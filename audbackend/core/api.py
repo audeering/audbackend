@@ -2,7 +2,8 @@ import typing
 
 from audbackend.core import utils
 from audbackend.core.backend import Backend
-from audbackend.core.backend import VersionedBackend
+from audbackend.core.interface import Unversioned
+from audbackend.core.interface import Versioned
 from audbackend.core.filesystem import FileSystem
 
 
@@ -17,9 +18,7 @@ def _backend(
         name: str,
         host: str,
         repository: str,
-        *,
-        versioned: bool = True
-) -> typing.Union[Backend, VersionedBackend]:
+) -> Backend:
     r"""Get backend instance."""
     if name not in backend_registry:
         raise ValueError(
@@ -42,8 +41,6 @@ def _backend(
         backends[name][host][repository] = backend
 
     backend = backends[name][host][repository]
-    if versioned:
-        backend = VersionedBackend(backend)
     return backend
 
 
@@ -53,7 +50,7 @@ def access(
         repository: str,
         *,
         versioned: bool = True,
-) -> typing.Union[Backend, VersionedBackend]:
+) -> typing.Union[Unversioned, Versioned]:
     r"""Access repository.
 
     Returns a backend instance
@@ -77,6 +74,7 @@ def access(
         name: alias under which backend class is registered
         host: host address
         repository: repository name
+        versioned: if ``True`` returns backend with versioning support
 
     Returns:
         backend object
@@ -92,9 +90,10 @@ def access(
         ('audbackend.core.filesystem.FileSystem', 'host', 'doctest')
 
     """
-    backend = _backend(name, host, repository, versioned=versioned)
+    backend = _backend(name, host, repository)
     utils.call_function_on_backend(backend._access)
-    return backend
+    interface = Versioned(backend) if versioned else Unversioned(backend)
+    return interface
 
 
 def available() -> typing.Dict[str, typing.List[Backend]]:
@@ -134,7 +133,7 @@ def create(
         repository: str,
         *,
         versioned: bool = True,
-) -> typing.Union[Backend, VersionedBackend]:
+) -> typing.Union[Unversioned, Versioned]:
     r"""Create repository.
 
     Creates the ``repository``
@@ -158,6 +157,7 @@ def create(
         name: alias under which backend class is registered
         host: host address
         repository: repository name
+        versioned: if ``True`` returns backend with versioning support
 
     Returns:
         backend object
@@ -174,9 +174,10 @@ def create(
         ('audbackend.core.filesystem.FileSystem', 'host', 'repository')
 
     """
-    backend = _backend(name, host, repository, versioned=versioned)
+    backend = _backend(name, host, repository)
     utils.call_function_on_backend(backend._create)
-    return backend
+    interface = Versioned(backend) if versioned else Unversioned(backend)
+    return interface
 
 
 def delete(
