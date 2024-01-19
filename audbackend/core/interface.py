@@ -129,7 +129,7 @@ class Unversioned(Interface):
             self,
             path: str,
     ) -> str:
-        r"""Get MD5 checksum for file on backend.
+        r"""MD5 checksum for file on backend.
 
         Args:
             path: path to file on backend
@@ -532,7 +532,7 @@ class Versioned(Interface):
             path: str,
             version: str,
     ) -> str:
-        r"""Get MD5 checksum for file on backend.
+        r"""MD5 checksum for file on backend.
 
         Args:
             path: path to file on backend
@@ -562,7 +562,7 @@ class Versioned(Interface):
             path: str,
             version: str,
     ) -> str:
-        r"""Get last modification date of file on backend.
+        r"""Last modification date of file on backend.
 
         If the date cannot be determined,
         an empty string is returned.
@@ -910,7 +910,7 @@ class Versioned(Interface):
             path: str,
             version: str,
     ) -> str:
-        r"""Get owner of file on backend.
+        r"""Owner of file on backend.
 
         If the owner of the file
         cannot be determined,

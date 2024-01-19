@@ -27,6 +27,19 @@ backend by deriving from
 
     Backend
 
+To access a backend
+the user can choose between two interfaces
+:class:`audbackend.Unversioned`
+or
+:class:`audbackend.Versioned`:
+
+.. autosummary::
+    :toctree:
+    :nosignatures:
+
+    Unversioned
+    Versioned
+
 In addition to the backends
 the following classes and functions are available.
 

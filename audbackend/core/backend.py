@@ -21,7 +21,9 @@ class Backend:
             repository: str,
     ):
         self.host = host
+        r"""Host path."""
         self.repository = repository
+        r"""Repository name."""
 
     def __repr__(self) -> str:  # noqa: D105
         name = f'{self.__class__.__module__}.{self.__class__.__name__}'
@@ -48,7 +50,21 @@ class Backend:
             self,
             path: str,
     ) -> str:
-        r"""MD5 checksum of file on backend."""
+        r"""MD5 checksum for file on backend.
+
+        Args:
+            path: path to file on backend
+
+        Returns:
+            MD5 checksum
+
+        Raises:
+            BackendError: if an error is raised on the backend,
+                e.g. ``path`` does not exist
+            ValueError: if ``path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+
+        """
         path = utils.check_path(path)
         return utils.call_function_on_backend(
             self._checksum,
@@ -81,7 +97,24 @@ class Backend:
             self,
             path: str,
     ) -> str:
-        r"""Last modification date of file on backend."""
+        r"""Last modification date of file on backend.
+
+        If the date cannot be determined,
+        an empty string is returned.
+
+        Args:
+            path: path to file on backend
+
+        Returns:
+            date in format ``'yyyy-mm-dd'``
+
+        Raises:
+            BackendError: if an error is raised on the backend,
+                e.g. ``path`` does not exist
+            ValueError: if ``path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+
+        """
         path = utils.check_path(path)
         return utils.call_function_on_backend(
             self._date,
@@ -107,7 +140,27 @@ class Backend:
             *,
             suppress_backend_errors: bool = False,
     ) -> bool:
-        r"""Check if file exists on backend."""
+        r"""Check if file exists on backend.
+
+        Args:
+            path: path to file on backend
+            suppress_backend_errors: if set to ``True``,
+                silently catch errors raised on the backend
+                and return ``False``
+
+        Returns:
+            ``True`` if file exists
+
+        Raises:
+            BackendError: if ``suppress_backend_errors`` is ``False``
+                and an error is raised on the backend,
+                e.g. due to a connection timeout
+            ValueError: if ``path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``version`` is empty or
+                does not match ``'[A-Za-z0-9._-]+'``
+
+        """
         path = utils.check_path(path)
         return utils.call_function_on_backend(
             self._exists,
@@ -124,7 +177,37 @@ class Backend:
             tmp_root: str = None,
             verbose: bool = False,
     ) -> typing.List[str]:
-        r"""Get archive from backend and extract."""
+        r"""Get archive from backend and extract.
+
+        The archive type is derived from the extension of ``src_path``.
+        See :func:`audeer.extract_archive` for supported extensions.
+
+        If ``dst_root`` does not exist,
+        it is created.
+
+        Args:
+            src_path: path to archive on backend
+            dst_root: local destination directory
+            tmp_root: directory under which archive is temporarily extracted.
+                Defaults to temporary directory of system
+            verbose: show debug messages
+
+        Returns:
+            extracted files
+
+        Raises:
+            BackendError: if an error is raised on the backend,
+                e.g. ``src_path`` does not exist
+            FileNotFoundError: if ``tmp_root`` does not exist
+            NotADirectoryError: if ``dst_root`` is not a directory
+            PermissionError: if the user lacks write permissions
+                for ``dst_path``
+            RuntimeError: if extension of ``src_path`` is not supported
+                or ``src_path`` is a malformed archive
+            ValueError: if ``src_path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+
+        """
         src_path = utils.check_path(src_path)
 
         with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
@@ -162,7 +245,40 @@ class Backend:
             *,
             verbose: bool = False,
     ) -> str:
-        r"""Get file from backend."""
+        r"""Get file from backend.
+
+        If the folder of
+        ``dst_path`` does not exist,
+        it is created.
+
+        If ``dst_path`` exists
+        with a different checksum,
+        it is overwritten,
+        or otherwise,
+        the operation is silently skipped.
+
+        To ensure the file is completely retrieved,
+        it is first stored in a temporary directory
+        and afterwards moved to ``dst_path``.
+
+        Args:
+            src_path: path to file on backend
+            dst_path: destination path to local file
+            verbose: show debug messages
+
+        Returns:
+            full path to local file
+
+        Raises:
+            BackendError: if an error is raised on the backend,
+                e.g. ``src_path`` does not exist
+            IsADirectoryError: if ``dst_path`` points to an existing folder
+            PermissionError: if the user lacks write permissions
+                for ``dst_path``
+            ValueError: if ``src_path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+
+        """
         src_path = utils.check_path(src_path)
         dst_path = audeer.path(dst_path)
         if os.path.isdir(dst_path):
@@ -201,7 +317,21 @@ class Backend:
             path: str,
             *paths,
     ) -> str:
-        r"""Join to path on backend."""
+        r"""Join to path on backend.
+
+        Args:
+            path: first part of path
+            *paths: additional parts of path
+
+        Returns:
+            path joined by :attr:`Backend.sep`
+
+        Raises:
+            ValueError: if ``path`` contains invalid character
+                or does not start with ``'/'``,
+                or if joined path contains invalid character
+
+        """
         path = utils.check_path(path)
 
         paths = [path] + [p for p in paths]
@@ -234,7 +364,45 @@ class Backend:
             pattern: str = None,
             suppress_backend_errors: bool = False,
     ) -> typing.List[str]:
-        r"""List files on backend."""
+        r"""List files on backend.
+
+        Returns a sorted list of tuples
+        with path and version.
+        If a full path
+        (e.g. ``/sub/file.ext``)
+        is provided,
+        all versions of the path are returned.
+        If a sub-path
+        (e.g. ``/sub/``)
+        is provided,
+        all files that start with
+        the sub-path are returned.
+        When ``path`` is set to ``'/'``
+        a (possibly empty) list with
+        all files on the backend is returned.
+
+        Args:
+            path: path or sub-path
+                (if it ends with ``'/'``)
+                on backend
+            pattern: if not ``None``,
+                return only files matching the pattern string,
+                see :func:`fnmatch.fnmatch`
+            suppress_backend_errors: if set to ``True``,
+                silently catch errors raised on the backend
+                and return an empty list
+
+        Returns:
+            list of tuples (path, version)
+
+        Raises:
+            BackendError: if ``suppress_backend_errors`` is ``False``
+                and an error is raised on the backend,
+                e.g. ``path`` does not exist
+            ValueError: if ``path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+
+        """
         path = utils.check_path(path)
 
         if path.endswith('/'):  # find files under sub-path
@@ -288,7 +456,25 @@ class Backend:
             self,
             path: str,
     ) -> str:
-        r"""Owner of file on backend."""
+        r"""Owner of file on backend.
+
+        If the owner of the file
+        cannot be determined,
+        an empty string is returned.
+
+        Args:
+            path: path to file on backend
+
+        Returns:
+            owner
+
+        Raises:
+            BackendError: if an error is raised on the backend,
+                e.g. ``path`` does not exist
+            ValueError: if ``path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+
+        """
         path = utils.check_path(path)
         return utils.call_function_on_backend(
             self._owner,
@@ -304,7 +490,29 @@ class Backend:
             tmp_root: str = None,
             verbose: bool = False,
     ):
-        r"""Create archive and put on backend."""
+        r"""Create archive and put on backend.
+
+        The archive type is derived from the extension of ``dst_path``.
+        See :func:`audeer.create_archive` for supported extensions.
+
+        The operation is silently skipped,
+        if an archive with the same checksum
+        already exists on the backend.
+
+        Args:
+            src_root: local root directory where files are located.
+                By default,
+                all files below ``src_root``
+                will be included into the archive.
+                Use ``files`` to select specific files
+            dst_path: path to archive on backend
+            files: file(s) to include into the archive.
+                Must exist within ``src_root``
+            tmp_root: directory under which archive is temporarily created.
+                Defaults to temporary directory of system
+            verbose: show debug messages
+
+        """
         dst_path = utils.check_path(dst_path)
         src_root = audeer.path(src_root)
 
@@ -346,7 +554,29 @@ class Backend:
             *,
             verbose: bool = False,
     ):
-        r"""Put file on backend."""
+        r"""Put file on backend.
+
+
+        The operation is silently skipped,
+        if a file with the same checksum
+        already exists on the backend.
+
+        Args:
+            src_path: path to local file
+            dst_path: path to file on backend
+            verbose: show debug messages
+
+        Returns:
+            file path on backend
+
+        Raises:
+            BackendError: if an error is raised on the backend
+            FileNotFoundError: if ``src_path`` does not exist
+            IsADirectoryError: if ``src_path`` is a folder
+            ValueError: if ``dst_path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+
+        """
         dst_path = utils.check_path(dst_path)
         if not os.path.exists(src_path):
             utils.raise_file_not_found_error(src_path)
@@ -379,7 +609,18 @@ class Backend:
             self,
             path: str,
     ):
-        r"""Remove file from backend."""
+        r"""Remove file from backend.
+
+        Args:
+            path: path to file on backend
+
+        Raises:
+            BackendError: if an error is raised on the backend,
+                e.g. ``path`` does not exist
+            ValueError: if ``path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+
+        """
         path = utils.check_path(path)
         utils.call_function_on_backend(
             self._remove_file,
@@ -388,14 +629,30 @@ class Backend:
 
     @property
     def sep(self) -> str:
-        r"""File separator on backend."""
+        r"""File separator on backend.
+
+        Returns: file separator
+
+        """
         return utils.BACKEND_SEPARATOR
 
     def split(
             self,
             path: str,
     ) -> typing.Tuple[str, str]:
-        r"""Split path on backend into sub-path and basename."""
+        r"""Split path on backend into sub-path and basename.
+
+        Args:
+            path: path containing :attr:`Backend.sep` as separator
+
+        Returns:
+            tuple containing (root, basename)
+
+        Raises:
+            ValueError: if ``path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+
+        """
         path = utils.check_path(path)
 
         root = self.sep.join(path.split(self.sep)[:-1]) + self.sep
