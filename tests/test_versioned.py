@@ -343,14 +343,17 @@ def test_errors(tmpdir, interface):
     # `path` does not exist
     with pytest.raises(audbackend.BackendError, match=error_backend):
         interface.ls('/missing/')
+    interface.ls('/missing/', suppress_backend_errors=True)
     with pytest.raises(audbackend.BackendError, match=error_backend):
         interface.ls('/missing.txt')
+    interface.ls('/missing.txt', suppress_backend_errors=True)
     remote_file_with_wrong_ext = audeer.replace_file_extension(
         remote_file,
         'missing',
     )
     with pytest.raises(audbackend.BackendError, match=error_backend):
         interface.ls(remote_file_with_wrong_ext)
+    interface.ls(remote_file_with_wrong_ext, suppress_backend_errors=True)
     # joined path without leading '/'
     with pytest.raises(ValueError, match=error_invalid_path):
         interface.ls(file_invalid_path)

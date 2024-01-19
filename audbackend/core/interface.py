@@ -31,6 +31,10 @@ class Interface:
 
         Returns: backend object
 
+        Examples:
+            >>> unversioned.backend
+            ('audbackend.core.filesystem.FileSystem', 'host', 'unversioned')
+
         """
         return self._backend
 
@@ -39,6 +43,10 @@ class Interface:
         r"""Host path.
 
         Returns: host path
+
+        Examples:
+            >>> unversioned.host
+            'host'
 
         """
         return self.backend.host
@@ -63,11 +71,11 @@ class Interface:
                 or if joined path contains invalid character
 
         Examples:
-            >>> backend.join('/', 'f.ext')
+            >>> unversioned.join('/', 'f.ext')
             '/f.ext'
-            >>> backend.join('/sub', 'f.ext')
+            >>> unversioned.join('/sub', 'f.ext')
             '/sub/f.ext'
-            >>> backend.join('//sub//', '/', '', None, '/f.ext')
+            >>> unversioned.join('//sub//', '/', '', None, '/f.ext')
             '/sub/f.ext'
 
         """
@@ -79,6 +87,10 @@ class Interface:
 
         Returns: repository name
 
+        Examples:
+            >>> unversioned.repository
+            'unversioned'
+
         """
         return self.backend.repository
 
@@ -87,6 +99,10 @@ class Interface:
         r"""File separator on backend.
 
         Returns: file separator
+
+        Examples:
+            >>> unversioned.sep
+            '/'
 
         """
         return self.backend.sep
@@ -108,13 +124,13 @@ class Interface:
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-            >>> backend.split('/')
+            >>> unversioned.split('/')
             ('/', '')
-            >>> backend.split('/f.ext')
+            >>> unversioned.split('/f.ext')
             ('/', 'f.ext')
-            >>> backend.split('/sub/')
+            >>> unversioned.split('/sub/')
             ('/sub/', '')
-            >>> backend.split('/sub//f.ext')
+            >>> unversioned.split('/sub//f.ext')
             ('/sub/', 'f.ext')
 
         """
@@ -919,21 +935,20 @@ class Versioned(Interface):
             name = tokens[-1]
             version = tokens[-2]
 
-            if not version:
-                continue
+            if version:
 
-            if self._legacy_file_structure:
-                base = tokens[-3]
-                ext = name[len(base) + len(version) + 1:]
-                name = f'{base}{ext}'
-                path = self.sep.join(tokens[:-3])
-            else:
-                path = self.sep.join(tokens[:-2])
+                if self._legacy_file_structure:
+                    base = tokens[-3]
+                    ext = name[len(base) + len(version) + 1:]
+                    name = f'{base}{ext}'
+                    path = self.sep.join(tokens[:-3])
+                else:
+                    path = self.sep.join(tokens[:-2])
 
-            path = self.sep + path
-            path = self.join(path, name)
+                path = self.sep + path
+                path = self.join(path, name)
 
-            paths_and_versions.append((path, version))
+                paths_and_versions.append((path, version))
 
         paths_and_versions = sorted(paths_and_versions)
 
