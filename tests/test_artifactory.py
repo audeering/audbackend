@@ -76,13 +76,13 @@ def test_authentication(tmpdir, hosts, hide_credentials):
 
 @pytest.mark.parametrize(
     'backend',
-    ['artifactory'],
+    [('artifactory', True)],
     indirect=True,
 )
 def test_errors(tmpdir, backend):
 
-    backend._username = 'non-existing'
-    backend._api_key = 'non-existing'
+    backend.backend._username = 'non-existing'
+    backend.backend._api_key = 'non-existing'
 
     local_file = audeer.touch(audeer.path(tmpdir, 'file.txt'))
     remote_file = backend.join(
@@ -132,7 +132,7 @@ def test_errors(tmpdir, backend):
 
 @pytest.mark.parametrize(
     'backend',
-    ['artifactory'],
+    [('artifactory', True)],
     indirect=True,
 )
 @pytest.mark.parametrize(
@@ -211,7 +211,7 @@ def test_legacy_file_structure(tmpdir, backend, file, version, extensions,
     src_path = audeer.touch(audeer.path(tmpdir, 'tmp'))
     backend.put_file(src_path, file, version)
 
-    url = f'{str(backend._repo.path)}{expected}'
-    assert backend._expand(backend._path_with_version(file, version)) == url
+    url = f'{str(backend.backend._repo.path)}{expected}'
+    assert backend.backend._expand(backend._path_with_version(file, version)) == url
     assert backend.ls(file) == [(file, version)]
     assert backend.ls() == [(file, version)]

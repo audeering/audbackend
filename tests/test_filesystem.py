@@ -13,10 +13,9 @@ class BadFileSystem(audbackend.FileSystem):
             self,
             src_path: str,
             dst_path: str,
-            version: str,
             verbose: bool,
     ):
-        super()._get_file(src_path, dst_path, version, verbose)
+        super()._get_file(src_path, dst_path, verbose)
         # raise error after file was retrieved
         raise InterruptedError()
 
@@ -30,7 +29,7 @@ def bad_file_system():
 
 @pytest.mark.parametrize(
     'backend',
-    ['file-system'],
+    [('file-system', True)],
     indirect=True,
 )
 def test_get_file_interrupt(tmpdir, bad_file_system, backend):
@@ -57,7 +56,7 @@ def test_get_file_interrupt(tmpdir, bad_file_system, backend):
 
 @pytest.mark.parametrize(
     'backend',
-    ['file-system'],
+    [('file-system', True)],
     indirect=True,
 )
 @pytest.mark.parametrize(
@@ -138,7 +137,7 @@ def test_legacy_file_structure(tmpdir, backend, file, version, extensions,
     src_path = audeer.touch(audeer.path(tmpdir, 'tmp'))
     backend.put_file(src_path, file, version)
 
-    path = os.path.join(backend._root, expected)
-    assert backend._expand(backend._path_with_version(file, version)) == path
+    path = os.path.join(backend.backend._root, expected)
+    assert backend.backend._expand(backend._path_with_version(file, version)) == path
     assert backend.ls(file) == [(file, version)]
     assert backend.ls() == [(file, version)]

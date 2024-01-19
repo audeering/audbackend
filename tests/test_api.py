@@ -64,18 +64,18 @@ def test_api(hosts, name, host, repository, cls):
         audbackend.access(name, host, repository)
 
     backend = audbackend.create(name, host, repository)
-    assert isinstance(backend, cls)
+    assert isinstance(backend.backend, cls)
 
     with pytest.raises(audbackend.BackendError, match=error_msg):
         audbackend.create(name, host, repository)
 
     backend = audbackend.access(name, host, repository)
-    assert isinstance(backend, cls)
-    assert backend in audbackend.available()[name]
+    assert isinstance(backend.backend, cls)
+    assert backend.backend in audbackend.available()[name]
 
     audbackend.delete(name, host, repository)
 
-    assert backend not in audbackend.available()[name]
+    assert backend.backend not in audbackend.available()[name]
 
     with pytest.raises(audbackend.BackendError, match=error_msg):
         audbackend.access(name, host, repository)
