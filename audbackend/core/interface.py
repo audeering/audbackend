@@ -254,26 +254,7 @@ class Unversioned(Interface):
             ['src.pth']
 
         """
-        src_path = utils.check_path(src_path)
-
-        with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
-
-            tmp_root = audeer.path(tmp, os.path.basename(dst_root))
-            local_archive = os.path.join(
-                tmp_root,
-                os.path.basename(src_path),
-            )
-            self.backend.get_file(
-                src_path,
-                local_archive,
-                verbose=verbose,
-            )
-
-            return audeer.extract_archive(
-                local_archive,
-                dst_root,
-                verbose=verbose,
-            )
+        return self.backend.get_archive(src_path, dst_root, tmp_root=tmp_root, verbose=verbose)
 
     def get_file(
             self,
@@ -465,29 +446,7 @@ class Unversioned(Interface):
             True
 
         """
-        dst_path = utils.check_path(dst_path)
-        src_root = audeer.path(src_root)
-
-        if tmp_root is not None:
-            tmp_root = audeer.path(tmp_root)
-            if not os.path.exists(tmp_root):
-                utils.raise_file_not_found_error(tmp_root)
-
-        with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
-
-            archive = audeer.path(tmp, os.path.basename(dst_path))
-            audeer.create_archive(
-                src_root,
-                files,
-                archive,
-                verbose=verbose,
-            )
-
-            self.backend.put_file(
-                archive,
-                dst_path,
-                verbose=verbose,
-            )
+        self.backend.put_archive(src_root, dst_path, files=files, tmp_root=tmp_root, verbose=verbose)
 
     def put_file(
             self,
@@ -714,27 +673,8 @@ class Versioned(Interface):
             ['src.pth']
 
         """
-        src_path = utils.check_path(src_path)
-        version = utils.check_version(version)
-
-        with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
-            tmp_root = audeer.path(tmp, os.path.basename(dst_root))
-            local_archive = os.path.join(
-                tmp_root,
-                os.path.basename(src_path),
-            )
-            self.get_file(
-                src_path,
-                local_archive,
-                version,
-                verbose=verbose,
-            )
-
-            return audeer.extract_archive(
-                local_archive,
-                dst_root,
-                verbose=verbose,
-            )
+        src_path_with_version = self._path_with_version(src_path, version)
+        return self.backend.get_archive(src_path_with_version, dst_root, tmp_root=tmp_root, verbose=verbose)
 
     def get_file(
             self,
@@ -1054,31 +994,8 @@ class Versioned(Interface):
             True
 
         """
-        dst_path = utils.check_path(dst_path)
-        version = utils.check_version(version)
-        src_root = audeer.path(src_root)
-
-        if tmp_root is not None:
-            tmp_root = audeer.path(tmp_root)
-            if not os.path.exists(tmp_root):
-                utils.raise_file_not_found_error(tmp_root)
-
-        with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
-
-            archive = audeer.path(tmp, os.path.basename(dst_path))
-            audeer.create_archive(
-                src_root,
-                files,
-                archive,
-                verbose=verbose,
-            )
-
-            self.put_file(
-                archive,
-                dst_path,
-                version,
-                verbose=verbose,
-            )
+        dst_path_with_version = self._path_with_version(dst_path, version)
+        self.backend.put_archive(src_root, dst_path_with_version, files=files, tmp_root=tmp_root, verbose=verbose)
 
     def put_file(
             self,

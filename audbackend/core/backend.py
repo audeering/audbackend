@@ -116,6 +116,36 @@ class Backend:
             fallback_return_value=False,
         )
 
+    def get_archive(
+            self,
+            src_path: str,
+            dst_root: str,
+            *,
+            tmp_root: str = None,
+            verbose: bool = False,
+    ) -> typing.List[str]:
+        r"""Get archive from backend and extract."""
+        src_path = utils.check_path(src_path)
+
+        with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
+
+            tmp_root = audeer.path(tmp, os.path.basename(dst_root))
+            local_archive = os.path.join(
+                tmp_root,
+                os.path.basename(src_path),
+            )
+            self.get_file(
+                src_path,
+                local_archive,
+                verbose=verbose,
+            )
+
+            return audeer.extract_archive(
+                local_archive,
+                dst_root,
+                verbose=verbose,
+            )
+
     def _get_file(
             self,
             src_path: str,
@@ -264,6 +294,40 @@ class Backend:
             self._owner,
             path,
         )
+
+    def put_archive(
+            self,
+            src_root: str,
+            dst_path: str,
+            *,
+            files: typing.Union[str, typing.Sequence[str]] = None,
+            tmp_root: str = None,
+            verbose: bool = False,
+    ):
+        r"""Create archive and put on backend."""
+        dst_path = utils.check_path(dst_path)
+        src_root = audeer.path(src_root)
+
+        if tmp_root is not None:
+            tmp_root = audeer.path(tmp_root)
+            if not os.path.exists(tmp_root):
+                utils.raise_file_not_found_error(tmp_root)
+
+        with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
+
+            archive = audeer.path(tmp, os.path.basename(dst_path))
+            audeer.create_archive(
+                src_root,
+                files,
+                archive,
+                verbose=verbose,
+            )
+
+            self.put_file(
+                archive,
+                dst_path,
+                verbose=verbose,
+            )
 
     def _put_file(
             self,
