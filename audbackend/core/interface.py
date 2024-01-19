@@ -1,3 +1,4 @@
+import errno
 import os
 import re
 import tempfile
@@ -8,6 +9,7 @@ import audeer
 from audbackend.core import utils
 from audbackend.core.backend import Backend
 from audbackend.core.backend import Base
+from audbackend.core.errors import BackendError
 
 
 class Interface(Base):
@@ -826,6 +828,17 @@ class Versioned(Interface):
                             os.path.basename(p) == file
                     )
                 ]
+
+            if not paths and not suppress_backend_errors:
+                # since the backend does no longer raise an error
+                # if the path does not exist
+                # we have to do it
+                ex = FileNotFoundError(
+                    errno.ENOENT,
+                    os.strerror(errno.ENOENT),
+                    path,
+                )
+                raise BackendError(ex)
 
         if not paths:
             return []
