@@ -10,7 +10,16 @@ from audbackend.core.errors import BackendError
 
 
 class Interface:
-    r"""Backend interface.
+    r"""Base interface.
+
+    Provides an interface to a backend,
+    see e.g.
+    :class:`audbackend.Unversioned`
+    and
+    :class:`audbackend.Versioned`.
+
+    Derive from this class to
+    create a new interface.
 
     Args:
         backend: backend object
@@ -30,11 +39,12 @@ class Interface:
     def backend(self) -> Backend:
         r"""Backend object.
 
-        Returns: backend object
+        Returns:
+            backend object
 
         Examples:
-            >>> unversioned.backend
-            ('audbackend.core.filesystem.FileSystem', 'host', 'unversioned')
+            >>> interface.backend
+            ('audbackend.core.backend.Backend', 'host', 'repo')
 
         """
         return self._backend
@@ -46,7 +56,7 @@ class Interface:
         Returns: host path
 
         Examples:
-            >>> unversioned.host
+            >>> interface.host
             'host'
 
         """
@@ -72,11 +82,11 @@ class Interface:
                 or if joined path contains invalid character
 
         Examples:
-            >>> unversioned.join('/', 'f.ext')
+            >>> interface.join('/', 'f.ext')
             '/f.ext'
-            >>> unversioned.join('/sub', 'f.ext')
+            >>> interface.join('/sub', 'f.ext')
             '/sub/f.ext'
-            >>> unversioned.join('//sub//', '/', '', None, '/f.ext')
+            >>> interface.join('//sub//', '/', '', None, '/f.ext')
             '/sub/f.ext'
 
         """
@@ -86,11 +96,12 @@ class Interface:
     def repository(self) -> str:
         r"""Repository name.
 
-        Returns: repository name
+        Returns:
+            repository name
 
         Examples:
-            >>> unversioned.repository
-            'unversioned'
+            >>> interface.repository
+            'repo'
 
         """
         return self.backend.repository
@@ -99,10 +110,11 @@ class Interface:
     def sep(self) -> str:
         r"""File separator on backend.
 
-        Returns: file separator
+        Returns:
+            file separator
 
         Examples:
-            >>> unversioned.sep
+            >>> interface.sep
             '/'
 
         """
@@ -125,13 +137,13 @@ class Interface:
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-            >>> unversioned.split('/')
+            >>> interface.split('/')
             ('/', '')
-            >>> unversioned.split('/f.ext')
+            >>> interface.split('/f.ext')
             ('/', 'f.ext')
-            >>> unversioned.split('/sub/')
+            >>> interface.split('/sub/')
             ('/sub/', '')
-            >>> unversioned.split('/sub//f.ext')
+            >>> interface.split('/sub//f.ext')
             ('/sub/', 'f.ext')
 
         """

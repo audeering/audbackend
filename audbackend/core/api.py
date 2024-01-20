@@ -86,8 +86,8 @@ def access(
             has been registered
 
     Examples:
-        >>> access('file-system', 'host', 'versioned')
-        audbackend.core.interface.Versioned('audbackend.core.filesystem.FileSystem', 'host', 'versioned')
+        >>> access('file-system', 'host', 'repo')
+        audbackend.core.interface.Versioned('audbackend.core.filesystem.FileSystem', 'host', 'repo')
 
     """  # noqa: E501
     backend = _backend(name, host, repository)
@@ -110,8 +110,8 @@ def available() -> typing.Dict[str, typing.List[Backend]]:
     Examples:
         >>> list(available())
         ['artifactory', 'file-system']
-        >>> available()['file-system']
-        [('audbackend.core.filesystem.FileSystem', 'host', 'unversioned'), ('audbackend.core.filesystem.FileSystem', 'host', 'versioned')]
+        >>> available()['file-system'][0]
+        ('audbackend.core.filesystem.FileSystem', 'host', 'repo')
 
     """  # noqa: E501
     result = {}
@@ -202,10 +202,10 @@ def delete(
             has been registered
 
     Examples:
-        >>> access('file-system', 'host', 'versioned').ls()
+        >>> access('file-system', 'host', 'repo').ls()
         [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-        >>> delete('file-system', 'host', 'versioned')
-        >>> create('file-system', 'host', 'versioned').ls()
+        >>> delete('file-system', 'host', 'repo')
+        >>> create('file-system', 'host', 'repo').ls()
         []
 
     """  # noqa: E501
