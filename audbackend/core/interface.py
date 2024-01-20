@@ -23,7 +23,8 @@ class Interface:
         self._backend = backend
 
     def __repr__(self) -> str:  # noqa: D105
-        return repr(self.backend)
+        name = f'{self.__class__.__module__}.{self.__class__.__name__}'
+        return f'{name}{self.backend}'
 
     @property
     def backend(self) -> Backend:

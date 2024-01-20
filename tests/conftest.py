@@ -19,8 +19,14 @@ if os.name != 'nt':
     pytest.BACKENDS.append('single-folder')
 
 
-pytest.VERSIONED = [(backend, True) for backend in pytest.BACKENDS]
-pytest.UNVERSIONED = [(backend, False) for backend in pytest.BACKENDS]
+pytest.UNVERSIONED = [
+    (backend, audbackend.Unversioned)
+    for backend in pytest.BACKENDS
+]
+pytest.VERSIONED = [
+    (backend, audbackend.Versioned)
+    for backend in pytest.BACKENDS
+]
 
 # UID for test session
 # Repositories on the host will be named
@@ -63,11 +69,11 @@ def owner(request):
 @pytest.fixture(scope='function', autouse=False)
 def interface(hosts, request):
 
-    name, versioned = request.param
+    name, interface = request.param
     host = hosts[name]
     repository = f'unittest-{pytest.UID}-{audeer.uid()[:8]}'
 
-    backend = audbackend.create(name, host, repository, versioned=versioned)
+    backend = audbackend.create(name, host, repository, interface=interface)
 
     yield backend
 

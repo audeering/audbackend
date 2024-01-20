@@ -6,6 +6,7 @@ from audbackend.core.api import register
 from audbackend.core.backend import Backend
 from audbackend.core.errors import BackendError
 from audbackend.core.filesystem import FileSystem
+from audbackend.core.interface import Interface
 from audbackend.core.interface import Unversioned
 from audbackend.core.interface import Versioned
 from audbackend.core.repository import Repository

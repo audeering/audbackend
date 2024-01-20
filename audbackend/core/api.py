@@ -3,7 +3,7 @@ import typing
 from audbackend.core import utils
 from audbackend.core.backend import Backend
 from audbackend.core.filesystem import FileSystem
-from audbackend.core.interface import Unversioned
+from audbackend.core.interface import Interface
 from audbackend.core.interface import Versioned
 
 
@@ -49,14 +49,14 @@ def access(
         host: str,
         repository: str,
         *,
-        versioned: bool = True,
-) -> typing.Union[Unversioned, Versioned]:
+        interface: typing.Type[Interface] = Versioned,
+) -> Interface:
     r"""Access repository.
 
-    Returns a backend instance
-    for the ``repository``
+    Returns an ``interface`` instance
+    to access the ``repository``
     on the ``host``.
-    The instance is an object of the class
+    The backend is an object of the class
     registered under the alias ``name``
     with :func:`audbackend.register`.
 
@@ -74,10 +74,10 @@ def access(
         name: alias under which backend class is registered
         host: host address
         repository: repository name
-        versioned: if ``True`` returns backend with versioning support
+        interface: interface class
 
     Returns:
-        backend object
+        interface object
 
     Raises:
         BackendError: if an error is raised on the backend,
@@ -87,15 +87,12 @@ def access(
 
     Examples:
         >>> access('file-system', 'host', 'versioned')
-        ('audbackend.core.filesystem.FileSystem', 'host', 'versioned')
-        >>> access('file-system', 'host', 'unversioned', versioned=False)
-        ('audbackend.core.filesystem.FileSystem', 'host', 'unversioned')
+        audbackend.core.interface.Versioned('audbackend.core.filesystem.FileSystem', 'host', 'versioned')
 
-    """
+    """  # noqa: E501
     backend = _backend(name, host, repository)
     utils.call_function_on_backend(backend._access)
-    interface = Versioned(backend) if versioned else Unversioned(backend)
-    return interface
+    return interface(backend)
 
 
 def available() -> typing.Dict[str, typing.List[Backend]]:
@@ -134,14 +131,13 @@ def create(
         host: str,
         repository: str,
         *,
-        versioned: bool = True,
-) -> typing.Union[Unversioned, Versioned]:
+        interface: typing.Type[Interface] = Versioned,
+) -> Interface:
     r"""Create repository.
 
-    Creates the ``repository``
-    on the ``host``
-    and returns a backend instance for it.
-    The instance is an object of the class
+    Creates ``repository`` on the ``host``
+    and returns an ``interface`` instance for it.
+    The backend is an object of the class
     registered under the alias ``name``
     with :func:`audbackend.register`.
 
@@ -159,10 +155,10 @@ def create(
         name: alias under which backend class is registered
         host: host address
         repository: repository name
-        versioned: if ``True`` returns backend with versioning support
+        interface: interface class
 
     Returns:
-        backend object
+        interface object
 
     Raises:
         BackendError: if an error is raised on the backend,
@@ -173,13 +169,12 @@ def create(
 
     Examples:
         >>> create('file-system', 'host', 'repository')
-        ('audbackend.core.filesystem.FileSystem', 'host', 'repository')
+        audbackend.core.interface.Versioned('audbackend.core.filesystem.FileSystem', 'host', 'repository')
 
-    """
+    """  # noqa: E501
     backend = _backend(name, host, repository)
     utils.call_function_on_backend(backend._create)
-    interface = Versioned(backend) if versioned else Unversioned(backend)
-    return interface
+    return interface(backend)
 
 
 def delete(
@@ -211,11 +206,6 @@ def delete(
         [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
         >>> delete('file-system', 'host', 'versioned')
         >>> create('file-system', 'host', 'versioned').ls()
-        []
-        >>> access('file-system', 'host', 'unversioned', versioned=False).ls()
-        ['/a.zip', '/a/b.ext', '/f.ext']
-        >>> delete('file-system', 'host', 'unversioned')
-        >>> create('file-system', 'host', 'unversioned').ls()
         []
 
     """  # noqa: E501
