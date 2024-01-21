@@ -20,11 +20,11 @@ if os.name != 'nt':
 
 
 pytest.UNVERSIONED = [
-    (backend, audbackend.Unversioned)
+    (backend, audbackend.interface.Unversioned)
     for backend in pytest.BACKENDS
 ]
 pytest.VERSIONED = [
-    (backend, audbackend.Versioned)
+    (backend, audbackend.interface.Versioned)
     for backend in pytest.BACKENDS
 ]
 

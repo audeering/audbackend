@@ -3,8 +3,8 @@ import typing
 from audbackend.core import utils
 from audbackend.core.backend import Backend
 from audbackend.core.filesystem import FileSystem
-from audbackend.core.interface import Interface
-from audbackend.core.interface import Versioned
+from audbackend.core.interface.base import Base as Interface
+from audbackend.core.interface.versioned import Versioned
 
 
 backends = {}
@@ -87,7 +87,7 @@ def access(
 
     Examples:
         >>> access('file-system', 'host', 'repo')
-        audbackend.core.interface.Versioned('audbackend.core.filesystem.FileSystem', 'host', 'repo')
+        audbackend.core.interface.versioned.Versioned('audbackend.core.filesystem.FileSystem', 'host', 'repo')
 
     """  # noqa: E501
     backend = _backend(name, host, repository)
@@ -169,7 +169,7 @@ def create(
 
     Examples:
         >>> create('file-system', 'host', 'repository')
-        audbackend.core.interface.Versioned('audbackend.core.filesystem.FileSystem', 'host', 'repository')
+        audbackend.core.interface.versioned.Versioned('audbackend.core.filesystem.FileSystem', 'host', 'repository')
 
     """  # noqa: E501
     backend = _backend(name, host, repository)

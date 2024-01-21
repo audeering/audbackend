@@ -10,7 +10,7 @@ from audbackend.core.errors import BackendError
 
 
 class Backend:
-    r"""Abstract backend.
+    r"""Backend base class.
 
     Derive from this class to implement a new backend.
 

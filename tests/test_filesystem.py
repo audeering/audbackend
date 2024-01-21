@@ -29,7 +29,7 @@ def bad_file_system():
 
 @pytest.mark.parametrize(
     'interface',
-    [('file-system', audbackend.Versioned)],
+    [('file-system', audbackend.interface.Versioned)],
     indirect=True,
 )
 def test_get_file_interrupt(tmpdir, bad_file_system, interface):
@@ -56,7 +56,7 @@ def test_get_file_interrupt(tmpdir, bad_file_system, interface):
 
 @pytest.mark.parametrize(
     'interface',
-    [('file-system', audbackend.Versioned)],
+    [('file-system', audbackend.interface.Versioned)],
     indirect=True,
 )
 @pytest.mark.parametrize(
