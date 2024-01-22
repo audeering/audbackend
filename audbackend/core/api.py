@@ -160,7 +160,7 @@ def create(
         host: host address
         repository: repository name
         interface: interface class
-        interface_kwargs: keyword arguments for interface class        
+        interface_kwargs: keyword arguments for interface class
 
     Returns:
         interface object

@@ -1,4 +1,4 @@
-import os
+import os  # noqa: F401
 import typing
 
 from audbackend.core.interface.base import Base
