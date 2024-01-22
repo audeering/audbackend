@@ -50,6 +50,7 @@ def access(
         repository: str,
         *,
         interface: typing.Type[Interface] = Versioned,
+        interface_kwargs: dict = None,
 ) -> Interface:
     r"""Access repository.
 
@@ -75,6 +76,7 @@ def access(
         host: host address
         repository: repository name
         interface: interface class
+        interface_kwargs: keyword arguments for interface class
 
     Returns:
         interface object
@@ -92,7 +94,8 @@ def access(
     """  # noqa: E501
     backend = _backend(name, host, repository)
     utils.call_function_on_backend(backend._access)
-    return interface(backend)
+    interface_kwargs = interface_kwargs or {}
+    return interface(backend, **interface_kwargs)
 
 
 def available() -> typing.Dict[str, typing.List[Backend]]:
@@ -132,6 +135,7 @@ def create(
         repository: str,
         *,
         interface: typing.Type[Interface] = Versioned,
+        interface_kwargs: dict = None
 ) -> Interface:
     r"""Create repository.
 
@@ -156,6 +160,7 @@ def create(
         host: host address
         repository: repository name
         interface: interface class
+        interface_kwargs: keyword arguments for interface class        
 
     Returns:
         interface object
@@ -174,7 +179,8 @@ def create(
     """  # noqa: E501
     backend = _backend(name, host, repository)
     utils.call_function_on_backend(backend._create)
-    return interface(backend)
+    interface_kwargs = interface_kwargs or {}
+    return interface(backend, **interface_kwargs)
 
 
 def delete(
