@@ -286,7 +286,7 @@ Backend interface
 -----------------
 
 By default,
-a file ist stored
+a file is stored
 on the backend with a version
 (see :ref:`file-system-example`).
 We can change this behavior
