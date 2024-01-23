@@ -42,17 +42,10 @@ a SQLite_ database.
 File-system example
 -------------------
 
-The heart of
-:mod:`audbackend`
-is the class
-:class:`audbackend.Backend`,
-which provides an abstract
-interface to communicate
-with a storage system.
 The class
-:class:`audbackend.FileSystem`
+:class:`audbackend.backend.FileSystem`
 implements
-:class:`audbackend.Backend`
+:class:`audbackend.backend.Base`
 for a standard file system.
 
 
@@ -67,7 +60,7 @@ if we do it again).
 
     import audbackend
 
-    audbackend.register('file-system', audbackend.FileSystem)
+    audbackend.register('file-system', audbackend.backend.FileSystem)
 
 
 To make sure we can keep track
@@ -199,8 +192,8 @@ on the backend.
 
 When we get an archive from the backend
 we can automatically extract it,
-by using :meth:`audbackend.FileSystem.get_archive`
-instead of :meth:`audbackend.FileSystem.get_file`.
+by using :meth:`audbackend.backend.FileSystem.get_archive`
+instead of :meth:`audbackend.backend.FileSystem.get_file`.
 
 .. jupyter-execute::
 
@@ -349,7 +342,7 @@ helper class.
         and write changes back to the backend.
 
         """
-        def __init__(self, backend: audbackend.Backend):
+        def __init__(self, backend: audbackend.backend.Base):
             self.backend = backend
 
         def __enter__(self) -> shelve.Shelf:
@@ -420,7 +413,7 @@ a SQLite_ database.
 A new backend
 should be implemented as a class
 deriving from
-:class:`audbackend.Backend`.
+:class:`audbackend.backend.Base`.
 As can be seen in the file
 :file:`audbackend/core/backend.py`,
 we need to implement the following private methods:
@@ -451,7 +444,7 @@ in the constructor:
     import audbackend
     import os
 
-    class SQLite(audbackend.Backend):
+    class SQLite(audbackend.backend.Base):
 
         def __init__(
                 self,
