@@ -76,17 +76,17 @@ def test_authentication(tmpdir, hosts, hide_credentials):
 
 
 @pytest.mark.parametrize(
-    'backend',
-    ['artifactory'],
+    'interface',
+    [('artifactory', audbackend.interface.Versioned)],
     indirect=True,
 )
-def test_errors(tmpdir, backend):
+def test_errors(tmpdir, interface):
 
-    backend._username = 'non-existing'
-    backend._api_key = 'non-existing'
+    interface.backend._username = 'non-existing'
+    interface.backend._api_key = 'non-existing'
 
     local_file = audeer.touch(audeer.path(tmpdir, 'file.txt'))
-    remote_file = backend.join(
+    remote_file = interface.join(
         '/',
         audeer.uid()[:8],
         'file.txt',
@@ -95,8 +95,8 @@ def test_errors(tmpdir, backend):
 
     # --- exists ---
     with pytest.raises(audbackend.BackendError):
-        backend.exists(remote_file, version)
-    assert backend.exists(
+        interface.exists(remote_file, version)
+    assert interface.exists(
         remote_file,
         version,
         suppress_backend_errors=True,
@@ -104,7 +104,7 @@ def test_errors(tmpdir, backend):
 
     # --- put_file ---
     with pytest.raises(audbackend.BackendError):
-        backend.put_file(
+        interface.put_file(
             local_file,
             remote_file,
             version,
@@ -112,28 +112,28 @@ def test_errors(tmpdir, backend):
 
     # --- latest_version ---
     with pytest.raises(audbackend.BackendError):
-        backend.latest_version(remote_file)
+        interface.latest_version(remote_file)
 
     # --- ls ---
     with pytest.raises(audbackend.BackendError):
-        backend.ls('/')
-    assert backend.ls(
+        interface.ls('/')
+    assert interface.ls(
         '/',
         suppress_backend_errors=True,
     ) == []
 
     # --- versions ---
     with pytest.raises(audbackend.BackendError):
-        backend.versions(remote_file)
-    assert backend.versions(
+        interface.versions(remote_file)
+    assert interface.versions(
         remote_file,
         suppress_backend_errors=True,
     ) == []
 
 
 @pytest.mark.parametrize(
-    'backend',
-    ['artifactory'],
+    'interface',
+    [('artifactory', audbackend.interface.Versioned)],
     indirect=True,
 )
 @pytest.mark.parametrize(
@@ -204,15 +204,18 @@ def test_errors(tmpdir, backend):
         ),
     ]
 )
-def test_legacy_file_structure(tmpdir, backend, file, version, extensions,
+def test_legacy_file_structure(tmpdir, interface, file, version, extensions,
                                regex, expected):
 
-    backend._use_legacy_file_structure(extensions=extensions, regex=regex)
+    interface._use_legacy_file_structure(extensions=extensions, regex=regex)
 
     src_path = audeer.touch(audeer.path(tmpdir, 'tmp'))
-    backend.put_file(src_path, file, version)
+    interface.put_file(src_path, file, version)
 
-    url = f'{str(backend._repo.path)}{expected}'
-    assert backend._expand(backend._path_with_version(file, version)) == url
-    assert backend.ls(file) == [(file, version)]
-    assert backend.ls() == [(file, version)]
+    url = f'{str(interface.backend._repo.path)}{expected}'
+    url_expected = interface.backend._expand(
+        interface._path_with_version(file, version),
+    )
+    assert url_expected == url
+    assert interface.ls(file) == [(file, version)]
+    assert interface.ls() == [(file, version)]
