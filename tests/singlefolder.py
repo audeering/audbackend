@@ -10,7 +10,7 @@ import audeer
 import audbackend
 
 
-class SingleFolder(audbackend.Backend):
+class SingleFolder(audbackend.backend.Base):
     r"""Backend implemented in a single folder.
 
     Files put on the backend
