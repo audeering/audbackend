@@ -16,6 +16,7 @@
     :hidden:
 
     api/audbackend
+    api/audbackend.interface
     genindex
 
 .. toctree::

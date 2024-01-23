@@ -1,3 +1,4 @@
+from audbackend import interface
 from audbackend.core.api import access
 from audbackend.core.api import available
 from audbackend.core.api import create
