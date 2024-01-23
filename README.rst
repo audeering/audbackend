@@ -13,7 +13,7 @@ the following backends:
 * local file system with ``audbackend.backend.FileSystem``
 
 And the following interfaces
-to access the files:
+to access files on a backend:
 
 * unversioned with ``audbackend.interface.Unversioned``
 * versioned with  ``audbackend.interface.Versioned``
