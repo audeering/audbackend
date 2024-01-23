@@ -3,6 +3,8 @@ import typing
 from audbackend.core import utils
 from audbackend.core.backend import Backend
 from audbackend.core.filesystem import FileSystem
+from audbackend.core.interface.base import Base as Interface
+from audbackend.core.interface.versioned import Versioned
 
 
 backends = {}
@@ -31,26 +33,31 @@ def _backend(
     if host not in backends[name]:
         backends[name][host] = {}
     if repository not in backends[name][host]:
-        backends[name][host][repository] = utils.call_function_on_backend(
+        backend = utils.call_function_on_backend(
             backend_registry[name],
             host,
             repository,
         )
+        backends[name][host][repository] = backend
 
-    return backends[name][host][repository]
+    backend = backends[name][host][repository]
+    return backend
 
 
 def access(
         name: str,
         host: str,
         repository: str,
-) -> Backend:
+        *,
+        interface: typing.Type[Interface] = Versioned,
+        interface_kwargs: dict = None,
+) -> Interface:
     r"""Access repository.
 
-    Returns a backend instance
-    for the ``repository``
+    Returns an ``interface`` instance
+    to access the ``repository``
     on the ``host``.
-    The instance is an object of the class
+    The backend is an object of the class
     registered under the alias ``name``
     with :func:`audbackend.register`.
 
@@ -68,9 +75,11 @@ def access(
         name: alias under which backend class is registered
         host: host address
         repository: repository name
+        interface: interface class
+        interface_kwargs: keyword arguments for interface class
 
     Returns:
-        backend object
+        interface object
 
     Raises:
         BackendError: if an error is raised on the backend,
@@ -79,13 +88,14 @@ def access(
             has been registered
 
     Examples:
-        >>> access('file-system', 'host', 'doctest')
-        ('audbackend.core.filesystem.FileSystem', 'host', 'doctest')
+        >>> access('file-system', 'host', 'repo')
+        audbackend.core.interface.versioned.Versioned('audbackend.core.filesystem.FileSystem', 'host', 'repo')
 
-    """
+    """  # noqa: E501
     backend = _backend(name, host, repository)
     utils.call_function_on_backend(backend._access)
-    return backend
+    interface_kwargs = interface_kwargs or {}
+    return interface(backend, **interface_kwargs)
 
 
 def available() -> typing.Dict[str, typing.List[Backend]]:
@@ -103,8 +113,8 @@ def available() -> typing.Dict[str, typing.List[Backend]]:
     Examples:
         >>> list(available())
         ['artifactory', 'file-system']
-        >>> available()['file-system']
-        [('audbackend.core.filesystem.FileSystem', 'host', 'doctest')]
+        >>> available()['file-system'][0]
+        ('audbackend.core.filesystem.FileSystem', 'host', 'repo')
 
     """  # noqa: E501
     result = {}
@@ -123,13 +133,15 @@ def create(
         name: str,
         host: str,
         repository: str,
-) -> Backend:
+        *,
+        interface: typing.Type[Interface] = Versioned,
+        interface_kwargs: dict = None
+) -> Interface:
     r"""Create repository.
 
-    Creates the ``repository``
-    on the ``host``
-    and returns a backend instance for it.
-    The instance is an object of the class
+    Creates ``repository`` on the ``host``
+    and returns an ``interface`` instance for it.
+    The backend is an object of the class
     registered under the alias ``name``
     with :func:`audbackend.register`.
 
@@ -147,9 +159,11 @@ def create(
         name: alias under which backend class is registered
         host: host address
         repository: repository name
+        interface: interface class
+        interface_kwargs: keyword arguments for interface class
 
     Returns:
-        backend object
+        interface object
 
     Raises:
         BackendError: if an error is raised on the backend,
@@ -160,12 +174,13 @@ def create(
 
     Examples:
         >>> create('file-system', 'host', 'repository')
-        ('audbackend.core.filesystem.FileSystem', 'host', 'repository')
+        audbackend.core.interface.versioned.Versioned('audbackend.core.filesystem.FileSystem', 'host', 'repository')
 
-    """
+    """  # noqa: E501
     backend = _backend(name, host, repository)
     utils.call_function_on_backend(backend._create)
-    return backend
+    interface_kwargs = interface_kwargs or {}
+    return interface(backend, **interface_kwargs)
 
 
 def delete(
@@ -193,15 +208,15 @@ def delete(
             has been registered
 
     Examples:
-        >>> access('file-system', 'host', 'doctest').ls()
+        >>> access('file-system', 'host', 'repo').ls()
         [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-        >>> delete('file-system', 'host', 'doctest')
-        >>> create('file-system', 'host', 'doctest').ls()
+        >>> delete('file-system', 'host', 'repo')
+        >>> create('file-system', 'host', 'repo').ls()
         []
 
     """  # noqa: E501
-    backend = access(name, host, repository)
-    utils.call_function_on_backend(backend._delete)
+    interface = access(name, host, repository)
+    utils.call_function_on_backend(interface._backend._delete)
     backends[name][host].pop(repository)
 
 

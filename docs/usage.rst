@@ -11,11 +11,14 @@ that have not been
 invented yet :)
 
 This tutorial is divided
-into two parts.
+into three parts.
 Under :ref:`file-system-example`,
 we show the basic usage
 by means of a
 standard file system.
+In :ref:`backend-interface`
+we introduce the concept
+of a backend interface.
 Under :ref:`develop-new-backend`,
 we take a deep dive
 and develop a backend
@@ -73,8 +76,9 @@ we use :func:`audbackend.create`
 to instantiate a backend
 instead of calling the class ourselves.
 When creating the instance
-we provide two arguments:
+we provide three arguments:
 
+* ``name``: the name under which the backend class is registered
 * ``host``: the host address,
   in this case a folder on the local file system.
 * ``repository``: the repository name,
@@ -277,6 +281,128 @@ exception thrown by the backend.
         audbackend.access('file-system', 'host', 'repo')
     except audbackend.BackendError as ex:
         display(str(ex.exception))
+
+
+.. _backend-interface:
+
+Backend interface
+-----------------
+
+By default,
+a file is stored
+on the backend with a version
+(see :ref:`file-system-example`).
+We can change this behavior
+by using a different interface.
+For instance,
+if we are not interested
+in versioning we can use
+:class:`audbackend.interface.Unversioned`.
+
+.. jupyter-execute::
+
+    backend = audbackend.create(
+        'file-system',
+        './host',
+        'repo',
+        interface=audbackend.interface.Unversioned,
+    )
+    backend.put_file('local.txt', '/file-without-version.txt')
+    backend.ls()
+
+.. jupyter-execute::
+    :hide-code:
+    :hide-output:
+
+    audbackend.delete('file-system', './host', 'repo')
+
+
+We can also implement our own interface
+by deriving from
+:class:`audbackend.interface.Base`.
+For instance,
+we can create an interface
+to manage user content.
+It provides three functions:
+
+* ``add_user()`` to register a user
+* ``upload()`` to upload a file for user
+* ``ls()`` to list the files of a user
+
+We store user information
+in a database under
+``'/user.map'``.
+To access and update
+the database
+we implement the following
+helper class.
+
+
+.. jupyter-execute::
+
+    import shelve
+
+    class UserDB:
+        r"""User database.
+
+        Temporarily get user database
+        and write changes back to the backend.
+
+        """
+        def __init__(self, backend: audbackend.Backend):
+            self.backend = backend
+
+        def __enter__(self) -> shelve.Shelf:
+            if self.backend.exists('/user.db'):
+                self.backend.get_file('/user.db', '~.db')
+                self._map = shelve.open('~.db', flag='w', writeback=True)
+            else:
+                self._map = shelve.open('~.db', writeback=True)
+            return self._map
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            self._map.close()
+            self.backend.put_file('~.db', '/user.db')
+            os.remove('~.db')
+
+
+Now,
+we implement the interface.
+
+.. jupyter-execute::
+
+    class UserContent(audbackend.interface.Base):
+
+        def add_user(self, username: str, password: str):
+            r"""Add user to database."""
+            with UserDB(self.backend) as map:
+                map[username] = password
+
+        def upload(self, username: str, password: str, path: str):
+            r"""Upload user file."""
+            with UserDB(self.backend) as map:
+                if username not in map or map[username] != password:
+                    raise ValueError('User does not exist or wrong password.')
+                self.backend.put_file(path, f'/{username}/{os.path.basename(path)}')
+
+        def ls(self, username: str) -> list:
+            r"""List files of user."""
+            with UserDB(self.backend) as map:
+                if username not in map:
+                    return []
+            return self.backend.ls(f'/{username}/')
+
+
+Let's create a backend
+with our custom interface:
+
+.. jupyter-execute::
+
+    backend = audbackend.create('file-system', tmp, 'repo', interface=UserContent)
+
+    backend.add_user('audeering', 'pa$$word')
+    backend.upload('audeering', 'pa$$word', 'local.txt')
+    backend.ls('audeering')
 
 
 .. _develop-new-backend:

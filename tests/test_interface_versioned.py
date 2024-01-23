@@ -83,11 +83,11 @@ def tree(tmpdir, request):
     indirect=['tree'],
 )
 @pytest.mark.parametrize(
-    'backend',
-    pytest.BACKENDS,
+    'interface',
+    pytest.VERSIONED,
     indirect=True,
 )
-def test_archive(tmpdir, tree, archive, files, tmp_root, backend, expected):
+def test_archive(tmpdir, tree, archive, files, tmp_root, interface, expected):
 
     version = '1.0.0'
 
@@ -103,7 +103,7 @@ def test_archive(tmpdir, tree, archive, files, tmp_root, backend, expected):
         if os.path.exists(tmp_root):
             os.removedirs(tmp_root)
         with pytest.raises(FileNotFoundError):
-            backend.put_archive(
+            interface.put_archive(
                 tmpdir,
                 archive,
                 version,
@@ -112,7 +112,7 @@ def test_archive(tmpdir, tree, archive, files, tmp_root, backend, expected):
             )
         audeer.mkdir(tmp_root)
 
-    backend.put_archive(
+    interface.put_archive(
         tmpdir,
         archive,
         version,
@@ -120,14 +120,14 @@ def test_archive(tmpdir, tree, archive, files, tmp_root, backend, expected):
         tmp_root=tmp_root,
     )
     # operation will be skipped
-    backend.put_archive(
+    interface.put_archive(
         tmpdir,
         archive,
         version,
         files=files,
         tmp_root=tmp_root,
     )
-    assert backend.exists(archive, version)
+    assert interface.exists(archive, version)
 
     # if a tmp_root is given but does not exist,
     # get_archive() should fail
@@ -135,7 +135,7 @@ def test_archive(tmpdir, tree, archive, files, tmp_root, backend, expected):
         if os.path.exists(tmp_root):
             os.removedirs(tmp_root)
         with pytest.raises(FileNotFoundError):
-            backend.get_archive(
+            interface.get_archive(
                 archive,
                 tmpdir,
                 version,
@@ -143,7 +143,7 @@ def test_archive(tmpdir, tree, archive, files, tmp_root, backend, expected):
             )
         audeer.mkdir(tmp_root)
 
-    assert backend.get_archive(
+    assert interface.get_archive(
         archive,
         tmpdir,
         version,
@@ -152,11 +152,11 @@ def test_archive(tmpdir, tree, archive, files, tmp_root, backend, expected):
 
 
 @pytest.mark.parametrize(
-    'backend',
-    pytest.BACKENDS,
+    'interface',
+    pytest.VERSIONED,
     indirect=True,
 )
-def test_errors(tmpdir, backend):
+def test_errors(tmpdir, interface):
 
     # Ensure we have one file and one archive published on the backend
     archive = '/archive.zip'
@@ -165,8 +165,8 @@ def test_errors(tmpdir, backend):
     local_folder = audeer.mkdir(audeer.path(tmpdir, 'folder'))
     remote_file = f'/{local_file}'
     version = '1.0.0'
-    backend.put_file(local_path, remote_file, version)
-    backend.put_archive(tmpdir, archive, version, files=[local_file])
+    interface.put_file(local_path, remote_file, version)
+    interface.put_archive(tmpdir, archive, version, files=[local_file])
 
     # Create local read-only file and folder
     file_read_only = audeer.touch(audeer.path(tmpdir, 'read-only-file.txt'))
@@ -214,44 +214,44 @@ def test_errors(tmpdir, backend):
     # --- checksum ---
     # `path` missing
     with pytest.raises(audbackend.BackendError, match=error_backend):
-        backend.checksum('/missing.txt', version)
+        interface.checksum('/missing.txt', version)
     # `path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
-        backend.checksum(file_invalid_char, version)
+        interface.checksum(file_invalid_char, version)
     # invalid version
     with pytest.raises(ValueError, match=error_empty_version):
-        backend.checksum(remote_file, empty_version)
+        interface.checksum(remote_file, empty_version)
     with pytest.raises(ValueError, match=error_invalid_version):
-        backend.checksum(remote_file, invalid_version)
+        interface.checksum(remote_file, invalid_version)
 
     # --- exists ---
     # `path` without leading '/'
     with pytest.raises(ValueError, match=error_invalid_path):
-        backend.exists(file_invalid_path, version)
+        interface.exists(file_invalid_path, version)
     # `path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
-        backend.exists(file_invalid_char, version)
+        interface.exists(file_invalid_char, version)
     # invalid version
     with pytest.raises(ValueError, match=error_empty_version):
-        backend.exists(remote_file, empty_version)
+        interface.exists(remote_file, empty_version)
     with pytest.raises(ValueError, match=error_invalid_version):
-        backend.exists(remote_file, invalid_version)
+        interface.exists(remote_file, invalid_version)
 
     # --- get_archive ---
     # `src_path` missing
     with pytest.raises(audbackend.BackendError, match=error_backend):
-        backend.get_archive('/missing.txt', tmpdir, version)
+        interface.get_archive('/missing.txt', tmpdir, version)
     # `src_path` without leading '/'
     with pytest.raises(ValueError, match=error_invalid_path):
-        backend.get_archive(file_invalid_path, tmpdir, version)
+        interface.get_archive(file_invalid_path, tmpdir, version)
     # `src_path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
-        backend.get_archive(file_invalid_char, tmpdir, version)
+        interface.get_archive(file_invalid_char, tmpdir, version)
     # invalid version
     with pytest.raises(ValueError, match=error_empty_version):
-        backend.get_archive(archive, tmpdir, empty_version)
+        interface.get_archive(archive, tmpdir, empty_version)
     with pytest.raises(ValueError, match=error_invalid_version):
-        backend.get_archive(archive, tmpdir, invalid_version)
+        interface.get_archive(archive, tmpdir, invalid_version)
     # `tmp_root` does not exist
     if platform.system() == 'Windows':
         error_msg = (
@@ -260,104 +260,112 @@ def test_errors(tmpdir, backend):
     else:
         error_msg = "No such file or directory: 'non-existing/..."
     with pytest.raises(FileNotFoundError, match=error_msg):
-        backend.get_archive(archive, tmpdir, version, tmp_root='non-existing')
+        interface.get_archive(
+            archive,
+            tmpdir,
+            version,
+            tmp_root='non-existing',
+        )
     # extension of `src_path` is not supported
     error_msg = 'You can only extract ZIP and TAR.GZ files, ...'
-    backend.put_file(
+    interface.put_file(
         audeer.touch(audeer.path(tmpdir, 'archive.bad')),
         '/archive.bad',
         version,
     )
     with pytest.raises(RuntimeError, match=error_msg):
-        backend.get_archive('/archive.bad', tmpdir, version)
+        interface.get_archive('/archive.bad', tmpdir, version)
     # `src_path` is a malformed archive
     error_msg = 'Broken archive: '
-    backend.put_file(
+    interface.put_file(
         audeer.touch(audeer.path(tmpdir, 'malformed.zip')),
         '/malformed.zip',
         version,
     )
     with pytest.raises(RuntimeError, match=error_msg):
-        backend.get_archive('/malformed.zip', tmpdir, version)
+        interface.get_archive('/malformed.zip', tmpdir, version)
     # no write permissions to `dst_root`
     if not platform.system() == 'Windows':
         # Currently we don't know how to provoke permission error on Windows
         with pytest.raises(PermissionError, match=error_read_only_folder):
-            backend.get_archive(archive, folder_read_only, version)
+            interface.get_archive(archive, folder_read_only, version)
     # `dst_root` is not a directory
     with pytest.raises(NotADirectoryError, match=error_not_a_folder):
-        backend.get_archive(archive, local_path, version)
+        interface.get_archive(archive, local_path, version)
 
     # --- get_file ---
     # `src_path` missing
     with pytest.raises(audbackend.BackendError, match=error_backend):
-        backend.get_file('/missing.txt', 'missing.txt', version)
+        interface.get_file('/missing.txt', 'missing.txt', version)
     # `src_path` without leading '/'
     with pytest.raises(ValueError, match=error_invalid_path):
-        backend.get_file(file_invalid_path, tmpdir, version)
+        interface.get_file(file_invalid_path, tmpdir, version)
     # `src_path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
-        backend.get_file(file_invalid_char, tmpdir, version)
+        interface.get_file(file_invalid_char, tmpdir, version)
     # invalid version
     with pytest.raises(ValueError, match=error_empty_version):
-        backend.get_file(remote_file, local_file, empty_version)
+        interface.get_file(remote_file, local_file, empty_version)
     with pytest.raises(ValueError, match=error_invalid_version):
-        backend.get_file(remote_file, local_file, invalid_version)
+        interface.get_file(remote_file, local_file, invalid_version)
     # no write permissions to `dst_path`
     if not platform.system() == 'Windows':
         # Currently we don't know how to provoke permission error on Windows
         with pytest.raises(PermissionError, match=error_read_only_file):
-            backend.get_file(remote_file, file_read_only, version)
+            interface.get_file(remote_file, file_read_only, version)
         dst_path = audeer.path(folder_read_only, 'file.txt')
         with pytest.raises(PermissionError, match=error_read_only_folder):
-            backend.get_file(remote_file, dst_path, version)
+            interface.get_file(remote_file, dst_path, version)
     # `dst_path` is an existing folder
     with pytest.raises(IsADirectoryError, match=error_is_a_folder):
-        backend.get_file(remote_file, local_folder, version)
+        interface.get_file(remote_file, local_folder, version)
 
     # --- join ---
     # joined path without leading '/'
     with pytest.raises(ValueError, match=error_invalid_path):
-        backend.join(file_invalid_path, local_file)
+        interface.join(file_invalid_path, local_file)
     # joined path contains invalid char
     with pytest.raises(ValueError, match=error_invalid_char):
-        backend.join(file_invalid_char, local_file)
+        interface.join(file_invalid_char, local_file)
 
     # --- latest_version ---
     # `path` missing
     with pytest.raises(audbackend.BackendError, match=error_backend):
-        backend.latest_version('/missing.txt')
+        interface.latest_version('/missing.txt')
     # joined path without leading '/'
     with pytest.raises(ValueError, match=error_invalid_path):
-        backend.latest_version(file_invalid_path)
+        interface.latest_version(file_invalid_path)
     # `path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
-        backend.latest_version(file_invalid_char)
+        interface.latest_version(file_invalid_char)
 
     # --- ls ---
     # `path` does not exist
     with pytest.raises(audbackend.BackendError, match=error_backend):
-        backend.ls('/missing/')
+        interface.ls('/missing/')
+    interface.ls('/missing/', suppress_backend_errors=True)
     with pytest.raises(audbackend.BackendError, match=error_backend):
-        backend.ls('/missing.txt')
+        interface.ls('/missing.txt')
+    interface.ls('/missing.txt', suppress_backend_errors=True)
     remote_file_with_wrong_ext = audeer.replace_file_extension(
         remote_file,
         'missing',
     )
     with pytest.raises(audbackend.BackendError, match=error_backend):
-        backend.ls(remote_file_with_wrong_ext)
+        interface.ls(remote_file_with_wrong_ext)
+    interface.ls(remote_file_with_wrong_ext, suppress_backend_errors=True)
     # joined path without leading '/'
     with pytest.raises(ValueError, match=error_invalid_path):
-        backend.ls(file_invalid_path)
+        interface.ls(file_invalid_path)
     # `path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
-        backend.ls(file_invalid_char)
+        interface.ls(file_invalid_char)
 
     # --- put_archive ---
     # `src_root` missing
     error_msg = 'No such file or directory: ...'
     with pytest.raises(FileNotFoundError, match=error_msg):
-        backend.put_archive(
+        interface.put_archive(
             audeer.path(tmpdir, '/missing/'),
             archive,
             version,
@@ -365,14 +373,14 @@ def test_errors(tmpdir, backend):
         )
     # `src_root` is not a directory
     with pytest.raises(NotADirectoryError, match=error_not_a_folder):
-        backend.put_archive(local_path, archive, version)
+        interface.put_archive(local_path, archive, version)
     # `files` missing
     error_msg = 'No such file or directory: ...'
     with pytest.raises(FileNotFoundError, match=error_msg):
-        backend.put_archive(tmpdir, archive, version, files='missing.txt')
+        interface.put_archive(tmpdir, archive, version, files='missing.txt')
     # `dst_path` without leading '/'
     with pytest.raises(ValueError, match=error_invalid_path):
-        backend.put_archive(
+        interface.put_archive(
             tmpdir,
             file_invalid_path,
             version,
@@ -380,7 +388,7 @@ def test_errors(tmpdir, backend):
         )
     # `dst_path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
-        backend.put_archive(
+        interface.put_archive(
             tmpdir,
             file_invalid_char,
             version,
@@ -388,69 +396,74 @@ def test_errors(tmpdir, backend):
         )
     # invalid version
     with pytest.raises(ValueError, match=error_empty_version):
-        backend.put_archive(tmpdir, archive, empty_version)
+        interface.put_archive(tmpdir, archive, empty_version)
     with pytest.raises(ValueError, match=error_invalid_version):
-        backend.put_archive(tmpdir, archive, invalid_version)
+        interface.put_archive(tmpdir, archive, invalid_version)
     # extension of `dst_path` is not supported
     error_msg = 'You can only create a ZIP or TAR.GZ archive, not ...'
     with pytest.raises(RuntimeError, match=error_msg):
-        backend.put_archive(tmpdir, '/archive.bad', version, files=local_file)
+        interface.put_archive(
+            tmpdir,
+            '/archive.bad',
+            version,
+            files=local_file,
+        )
 
     # --- put_file ---
     # `src_path` does not exists
     error_msg = 'No such file or directory: ...'
     with pytest.raises(FileNotFoundError, match=error_msg):
-        backend.put_file(
+        interface.put_file(
             audeer.path(tmpdir, 'missing.txt'),
             remote_file,
             version,
         )
     # `src_path` is a folder
     with pytest.raises(IsADirectoryError, match=error_is_a_folder):
-        backend.put_file(local_folder, remote_file, version)
+        interface.put_file(local_folder, remote_file, version)
     # `dst_path` without leading '/'
     with pytest.raises(ValueError, match=error_invalid_path):
-        backend.put_file(local_path, file_invalid_path, version)
+        interface.put_file(local_path, file_invalid_path, version)
     # `dst_path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
-        backend.put_file(local_path, file_invalid_char, version)
+        interface.put_file(local_path, file_invalid_char, version)
     # invalid version
     with pytest.raises(ValueError, match=error_empty_version):
-        backend.put_file(local_path, remote_file, empty_version)
+        interface.put_file(local_path, remote_file, empty_version)
     with pytest.raises(ValueError, match=error_invalid_version):
-        backend.put_file(local_path, remote_file, invalid_version)
+        interface.put_file(local_path, remote_file, invalid_version)
 
     # --- remove_file ---
     # `path` does not exists
     with pytest.raises(audbackend.BackendError, match=error_backend):
-        backend.remove_file('/missing.txt', version)
+        interface.remove_file('/missing.txt', version)
     # `path` without leading '/'
     with pytest.raises(ValueError, match=error_invalid_path):
-        backend.remove_file(file_invalid_path, version)
+        interface.remove_file(file_invalid_path, version)
     # `path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
-        backend.remove_file(file_invalid_char, version)
+        interface.remove_file(file_invalid_char, version)
     # invalid version
     with pytest.raises(ValueError, match=error_empty_version):
-        backend.remove_file(remote_file, empty_version)
+        interface.remove_file(remote_file, empty_version)
     with pytest.raises(ValueError, match=error_invalid_version):
-        backend.remove_file(remote_file, invalid_version)
+        interface.remove_file(remote_file, invalid_version)
 
     # --- split ---
     # `path` without leading '/'
     with pytest.raises(ValueError, match=error_invalid_path):
-        backend.split(file_invalid_path)
+        interface.split(file_invalid_path)
     # `path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
-        backend.split(file_invalid_char)
+        interface.split(file_invalid_char)
 
     # --- versions ---
     # `path` without leading '/'
     with pytest.raises(ValueError, match=error_invalid_path):
-        backend.versions(file_invalid_path)
+        interface.versions(file_invalid_path)
     # `path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
-        backend.versions(file_invalid_char)
+        interface.versions(file_invalid_char)
 
 
 @pytest.mark.parametrize(
@@ -461,18 +474,18 @@ def test_errors(tmpdir, backend):
     ]
 )
 @pytest.mark.parametrize(
-    'backend',
-    pytest.BACKENDS,
+    'interface',
+    pytest.VERSIONED,
     indirect=True,
 )
-def test_exists(tmpdir, path, version, backend):
+def test_exists(tmpdir, path, version, interface):
 
     src_path = audeer.path(tmpdir, '~')
     audeer.touch(src_path)
 
-    assert not backend.exists(path, version)
-    backend.put_file(src_path, path, version)
-    assert backend.exists(path, version)
+    assert not interface.exists(path, version)
+    interface.put_file(src_path, path, version)
+    assert interface.exists(path, version)
 
 
 @pytest.mark.parametrize(
@@ -501,42 +514,42 @@ def test_exists(tmpdir, path, version, backend):
     ],
 )
 @pytest.mark.parametrize(
-    'backend, owner',
-    [(name, name) for name in pytest.BACKENDS],
+    'interface, owner',
+    [(x, x[0]) for x in pytest.VERSIONED],
     indirect=True,
 )
-def test_file(tmpdir, src_path, dst_path, version, backend, owner):
+def test_file(tmpdir, src_path, dst_path, version, interface, owner):
 
     src_path = audeer.path(tmpdir, src_path)
     audeer.mkdir(os.path.dirname(src_path))
     audeer.touch(src_path)
 
-    assert not backend.exists(dst_path, version)
-    backend.put_file(src_path, dst_path, version)
+    assert not interface.exists(dst_path, version)
+    interface.put_file(src_path, dst_path, version)
     # operation will be skipped
-    backend.put_file(src_path, dst_path, version)
-    assert backend.exists(dst_path, version)
+    interface.put_file(src_path, dst_path, version)
+    assert interface.exists(dst_path, version)
 
-    backend.get_file(dst_path, src_path, version)
+    interface.get_file(dst_path, src_path, version)
     assert os.path.exists(src_path)
-    assert backend.checksum(dst_path, version) == audeer.md5(src_path)
-    assert backend.owner(dst_path, version) == owner
+    assert interface.checksum(dst_path, version) == audeer.md5(src_path)
+    assert interface.owner(dst_path, version) == owner
     date = datetime.datetime.today().strftime('%Y-%m-%d')
-    assert backend.date(dst_path, version) == date
+    assert interface.date(dst_path, version) == date
 
-    backend.remove_file(dst_path, version)
-    assert not backend.exists(dst_path, version)
+    interface.remove_file(dst_path, version)
+    assert not interface.exists(dst_path, version)
 
 
 @pytest.mark.parametrize(
-    'backend',
-    pytest.BACKENDS,
+    'interface',
+    pytest.VERSIONED,
     indirect=True,
 )
-def test_ls(tmpdir, backend):
+def test_ls(tmpdir, interface):
 
-    assert backend.ls() == []
-    assert backend.ls('/') == []
+    assert interface.ls() == []
+    assert interface.ls('/') == []
 
     root = [
         ('/file.bar', '1.0.0'),
@@ -577,7 +590,7 @@ def test_ls(tmpdir, backend):
     tmp_file = os.path.join(tmpdir, '~')
     for path, version in root + sub + hidden:
         audeer.touch(tmp_file)
-        backend.put_file(
+        interface.put_file(
             tmp_file,
             path,
             version,
@@ -605,91 +618,11 @@ def test_ls(tmpdir, backend):
         ('/.sub/.file.foo', False, None, hidden),
         ('/.sub/.file.foo', True, None, hidden_latest),
     ]:
-        assert backend.ls(
+        assert interface.ls(
             path,
             latest_version=latest,
             pattern=pattern,
         ) == sorted(expected)
-
-
-@pytest.mark.parametrize(
-    'paths, expected',
-    [
-        (['/'], '/'),
-        (['/', ''], '/'),
-        (['/file'], '/file'),
-        (['/file/'], '/file/'),
-        (['/root', 'file'], '/root/file'),
-        (['/root', 'file/'], '/root/file/'),
-        (['/', 'root', None, '', 'file', ''], '/root/file'),
-        (['/', 'root', None, '', 'file', '/'], '/root/file/'),
-        (['/', 'root', None, '', 'file', '/', ''], '/root/file/'),
-        pytest.param(
-            [''],
-            None,
-            marks=pytest.mark.xfail(raises=ValueError),
-        ),
-        pytest.param(
-            ['file'],
-            None,
-            marks=pytest.mark.xfail(raises=ValueError),
-        ),
-        pytest.param(
-            ['sub/file'],
-            None,
-            marks=pytest.mark.xfail(raises=ValueError),
-        ),
-        pytest.param(
-            ['', '/file'],
-            None,
-            marks=pytest.mark.xfail(raises=ValueError),
-        ),
-    ]
-)
-@pytest.mark.parametrize(
-    'backend',
-    [
-        audbackend.Backend('host', 'repository'),
-    ]
-)
-def test_join(paths, expected, backend):
-    assert backend.join(*paths) == expected
-
-
-@pytest.mark.parametrize(
-    'path, expected',
-    [
-        ('/', ('/', '')),
-        ('/file', ('/', 'file')),
-        ('/root/', ('/root/', '')),
-        ('/root/file', ('/root/', 'file')),
-        ('/root/file/', ('/root/file/', '')),
-        ('//root///file', ('/root/', 'file')),
-        pytest.param(
-            '',
-            None,
-            marks=pytest.mark.xfail(raises=ValueError),
-        ),
-        pytest.param(
-            'file',
-            None,
-            marks=pytest.mark.xfail(raises=ValueError),
-        ),
-        pytest.param(
-            'sub/file',
-            None,
-            marks=pytest.mark.xfail(raises=ValueError),
-        ),
-    ]
-)
-@pytest.mark.parametrize(
-    'backend',
-    [
-        audbackend.Backend('host', 'repository'),
-    ]
-)
-def test_split(path, expected, backend):
-    assert backend.split(path) == expected
 
 
 @pytest.mark.parametrize(
@@ -700,35 +633,35 @@ def test_split(path, expected, backend):
     ]
 )
 @pytest.mark.parametrize(
-    'backend',
-    pytest.BACKENDS,
+    'interface',
+    pytest.VERSIONED,
     indirect=True,
 )
-def test_versions(tmpdir, dst_path, backend):
+def test_versions(tmpdir, dst_path, interface):
 
     src_path = audeer.path(tmpdir, '~')
     audeer.touch(src_path)
 
     # empty backend
     with pytest.raises(audbackend.BackendError):
-        backend.versions(dst_path)
-    assert not backend.versions(dst_path, suppress_backend_errors=True)
+        interface.versions(dst_path)
+    assert not interface.versions(dst_path, suppress_backend_errors=True)
     with pytest.raises(audbackend.BackendError):
-        backend.latest_version(dst_path)
+        interface.latest_version(dst_path)
 
     # v1
-    backend.put_file(src_path, dst_path, '1.0.0')
-    assert backend.versions(dst_path) == ['1.0.0']
-    assert backend.latest_version(dst_path) == '1.0.0'
+    interface.put_file(src_path, dst_path, '1.0.0')
+    assert interface.versions(dst_path) == ['1.0.0']
+    assert interface.latest_version(dst_path) == '1.0.0'
 
     # v2
-    backend.put_file(src_path, dst_path, '2.0.0')
-    assert backend.versions(dst_path) == ['1.0.0', '2.0.0']
-    assert backend.latest_version(dst_path) == '2.0.0'
+    interface.put_file(src_path, dst_path, '2.0.0')
+    assert interface.versions(dst_path) == ['1.0.0', '2.0.0']
+    assert interface.latest_version(dst_path) == '2.0.0'
 
     # v3 with a different extension
     other_ext = 'other'
     other_remote_file = audeer.replace_file_extension(dst_path, other_ext)
-    backend.put_file(src_path, other_remote_file, '3.0.0')
-    assert backend.versions(dst_path) == ['1.0.0', '2.0.0']
-    assert backend.latest_version(dst_path) == '2.0.0'
+    interface.put_file(src_path, other_remote_file, '3.0.0')
+    assert interface.versions(dst_path) == ['1.0.0', '2.0.0']
+    assert interface.latest_version(dst_path) == '2.0.0'

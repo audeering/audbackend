@@ -38,24 +38,52 @@ def prepare_docstring_tests(doctest_namespace):
         current_dir = os.getcwd()
         os.chdir(tmp)
 
-        host = 'host'
-        repository = 'doctest'
-
-        audbackend.register('file-system', DoctestFileSystem)
-        backend = audbackend.create('file-system', host, repository)
-
         file = 'src.pth'
         audeer.touch(file)
-        backend.put_archive('.', '/a.zip', '1.0.0', files=[file])
-        backend.put_file(file, '/a/b.ext', '1.0.0')
-        for version in ['1.0.0', '2.0.0']:
-            backend.put_file(file, '/f.ext', version)
 
+        audbackend.register('file-system', DoctestFileSystem)
+
+        # backend
+
+        backend = audbackend.Backend('host', 'repo')
         doctest_namespace['backend'] = backend
+
+        interface = audbackend.interface.Base(backend)
+        doctest_namespace['interface'] = interface
+
+        # versioned interface
+
+        versioned = audbackend.create(
+            'file-system',
+            'host',
+            'repo',
+            interface=audbackend.interface.Versioned,
+        )
+        assert isinstance(versioned, audbackend.interface.Versioned)
+        versioned.put_archive('.', '/a.zip', '1.0.0', files=[file])
+        versioned.put_file(file, '/a/b.ext', '1.0.0')
+        for version in ['1.0.0', '2.0.0']:
+            versioned.put_file(file, '/f.ext', version)
+        doctest_namespace['versioned'] = versioned
+
+        # unversioned interface
+
+        unversioned = audbackend.create(
+            'file-system',
+            'host',
+            'repo-unversioned',
+            interface=audbackend.interface.Unversioned,
+        )
+        assert isinstance(unversioned, audbackend.interface.Unversioned)
+        unversioned.put_archive('.', '/a.zip', files=[file])
+        unversioned.put_file(file, '/a/b.ext')
+        unversioned.put_file(file, '/f.ext')
+        doctest_namespace['unversioned'] = unversioned
 
         yield
 
-        audbackend.delete('file-system', host, repository)
+        audbackend.delete('file-system', 'host', 'repo')
+        audbackend.delete('file-system', 'host', 'repo-unversioned')
         audbackend.register('file-system', audbackend.FileSystem)
 
         os.chdir(current_dir)
