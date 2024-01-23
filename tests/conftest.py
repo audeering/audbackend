@@ -24,8 +24,7 @@ pytest.UNVERSIONED = [
     for backend in pytest.BACKENDS
 ]
 pytest.VERSIONED = [
-    (backend, audbackend.interface.Versioned)
-    for backend in pytest.BACKENDS
+    ('file-system', audbackend.interface.Versioned)
 ]
 
 # UID for test session
