@@ -4,24 +4,26 @@ audbackend
 
 |tests| |coverage| |docs| |python-versions| |license|
 
-Manage file storage on different backends.
+**audbackend** provides interfaces
+for file storage on different backends.
 
-At the moment we support
-the following backends:
+An interface enables user interactions
+with a backend,
+and influences how the data is structured,
+e.g. versioned data.
 
-* Artifactory_ with ``audbackend.backend.Artifactory``
-* local file system with ``audbackend.backend.FileSystem``
+A backend is responsible
+for storing and accessing
+the requested data structure
+on a file storage system,
+such as a `file system`_
+or Artifactory_.
 
-And the following interfaces
-to access files on a backend:
-
-* unversioned with ``audbackend.interface.Unversioned``
-* versioned with  ``audbackend.interface.Versioned``
-
-Have a look at the installation_ instructions.
+Have a look at the installation_ and usage_ instructions.
 
 .. _Artifactory: https://jfrog.com/artifactory/
 .. _installation: https://audeering.github.io/audbackend/install.html
+.. _usage: https://audeering.github.io/audbackend/usage.html
 
 
 .. badges images and links:
