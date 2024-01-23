@@ -11,11 +11,14 @@ that have not been
 invented yet :)
 
 This tutorial is divided
-into two parts.
+into three parts.
 Under :ref:`file-system-example`,
 we show the basic usage
 by means of a
 standard file system.
+In :ref:`backend-interface`
+we introduce the concept
+of a backend interface.
 Under :ref:`develop-new-backend`,
 we take a deep dive
 and develop a backend
