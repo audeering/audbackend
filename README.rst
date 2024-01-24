@@ -16,7 +16,7 @@ A backend is responsible
 for storing and accessing
 the requested data structure
 on a file storage system,
-such as a `file system`_
+such as a file system
 or Artifactory_.
 
 Have a look at the installation_ and usage_ instructions.
