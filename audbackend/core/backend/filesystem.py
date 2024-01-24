@@ -6,10 +6,10 @@ import typing
 import audeer
 
 from audbackend.core import utils
-from audbackend.core.backend import Backend
+from audbackend.core.backend.base import Base
 
 
-class FileSystem(Backend):
+class FileSystem(Base):
     r"""Backend for file system.
 
     Args:

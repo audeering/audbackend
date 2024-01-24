@@ -9,10 +9,10 @@ import audeer
 import audbackend
 
 
-class DoctestFileSystem(audbackend.FileSystem):
+class DoctestFileSystem(audbackend.backend.FileSystem):
 
     def __repr__(self) -> str:
-        name = 'audbackend.core.filesystem.FileSystem'
+        name = 'audbackend.core.backend.filesystem.FileSystem'
         return str((name, self.host, self.repository))
 
     def _date(
@@ -45,7 +45,7 @@ def prepare_docstring_tests(doctest_namespace):
 
         # backend
 
-        backend = audbackend.Backend('host', 'repo')
+        backend = audbackend.backend.Base('host', 'repo')
         doctest_namespace['backend'] = backend
 
         interface = audbackend.interface.Base(backend)
@@ -84,6 +84,6 @@ def prepare_docstring_tests(doctest_namespace):
 
         audbackend.delete('file-system', 'host', 'repo')
         audbackend.delete('file-system', 'host', 'repo-unversioned')
-        audbackend.register('file-system', audbackend.FileSystem)
+        audbackend.register('file-system', audbackend.backend.FileSystem)
 
         os.chdir(current_dir)

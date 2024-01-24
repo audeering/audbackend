@@ -1,6 +1,6 @@
 import typing
 
-from audbackend.core.backend import Backend
+from audbackend.core.backend.base import Base as Backend
 
 
 class Base:
@@ -38,7 +38,7 @@ class Base:
 
         Examples:
             >>> interface.backend
-            ('audbackend.core.backend.Backend', 'host', 'repo')
+            ('audbackend.core.backend.base.Base', 'host', 'repo')
 
         """
         return self._backend

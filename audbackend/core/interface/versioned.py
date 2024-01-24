@@ -5,7 +5,6 @@ import typing
 import audeer
 
 from audbackend.core import utils
-from audbackend.core.backend import Backend
 from audbackend.core.errors import BackendError
 from audbackend.core.interface.base import Base
 
@@ -20,7 +19,7 @@ class Versioned(Base):
 
     def __init__(
             self,
-            backend: Backend,
+            backend: Base,
     ):
         super().__init__(backend)
 

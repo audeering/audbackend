@@ -7,7 +7,7 @@ import dohq_artifactory
 import audeer
 
 from audbackend.core import utils
-from audbackend.core.backend import Backend
+from audbackend.core.backend.base import Base
 
 
 def _artifactory_path(
@@ -110,7 +110,7 @@ def _download(
                         pbar.update(n_data)
 
 
-class Artifactory(Backend):
+class Artifactory(Base):
     r"""Backend for Artifactory.
 
     Looks for the two environment variables
