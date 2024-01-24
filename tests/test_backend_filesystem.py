@@ -7,7 +7,7 @@ import audeer
 import audbackend
 
 
-class BadFileSystem(audbackend.FileSystem):
+class BadFileSystem(audbackend.backend.FileSystem):
     r"""Imitates a corrupted file system."""
     def _get_file(
             self,
@@ -24,7 +24,7 @@ class BadFileSystem(audbackend.FileSystem):
 def bad_file_system():
     audbackend.register('file-system', BadFileSystem)
     yield
-    audbackend.register('file-system', audbackend.FileSystem)
+    audbackend.register('file-system', audbackend.backend.FileSystem)
 
 
 @pytest.mark.parametrize(

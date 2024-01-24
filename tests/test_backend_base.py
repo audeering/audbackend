@@ -40,7 +40,7 @@ import audbackend
 @pytest.mark.parametrize(
     'backend',
     [
-        audbackend.Backend('host', 'repository'),
+        audbackend.backend.Base('host', 'repository'),
     ]
 )
 def test_join(paths, expected, backend):
@@ -76,7 +76,7 @@ def test_join(paths, expected, backend):
 @pytest.mark.parametrize(
     'backend',
     [
-        audbackend.Backend('host', 'repository'),
+        audbackend.backend.Base('host', 'repository'),
     ]
 )
 def test_split(path, expected, backend):

@@ -4,10 +4,7 @@ audbackend.interface
 .. automodule:: audbackend.interface
 
 To access the files on a backend users
-can choose between two interfaces
-:class:`audbackend.interface.Unversioned`
-or
-:class:`audbackend.interface.Versioned`:
+can use the following interfaces:
 
 .. autosummary::
     :toctree:

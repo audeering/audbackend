@@ -5,10 +5,18 @@ audbackend
 |tests| |coverage| |docs| |python-versions| |license|
 
 Manage file storage on different backends.
-At the moment we support:
 
-* Artifactory_ with ``audbackend.Artifactory``
-* local file system with ``audbackend.FileSystem``
+At the moment we support
+the following backends:
+
+* Artifactory_ with ``audbackend.backend.Artifactory``
+* local file system with ``audbackend.backend.FileSystem``
+
+And the following interfaces
+to access files on a backend:
+
+* unversioned with ``audbackend.interface.Unversioned``
+* versioned with  ``audbackend.interface.Versioned``
 
 Have a look at the installation_ instructions.
 

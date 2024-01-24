@@ -10,7 +10,7 @@ import audeer
 import audbackend
 
 
-# list of backends that will be tested by default
+# list of backends to test
 pytest.BACKENDS = [
     'artifactory',
     'file-system',
@@ -19,12 +19,13 @@ if os.name != 'nt':
     pytest.BACKENDS.append('single-folder')
 
 
+# list of interfaces to test
 pytest.UNVERSIONED = [
     (backend, audbackend.interface.Unversioned)
     for backend in pytest.BACKENDS
 ]
 pytest.VERSIONED = [
-    ('file-system', audbackend.interface.Versioned)
+    ('file-system', audbackend.interface.Versioned),
 ]
 
 # UID for test session
@@ -53,7 +54,7 @@ def owner(request):
     r"""Return expected owner value."""
     name = request.param
     if name == 'artifactory':
-        owner = audbackend.core.artifactory._authentication(
+        owner = audbackend.core.backend.artifactory._authentication(
             'audeering.jfrog.io/artifactory'
         )[0]
     else:

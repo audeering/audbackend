@@ -1,8 +1,8 @@
 import typing
 
 from audbackend.core import utils
-from audbackend.core.backend import Backend
-from audbackend.core.filesystem import FileSystem
+from audbackend.core.backend.base import Base
+from audbackend.core.backend.filesystem import FileSystem
 from audbackend.core.interface.base import Base as Interface
 from audbackend.core.interface.versioned import Versioned
 
@@ -18,7 +18,7 @@ def _backend(
         name: str,
         host: str,
         repository: str,
-) -> Backend:
+) -> Base:
     r"""Get backend instance."""
     if name not in backend_registry:
         raise ValueError(
@@ -89,7 +89,7 @@ def access(
 
     Examples:
         >>> access('file-system', 'host', 'repo')
-        audbackend.core.interface.versioned.Versioned('audbackend.core.filesystem.FileSystem', 'host', 'repo')
+        audbackend.core.interface.versioned.Versioned('audbackend.core.backend.filesystem.FileSystem', 'host', 'repo')
 
     """  # noqa: E501
     backend = _backend(name, host, repository)
@@ -98,7 +98,7 @@ def access(
     return interface(backend, **interface_kwargs)
 
 
-def available() -> typing.Dict[str, typing.List[Backend]]:
+def available() -> typing.Dict[str, typing.List[Base]]:
     r"""List available backend instances.
 
     Returns a dictionary with
@@ -114,7 +114,7 @@ def available() -> typing.Dict[str, typing.List[Backend]]:
         >>> list(available())
         ['artifactory', 'file-system']
         >>> available()['file-system'][0]
-        ('audbackend.core.filesystem.FileSystem', 'host', 'repo')
+        ('audbackend.core.backend.filesystem.FileSystem', 'host', 'repo')
 
     """  # noqa: E501
     result = {}
@@ -174,7 +174,7 @@ def create(
 
     Examples:
         >>> create('file-system', 'host', 'repository')
-        audbackend.core.interface.versioned.Versioned('audbackend.core.filesystem.FileSystem', 'host', 'repository')
+        audbackend.core.interface.versioned.Versioned('audbackend.core.backend.filesystem.FileSystem', 'host', 'repository')
 
     """  # noqa: E501
     backend = _backend(name, host, repository)
@@ -222,7 +222,7 @@ def delete(
 
 def register(
         name: str,
-        cls: typing.Type[Backend],
+        cls: typing.Type[Base],
 ):
     r"""Register backend class.
 
@@ -245,7 +245,7 @@ register('file-system', FileSystem)
 
 # Register optional backends
 try:
-    from audbackend.core.artifactory import Artifactory
+    from audbackend.core.backend.artifactory import Artifactory
     register('artifactory', Artifactory)
 except ImportError:  # pragma: no cover
     pass

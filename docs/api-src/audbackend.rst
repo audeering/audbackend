@@ -3,32 +3,26 @@ audbackend
 
 .. automodule:: audbackend
 
-A backend is a generic interface
+:mod:`audbackend`
+provides an abstract layer
 for storing and accessing files
 on a host.
 
-Currently the following backends
-are shipped with :mod:`audbackend`:
+This involves two components:
 
-.. autosummary::
-    :toctree:
-    :nosignatures:
+1. A *backend* that
+   implements file operations
+   on a specific storing device
+   (:mod:`audbackend.backend`).
 
-    Artifactory
-    FileSystem
+2. An *interface* that
+   passes user requests
+   to a backend
+   (:mod:`audbackend.interface`).
 
-Users can implement their own
-backend by deriving from
-:class:`audbackend.Backend`.
-
-.. autosummary::
-    :toctree:
-    :nosignatures:
-
-    Backend
-
-In addition to the backends
-the following classes and functions are available.
+Additionally,
+the following classes
+and functions are available.
 
 .. autosummary::
     :toctree:
