@@ -12,13 +12,13 @@ import audbackend
             'file-system',
             'file-system',
             f'unittest-{audeer.uid()[:8]}',
-            audbackend.FileSystem,
+            audbackend.backend.FileSystem,
         ),
         (
             'artifactory',
             'artifactory',
             f'unittest-{audeer.uid()[:8]}',
-            audbackend.Artifactory,
+            audbackend.backend.Artifactory,
         ),
         pytest.param(  # backend does not exist
             'bad-backend',

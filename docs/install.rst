@@ -11,7 +11,8 @@ To install :mod:`audbackend` run:
     $ pip install audbackend
 
 By default,
-only the :class:`audbackend.FileSystem` backend will be installed.
+only the :class:`audbackend.backend.FileSystem`
+backend will be installed.
 To install all backends run:
 
 .. code-block:: bash
@@ -19,7 +20,7 @@ To install all backends run:
     $ pip install audbackend[all]
 
 or select single backends,
-e.g. :class:`audbackend.Artifactory`
+e.g. :class:`audbackend.backend.Artifactory`
 
 .. code-block:: bash
 
