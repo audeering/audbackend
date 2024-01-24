@@ -28,12 +28,12 @@ This tutorial is divided
 into three parts.
 Under :ref:`register-a-backend`,
 we show how existing or new backends
-are assigned to names
-used when creating a repository with
+are assigned to names,
+that are used by
 :func:`audbackend.create`
-or when accessing a repository with
+and
 :func:`audbackend.access`.
-In :ref:`develop-new-interface`
+In :ref:`develop-new-interface`,
 we show how to create an interface
 that manages user content.
 Under :ref:`develop-new-backend`,
@@ -49,7 +49,7 @@ Register a backend
 ------------------
 
 Backends are referred to by names.
-The current active names can be shown by:
+The current active names can be listed by:
 
 .. jupyter-execute::
 
@@ -58,7 +58,7 @@ The current active names can be shown by:
     list(audbackend.available())
 
 We can assign a name to a backend
-by registering a backend class.
+by registering its backend class.
 
 .. jupyter-execute::
 

@@ -4,26 +4,31 @@ audbackend
 
 |tests| |coverage| |docs| |python-versions| |license|
 
-**audbackend** provides interfaces
-for file storage on different backends.
+**audbackend** provides interfaces_
+for file storage on different backends_.
 
 An interface enables user interactions
 with a backend,
 and influences how the data is structured,
-e.g. versioned data.
-
+e.g. `versioned`_
+or `unversioned`_.
 A backend is responsible
-for storing and accessing
+for managing
 the requested data structure
-on a file storage system,
+in a repository
+on a storage system,
 such as a file system
 or Artifactory_.
 
 Have a look at the installation_ and usage_ instructions.
 
 .. _Artifactory: https://jfrog.com/artifactory/
+.. _backends: https://audeering.github.io/audbackend/api/audbackend.backend.html
+.. _interfaces: https://audeering.github.io/audbackend/api/audbackend.interface.html
 .. _installation: https://audeering.github.io/audbackend/install.html
+.. _unversioned: https://audeering.github.io/audbackend/api/audbackend.interface.Unversioned.html
 .. _usage: https://audeering.github.io/audbackend/usage.html
+.. _versioned: https://audeering.github.io/audbackend/api/audbackend.interface.Versioned.html
 
 
 .. badges images and links:

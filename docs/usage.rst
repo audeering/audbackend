@@ -103,9 +103,13 @@ like its checksum.
 
 Its creation date.
 
+Its creation date.
+
 .. jupyter-execute::
 
     interface.date('/file.txt')
+
+Or the owner who uploaded the file.
 
 Or the owner who uploaded the file.
 
