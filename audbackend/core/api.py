@@ -133,7 +133,7 @@ def create(
         name: str,
         host: str,
         repository: str,
- ):
+):
     r"""Create repository.
 
     Creates ``repository`` on the ``host``
