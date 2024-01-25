@@ -30,6 +30,15 @@ class DoctestFileSystem(audbackend.backend.FileSystem):
         return 'doctest'
 
 
+def doctest_create(
+        name: str,
+        host: str,
+        repository: str,
+):
+    # call create without return value
+    audbackend.create(name, host, repository)
+
+
 @pytest.fixture(scope='function', autouse=True)
 def prepare_docstring_tests(doctest_namespace):
 
@@ -42,18 +51,26 @@ def prepare_docstring_tests(doctest_namespace):
         audeer.touch(file)
 
         audbackend.register('file-system', DoctestFileSystem)
+        doctest_namespace['create'] = doctest_create
 
         # backend
 
         backend = audbackend.backend.Base('host', 'repo')
         doctest_namespace['backend'] = backend
 
+        # interface
+
         interface = audbackend.interface.Base(backend)
         doctest_namespace['interface'] = interface
 
         # versioned interface
 
-        versioned = audbackend.create(
+        audbackend.create(
+            'file-system',
+            'host',
+            'repo',
+            )
+        versioned = audbackend.access(
             'file-system',
             'host',
             'repo',
@@ -68,7 +85,12 @@ def prepare_docstring_tests(doctest_namespace):
 
         # unversioned interface
 
-        unversioned = audbackend.create(
+        audbackend.create(
+            'file-system',
+            'host',
+            'repo-unversioned',
+        )
+        unversioned = audbackend.access(
             'file-system',
             'host',
             'repo-unversioned',
@@ -85,5 +107,6 @@ def prepare_docstring_tests(doctest_namespace):
         audbackend.delete('file-system', 'host', 'repo')
         audbackend.delete('file-system', 'host', 'repo-unversioned')
         audbackend.register('file-system', audbackend.backend.FileSystem)
+        doctest_namespace['create'] = audbackend.create
 
         os.chdir(current_dir)
