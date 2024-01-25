@@ -43,25 +43,18 @@ Unversioned data on a file system
 As all data is stored in a repository
 on the backend,
 we need to first create one.
-We select the ``'file-system'`` backend,
-and use the :class:`audbackend.interface.Unversioned` interface
-instead of the default one
-(:class:`audbackend.interface.Versioned`).
+We select the ``'file-system'`` backend.
 
 .. jupyter-execute::
 
-    interface = audbackend.create(
-        'file-system',
-        './host',
-        'repo',
-         interface=audbackend.interface.Unversioned,
-    )
+    audbackend.create('file-system', './host', 'repo')
 
 Once we have an existing repository,
-we can always access it with :func:`audbackend.access`.
-Repositories are not bound to the interface
-they were created with,
-so we have to select again the desired interface.
+we can access it with :func:`audbackend.access`.
+We choose the :class:`audbackend.interface.Unversioned` interface
+to communicate with the repository,
+instead of the default one
+(:class:`audbackend.interface.Versioned`).
 
 .. jupyter-execute::
 
@@ -103,13 +96,9 @@ like its checksum.
 
 Its creation date.
 
-Its creation date.
-
 .. jupyter-execute::
 
     interface.date('/file.txt')
-
-Or the owner who uploaded the file.
 
 Or the owner who uploaded the file.
 

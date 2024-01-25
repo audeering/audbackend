@@ -147,19 +147,20 @@ we implement the interface.
             return self.backend.ls(f'/{username}/')
 
 
-Let's create a backend
-with our custom interface:
+Let's create a repository
+with our custom interface,
+and upload a file:
 
 .. jupyter-execute::
 
     import audeer
 
-    backend = audbackend.create('file-system', './host', 'repo', interface=UserContent)
+    interface = audbackend.create('file-system', './host', 'repo', interface=UserContent)
 
-    backend.add_user('audeering', 'pa$$word')
+    interface.add_user('audeering', 'pa$$word')
     audeer.touch('local.txt')
-    backend.upload('audeering', 'pa$$word', 'local.txt')
-    backend.ls('audeering')
+    interface.upload('audeering', 'pa$$word', 'local.txt')
+    interface.ls('audeering')
 
 
 At the end we clean up and delete our repo.
@@ -323,7 +324,7 @@ Now we create an instance.
 
 .. jupyter-execute::
 
-    backend = audbackend.create('sql', './host', 'repo')
+    interface = audbackend.create('sql', './host', 'repo')
 
 
 We also add a method to access
@@ -345,7 +346,7 @@ it is not found).
             )
         self._db = sl.connect(self._path)
 
-    backend = audbackend.access('sql', './host', 'repo')
+    interface = audbackend.access('sql', './host', 'repo')
 
 
 Next,
@@ -370,7 +371,7 @@ if a file exists.
             result = db.execute(query).fetchone()[0] == 1
         return result
 
-    backend.exists('/file.txt', '1.0.0')
+    interface.exists('/file.txt', '1.0.0')
 
 
 And a method that uploads
@@ -407,8 +408,8 @@ Let's put a file on the backend.
 .. jupyter-execute::
 
     file = audeer.touch('file.txt')
-    backend.put_file(file, '/file.txt', '1.0.0')
-    backend.exists('/file.txt', '1.0.0')
+    interface.put_file(file, '/file.txt', '1.0.0')
+    interface.exists('/file.txt', '1.0.0')
 
 
 We need three more functions
@@ -430,7 +431,7 @@ to access its meta information.
             checksum = db.execute(query).fetchone()[0]
         return checksum
 
-    backend.checksum('/file.txt', '1.0.0')
+    interface.checksum('/file.txt', '1.0.0')
 
 .. jupyter-execute::
 
@@ -448,7 +449,7 @@ to access its meta information.
             date = db.execute(query).fetchone()[0]
         return date
 
-    backend.date('/file.txt', '1.0.0')
+    interface.date('/file.txt', '1.0.0')
 
 .. jupyter-execute::
 
@@ -466,7 +467,7 @@ to access its meta information.
             owner = db.execute(query).fetchone()[0]
         return owner
 
-    backend.owner('/file.txt', '1.0.0')
+    interface.owner('/file.txt', '1.0.0')
 
 
 Finally,
@@ -498,7 +499,7 @@ Which we then use to download the file.
 
 .. jupyter-execute::
 
-    file = backend.get_file('/file.txt', 'local.txt', '1.0.0')
+    file = interface.get_file('/file.txt', 'local.txt', '1.0.0')
 
 
 To inspect the files
@@ -542,11 +543,11 @@ Let's test it.
 
 .. jupyter-execute::
 
-    backend.ls('/')
+    interface.ls('/')
 
 .. jupyter-execute::
 
-    backend.ls('/file.txt')
+    interface.ls('/file.txt')
 
 
 To delete a file
@@ -568,8 +569,8 @@ requires another method.
             '''
             db.execute(query)
 
-    backend.remove_file('/file.txt', '1.0.0')
-    backend.ls('/')
+    interface.remove_file('/file.txt', '1.0.0')
+    interface.ls('/')
 
 
 Finally,
