@@ -137,7 +137,7 @@ def create(
     r"""Create repository.
 
     Creates ``repository`` on the ``host``
-    using the class registered
+    using the backend class registered
     under the alias ``name``
     with :func:`audbackend.register`.
 
