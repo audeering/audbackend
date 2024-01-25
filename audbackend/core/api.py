@@ -135,7 +135,7 @@ def create(
     with :func:`audbackend.register`.
 
     Use :func:`audbackend.available`
-    to list available repositories 
+    to list available repositories
     and :func:`audbackend.access`
     to access the files on a repository.
 
