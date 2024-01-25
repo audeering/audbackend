@@ -141,13 +141,6 @@ def create(
     under the alias ``name``
     with :func:`audbackend.register`.
 
-    If the repository cannot be created
-    (e.g. user lacks permission)
-    or if it exists already,
-    an error of type
-    :class:`audbackend.BackendError`
-    is raised.
-
     Use :func:`audbackend.available`
     to list available backend instances.
 
