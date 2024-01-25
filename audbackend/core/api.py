@@ -61,13 +61,6 @@ def access(
     registered under the alias ``name``
     with :func:`audbackend.register`.
 
-    If the repository does not exist
-    or cannot be accessed for other reasons
-    (e.g. user lacks permission)
-    an error of type
-    :class:`audbackend.BackendError`
-    is raised.
-
     Use :func:`audbackend.available`
     to list available backend instances.
 
@@ -142,7 +135,9 @@ def create(
     with :func:`audbackend.register`.
 
     Use :func:`audbackend.available`
-    to list available backend instances.
+    to list available repositories 
+    and :func:`audbackend.access`
+    to access the files on a repository.
 
     Args:
         name: alias under which backend class is registered
