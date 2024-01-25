@@ -133,16 +133,12 @@ def create(
         name: str,
         host: str,
         repository: str,
-        *,
-        interface: typing.Type[Interface] = Versioned,
-        interface_kwargs: dict = None
-) -> Interface:
+ ):
     r"""Create repository.
 
     Creates ``repository`` on the ``host``
-    and returns an ``interface`` instance for it.
-    The backend is an object of the class
-    registered under the alias ``name``
+    using the class registered
+    under the alias ``name``
     with :func:`audbackend.register`.
 
     If the repository cannot be created
@@ -159,11 +155,6 @@ def create(
         name: alias under which backend class is registered
         host: host address
         repository: repository name
-        interface: interface class
-        interface_kwargs: keyword arguments for interface class
-
-    Returns:
-        interface object
 
     Raises:
         BackendError: if an error is raised on the backend,
@@ -174,13 +165,11 @@ def create(
 
     Examples:
         >>> create('file-system', 'host', 'repository')
-        audbackend.core.interface.versioned.Versioned('audbackend.core.backend.filesystem.FileSystem', 'host', 'repository')
 
     """  # noqa: E501
     backend = _backend(name, host, repository)
     utils.call_function_on_backend(backend._create)
-    interface_kwargs = interface_kwargs or {}
-    return interface(backend, **interface_kwargs)
+    return Versioned(backend)
 
 
 def delete(
@@ -211,7 +200,8 @@ def delete(
         >>> access('file-system', 'host', 'repo').ls()
         [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
         >>> delete('file-system', 'host', 'repo')
-        >>> create('file-system', 'host', 'repo').ls()
+        >>> create('file-system', 'host', 'repo')
+        >>> access('file-system', 'host', 'repo').ls()
         []
 
     """  # noqa: E501
