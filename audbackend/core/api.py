@@ -181,7 +181,7 @@ def delete(
     Deletes the repository
     with name ``repository``
     located at ``host``
-    on the backend with alis ``name``
+    on the backend with alias ``name``
     and removes it from the
     list of available repositories
     (see :func:`audbackend.available`).
