@@ -218,8 +218,8 @@ with the :class:`audbackend.interface.Versioned` interface
         interface=audbackend.interface.Versioned,
     )
 
-We then upload a file and assign it ``'1.0.0'``
-as its version.
+We then upload a file
+and assign version ``'1.0.0'`` to it.
 
 .. jupyter-execute::
 
