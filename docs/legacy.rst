@@ -50,7 +50,8 @@ you have to list those extensions explicitly.
 
     import audbackend
 
-    backend = audbackend.create('file-system', './host', 'repo')
+    audbackend.create('file-system', './host', 'repo')
+    backend = audbackend.access('file-system', './host', 'repo')
     extensions = ['tar.gz']
     backend._use_legacy_file_structure(extensions=extensions)
 
