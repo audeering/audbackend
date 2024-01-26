@@ -53,10 +53,9 @@ We select the ``'file-system'`` backend.
 
 Once we have an existing repository,
 we can access it with :func:`audbackend.access`.
-We choose the :class:`audbackend.interface.Unversioned` interface
-to communicate with the repository,
-instead of the default one
-(:class:`audbackend.interface.Versioned`).
+We use the :class:`audbackend.interface.Unversioned` interface.
+It does not support versioning,
+i.e. exactly one file exists for a backend path.
 
 .. jupyter-execute::
 
