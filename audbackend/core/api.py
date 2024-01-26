@@ -139,6 +139,12 @@ def create(
     and :func:`audbackend.access`
     to access the files on a repository.
 
+    .. note:: For legacy reasons the method
+        returns an (undocumented) instance of
+        :class:`audbackend.interface.Versioned`.
+        Since the return value might be removed in
+        a future version it is not recommended to use it.
+
     Args:
         name: alias under which backend class is registered
         host: host address
