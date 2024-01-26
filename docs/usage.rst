@@ -203,11 +203,13 @@ Versioned data on a file system
 
 We start by creating a repository
 on the ``'file-system'`` backend
+and accessing it
 using the default :class:`audbackend.interface.Versioned` interface.
 
 .. jupyter-execute::
 
-    interface = audbackend.create('file-system', './host', 'repo')
+    audbackend.create('file-system', './host', 'repo')
+    interface = audbackend.access('file-system', './host', 'repo')
 
 We then upload a file and assign it ``'1.0.0'``
 as its version.

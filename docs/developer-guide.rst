@@ -155,7 +155,8 @@ and upload a file:
 
     import audeer
 
-    interface = audbackend.create('file-system', './host', 'repo', interface=UserContent)
+    audbackend.create('file-system', './host', 'repo')
+    interface = audbackend.access('file-system', './host', 'repo', interface=UserContent)
 
     interface.add_user('audeering', 'pa$$word')
     audeer.touch('local.txt')
@@ -320,11 +321,11 @@ stored on our backend:
             db.execute(query)
 
 
-Now we create an instance.
+Now we create a repository.
 
 .. jupyter-execute::
 
-    interface = audbackend.create('sql', './host', 'repo')
+    audbackend.create('sql', './host', 'repo')
 
 
 We also add a method to access
