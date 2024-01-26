@@ -69,13 +69,19 @@ def owner(request):
 @pytest.fixture(scope='function', autouse=False)
 def interface(hosts, request):
 
-    name, interface = request.param
+    name, interface_cls = request.param
     host = hosts[name]
     repository = f'unittest-{pytest.UID}-{audeer.uid()[:8]}'
 
-    backend = audbackend.create(name, host, repository, interface=interface)
+    audbackend.create(name, host, repository)
+    interface = audbackend.access(
+        name,
+        host,
+        repository,
+        interface=interface_cls,
+    )
 
-    yield backend
+    yield interface
 
     # Deleting repositories on Artifactory might fail
     for n in range(3):
