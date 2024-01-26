@@ -56,16 +56,17 @@ def access(
 
     Returns an ``interface`` instance
     to access the ``repository``
-    on the ``host``.
-    The backend is an object of the class
-    registered under the alias ``name``
-    with :func:`audbackend.register`.
+    located at ``host``
+    on the backend with alias ``name``
+    (see :func:`audbackend.register`).
 
     Use :func:`audbackend.available`
-    to list available backend instances.
+    to list available repositories
+    or :func:`audbackend.create`
+    to create a new repository.
 
     Args:
-        name: alias under which backend class is registered
+        name: backend alias
         host: host address
         repository: repository name
         interface: interface class
@@ -92,16 +93,17 @@ def access(
 
 
 def available() -> typing.Dict[str, typing.List[Base]]:
-    r"""List available backend instances.
+    r"""List available repositories.
 
     Returns a dictionary with
-    registered backend aliases as keys
+    backend alias name as key
     (see :func:`audbackend.register`)
-    and a list with backend instances as values
+    and a list with repositories
+    on that backend as value
     (see :func:`audbackend.create`).
 
     Returns:
-        dictionary with backend instances
+        dictionary with repositories
 
     Examples:
         >>> list(available())
@@ -129,15 +131,15 @@ def create(
 ):
     r"""Create repository.
 
-    Creates ``repository`` on the ``host``
-    using the backend class registered
-    under the alias ``name``
-    with :func:`audbackend.register`.
+    Creates ``repository``
+    located at ``host``
+    on the backend with alias ``name``
+    (see :func:`audbackend.register`).
 
     Use :func:`audbackend.available`
     to list available repositories
     and :func:`audbackend.access`
-    to access the files on a repository.
+    to access the repository.
 
     .. note:: For legacy reasons the method
         returns an (undocumented) instance of
@@ -146,7 +148,7 @@ def create(
         a future version it is not recommended to use it.
 
     Args:
-        name: alias under which backend class is registered
+        name: backend alias
         host: host address
         repository: repository name
 
@@ -176,12 +178,16 @@ def delete(
 
     .. warning:: Deletes the repository and all its content.
 
-    If an instance of the backend exists,
-    it will be removed from the available instances.
-    See also :func:`audbackend.available`.
+    Deletes the repository
+    with name ``repository``
+    located at ``host``
+    on the backend with alis ``name``
+    and removes it from the
+    list of available repositories
+    (see :func:`audbackend.available`).
 
     Args:
-        name: alias under which backend class is registered
+        name: backend alias
         host: host address
         repository: repository name
 
@@ -216,7 +222,7 @@ def register(
     it will be overwritten.
 
     Args:
-        name: alias under which backend class is registered
+        name: backend alias
         cls: backend class
 
     Examples:
