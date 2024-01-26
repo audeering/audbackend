@@ -46,6 +46,7 @@ we need to first create one.
 We select the ``'file-system'`` backend.
 
 .. jupyter-execute::
+    :hide-output:
 
     audbackend.create('file-system', './host', 'repo')
 

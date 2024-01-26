@@ -324,6 +324,7 @@ stored on our backend:
 Now we create a repository.
 
 .. jupyter-execute::
+    :hide-output:
 
     audbackend.create('sql', './host', 'repo')
 
