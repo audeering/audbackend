@@ -27,14 +27,15 @@ invented yet :)
 This tutorial is divided
 into three parts.
 Under :ref:`register-a-backend`,
-we show how existing or new backends
-are assigned to names,
-that are used by
+we show how a backend class
+is assigned to an alias name
+that is used to create and access
+repositories with
 :func:`audbackend.create`
 and
 :func:`audbackend.access`.
 In :ref:`develop-new-interface`,
-we show how to create an interface
+we show how to create a custom interface
 that manages user content.
 Under :ref:`develop-new-backend`,
 we take a deep dive

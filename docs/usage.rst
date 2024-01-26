@@ -18,10 +18,12 @@ Usage
 With the help of :mod:`audbackend`
 a user can store files
 in a repository
-on a storage system.
+on a storage system
+(backend).
 
-The user can select between different :ref:`interfaces <interfaces>`
-that influence how the data is structured
+File access is handled
+via an :ref:`interface <interfaces>`,
+which defines how the data is structured
 and presented to the user.
 In addition,
 :mod:`audbackend` supports different storage systems,
@@ -40,9 +42,8 @@ The names of all available backends can be listed by:
 Unversioned data on a file system
 ---------------------------------
 
-As all data is stored in a repository
-on the backend,
-we need to first create one.
+To store data on a backend
+we need to create a repository first.
 We select the ``'file-system'`` backend.
 
 .. jupyter-execute::
@@ -203,14 +204,20 @@ Versioned data on a file system
 -------------------------------
 
 We start by creating a repository
-on the ``'file-system'`` backend
-and accessing it
-using the default :class:`audbackend.interface.Versioned` interface.
+on the ``'file-system'`` backend.
+This time we access it
+with the :class:`audbackend.interface.Versioned` interface
+(which is also used by default).
 
 .. jupyter-execute::
 
     audbackend.create('file-system', './host', 'repo')
-    interface = audbackend.access('file-system', './host', 'repo')
+    interface = audbackend.access(
+        'file-system',
+        './host',
+        'repo',
+        interface=audbackend.interface.Versioned,
+    )
 
 We then upload a file and assign it ``'1.0.0'``
 as its version.
@@ -231,7 +238,7 @@ Now we change the file for version ``'2.0.0'``.
 
 If we inspect the content of the repository
 it will return a list of tuples
-containing name and version.
+containing file name and version.
 
 .. jupyter-execute::
 
