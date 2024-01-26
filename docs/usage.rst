@@ -66,10 +66,9 @@ if we do it again).
 To make sure we can keep track
 of all existing backend instances,
 we use :func:`audbackend.create`
-to instantiate a backend
+to create a repository
 instead of calling the class ourselves.
-When creating the instance
-we provide three arguments:
+We provide three arguments:
 
 * ``name``: the name under which the backend class is registered
 * ``host``: the host address,
@@ -80,8 +79,9 @@ we provide three arguments:
   on the same host).
 
 .. jupyter-execute::
+    :hide-output:
 
-    backend = audbackend.create('file-system', './host', 'repo')
+    audbackend.create('file-system', './host', 'repo')
 
 
 This will create an empty repository
@@ -94,7 +94,7 @@ we would do:
     audbackend.available()
 
 
-We can access an existing instance with:
+We can access an existing repository with:
 
 .. jupyter-execute::
 
@@ -294,7 +294,12 @@ in versioning we can use
 
 .. jupyter-execute::
 
-    backend = audbackend.create(
+    audbackend.create(
+        'file-system',
+        './host',
+        'repo',
+    )
+    backend = audbackend.access(
         'file-system',
         './host',
         'repo',
@@ -386,12 +391,13 @@ we implement the interface.
             return self.backend.ls(f'/{username}/')
 
 
-Let's create a backend
+Let's create a repository and access it
 with our custom interface:
 
 .. jupyter-execute::
 
-    backend = audbackend.create('file-system', tmp, 'repo', interface=UserContent)
+    audbackend.create('file-system', tmp, 'repo')
+    backend = audbackend.access('file-system', tmp, 'repo', interface=UserContent)
 
     backend.add_user('audeering', 'pa$$word')
     backend.upload('audeering', 'pa$$word', 'local.txt')
@@ -548,16 +554,17 @@ stored on our backend:
             db.execute(query)
 
 
-Now we create an instance.
+Now we create a repository.
 
 .. jupyter-execute::
+    :hide-output:
 
-    backend = audbackend.create('sql', 'host', 'repo')
+    audbackend.create('sql', 'host', 'repo')
 
 
 We also add a method to access
-an existing database
-(or raise an error
+an existing repository
+(or raise an error if
 it is not found).
 
 .. jupyter-execute::

@@ -63,7 +63,9 @@ def test_api(hosts, name, host, repository, cls):
     with pytest.raises(audbackend.BackendError, match=error_msg):
         audbackend.access(name, host, repository)
 
+    # returns versioned interface for legacy reasons
     interface = audbackend.create(name, host, repository)
+    assert isinstance(interface, audbackend.interface.Versioned)
     assert isinstance(interface.backend, cls)
 
     with pytest.raises(audbackend.BackendError, match=error_msg):
