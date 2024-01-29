@@ -50,7 +50,11 @@ Register a backend
 ------------------
 
 Backends are referred to by names.
-The current active names can be listed by:
+A backend can host
+an arbitrary number of repositories.
+Repositories created or accessed
+in the current session
+can be listed with:
 
 .. jupyter-execute::
 
