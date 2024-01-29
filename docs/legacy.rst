@@ -51,9 +51,9 @@ you have to list those extensions explicitly.
     import audbackend
 
     audbackend.create('file-system', './host', 'repo')
-    backend = audbackend.access('file-system', './host', 'repo')
+    interface = audbackend.access('file-system', './host', 'repo')
     extensions = ['tar.gz']
-    backend._use_legacy_file_structure(extensions=extensions)
+    interface._use_legacy_file_structure(extensions=extensions)
 
 Afterwards we upload an TAR.GZ archive
 and check that it is stored as expected.
@@ -65,7 +65,7 @@ and check that it is stored as expected.
 
     with tempfile.TemporaryDirectory() as tmp:
         audeer.touch(audeer.path(tmp, 'file.txt'))
-        backend.put_archive(tmp, '/file.tar.gz', '1.0.0')
+        interface.put_archive(tmp, '/file.tar.gz', '1.0.0')
 
     audeer.list_file_names('./host', recursive=True, basenames=True)
 

@@ -5,7 +5,8 @@ audbackend
 
 :mod:`audbackend`
 provides an abstract layer
-for storing and accessing files
+for managing files
+in a repository
 on a host.
 
 This involves two components:
