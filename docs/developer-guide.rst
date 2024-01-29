@@ -58,8 +58,17 @@ The current active names can be listed by:
 
     list(audbackend.available())
 
-We can assign a name to a backend
-by registering its backend class.
+We register a backend class
+by assigning an alias to it.
+Functions like
+:func:`audbackend.create`
+and
+:func:`audbackend.access`
+expect the alias instead
+of the class name.
+This makes it easier
+to read available repositories
+from a (config) file.
 
 .. jupyter-execute::
 
