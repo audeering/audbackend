@@ -6,6 +6,7 @@
 
     install
     usage
+    developer-guide
     legacy
 
 .. Warning: then usage of genindex is a hack to get a TOC entry, see
