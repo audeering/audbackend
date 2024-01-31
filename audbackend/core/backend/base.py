@@ -348,11 +348,9 @@ class Base:
     ) -> typing.List[str]:  # pragma: no cover
         r"""List all files under sub-path.
 
-        If ``path`` is ``'/'`` and no files exist on the repository,
-        an empty list should be returned
-        Otherwise,
-        if ``path`` does not exist or no files are found under ``path``,
-        an error should be raised.
+        If ``path`` does not exist
+        or no files are found under ``path``
+        return an empty list.
 
         """
         raise NotImplementedError()
@@ -419,17 +417,19 @@ class Base:
             if self.exists(path):
                 paths = [path]
             else:
-                if not suppress_backend_errors:
-                    # since the backend does no longer raise an error
-                    # if the path does not exist
-                    # we have to do it
-                    try:
-                        raise utils.raise_file_not_found_error(path)
-                    except FileNotFoundError as ex:
-                        raise BackendError(ex)
                 paths = []
 
         if not paths:
+
+            if path != '/' and not suppress_backend_errors:
+                # since the backend does no longer raise an error
+                # if the path does not exist
+                # we have to do it
+                try:
+                    raise utils.raise_file_not_found_error(path)
+                except FileNotFoundError as ex:
+                    raise BackendError(ex)
+
             return []
 
         paths = sorted(paths)

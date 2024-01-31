@@ -124,7 +124,8 @@ class FileSystem(Base):
         r"""List all files under sub-path."""
         path = self._expand(path)
         if not os.path.exists(path):
-            utils.raise_file_not_found_error(path)
+            return []
+
         paths = audeer.list_file_names(
             path,
             recursive=True,
