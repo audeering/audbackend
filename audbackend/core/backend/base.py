@@ -349,8 +349,7 @@ class Base:
         r"""List all files under sub-path.
 
         If ``path`` does not exist
-        or no files are found under ``path``
-        return an empty list.
+        an empty list can be returned.
 
         """
         raise NotImplementedError()
