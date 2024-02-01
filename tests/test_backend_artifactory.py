@@ -37,8 +37,8 @@ def test_env_variables(hosts):
 
     host = hosts['artifactory']
 
-    print(f"{os.environ['ARTIFACTORY_USERNAME']=}")
-    print(f"{os.environ['ARTIFACTORY_API_KEY']=}")
+    #print(f"{os.environ['ARTIFACTORY_USERNAME']=}")
+    #print(f"{os.environ['ARTIFACTORY_API_KEY']=}")
 
     # assert os.environ['ARTIFACTORY_USERNAME'] == "audeering-unitest"
 
