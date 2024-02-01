@@ -51,8 +51,10 @@ jobs:
         ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
         ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
       run: |
-        echo "$ARTIFACTORY_USERNAME"
-        [[ "${ARTIFACTORY_USERNAME}" == "audeering-unittest" ]] && echo "audeering-unittest"
+        # Create Python Artifactory config to manage user access
+        echo -e "[artifactory.audeering.com/artifactory]\nusername = ${ARTIFACTORY_USERNAME}\npassword = ${ARTIFACTORY_API_KEY}\n" >~/.artifactory_python.cfg
+        unset ARTIFACTORY_USERNAME
+        unset ARTIFACTORY_API_KEY
         python -m pytest -x --cov-config=.coveragerc.${{ runner.os }} tests/test_backend_artifactory.py
 
     - name: Upload coverage to Codecov

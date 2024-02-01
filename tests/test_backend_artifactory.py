@@ -40,10 +40,10 @@ def test_env_variables(hosts):
     print(f"{os.environ['ARTIFACTORY_USERNAME']=}")
     print(f"{os.environ['ARTIFACTORY_API_KEY']=}")
 
-    assert os.environ['ARTIFACTORY_USERNAME'] == "audeering-unitest"
+    # assert os.environ['ARTIFACTORY_USERNAME'] == "audeering-unitest"
 
     backend = audbackend.backend.Artifactory(host, 'repository')
-    assert backend._username == os.environ['ARTIFACTORY_USERNAME']
+    assert backend._username == "audeering-unittest"
     assert backend._api_key == os.environ['ARTIFACTORY_API_KEY']
 
     assert False
