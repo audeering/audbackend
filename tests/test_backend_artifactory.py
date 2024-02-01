@@ -33,6 +33,18 @@ def hide_credentials():
             del os.environ[key]
 
 
+def test_env_variables():
+
+    print(f"{os.environ['ARTIFACTORY_USERNAME']=}")
+    print(f"{os.environ['ARTIFACTORY_API_KEY']=}")
+
+    backend = audbackend.backend.Artifactory(host, 'repository')
+    assert backend._username == os.environ['ARTIFACTORY_USERNAME']
+    assert backend._api_key == os.environ['ARTIFACTORY_API_KEY']
+
+    assert False
+
+
 def test_authentication(tmpdir, hosts, hide_credentials):
 
     host = hosts['artifactory']
