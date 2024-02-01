@@ -52,7 +52,7 @@ jobs:
         ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
       run: |
         echo "$ARTIFACTORY_USERNAME"
-        [[ "${TERM}" == "${ARTIFACTORY_USERNAME}" ]] && echo "audeering-unittest"
+        [[ "${ARTIFACTORY_USERNAME}" == "audeering-unittest" ]] && echo "audeering-unittest"
         python -m pytest -x --cov-config=.coveragerc.${{ runner.os }} tests/test_backend_artifactory.py
 
     - name: Upload coverage to Codecov
