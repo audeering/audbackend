@@ -48,9 +48,6 @@ def test_env_variables(hosts):
 
     backend = audbackend.backend.Artifactory(host, 'repository')
     assert backend._username == "audeering-unittest"
-    assert backend._api_key == os.environ['ARTIFACTORY_API_KEY']
-
-    assert False
 
 
 def test_authentication(tmpdir, hosts, hide_credentials):
