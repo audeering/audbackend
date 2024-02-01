@@ -43,7 +43,7 @@ def test_env_variables(hosts):
     # assert os.environ['ARTIFACTORY_USERNAME'] == "audeering-unitest"
 
     host = "audeering.jfrog.io/artifactory"
-    user, key = audbackend.core.artifactory._authentication(host)
+    user, key = audbackend.core.backend.artifactory._authentication(host)
     assert user == "audeering-unittest"
 
     backend = audbackend.backend.Artifactory(host, 'repository')
