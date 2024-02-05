@@ -421,9 +421,8 @@ class Base:
         if not paths:
 
             if path != '/' and not suppress_backend_errors:
-                # since the backend does no longer raise an error
                 # if the path does not exist
-                # we have to do it
+                # we raise an error
                 try:
                     raise utils.raise_file_not_found_error(path)
                 except FileNotFoundError as ex:
