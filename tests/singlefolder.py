@@ -134,9 +134,6 @@ class SingleFolder(audbackend.backend.Base):
                 if p.startswith(path):
                     ls.append(p)
 
-            if not ls and not path == '/':
-                raise audbackend.core.utils.raise_file_not_found_error(path)
-
             return ls
 
     def _owner(

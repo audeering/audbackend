@@ -544,14 +544,6 @@ we provide a listing method.
             ls = db.execute(query, [path]).fetchall()
             ls = [x[0] for x in ls]
 
-        if not ls and not path == '/':
-            # path has to exists if not root
-            raise FileNotFoundError(
-                errno.ENOENT,
-                os.strerror(errno.ENOENT),
-                path,
-            )
-
         return ls
 
 
