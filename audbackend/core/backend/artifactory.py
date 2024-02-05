@@ -224,12 +224,7 @@ class Artifactory(Base):
             path: str,
     ) -> bool:
         r"""Check if file exists on backend."""
-        path = self._expand(path)
-        path = _artifactory_path(
-            path,
-            self._username,
-            self._api_key,
-        )
+        path = self._path(path)
         return path.exists()
 
     def _expand(
@@ -265,13 +260,8 @@ class Artifactory(Base):
     ) -> typing.List[str]:
         r"""List all files under sub-path."""
         path = self._path(path)
-        path = _artifactory_path(
-            path,
-            self._username,
-            self._api_key,
-        )
         if not path.exists():
-            utils.raise_file_not_found_error(str(path))
+            return []
 
         paths = [str(x) for x in path.glob("**/*") if x.is_file()]
         paths = [self._collapse(path) for path in paths]
