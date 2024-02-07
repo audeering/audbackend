@@ -153,7 +153,7 @@ class SingleFolder(audbackend.backend.Base):
     ):
         with self.Map(self._path, self._lock) as m:
 
-            if dst_path not in m:
+            if dst_path not in m or checksum != m[dst_path][1]:
                 m[dst_path] = {}
                 p = audeer.path(self._root, audeer.uid()[:8])
                 m[dst_path] = (p, checksum)

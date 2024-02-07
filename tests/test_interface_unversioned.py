@@ -145,6 +145,58 @@ def test_archive(tmpdir, tree, archive, files, tmp_root, interface, expected):
 
 
 @pytest.mark.parametrize(
+    'src_path, dst_path',
+    [
+        (
+            '/file.ext',
+            '/file.ext',
+        ),
+        (
+            '/file.ext',
+            '/dir/to/file.ext',
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    'interface',
+    pytest.UNVERSIONED,
+    indirect=True,
+)
+def test_copy(tmpdir, src_path, dst_path, interface):
+
+    local_path = audeer.path(tmpdir, '~')
+    audeer.touch(local_path)
+    interface.put_file(local_path, src_path)
+
+    # copy file
+
+    if dst_path != src_path:
+        assert not interface.exists(dst_path)
+    interface.copy_file(src_path, dst_path)
+    assert interface.exists(dst_path)
+
+    # copy file again with different checksum
+
+    with open(local_path, 'w') as fp:
+        fp.write('different checksum')
+
+    assert audeer.md5(local_path) != interface.checksum(src_path)
+    interface.put_file(local_path, src_path)
+    assert audeer.md5(local_path) == interface.checksum(src_path)
+
+    if dst_path != src_path:
+        assert audeer.md5(local_path) != interface.checksum(dst_path)
+    interface.copy_file(src_path, dst_path)
+    assert audeer.md5(local_path) == interface.checksum(dst_path)
+
+    # clean up
+
+    interface.remove_file(src_path)
+    if dst_path != src_path:
+        interface.remove_file(dst_path)
+
+
+@pytest.mark.parametrize(
     'interface',
     pytest.UNVERSIONED,
     indirect=True,
