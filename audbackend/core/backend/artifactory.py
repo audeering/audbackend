@@ -184,6 +184,25 @@ class Artifactory(Base):
         path = path.replace('/', self.sep)
         return path
 
+    def _copy_file(
+            self,
+            src_path: str,
+            dst_path: str,
+            verbose: bool,
+    ):
+        r"""Copy file on backend.
+
+        A default implementation is provided,
+        which temporarily gets the file from the backend
+        and afterward puts it to the new location.
+        It is recommended to overwrite the function
+        if backend supports a native way to copy files.
+
+        """
+        src_path = self._path(src_path)
+        dst_path = self._path(dst_path)
+        src_path.copy(dst_path)
+
     def _create(
             self,
     ):

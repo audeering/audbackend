@@ -56,6 +56,15 @@ class FileSystem(Base):
         path = path.replace(os.path.sep, self.sep)
         return path
 
+    def _copy_file(
+            self,
+            src_path: str,
+            dst_path: str,
+            verbose: bool,
+    ):
+        r"""Copy file on backend."""
+        audeer.move(src_path, dst_path)
+
     def _create(
             self,
     ):
