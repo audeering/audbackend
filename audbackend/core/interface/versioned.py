@@ -103,7 +103,11 @@ class Versioned(Base):
         for version in versions:
             src_path_with_version = self._path_with_version(src_path, version)
             dst_path_with_version = self._path_with_version(dst_path, version)
-            self.backend.copy_file(src_path_with_version, dst_path_with_version, verbose=verbose)
+            self.backend.copy_file(
+                src_path_with_version,
+                dst_path_with_version,
+                verbose=verbose,
+            )
 
     def date(
             self,
