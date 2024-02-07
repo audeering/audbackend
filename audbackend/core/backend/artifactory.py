@@ -190,17 +190,11 @@ class Artifactory(Base):
             dst_path: str,
             verbose: bool,
     ):
-        r"""Copy file on backend.
-
-        A default implementation is provided,
-        which temporarily gets the file from the backend
-        and afterward puts it to the new location.
-        It is recommended to overwrite the function
-        if backend supports a native way to copy files.
-
-        """
+        r"""Copy file on backend."""
         src_path = self._path(src_path)
         dst_path = self._path(dst_path)
+        if not dst_path.parent.exists():
+            dst_path.parent.mkdir()
         src_path.copy(dst_path)
 
     def _create(
