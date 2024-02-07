@@ -71,6 +71,70 @@ class Base:
             path,
         )
 
+    def _copy_file(
+            self,
+            src_path: str,
+            dst_path: str,
+            verbose: bool,
+    ):
+        r"""Copy file on backend.
+
+        A default implementation is provided,
+        which temporarily gets the file from the backend
+        and afterward puts it to the new location.
+        It is recommended to overwrite the function
+        if backend supports a native way to copy files.
+
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp_path = audeer.path(tmp, '~')
+            tmp_path = self.get_file(src_path, tmp_path, verbose=verbose)
+            self.put_file(tmp_path, dst_path, verbose=verbose)
+
+    def copy_file(
+            self,
+            src_path: str,
+            dst_path: str,
+            *,
+            verbose: bool = False,
+    ):
+        r"""Copy file on backend.
+
+        If ``dst_path`` exists
+        with a different checksum,
+        it is overwritten,
+        or otherwise,
+        the operation is silently skipped.
+
+        Args:
+            src_path: source path to file on backend
+            dst_path: destination path to file on backend
+            verbose: show debug messages
+
+        Raises:
+            BackendError: if an error is raised on the backend
+            ValueError: if ``src_path`` or ``dst_path``
+                does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+
+        """
+        src_path = utils.check_path(src_path)
+        dst_path = utils.check_path(dst_path)
+
+        if (
+            src_path != dst_path
+            and (
+                not self.exists(dst_path)
+                or self.checksum(src_path) != self.checksum(src_path)
+            )
+        ):
+            utils.call_function_on_backend(
+                self._copy_file,
+                src_path,
+                dst_path,
+                verbose,
+            )
+
     def _create(
             self,
     ):  # pragma: no cover
@@ -259,7 +323,7 @@ class Base:
 
         To ensure the file is completely retrieved,
         it is first stored in a temporary directory
-        and afterwards moved to ``dst_path``.
+        and afterward moved to ``dst_path``.
 
         Args:
             src_path: path to file on backend
@@ -563,9 +627,6 @@ class Base:
             src_path: path to local file
             dst_path: path to file on backend
             verbose: show debug messages
-
-        Returns:
-            file path on backend
 
         Raises:
             BackendError: if an error is raised on the backend
