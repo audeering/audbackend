@@ -63,7 +63,10 @@ class FileSystem(Base):
             verbose: bool,
     ):
         r"""Copy file on backend."""
-        audeer.move(src_path, dst_path)
+        src_path = self._expand(src_path)
+        dst_path = self._expand(dst_path)
+        audeer.mkdir(os.path.dirname(dst_path))
+        shutil.copy(src_path, dst_path)
 
     def _create(
             self,

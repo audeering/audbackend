@@ -125,7 +125,7 @@ class Base:
             src_path != dst_path
             and (
                 not self.exists(dst_path)
-                or self.checksum(src_path) != self.checksum(src_path)
+                or self.checksum(src_path) != self.checksum(dst_path)
             )
         ):
             utils.call_function_on_backend(
