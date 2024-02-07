@@ -37,6 +37,35 @@ class Unversioned(Base):
         """
         return self.backend.checksum(path)
 
+    def copy_file(
+            self,
+            src_path: str,
+            dst_path: str,
+            *,
+            verbose: bool = False,
+    ):
+        r"""Copy file on backend.
+
+        If ``dst_path`` exists
+        with a different checksum,
+        it is overwritten,
+        or otherwise,
+        the operation is silently skipped.
+
+        Args:
+            src_path: source path to file on backend
+            dst_path: destination path to file on backend
+            verbose: show debug messages
+
+        Raises:
+            BackendError: if an error is raised on the backend
+            ValueError: if ``src_path`` or ``dst_path``
+                does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+
+        """
+        self.backend.copy_file(src_path, dst_path, verbose=verbose)
+
     def date(
             self,
             path: str,
