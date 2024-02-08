@@ -76,7 +76,7 @@ class Base:
             src_path: str,
             dst_path: str,
             verbose: bool,
-    ):
+    ):  # pragma: no Windows cover
         r"""Copy file on backend.
 
         A default implementation is provided,
