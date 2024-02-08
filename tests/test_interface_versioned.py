@@ -214,6 +214,7 @@ def test_copy(tmpdir, src_path, src_versions, dst_path, version, interface):
         assert audeer.md5(local_path) == interface.checksum(dst_path, v)
 
     # clean up
+
     for v in src_versions:
         interface.remove_file(src_path, v)
     if dst_path != src_path:
@@ -293,6 +294,26 @@ def test_errors(tmpdir, interface):
         interface.checksum(remote_file, empty_version)
     with pytest.raises(ValueError, match=error_invalid_version):
         interface.checksum(remote_file, invalid_version)
+
+    # --- copy_file ---
+    # `src_path` missing
+    with pytest.raises(audbackend.BackendError, match=error_backend):
+        interface.copy_file('/missing.txt', '/file.txt')
+    # `src_path` without leading '/'
+    with pytest.raises(ValueError, match=error_invalid_path):
+        interface.copy_file(file_invalid_path, '/file.txt')
+    # `src_path` contains invalid character
+    with pytest.raises(ValueError, match=error_invalid_char):
+        interface.copy_file(file_invalid_char, '/file.txt')
+    # `dst_path` without leading '/'
+    with pytest.raises(ValueError, match=error_invalid_path):
+        interface.copy_file('/file.txt', file_invalid_path)
+    # `dst_path` contains invalid character
+    with pytest.raises(ValueError, match=error_invalid_char):
+        interface.copy_file('/file.txt', file_invalid_char)
+    # invalid version
+    with pytest.raises(ValueError, match=error_empty_version):
+        interface.copy_file(remote_file, '/file.txt', version=empty_version)
 
     # --- exists ---
     # `path` without leading '/'
