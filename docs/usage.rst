@@ -255,7 +255,7 @@ Or request it's latest version.
 
     interface.latest_version('/file.txt')
 
-When can copy a specific version of a file.
+We can copy a specific version of a file.
 
 .. jupyter-execute::
 
