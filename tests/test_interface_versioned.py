@@ -152,6 +152,79 @@ def test_archive(tmpdir, tree, archive, files, tmp_root, interface, expected):
 
 
 @pytest.mark.parametrize(
+    'src_path, src_versions, dst_path',
+    [
+        (
+            '/file.ext',
+            ['1.0.0', '2.0.0'],
+            '/file.ext',
+        ),
+        (
+            '/file.ext',
+            ['1.0.0', '2.0.0'],
+            '/dir/to/file.ext',
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    'version',
+    [None, '2.0.0'],
+)
+@pytest.mark.parametrize(
+    'interface',
+    pytest.VERSIONED,
+    indirect=True,
+)
+def test_copy(tmpdir, src_path, src_versions, dst_path, version, interface):
+
+    if version is None:
+        dst_versions = src_versions
+    else:
+        dst_versions = [version]
+
+    local_path = audeer.path(tmpdir, '~')
+    audeer.touch(local_path)
+    for v in src_versions:
+        interface.put_file(local_path, src_path, v)
+
+    # copy file
+
+    if dst_path != src_path:
+        for v in dst_versions:
+            assert not interface.exists(dst_path, v)
+    interface.copy_file(src_path, dst_path, version=version)
+    for v in src_versions:
+        assert interface.exists(src_path, v)
+    for v in dst_versions:
+        assert interface.exists(dst_path, v)
+
+    # copy file again with different checksum
+
+    with open(local_path, 'w') as fp:
+        fp.write('different checksum')
+
+    for v in src_versions:
+        assert audeer.md5(local_path) != interface.checksum(src_path, v)
+        interface.put_file(local_path, src_path, v)
+        assert audeer.md5(local_path) == interface.checksum(src_path, v)
+
+    if dst_path != src_path:
+        for v in dst_versions:
+            assert audeer.md5(local_path) != interface.checksum(dst_path, v)
+    interface.copy_file(src_path, dst_path, version=version)
+    for v in dst_versions:
+        assert audeer.md5(local_path) == interface.checksum(dst_path, v)
+
+    # clean up
+
+    for v in src_versions:
+        interface.remove_file(src_path, v)
+    if dst_path != src_path:
+        for v in dst_versions:
+            interface.remove_file(dst_path, v)
+
+
+@pytest.mark.parametrize(
     'interface',
     pytest.VERSIONED,
     indirect=True,
@@ -223,6 +296,26 @@ def test_errors(tmpdir, interface):
         interface.checksum(remote_file, empty_version)
     with pytest.raises(ValueError, match=error_invalid_version):
         interface.checksum(remote_file, invalid_version)
+
+    # --- copy_file ---
+    # `src_path` missing
+    with pytest.raises(audbackend.BackendError, match=error_backend):
+        interface.copy_file('/missing.txt', '/file.txt')
+    # `src_path` without leading '/'
+    with pytest.raises(ValueError, match=error_invalid_path):
+        interface.copy_file(file_invalid_path, '/file.txt')
+    # `src_path` contains invalid character
+    with pytest.raises(ValueError, match=error_invalid_char):
+        interface.copy_file(file_invalid_char, '/file.txt')
+    # `dst_path` without leading '/'
+    with pytest.raises(ValueError, match=error_invalid_path):
+        interface.copy_file('/file.txt', file_invalid_path)
+    # `dst_path` contains invalid character
+    with pytest.raises(ValueError, match=error_invalid_char):
+        interface.copy_file('/file.txt', file_invalid_char)
+    # invalid version
+    with pytest.raises(ValueError, match=error_empty_version):
+        interface.copy_file(remote_file, '/file.txt', version=empty_version)
 
     # --- exists ---
     # `path` without leading '/'
