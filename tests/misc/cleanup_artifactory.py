@@ -12,7 +12,7 @@ import audbackend
 name = 'artifactory'
 host = 'https://audeering.jfrog.io/artifactory'
 
-username, api_key = audbackend.core.artifactory._authentication(host)
+username, api_key = audbackend.core.backend.artifactory._authentication(host)
 r = requests.get(f'{host}/api/repositories', auth=(username, api_key))
 
 if r.status_code == 200:
