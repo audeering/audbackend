@@ -66,7 +66,6 @@ i.e. exactly one file exists for a backend path.
         interface=audbackend.interface.Unversioned,
     )
 
-
 Now we can upload our first file to the repository.
 Note,
 it is important to provide an absolute path
@@ -80,13 +79,11 @@ by starting it with ``/``.
     file = audeer.touch('file.txt')
     interface.put_file(file, '/file.txt')
 
-
 We check if the file exists in the repository.
 
 .. jupyter-execute::
 
     interface.exists('/file.txt')
-
 
 And access its meta information,
 like its checksum.
@@ -107,6 +104,13 @@ Or the owner who uploaded the file.
 
     interface.owner('/file.txt')
 
+We create a copy of the file
+and verify it exists.
+
+.. jupyter-execute::
+
+    interface.copy_file('/file.txt', '/copy/file.txt')
+    interface.exists('/copy/file.txt')
 
 We download the file
 and store it as ``local.txt``.
@@ -114,7 +118,6 @@ and store it as ``local.txt``.
 .. jupyter-execute::
 
     file = interface.get_file('/file.txt', 'local.txt')
-
 
 It is possible to upload
 one or more files
@@ -133,7 +136,6 @@ in the repository.
     audeer.touch(folder, 'file2.txt')
     interface.put_archive(folder, '/archives/folder.zip')
 
-
 When we download an archive
 it is automatically extracted,
 when using :meth:`audbackend.interface.Unversioned.get_archive`
@@ -143,7 +145,6 @@ instead of :meth:`audbackend.interface.Unversioned.get_file`.
 
     paths = interface.get_archive('/archives/folder.zip', 'downloaded_folder')
     paths
-
 
 We can list all files
 in the repository.
@@ -163,7 +164,6 @@ is returned.
 
     interface.ls('/archives/')
 
-
 We can remove files.
 
 .. jupyter-execute::
@@ -171,7 +171,6 @@ We can remove files.
     interface.remove_file('/file.txt')
     interface.remove_file('/archives/folder.zip')
     interface.ls('/')
-
 
 Or even delete the whole repository
 with all its content.
@@ -255,6 +254,20 @@ Or request it's latest version.
 .. jupyter-execute::
 
     interface.latest_version('/file.txt')
+
+We can copy a specific version of a file.
+
+.. jupyter-execute::
+
+    interface.copy_file('/file.txt', '/copy/file.txt', version='1.0.0')
+    interface.ls('/copy/')
+
+Or all versions.
+
+.. jupyter-execute::
+
+    interface.copy_file('/file.txt', '/copy/file.txt')
+    interface.ls('/copy/')
 
 When downloading a file,
 we can select the desired version.
