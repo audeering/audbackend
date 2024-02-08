@@ -486,6 +486,41 @@ to access its meta information.
     interface.owner('/file.txt', '1.0.0')
 
 
+Implementing a copy function is optional.
+But the default implementation
+will temporarily download the file
+and then upload it again.
+Hence,
+we provide a more efficient implementation.
+
+.. jupyter-execute::
+
+    @add_method(SQLite)
+    def _copy_file(
+            self,
+            src_path: str,
+            dst_path: str,
+            verbose: bool,
+    ):
+        with self._db as db:
+            query = f'''
+                SELECT *
+                FROM data
+                WHERE path="{src_path}"
+            '''
+            (_, checksum, content, _, owner) = db.execute(query).fetchone()
+            date = datetime.datetime.today().strftime('%Y-%m-%d')
+            query = '''
+                INSERT INTO data (path, checksum, content, date, owner)
+                VALUES (?, ?, ?, ?, ?)
+            '''
+            data = (dst_path, checksum, content, date, owner)
+            db.execute(query, data)
+
+    interface.copy_file('/file.txt', '/copy/file.txt', version='1.0.0')
+    interface.exists('/copy/file.txt', '1.0.0')
+
+
 Finally,
 we implement a method
 to fetch a file

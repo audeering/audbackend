@@ -5,6 +5,7 @@ import typing
 import audeer
 
 from audbackend.core import utils
+from audbackend.core.backend.base import Base as Backend
 from audbackend.core.errors import BackendError
 from audbackend.core.interface.base import Base
 
@@ -19,7 +20,7 @@ class Versioned(Base):
 
     def __init__(
             self,
-            backend: Base,
+            backend: Backend,
     ):
         super().__init__(backend)
 
@@ -58,6 +59,62 @@ class Versioned(Base):
         """
         path_with_version = self._path_with_version(path, version)
         return self.backend.checksum(path_with_version)
+
+    def copy_file(
+            self,
+            src_path: str,
+            dst_path: str,
+            *,
+            version: str = None,
+            verbose: bool = False,
+    ):
+        r"""Copy file on backend.
+
+        If ``version`` is ``None``
+        all versions of ``src_path``
+        will be copied.
+
+        If ``dst_path`` exists
+        and has a different checksum,
+        it is overwritten.
+        Otherwise,
+        the operation is silently skipped.
+
+        Args:
+            src_path: source path to file on backend
+            dst_path: destination path to file on backend
+            version: version string
+            verbose: show debug messages
+
+        Examples:
+            >>> versioned.exists('/copy.ext', '1.0.0')
+            False
+            >>> versioned.copy_file('/f.ext', '/copy.ext', version='1.0.0')
+            >>> versioned.exists('/copy.ext', '1.0.0')
+            True
+
+        Raises:
+            BackendError: if an error is raised on the backend
+            ValueError: if ``src_path`` or ``dst_path``
+                does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``version`` is empty or
+                does not match ``'[A-Za-z0-9._-]+'``
+
+        """
+        if version is None:
+            versions = self.versions(src_path)
+        else:
+            versions = [version]
+
+        for version in versions:
+            src_path_with_version = self._path_with_version(src_path, version)
+            dst_path_with_version = self._path_with_version(dst_path, version)
+            self.backend.copy_file(
+                src_path_with_version,
+                dst_path_with_version,
+                verbose=verbose,
+            )
 
     def date(
             self,

@@ -145,6 +145,59 @@ def test_archive(tmpdir, tree, archive, files, tmp_root, interface, expected):
 
 
 @pytest.mark.parametrize(
+    'src_path, dst_path',
+    [
+        (
+            '/file.ext',
+            '/file.ext',
+        ),
+        (
+            '/file.ext',
+            '/dir/to/file.ext',
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    'interface',
+    pytest.UNVERSIONED,
+    indirect=True,
+)
+def test_copy(tmpdir, src_path, dst_path, interface):
+
+    local_path = audeer.path(tmpdir, '~')
+    audeer.touch(local_path)
+    interface.put_file(local_path, src_path)
+
+    # copy file
+
+    if dst_path != src_path:
+        assert not interface.exists(dst_path)
+    interface.copy_file(src_path, dst_path)
+    assert interface.exists(src_path)
+    assert interface.exists(dst_path)
+
+    # copy file again with different checksum
+
+    with open(local_path, 'w') as fp:
+        fp.write('different checksum')
+
+    assert audeer.md5(local_path) != interface.checksum(src_path)
+    interface.put_file(local_path, src_path)
+    assert audeer.md5(local_path) == interface.checksum(src_path)
+
+    if dst_path != src_path:
+        assert audeer.md5(local_path) != interface.checksum(dst_path)
+    interface.copy_file(src_path, dst_path)
+    assert audeer.md5(local_path) == interface.checksum(dst_path)
+
+    # clean up
+
+    interface.remove_file(src_path)
+    if dst_path != src_path:
+        interface.remove_file(dst_path)
+
+
+@pytest.mark.parametrize(
     'interface',
     pytest.UNVERSIONED,
     indirect=True,
@@ -203,6 +256,23 @@ def test_errors(tmpdir, interface):
     # `path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
         interface.checksum(file_invalid_char)
+
+    # --- copy_file ---
+    # `src_path` missing
+    with pytest.raises(audbackend.BackendError, match=error_backend):
+        interface.copy_file('/missing.txt', '/file.txt')
+    # `src_path` without leading '/'
+    with pytest.raises(ValueError, match=error_invalid_path):
+        interface.copy_file(file_invalid_path, '/file.txt')
+    # `src_path` contains invalid character
+    with pytest.raises(ValueError, match=error_invalid_char):
+        interface.copy_file(file_invalid_char, '/file.txt')
+    # `dst_path` without leading '/'
+    with pytest.raises(ValueError, match=error_invalid_path):
+        interface.copy_file('/file.txt', file_invalid_path)
+    # `dst_path` contains invalid character
+    with pytest.raises(ValueError, match=error_invalid_char):
+        interface.copy_file('/file.txt', file_invalid_char)
 
     # --- exists ---
     # `path` without leading '/'
