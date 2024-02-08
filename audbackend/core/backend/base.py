@@ -101,9 +101,9 @@ class Base:
         r"""Copy file on backend.
 
         If ``dst_path`` exists
-        with a different checksum,
-        it is overwritten,
-        or otherwise,
+        and has a different checksum,
+        it is overwritten.
+        Otherwise,
         the operation is silently skipped.
 
         Args:
