@@ -318,7 +318,7 @@ class Base:
         If ``dst_path`` exists
         with a different checksum,
         it is overwritten,
-        or otherwise,
+        Otherwise,
         the operation is silently skipped.
 
         To ensure the file is completely retrieved,
