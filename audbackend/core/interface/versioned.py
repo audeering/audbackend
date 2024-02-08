@@ -86,6 +86,13 @@ class Versioned(Base):
             version: version string
             verbose: show debug messages
 
+        Examples:
+            >>> versioned.exists('/copy.ext', '1.0.0')
+            False
+            >>> versioned.copy_file('/f.ext', '/copy.ext', version='1.0.0')
+            >>> versioned.exists('/copy.ext', '1.0.0')
+            True
+
         Raises:
             BackendError: if an error is raised on the backend
             ValueError: if ``src_path`` or ``dst_path``

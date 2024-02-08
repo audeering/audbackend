@@ -63,6 +63,13 @@ class Unversioned(Base):
                 does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
 
+        Examples:
+            >>> unversioned.exists('/copy.ext')
+            False
+            >>> unversioned.copy_file('/f.ext', '/copy.ext')
+            >>> unversioned.exists('/copy.ext')
+            True
+
         """
         self.backend.copy_file(src_path, dst_path, verbose=verbose)
 

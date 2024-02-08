@@ -173,6 +173,7 @@ def test_copy(tmpdir, src_path, dst_path, interface):
     if dst_path != src_path:
         assert not interface.exists(dst_path)
     interface.copy_file(src_path, dst_path)
+    assert interface.exists(src_path)
     assert interface.exists(dst_path)
 
     # copy file again with different checksum

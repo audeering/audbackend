@@ -193,6 +193,8 @@ def test_copy(tmpdir, src_path, src_versions, dst_path, version, interface):
         for v in dst_versions:
             assert not interface.exists(dst_path, v)
     interface.copy_file(src_path, dst_path, version=version)
+    for v in src_versions:
+        assert interface.exists(src_path, v)
     for v in dst_versions:
         assert interface.exists(dst_path, v)
 
