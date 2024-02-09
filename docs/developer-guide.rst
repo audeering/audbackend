@@ -522,8 +522,7 @@ we provide a more efficient implementation.
 
 
 Implementing a move function is also optional,
-but we for efficiency reasons we provide one,
-too.
+but it is more efficient if we provide one.
 
 .. jupyter-execute::
 
