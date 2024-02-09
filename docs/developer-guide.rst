@@ -521,6 +521,31 @@ we provide a more efficient implementation.
     interface.exists('/copy/file.txt', '1.0.0')
 
 
+Implementing a move function is also optional,
+but we for efficiency reasons we provide one,
+too.
+
+.. jupyter-execute::
+
+    @add_method(SQLite)
+    def _move_file(
+            self,
+            src_path: str,
+            dst_path: str,
+            verbose: bool,
+    ):
+        with self._db as db:
+            query = f'''
+                UPDATE data
+                SET path="{dst_path}"
+                WHERE path="{src_path}"
+            '''
+            db.execute(query)
+
+    interface.move_file('/copy/file.txt', '/move/file.txt', version='1.0.0')
+    interface.exists('/move/file.txt', '1.0.0')
+
+
 Finally,
 we implement a method
 to fetch a file

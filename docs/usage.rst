@@ -112,6 +112,13 @@ and verify it exists.
     interface.copy_file('/file.txt', '/copy/file.txt')
     interface.exists('/copy/file.txt')
 
+We move it to a new location.
+
+.. jupyter-execute::
+
+    interface.move_file('/copy/file.txt', '/move/file.txt')
+    interface.exists('/copy/file.txt'), interface.exists('/move/file.txt')
+
 We download the file
 and store it as ``local.txt``.
 
@@ -268,6 +275,13 @@ Or all versions.
 
     interface.copy_file('/file.txt', '/copy/file.txt')
     interface.ls('/copy/')
+
+We move them to a new location.
+
+.. jupyter-execute::
+
+    interface.move_file('/copy/file.txt', '/move/file.txt')
+    interface.ls('/move/')
 
 When downloading a file,
 we can select the desired version.
