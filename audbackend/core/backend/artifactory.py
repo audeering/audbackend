@@ -281,6 +281,19 @@ class Artifactory(Base):
 
         return paths
 
+    def _move_file(
+            self,
+            src_path: str,
+            dst_path: str,
+            verbose: bool,
+    ):
+        r"""Move file on backend."""
+        src_path = self._path(src_path)
+        dst_path = self._path(dst_path)
+        if not dst_path.parent.exists():
+            dst_path.parent.mkdir()
+        src_path.move(dst_path)
+
     def _owner(
             self,
             path: str,
