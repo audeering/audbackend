@@ -483,6 +483,70 @@ class Versioned(Base):
 
         return paths_and_versions
 
+    def move_file(
+            self,
+            src_path: str,
+            dst_path: str,
+            *,
+            version: str = None,
+            verbose: bool = False,
+    ):
+        r"""Move file on backend.
+
+        If ``version`` is ``None``
+        all versions of ``src_path``
+        will be moved.
+
+        If ``dst_path`` exists
+        and has a different checksum,
+        it is overwritten.
+        Otherwise,
+        ``src_path``
+        is removed and the operation silently skipped.
+
+        Args:
+            src_path: source path to file on backend
+            dst_path: destination path to file on backend
+            verbose: show debug messages
+
+        Raises:
+            BackendError: if an error is raised on the backend
+            ValueError: if ``src_path`` or ``dst_path``
+                does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+
+        Examples:
+            >>> versioned.exists('/move.ext', '1.0.0')
+            False
+            >>> versioned.move_file('/f.ext', '/move.ext', version='1.0.0')
+            >>> versioned.exists('/move.ext', '1.0.0')
+            True
+            >>> versioned.exists('/f.ext', '1.0.0')
+            False
+
+        Raises:
+            BackendError: if an error is raised on the backend
+            ValueError: if ``src_path`` or ``dst_path``
+                does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``version`` is empty or
+                does not match ``'[A-Za-z0-9._-]+'``
+
+        """
+        if version is None:
+            versions = self.versions(src_path)
+        else:
+            versions = [version]
+
+        for version in versions:
+            src_path_with_version = self._path_with_version(src_path, version)
+            dst_path_with_version = self._path_with_version(dst_path, version)
+            self.backend.move_file(
+                src_path_with_version,
+                dst_path_with_version,
+                verbose=verbose,
+            )
+
     def owner(
             self,
             path: str,
