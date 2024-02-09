@@ -507,6 +507,7 @@ class Versioned(Base):
         Args:
             src_path: source path to file on backend
             dst_path: destination path to file on backend
+            version: version string
             verbose: show debug messages
 
         Raises:
