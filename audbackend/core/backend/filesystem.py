@@ -147,6 +147,18 @@ class FileSystem(Base):
 
         return paths
 
+    def _move_file(
+            self,
+            src_path: str,
+            dst_path: str,
+            verbose: bool,
+    ):
+        r"""Move file on backend."""
+        src_path = self._expand(src_path)
+        dst_path = self._expand(dst_path)
+        audeer.mkdir(os.path.dirname(dst_path))
+        audeer.move(src_path, dst_path)
+
     def _owner(
             self,
             path: str,

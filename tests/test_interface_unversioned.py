@@ -378,6 +378,23 @@ def test_errors(tmpdir, interface):
     with pytest.raises(ValueError, match=error_invalid_char):
         interface.ls(file_invalid_char)
 
+    # --- move_file ---
+    # `src_path` missing
+    with pytest.raises(audbackend.BackendError, match=error_backend):
+        interface.move_file('/missing.txt', '/file.txt')
+    # `src_path` without leading '/'
+    with pytest.raises(ValueError, match=error_invalid_path):
+        interface.move_file(file_invalid_path, '/file.txt')
+    # `src_path` contains invalid character
+    with pytest.raises(ValueError, match=error_invalid_char):
+        interface.move_file(file_invalid_char, '/file.txt')
+    # `dst_path` without leading '/'
+    with pytest.raises(ValueError, match=error_invalid_path):
+        interface.move_file('/file.txt', file_invalid_path)
+    # `dst_path` contains invalid character
+    with pytest.raises(ValueError, match=error_invalid_char):
+        interface.move_file('/file.txt', file_invalid_char)
+
     # --- put_archive ---
     # `src_root` missing
     error_msg = 'No such file or directory: ...'
@@ -576,3 +593,63 @@ def test_ls(tmpdir, interface):
             path,
             pattern=pattern,
         ) == sorted(expected)
+
+
+@pytest.mark.parametrize(
+    'src_path, dst_path',
+    [
+        (
+            '/file.ext',
+            '/file.ext',
+        ),
+        (
+            '/file.ext',
+            '/dir/to/file.ext',
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    'interface',
+    pytest.UNVERSIONED,
+    indirect=True,
+)
+def test_move(tmpdir, src_path, dst_path, interface):
+
+    local_path = audeer.path(tmpdir, '~')
+    audeer.touch(local_path)
+
+    # move file
+
+    interface.put_file(local_path, src_path)
+
+    if dst_path != src_path:
+        assert not interface.exists(dst_path)
+    interface.move_file(src_path, dst_path)
+    if dst_path != src_path:
+        assert not interface.exists(src_path)
+    assert interface.exists(dst_path)
+
+    # move file again with same checksum
+
+    interface.put_file(local_path, src_path)
+
+    interface.move_file(src_path, dst_path)
+    if dst_path != src_path:
+        assert not interface.exists(src_path)
+    assert interface.exists(dst_path)
+
+    # move file again with different checksum
+
+    with open(local_path, 'w') as fp:
+        fp.write('different checksum')
+
+    interface.put_file(local_path, src_path)
+
+    if dst_path != src_path:
+        assert audeer.md5(local_path) != interface.checksum(dst_path)
+    interface.move_file(src_path, dst_path)
+    assert audeer.md5(local_path) == interface.checksum(dst_path)
+
+    # clean up
+
+    interface.remove_file(dst_path)
