@@ -70,8 +70,10 @@ def test_authentication(tmpdir, hosts, hide_credentials):
         fp.write(f'username = {username}\n')
         fp.write(f'password = {api_key}\n')
 
-    with pytest.raises(dohq_artifactory.exception.ArtifactoryException):
-        audbackend.Artifactory(host, 'repository')
+    backend = audbackend.Artifactory(host, 'repository')
+    assert backend._username == username
+    assert backend._api_key == api_key
+    assert backend._repo is None
 
 
 @pytest.mark.parametrize(
