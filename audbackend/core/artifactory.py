@@ -152,7 +152,7 @@ class Artifactory(Backend):
             self._username,
             self._api_key,
         )
-        self._repo = path.find_repository_local(self.repository)
+        self._repo = path.find_repository(self.repository)
 
         # to support legacy file structure
         # see _use_legacy_file_structure()
