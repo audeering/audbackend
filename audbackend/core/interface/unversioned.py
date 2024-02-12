@@ -301,6 +301,45 @@ class Unversioned(Base):
             suppress_backend_errors=suppress_backend_errors,
         )
 
+    def move_file(
+            self,
+            src_path: str,
+            dst_path: str,
+            *,
+            verbose: bool = False,
+    ):
+        r"""Move file on backend.
+
+        If ``dst_path`` exists
+        and has a different checksum,
+        it is overwritten.
+        Otherwise,
+        ``src_path``
+        is removed and the operation silently skipped.
+
+        Args:
+            src_path: source path to file on backend
+            dst_path: destination path to file on backend
+            verbose: show debug messages
+
+        Raises:
+            BackendError: if an error is raised on the backend
+            ValueError: if ``src_path`` or ``dst_path``
+                does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+
+        Examples:
+            >>> unversioned.exists('/move.ext')
+            False
+            >>> unversioned.move_file('/f.ext', '/move.ext')
+            >>> unversioned.exists('/move.ext')
+            True
+            >>> unversioned.exists('/f.ext')
+            False
+
+        """
+        self.backend.move_file(src_path, dst_path, verbose=verbose)
+
     def owner(
             self,
             path: str,

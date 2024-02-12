@@ -504,6 +504,71 @@ class Base:
 
         return paths
 
+    def _move_file(
+            self,
+            src_path: str,
+            dst_path: str,
+            verbose: bool,
+    ):  # pragma: no Windows cover
+        r"""Move file on backend.
+
+        A default implementation is provided,
+        which calls `:func:audbackend.Base.copy_file`
+        and afterward removes the source file from the backend.
+        It is recommended to overwrite the function
+        if backend supports a native way to move files.
+
+        """
+        self.copy_file(src_path, dst_path, verbose=verbose)
+        self.remove_file(src_path)
+
+    def move_file(
+            self,
+            src_path: str,
+            dst_path: str,
+            *,
+            verbose: bool = False,
+    ):
+        r"""Move file on backend.
+
+        If ``dst_path`` exists
+        and has a different checksum,
+        it is overwritten.
+        Otherwise,
+        ``src_path``
+        is removed and the operation silently skipped.
+
+        Args:
+            src_path: source path to file on backend
+            dst_path: destination path to file on backend
+            verbose: show debug messages
+
+        Raises:
+            BackendError: if an error is raised on the backend
+            ValueError: if ``src_path`` or ``dst_path``
+                does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+
+        """
+        src_path = utils.check_path(src_path)
+        dst_path = utils.check_path(dst_path)
+
+        if src_path == dst_path:
+            return
+
+        if (
+            not self.exists(dst_path)
+            or self.checksum(src_path) != self.checksum(dst_path)
+        ):
+            utils.call_function_on_backend(
+                self._move_file,
+                src_path,
+                dst_path,
+                verbose,
+            )
+        else:
+            self.remove_file(src_path)
+
     def _owner(
             self,
             path: str,
