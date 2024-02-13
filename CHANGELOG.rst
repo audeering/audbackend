@@ -7,6 +7,20 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 1.0.2 (2024-02-13)
+--------------------------
+
+* Added: support for accessing
+  remote and virtual repositories
+  on Artifactory
+* Fixed: match the ``pattern`` argument
+  of ``audbackend.Backend.ls()``
+  to file basenames
+* Fixed: typo in raises section
+  of the docstring
+  of ``audbackend.exists()``
+
+
 Version 1.0.1 (2023-10-18)
 --------------------------
 
