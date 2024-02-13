@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                1.0.1
+                1.0.2
               </div>
             
           
@@ -294,7 +294,7 @@ and return <code class="docutils literal notranslate"><span class="pre">False</s
 <dd class="field-even"><ul class="simple">
 <li><p><a class="reference internal" href="audbackend.BackendError.html#audbackend.BackendError" title="audbackend.BackendError"><strong>BackendError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">suppress_backend_errors</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code>
     and an error is raised on the backend,
-    e.g. <code class="docutils literal notranslate"><span class="pre">path</span></code> does not exist</p></li>
+    e.g. due to a connection timeout</p></li>
 <li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">path</span></code> does not start with <code class="docutils literal notranslate"><span class="pre">'/'</span></code> or
     does not match <code class="docutils literal notranslate"><span class="pre">'[A-Za-z0-9/._-]+'</span></code></p></li>
 <li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">version</span></code> is empty or
@@ -317,7 +317,7 @@ and return <code class="docutils literal notranslate"><span class="pre">False</s
 <span class="sig-prename descclassname"><span class="pre">FileSystem.</span></span><span class="sig-name descname"><span class="pre">get_archive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmp_root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#audbackend.FileSystem.get_archive" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get archive from backend and extract.</p>
 <p>The archive type is derived from the extension of <code class="docutils literal notranslate"><span class="pre">src_path</span></code>.
-See <a class="reference external" href="https://audeering.github.io/audeer/api/audeer.extract_archive.html#audeer.extract_archive" title="(in audeer vv1.20.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">audeer.extract_archive()</span></code></a> for supported extensions.</p>
+See <a class="reference external" href="https://audeering.github.io/audeer/api/audeer.extract_archive.html#audeer.extract_archive" title="(in audeer vv2.0.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">audeer.extract_archive()</span></code></a> for supported extensions.</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">dst_root</span></code> does not exist,
 it is created.</p>
 <dl class="field-list simple">
@@ -559,6 +559,8 @@ and return an empty list</p></li>
 <span class="go">[(&#39;/f.ext&#39;, &#39;1.0.0&#39;), (&#39;/f.ext&#39;, &#39;2.0.0&#39;)]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="n">pattern</span><span class="o">=</span><span class="s1">&#39;*.ext&#39;</span><span class="p">)</span>
 <span class="go">[(&#39;/a/b.ext&#39;, &#39;1.0.0&#39;), (&#39;/f.ext&#39;, &#39;1.0.0&#39;), (&#39;/f.ext&#39;, &#39;2.0.0&#39;)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="n">pattern</span><span class="o">=</span><span class="s1">&#39;b.*&#39;</span><span class="p">)</span>
+<span class="go">[(&#39;/a/b.ext&#39;, &#39;1.0.0&#39;)]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s1">&#39;/a/&#39;</span><span class="p">)</span>
 <span class="go">[(&#39;/a/b.ext&#39;, &#39;1.0.0&#39;)]</span>
 </pre></div>
@@ -614,7 +616,7 @@ an empty string is returned.</p>
 <span class="sig-prename descclassname"><span class="pre">FileSystem.</span></span><span class="sig-name descname"><span class="pre">put_archive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmp_root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#audbackend.FileSystem.put_archive" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create archive and put on backend.</p>
 <p>The archive type is derived from the extension of <code class="docutils literal notranslate"><span class="pre">dst_path</span></code>.
-See <a class="reference external" href="https://audeering.github.io/audeer/api/audeer.create_archive.html#audeer.create_archive" title="(in audeer vv1.20.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">audeer.create_archive()</span></code></a> for supported extensions.</p>
+See <a class="reference external" href="https://audeering.github.io/audeer/api/audeer.create_archive.html#audeer.create_archive" title="(in audeer vv2.0.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">audeer.create_archive()</span></code></a> for supported extensions.</p>
 <p>The operation is silently skipped,
 if an archive with the same checksum
 already exists on the backend.</p>
@@ -859,7 +861,7 @@ and return an empty list</p></li>
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2023/10/18 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/02/13 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -867,7 +869,7 @@ and return an empty list</p></li>
   <div role="contentinfo">
     <p>
         
-      &copy; 2021-2023 audEERING GmbH
+      &copy; 2021-2024 audEERING GmbH
     </p>
   </div> 
 

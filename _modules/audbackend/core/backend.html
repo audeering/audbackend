@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                1.0.1
+                1.0.2
               </div>
             
           
@@ -327,7 +327,7 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            BackendError: if ``suppress_backend_errors`` is ``False``</span>
 <span class="sd">                and an error is raised on the backend,</span>
-<span class="sd">                e.g. ``path`` does not exist</span>
+<span class="sd">                e.g. due to a connection timeout</span>
 <span class="sd">            ValueError: if ``path`` does not start with ``&#39;/&#39;`` or</span>
 <span class="sd">                does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
 <span class="sd">            ValueError: if ``version`` is empty or</span>
@@ -651,6 +651,8 @@
 <span class="sd">            [(&#39;/f.ext&#39;, &#39;1.0.0&#39;), (&#39;/f.ext&#39;, &#39;2.0.0&#39;)]</span>
 <span class="sd">            &gt;&gt;&gt; backend.ls(pattern=&#39;*.ext&#39;)</span>
 <span class="sd">            [(&#39;/a/b.ext&#39;, &#39;1.0.0&#39;), (&#39;/f.ext&#39;, &#39;1.0.0&#39;), (&#39;/f.ext&#39;, &#39;2.0.0&#39;)]</span>
+<span class="sd">            &gt;&gt;&gt; backend.ls(pattern=&#39;b.*&#39;)</span>
+<span class="sd">            [(&#39;/a/b.ext&#39;, &#39;1.0.0&#39;)]</span>
 <span class="sd">            &gt;&gt;&gt; backend.ls(&#39;/a/&#39;)</span>
 <span class="sd">            [(&#39;/a/b.ext&#39;, &#39;1.0.0&#39;)]</span>
 
@@ -668,7 +670,10 @@
         <span class="n">paths</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">pattern</span><span class="p">:</span>
-            <span class="n">paths</span> <span class="o">=</span> <span class="p">[(</span><span class="n">p</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">paths</span> <span class="k">if</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">fnmatch</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">pattern</span><span class="p">)]</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">paths</span>
+                <span class="k">if</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">fnmatch</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">p</span><span class="p">),</span> <span class="n">pattern</span><span class="p">)</span>
+            <span class="p">]</span>
 
         <span class="k">if</span> <span class="n">latest_version</span><span class="p">:</span>
             <span class="c1"># d[path] = [&#39;1.0.0&#39;, &#39;2.0.0&#39;]</span>
@@ -1023,7 +1028,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2023/10/18 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/02/13 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -1031,7 +1036,7 @@
   <div role="contentinfo">
     <p>
         
-      &copy; 2021-2023 audEERING GmbH
+      &copy; 2021-2024 audEERING GmbH
     </p>
   </div> 
 
