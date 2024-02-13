@@ -37,10 +37,10 @@ dynamic = ['version']
 
 [project.optional-dependencies]
 artifactory = [
-    'dohq-artifactory >=0.9.0',
+    'dohq-artifactory >=0.10.0',
 ]
 all = [
-    'dohq-artifactory >=0.9.0',
+    'dohq-artifactory >=0.10.0',
 ]
 
 
