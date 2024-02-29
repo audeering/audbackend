@@ -620,8 +620,9 @@ class Base:
         ``dst_path`` is removed and
         an :class:`InterruptionError` is raised.
         In addition,
-        an attempt is made
-        to restore ``src_path`` from a local copy.
+        ``src_path`` is restored from a temporary copy.
+        Keeping this copy will create
+        additional costs on top of the checksums.
 
         Args:
             src_path: source path to file on backend
