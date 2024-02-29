@@ -777,6 +777,16 @@ class Base:
                 put on the backend
             verbose: show debug messages
 
+        Raises:
+            BackendError: if an error is raised on the backend
+            FileNotFoundError: if ``src_root`` or ``tmp_root`` does not exist
+            InterruptedError: if validation fails
+            NotADirectoryError: if ``src_root`` is not a folder
+            RuntimeError: if extension of ``dst_path`` is not supported
+                or a file in ``files`` is not below ``src_root``
+            ValueError: if ``dst_path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+
         """
         dst_path = utils.check_path(dst_path)
         src_root = audeer.path(src_root)
