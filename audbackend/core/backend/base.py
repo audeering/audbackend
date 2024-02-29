@@ -779,11 +779,14 @@ class Base:
 
         Raises:
             BackendError: if an error is raised on the backend
-            FileNotFoundError: if ``src_root`` or ``tmp_root`` does not exist
+            FileNotFoundError: if ``src_root``,
+                ``tmp_root``,
+                or one or more ``files`` do not exist
             InterruptedError: if validation fails
             NotADirectoryError: if ``src_root`` is not a folder
-            RuntimeError: if extension of ``dst_path`` is not supported
-                or a file in ``files`` is not below ``src_root``
+            RuntimeError: if ``dst_path`` does not end with
+                ``zip`` or ``tar.gz``
+                or a file in ``files`` is not below ``root``
             ValueError: if ``dst_path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
 
