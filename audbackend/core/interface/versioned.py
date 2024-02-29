@@ -332,6 +332,7 @@ class Versioned(Base):
         return self.backend.get_file(
             src_path_with_version,
             dst_path,
+            validate=validate,
             verbose=verbose,
         )
 
@@ -698,6 +699,7 @@ class Versioned(Base):
             dst_path_with_version,
             files=files,
             tmp_root=tmp_root,
+            validate=validate,
             verbose=verbose,
         )
 
