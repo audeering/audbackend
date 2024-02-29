@@ -151,7 +151,7 @@ class Base:
         have the same checksum.
         If it fails,
         ``dst_path`` is removed and
-        an :class:`InterruptionError` is raised
+        an :class:`InterruptedError` is raised
 
         Args:
             src_path: source path to file on backend
@@ -161,7 +161,7 @@ class Base:
 
         Raises:
             BackendError: if an error is raised on the backend
-            InterruptionError: if validation check fails
+            InterruptedError: if validation check fails
             ValueError: if ``src_path`` or ``dst_path``
                 does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
@@ -385,7 +385,7 @@ class Base:
         have the same checksum.
         If it fails,
         ``dst_path`` is removed and
-        an :class:`InterruptionError` is raised
+        an :class:`InterruptedError` is raised
 
         Args:
             src_path: path to file on backend
@@ -400,7 +400,7 @@ class Base:
         Raises:
             BackendError: if an error is raised on the backend,
                 e.g. ``src_path`` does not exist
-            InterruptionError: if validation check fails
+            InterruptedError: if validation check fails
             IsADirectoryError: if ``dst_path`` points to an existing folder
             PermissionError: if the user lacks write permissions
                 for ``dst_path``
@@ -618,7 +618,7 @@ class Base:
         have the same checksum.
         If it fails,
         ``dst_path`` is removed and
-        an :class:`InterruptionError` is raised.
+        an :class:`InterruptedError` is raised.
         In addition,
         ``src_path`` is restored from a temporary copy.
         Keeping this copy will create
@@ -632,7 +632,7 @@ class Base:
 
         Raises:
             BackendError: if an error is raised on the backend
-            InterruptionError: if validation check fails
+            InterruptedError: if validation check fails
             ValueError: if ``src_path`` or ``dst_path``
                 does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
@@ -808,7 +808,7 @@ class Base:
         have the same checksum.
         If it fails,
         ``dst_path`` is removed and
-        an :class:`InterruptionError` is raised
+        an :class:`InterruptedError` is raised
 
         Args:
             src_path: path to local file
@@ -820,7 +820,7 @@ class Base:
         Raises:
             BackendError: if an error is raised on the backend
             FileNotFoundError: if ``src_path`` does not exist
-            InterruptionError: if validation check fails
+            InterruptedError: if validation check fails
             IsADirectoryError: if ``src_path`` is a folder
             ValueError: if ``dst_path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
