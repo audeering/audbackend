@@ -39,6 +39,44 @@ class Base:
         """
         raise NotImplementedError()
 
+    def _assert_equal_checksum(
+            self,
+            path: str,
+            path_is_local: bool,
+            path_ref: str,
+            path_ref_is_local: bool,
+    ):
+
+        if path_is_local:
+            checksum = audeer.md5(path)
+        else:
+            checksum = self.checksum(path)
+
+        if path_ref_is_local:
+            checksum_ref = audeer.md5(path_ref)
+        else:
+            checksum_ref = self.checksum(path_ref)
+
+        if checksum != checksum_ref:
+
+            if path_is_local:
+                os.remove(path)
+                location = 'local file system'
+            else:
+                self.remove_file(path)
+                location = 'backend'
+
+            raise InterruptedError(
+                f"Execution was interrupted because "
+                f"{path} "
+                f"has checksum "
+                f"'{checksum}' "
+                "when the expected checksum is "
+                f"'{checksum_ref}'. "
+                f"The file has been removed from the "
+                f"{location}."
+            )
+
     def _checksum(
             self,
             path: str,
@@ -96,6 +134,7 @@ class Base:
             src_path: str,
             dst_path: str,
             *,
+            validate: bool = False,
             verbose: bool = False,
     ):
         r"""Copy file on backend.
@@ -106,13 +145,23 @@ class Base:
         Otherwise,
         the operation is silently skipped.
 
+        If ``validate`` is set to ``True``,
+        a final check is performed to assert that
+        ``src_path`` and ``dst_path``
+        have the same checksum.
+        If it fails,
+        ``dst_path`` is removed and
+        an :class:`InterruptionError` is raised
+
         Args:
             src_path: source path to file on backend
             dst_path: destination path to file on backend
+            validate: validate file was successfully copied
             verbose: show debug messages
 
         Raises:
             BackendError: if an error is raised on the backend
+            InterruptionError: if validation check fails
             ValueError: if ``src_path`` or ``dst_path``
                 does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
@@ -134,6 +183,14 @@ class Base:
                 dst_path,
                 verbose,
             )
+
+            if validate:
+                self._assert_equal_checksum(
+                    dst_path,
+                    False,
+                    src_path,
+                    False,
+                )
 
     def _create(
             self,
@@ -307,6 +364,7 @@ class Base:
             src_path: str,
             dst_path: str,
             *,
+            validate: bool = False,
             verbose: bool = False,
     ) -> str:
         r"""Get file from backend.
@@ -321,13 +379,19 @@ class Base:
         Otherwise,
         the operation is silently skipped.
 
-        To ensure the file is completely retrieved,
-        it is first stored in a temporary directory
-        and afterward moved to ``dst_path``.
+        If ``validate`` is set to ``True``,
+        a final check is performed to assert that
+        ``src_path`` and ``dst_path``
+        have the same checksum.
+        If it fails,
+        ``dst_path`` is removed and
+        an :class:`InterruptionError` is raised
 
         Args:
             src_path: path to file on backend
             dst_path: destination path to local file
+            validate: validate file was successfully
+                retrieved from the backend
             verbose: show debug messages
 
         Returns:
@@ -336,6 +400,7 @@ class Base:
         Raises:
             BackendError: if an error is raised on the backend,
                 e.g. ``src_path`` does not exist
+            InterruptionError: if validation check fails
             IsADirectoryError: if ``dst_path`` points to an existing folder
             PermissionError: if the user lacks write permissions
                 for ``dst_path``
@@ -373,6 +438,14 @@ class Base:
                     verbose,
                 )
                 audeer.move_file(tmp_path, dst_path)
+
+            if validate:
+                self._assert_equal_checksum(
+                    dst_path,
+                    True,
+                    src_path,
+                    False,
+                )
 
         return dst_path
 
@@ -526,6 +599,7 @@ class Base:
             self,
             src_path: str,
             dst_path: str,
+            validate: bool = False,
             *,
             verbose: bool = False,
     ):
@@ -538,13 +612,26 @@ class Base:
         ``src_path``
         is removed and the operation silently skipped.
 
+        If ``validate`` is set to ``True``,
+        a final check is performed to assert that
+        ``src_path`` and ``dst_path``
+        have the same checksum.
+        If it fails,
+        ``dst_path`` is removed and
+        an :class:`InterruptionError` is raised.
+        In addition,
+        an attempt is made
+        to restore ``src_path`` from a local copy.
+
         Args:
             src_path: source path to file on backend
             dst_path: destination path to file on backend
+            validate: validate file was successfully moved
             verbose: show debug messages
 
         Raises:
             BackendError: if an error is raised on the backend
+            InterruptionError: if validation check fails
             ValueError: if ``src_path`` or ``dst_path``
                 does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
@@ -560,12 +647,37 @@ class Base:
             not self.exists(dst_path)
             or self.checksum(src_path) != self.checksum(dst_path)
         ):
-            utils.call_function_on_backend(
-                self._move_file,
-                src_path,
-                dst_path,
-                verbose,
-            )
+            if validate:
+                with tempfile.TemporaryDirectory() as tmp:
+
+                    tmp_path = audeer.path(tmp, '~')
+                    self.get_file(src_path, tmp_path, validate=True)
+
+                    utils.call_function_on_backend(
+                        self._move_file,
+                        src_path,
+                        dst_path,
+                        verbose,
+                    )
+
+                    try:
+                        self._assert_equal_checksum(
+                            dst_path,
+                            False,
+                            tmp_path,
+                            True,
+                        )
+                    except InterruptedError as ex:
+                        self.put_file(tmp_path, src_path, validate=True)
+                        raise ex
+
+            else:
+                utils.call_function_on_backend(
+                    self._move_file,
+                    src_path,
+                    dst_path,
+                    verbose,
+                )
         else:
             self.remove_file(src_path)
 
@@ -680,6 +792,7 @@ class Base:
             src_path: str,
             dst_path: str,
             *,
+            validate: bool = False,
             verbose: bool = False,
     ):
         r"""Put file on backend.
@@ -688,14 +801,25 @@ class Base:
         if a file with the same checksum
         already exists on the backend.
 
+        If ``validate`` is set to ``True``,
+        a final check is performed to assert that
+        ``src_path`` and ``dst_path``
+        have the same checksum.
+        If it fails,
+        ``dst_path`` is removed and
+        an :class:`InterruptionError` is raised
+
         Args:
             src_path: path to local file
             dst_path: path to file on backend
+            validate: validate file was successfully
+                put on the backend
             verbose: show debug messages
 
         Raises:
             BackendError: if an error is raised on the backend
             FileNotFoundError: if ``src_path`` does not exist
+            InterruptionError: if validation check fails
             IsADirectoryError: if ``src_path`` is a folder
             ValueError: if ``dst_path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
@@ -721,6 +845,14 @@ class Base:
                 checksum,
                 verbose,
             )
+
+            if validate:
+                self._assert_equal_checksum(
+                    dst_path,
+                    False,
+                    src_path,
+                    True,
+                )
 
     def _remove_file(
             self,
