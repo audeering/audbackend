@@ -125,7 +125,6 @@ class SingleFolder(audbackend.backend.Base):
             self,
             path: str,
     ) -> typing.List[str]:
-
         with self.Map(self._path, self._lock) as m:
 
             ls = []
