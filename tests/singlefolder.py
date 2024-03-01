@@ -31,12 +31,15 @@ class SingleFolder(audbackend.backend.Base):
                 *,
                 flag: str = 'w',
         ):
+            self.path = path
             self.obj = shelve.open(
                 path,
                 flag=flag,
                 writeback=True,
             )
             self.lock = lock
+
+            assert os.path.exists(self.path)
 
         def __enter__(self):
             self.lock.acquire()
@@ -50,6 +53,8 @@ class SingleFolder(audbackend.backend.Base):
         ):
             self.obj.close()
             self.lock.release()
+
+            assert os.path.exists(self.path)
 
     def __init__(
             self,
