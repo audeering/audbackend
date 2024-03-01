@@ -12,8 +12,8 @@ import audbackend
 
 # list of backends to test
 pytest.BACKENDS = [
-    # 'artifactory',
-    # 'file-system',
+    'artifactory',
+    'file-system',
     'single-folder',
 ]
 
