@@ -1,6 +1,6 @@
 import datetime
 import os
-import shelve
+import pickle
 import shutil
 import threading
 import typing
@@ -28,21 +28,16 @@ class SingleFolder(audbackend.backend.Base):
                 self,
                 path: str,
                 lock: threading.Lock,
-                *,
-                flag: str = 'w',
         ):
             self.path = path
-            self.obj = shelve.open(
-                path,
-                flag=flag,
-                writeback=True,
-            )
+            self.obj = {}
             self.lock = lock
-
-            assert os.path.exists(self.path)
 
         def __enter__(self):
             self.lock.acquire()
+            if os.path.exists(self.path):
+                with open(self.path, 'rb') as fp:
+                    self.obj = pickle.load(fp)
             return self.obj
 
         def __exit__(
@@ -51,10 +46,9 @@ class SingleFolder(audbackend.backend.Base):
                 value,
                 traceback,
         ):
-            self.obj.close()
+            with open(self.path, 'wb') as fp:
+                pickle.dump(self.obj, fp)
             self.lock.release()
-
-            assert os.path.exists(self.path)
 
     def __init__(
             self,
@@ -88,7 +82,7 @@ class SingleFolder(audbackend.backend.Base):
     ):
         if os.path.exists(self._path):
             raise audbackend.core.utils.raise_file_exists_error(self._path)
-        with self.Map(self._path, self._lock, flag='n'):
+        with self.Map(self._path, self._lock):
             pass
 
     def _date(
