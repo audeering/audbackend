@@ -14,9 +14,8 @@ import audbackend
 pytest.BACKENDS = [
     'artifactory',
     'file-system',
+    'single-folder',
 ]
-if os.name != 'nt':
-    pytest.BACKENDS.append('single-folder')
 
 
 # list of interfaces to test
