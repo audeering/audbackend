@@ -46,7 +46,13 @@ class Base:
             path_ref: str,
             path_ref_is_local: bool,
     ):
+        r"""Assert checksums are equal.
 
+        If check fails,
+        ``path`` is removed
+        and an error is raised.
+
+        """
         if path_is_local:
             checksum = audeer.md5(path)
         else:
@@ -632,10 +638,9 @@ class Base:
         If it fails,
         ``dst_path`` is removed and
         an :class:`InterruptedError` is raised.
-        In addition,
-        ``src_path`` is restored from a temporary copy.
-        Note that keeping this copy creates
-        additional costs on top of the checksums.
+        To ensure ``src_path`` still exists in this case
+        it is first copied and only removed
+        when the check has successfully passed.
 
         Args:
             src_path: source path to file on backend
@@ -662,29 +667,13 @@ class Base:
             or self.checksum(src_path) != self.checksum(dst_path)
         ):
             if validate:
-                with tempfile.TemporaryDirectory() as tmp:
-
-                    tmp_path = audeer.path(tmp, '~')
-                    self.get_file(src_path, tmp_path, validate=True)
-
-                    utils.call_function_on_backend(
-                        self._move_file,
-                        src_path,
-                        dst_path,
-                        verbose,
-                    )
-
-                    try:
-                        self._assert_equal_checksum(
-                            dst_path,
-                            False,
-                            tmp_path,
-                            True,
-                        )
-                    except InterruptedError as ex:
-                        self.put_file(tmp_path, src_path, validate=True)
-                        raise ex
-
+                self.copy_file(
+                    src_path,
+                    dst_path,
+                    validate=True,
+                    verbose=verbose,
+                )
+                self.remove_file(src_path)
             else:
                 utils.call_function_on_backend(
                     self._move_file,

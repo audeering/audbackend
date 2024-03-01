@@ -546,10 +546,9 @@ class Versioned(Base):
         If it fails,
         ``dst_path`` is removed and
         an :class:`InterruptedError` is raised.
-        In addition,
-        ``src_path`` is restored from a temporary copy.
-        Note that keeping this copy creates
-        additional costs on top of the checksums.
+        To ensure ``src_path`` still exists in this case
+        it is first copied and only removed
+        when the check has successfully passed.
 
         Args:
             src_path: source path to file on backend
