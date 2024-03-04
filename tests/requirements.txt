@@ -1,3 +1,3 @@
-pytest
+pytest<8.1.0  # required by doctestplus
 pytest-cov
 pytest-doctestplus
