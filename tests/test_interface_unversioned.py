@@ -1,8 +1,10 @@
 import datetime
 import os
 import platform
+import random
 import re
 import stat
+import string
 
 import pytest
 
@@ -653,3 +655,66 @@ def test_move(tmpdir, src_path, dst_path, interface):
     # clean up
 
     interface.remove_file(dst_path)
+
+
+def test_validate(tmpdir):
+
+    class BadChecksumBackend(audbackend.backend.FileSystem):
+        r"""Return random checksum."""
+        def _checksum(
+                self,
+                path: str,
+        ) -> str:
+            return ''.join(random.choices(
+                string.ascii_uppercase + string.digits,
+                k=33,
+            ))
+
+    path = audeer.touch(tmpdir, '~.txt')
+    error_msg = 'Execution is interrupted because'
+
+    interface = audbackend.interface.Unversioned(
+        audbackend.backend.FileSystem(tmpdir, 'repo'),
+    )
+    interface_bad = audbackend.interface.Unversioned(
+        BadChecksumBackend(tmpdir, 'repo'),
+    )
+
+    with pytest.raises(InterruptedError, match=error_msg):
+        interface_bad.put_file(path, '/remote.txt', validate=True)
+    assert not interface.exists('/remote.txt')
+    interface.put_file(path, '/remote.txt', validate=True)
+    assert interface.exists('/remote.txt')
+
+    with pytest.raises(InterruptedError, match=error_msg):
+        interface_bad.get_file('/remote.txt', 'local.txt', validate=True)
+    assert not os.path.exists('local.txt')
+    interface.get_file('/remote.txt', 'local.txt', validate=True)
+    assert os.path.exists('local.txt')
+
+    with pytest.raises(InterruptedError, match=error_msg):
+        interface_bad.copy_file('/remote.txt', '/copy.txt', validate=True)
+    assert not interface.exists('/copy.txt')
+    interface.copy_file('/remote.txt', '/copy.txt', validate=True)
+    assert interface.exists('/copy.txt')
+
+    with pytest.raises(InterruptedError, match=error_msg):
+        interface_bad.move_file('/remote.txt', '/move.txt', validate=True)
+    assert not interface.exists('/move.txt')
+    assert interface.exists('/remote.txt')
+    interface.move_file('/remote.txt', '/move.txt', validate=True)
+    assert interface.exists('/move.txt')
+    assert not interface.exists('/remote.txt')
+
+    with pytest.raises(InterruptedError, match=error_msg):
+        interface_bad.put_archive(tmpdir, '/remote.zip', validate=True)
+    assert not interface.exists('/remote.zip')
+    interface.put_archive('.', '/remote.zip', validate=True)
+    assert interface.exists('/remote.zip')
+
+    dst_root = os.path.join(tmpdir, 'extract')
+    with pytest.raises(InterruptedError, match=error_msg):
+        interface_bad.get_archive('/remote.zip', dst_root, validate=True)
+    assert not os.path.exists(dst_root)
+    interface.get_archive('/remote.zip', dst_root, validate=True)
+    assert os.path.exists(dst_root)
