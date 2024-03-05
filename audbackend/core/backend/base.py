@@ -41,6 +41,7 @@ class Base:
 
     def _assert_equal_checksum(
             self,
+            *,
             path: str,
             path_is_local: bool,
             path_ref: str,
@@ -192,10 +193,10 @@ class Base:
 
             if validate:
                 self._assert_equal_checksum(
-                    dst_path,
-                    False,
-                    src_path,
-                    False,
+                    path=dst_path,
+                    path_is_local=False,
+                    path_ref=src_path,
+                    path_ref_is_local=False,
                 )
 
     def _create(
@@ -460,10 +461,10 @@ class Base:
 
             if validate:
                 self._assert_equal_checksum(
-                    dst_path,
-                    True,
-                    src_path,
-                    False,
+                    path=dst_path,
+                    path_is_local=True,
+                    path_ref=src_path,
+                    path_ref_is_local=False,
                 )
 
         return dst_path
@@ -876,10 +877,10 @@ class Base:
 
             if validate:
                 self._assert_equal_checksum(
-                    dst_path,
-                    False,
-                    src_path,
-                    True,
+                    path=dst_path,
+                    path_is_local=False,
+                    path_ref=src_path,
+                    path_ref_is_local=True,
                 )
 
     def _remove_file(
