@@ -6,7 +6,7 @@
     import audeer
 
     _cwd_root = os.getcwd()
-    _tmp_root = audeer.mkdir('docs', 'tmp-usage')
+    _tmp_root = audeer.mkdir("docs", "tmp-usage")
     os.chdir(_tmp_root)
 
 
@@ -44,12 +44,12 @@ Unversioned data on a file system
 
 To store data on a backend
 we need to create a repository first.
-We select the ``'file-system'`` backend.
+We select the ``"file-system"`` backend.
 
 .. jupyter-execute::
     :hide-output:
 
-    audbackend.create('file-system', './host', 'repo')
+    audbackend.create("file-system", "./host", "repo")
 
 Once we have an existing repository,
 we can access it with :func:`audbackend.access`.
@@ -60,9 +60,9 @@ i.e. exactly one file exists for a backend path.
 .. jupyter-execute::
 
     interface = audbackend.access(
-        'file-system',
-        './host',
-        'repo',
+        "file-system",
+        "./host",
+        "repo",
         interface=audbackend.interface.Unversioned,
     )
 
@@ -76,55 +76,55 @@ by starting it with ``/``.
 
     import audeer
 
-    file = audeer.touch('file.txt')
-    interface.put_file(file, '/file.txt')
+    file = audeer.touch("file.txt")
+    interface.put_file(file, "/file.txt")
 
 We check if the file exists in the repository.
 
 .. jupyter-execute::
 
-    interface.exists('/file.txt')
+    interface.exists("/file.txt")
 
 And access its meta information,
 like its checksum.
 
 .. jupyter-execute::
 
-    interface.checksum('/file.txt')
+    interface.checksum("/file.txt")
 
 Its creation date.
 
 .. jupyter-execute::
 
-    interface.date('/file.txt')
+    interface.date("/file.txt")
 
 Or the owner who uploaded the file.
 
 .. jupyter-execute::
 
-    interface.owner('/file.txt')
+    interface.owner("/file.txt")
 
 We create a copy of the file
 and verify it exists.
 
 .. jupyter-execute::
 
-    interface.copy_file('/file.txt', '/copy/file.txt')
-    interface.exists('/copy/file.txt')
+    interface.copy_file("/file.txt", "/copy/file.txt")
+    interface.exists("/copy/file.txt")
 
 We move it to a new location.
 
 .. jupyter-execute::
 
-    interface.move_file('/copy/file.txt', '/move/file.txt')
-    interface.exists('/copy/file.txt'), interface.exists('/move/file.txt')
+    interface.move_file("/copy/file.txt", "/move/file.txt")
+    interface.exists("/copy/file.txt"), interface.exists("/move/file.txt")
 
 We download the file
 and store it as ``local.txt``.
 
 .. jupyter-execute::
 
-    file = interface.get_file('/file.txt', 'local.txt')
+    file = interface.get_file("/file.txt", "local.txt")
 
 It is possible to upload
 one or more files
@@ -138,10 +138,10 @@ in the repository.
 
 .. jupyter-execute::
 
-    folder = audeer.mkdir('./folder')
-    audeer.touch(folder, 'file1.txt')
-    audeer.touch(folder, 'file2.txt')
-    interface.put_archive(folder, '/archives/folder.zip')
+    folder = audeer.mkdir("./folder")
+    audeer.touch(folder, "file1.txt")
+    audeer.touch(folder, "file2.txt")
+    interface.put_archive(folder, "/archives/folder.zip")
 
 When we download an archive
 it is automatically extracted,
@@ -150,7 +150,7 @@ instead of :meth:`audbackend.interface.Unversioned.get_file`.
 
 .. jupyter-execute::
 
-    paths = interface.get_archive('/archives/folder.zip', 'downloaded_folder')
+    paths = interface.get_archive("/archives/folder.zip", "downloaded_folder")
     paths
 
 We can list all files
@@ -158,33 +158,33 @@ in the repository.
 
 .. jupyter-execute::
 
-    interface.ls('/')
+    interface.ls("/")
 
 If we provide
 a sub-path
-(must end on ``'/'``),
+(must end on ``"/"``),
 a list with files that
 start with the sub-path
 is returned.
 
 .. jupyter-execute::
 
-    interface.ls('/archives/')
+    interface.ls("/archives/")
 
 We can remove files.
 
 .. jupyter-execute::
 
-    interface.remove_file('/file.txt')
-    interface.remove_file('/archives/folder.zip')
-    interface.ls('/')
+    interface.remove_file("/file.txt")
+    interface.remove_file("/archives/folder.zip")
+    interface.ls("/")
 
 Or even delete the whole repository
 with all its content.
 
 .. jupyter-execute::
 
-    audbackend.delete('file-system', 'host', 'repo')
+    audbackend.delete("file-system", "host", "repo")
 
 
 If we now try to access the repository,
@@ -197,7 +197,7 @@ exception thrown by the backend.
 .. jupyter-execute::
 
     try:
-        audbackend.access('file-system', 'host', 'repo')
+        audbackend.access("file-system", "host", "repo")
     except audbackend.BackendError as ex:
         display(str(ex.exception))
 
@@ -209,37 +209,37 @@ Versioned data on a file system
 -------------------------------
 
 We start by creating a repository
-on the ``'file-system'`` backend.
+on the ``"file-system"`` backend.
 This time we access it
 with the :class:`audbackend.interface.Versioned` interface
 (which is also used by default).
 
 .. jupyter-execute::
 
-    audbackend.create('file-system', './host', 'repo')
+    audbackend.create("file-system", "./host", "repo")
     interface = audbackend.access(
-        'file-system',
-        './host',
-        'repo',
+        "file-system",
+        "./host",
+        "repo",
         interface=audbackend.interface.Versioned,
     )
 
 We then upload a file
-and assign version ``'1.0.0'`` to it.
+and assign version ``"1.0.0"`` to it.
 
 .. jupyter-execute::
 
-    with open('file.txt', 'w') as file:
-        file.write('Content v1.0.0')
-    interface.put_file('file.txt', '/file.txt', '1.0.0')
+    with open("file.txt", "w") as file:
+        file.write("Content v1.0.0")
+    interface.put_file("file.txt", "/file.txt", "1.0.0")
 
-Now we change the file for version ``'2.0.0'``.
+Now we change the file for version ``"2.0.0"``.
 
 .. jupyter-execute::
 
-    with open('file.txt', 'w') as file:
-        file.write('Content v2.0.0')
-    interface.put_file('file.txt', '/file.txt', '2.0.0')
+    with open("file.txt", "w") as file:
+        file.write("Content v2.0.0")
+    interface.put_file("file.txt", "/file.txt", "2.0.0")
 
 If we inspect the content of the repository
 it will return a list of tuples
@@ -247,49 +247,49 @@ containing file name and version.
 
 .. jupyter-execute::
 
-    interface.ls('/')
+    interface.ls("/")
 
 We can also inspect the available versions
 for a file.
 
 .. jupyter-execute::
 
-    interface.versions('/file.txt')
+    interface.versions("/file.txt")
 
 Or request it's latest version.
 
 .. jupyter-execute::
 
-    interface.latest_version('/file.txt')
+    interface.latest_version("/file.txt")
 
 We can copy a specific version of a file.
 
 .. jupyter-execute::
 
-    interface.copy_file('/file.txt', '/copy/file.txt', version='1.0.0')
-    interface.ls('/copy/')
+    interface.copy_file("/file.txt", "/copy/file.txt", version="1.0.0")
+    interface.ls("/copy/")
 
 Or all versions.
 
 .. jupyter-execute::
 
-    interface.copy_file('/file.txt', '/copy/file.txt')
-    interface.ls('/copy/')
+    interface.copy_file("/file.txt", "/copy/file.txt")
+    interface.ls("/copy/")
 
 We move them to a new location.
 
 .. jupyter-execute::
 
-    interface.move_file('/copy/file.txt', '/move/file.txt')
-    interface.ls('/move/')
+    interface.move_file("/copy/file.txt", "/move/file.txt")
+    interface.ls("/move/")
 
 When downloading a file,
 we can select the desired version.
 
 .. jupyter-execute::
 
-    path = interface.get_file('/file.txt', 'local.txt', '1.0.0')
-    with open(path, 'r') as file:
+    path = interface.get_file("/file.txt", "local.txt", "1.0.0")
+    with open(path, "r") as file:
         display(file.read())
 
 
