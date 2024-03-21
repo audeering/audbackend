@@ -6,25 +6,26 @@ class BackendError(Exception):
 
     Examples:
         >>> try:
-        ...     unversioned.checksum('/does/not/exist')
+        ...     unversioned.checksum("/does/not/exist")
         ... except BackendError as ex:
         ...     ex.exception
         FileNotFoundError(2, 'No such file or directory')
         >>> try:
-        ...     versioned.checksum('/does/not/exist', '1.0.0')
+        ...     versioned.checksum("/does/not/exist", "1.0.0")
         ... except BackendError as ex:
         ...     ex.exception
         FileNotFoundError(2, 'No such file or directory')
 
     """
+
     def __init__(
-            self,
-            exception: Exception,
+        self,
+        exception: Exception,
     ):
         self.exception = exception
         r"""Exception raised by backend."""
 
         super().__init__(
-            'An exception was raised by the backend, '
-            'please see stack trace for further information.'
+            "An exception was raised by the backend, "
+            "please see stack trace for further information."
         )
