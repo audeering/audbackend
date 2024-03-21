@@ -17,33 +17,34 @@ class FileSystem(Base):
         repository: repository name
 
     """
+
     def __init__(
-            self,
-            host: str,
-            repository: str,
+        self,
+        host: str,
+        repository: str,
     ):
         super().__init__(host, repository)
 
         self._root = audeer.path(host, repository) + os.sep
 
     def _access(
-            self,
+        self,
     ):
         r"""Access existing repository."""
         if not os.path.exists(self._root):
             utils.raise_file_not_found_error(self._root)
 
     def _checksum(
-            self,
-            path: str,
+        self,
+        path: str,
     ) -> str:
         r"""MD5 checksum of file on backend."""
         path = self._expand(path)
         return audeer.md5(path)
 
     def _collapse(
-            self,
-            path,
+        self,
+        path,
     ):
         r"""Convert to virtual path.
 
@@ -52,15 +53,15 @@ class FileSystem(Base):
         /<path>
 
         """
-        path = path[len(self._root) - 1:]  # remove host and repo
+        path = path[len(self._root) - 1 :]  # remove host and repo
         path = path.replace(os.path.sep, self.sep)
         return path
 
     def _copy_file(
-            self,
-            src_path: str,
-            dst_path: str,
-            verbose: bool,
+        self,
+        src_path: str,
+        dst_path: str,
+        verbose: bool,
     ):
         r"""Copy file on backend."""
         src_path = self._expand(src_path)
@@ -69,7 +70,7 @@ class FileSystem(Base):
         shutil.copy(src_path, dst_path)
 
     def _create(
-            self,
+        self,
     ):
         r"""Access existing repository."""
         if os.path.exists(self._root):
@@ -78,8 +79,8 @@ class FileSystem(Base):
         audeer.mkdir(self._root)
 
     def _date(
-            self,
-            path: str,
+        self,
+        path: str,
     ) -> str:
         r"""Get last modification date of file on backend."""
         path = self._expand(path)
@@ -89,22 +90,22 @@ class FileSystem(Base):
         return date
 
     def _delete(
-            self,
+        self,
     ):
         r"""Delete repository and all its content."""
         audeer.rmdir(self._root)
 
     def _exists(
-            self,
-            path: str,
+        self,
+        path: str,
     ) -> bool:
         r"""Check if file exists on backend."""
         path = self._expand(path)
         return os.path.exists(path)
 
     def _expand(
-            self,
-            path: str,
+        self,
+        path: str,
     ) -> str:
         r"""Convert to backend path.
 
@@ -120,18 +121,18 @@ class FileSystem(Base):
         return path
 
     def _get_file(
-            self,
-            src_path: str,
-            dst_path: str,
-            verbose: bool,
+        self,
+        src_path: str,
+        dst_path: str,
+        verbose: bool,
     ):
         r"""Get file from backend."""
         src_path = self._expand(src_path)
         shutil.copy(src_path, dst_path)
 
     def _ls(
-            self,
-            path: str,
+        self,
+        path: str,
     ) -> typing.List[str]:
         r"""List all files under sub-path."""
         path = self._expand(path)
@@ -148,10 +149,10 @@ class FileSystem(Base):
         return paths
 
     def _move_file(
-            self,
-            src_path: str,
-            dst_path: str,
-            verbose: bool,
+        self,
+        src_path: str,
+        dst_path: str,
+        verbose: bool,
     ):
         r"""Move file on backend."""
         src_path = self._expand(src_path)
@@ -160,8 +161,8 @@ class FileSystem(Base):
         audeer.move(src_path, dst_path)
 
     def _owner(
-            self,
-            path: str,
+        self,
+        path: str,
     ) -> str:
         r"""Get owner of file on backend."""
         path = self._expand(path)
@@ -169,11 +170,11 @@ class FileSystem(Base):
         return owner
 
     def _put_file(
-            self,
-            src_path: str,
-            dst_path: str,
-            checksum: str,
-            verbose: bool,
+        self,
+        src_path: str,
+        dst_path: str,
+        checksum: str,
+        verbose: bool,
     ):
         r"""Put file to backend."""
         dst_path = self._expand(dst_path)
@@ -181,8 +182,8 @@ class FileSystem(Base):
         shutil.copy(src_path, dst_path)
 
     def _remove_file(
-            self,
-            path: str,
+        self,
+        path: str,
     ):
         r"""Remove file from backend."""
         path = self._expand(path)

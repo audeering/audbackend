@@ -13,8 +13,8 @@ class Unversioned(Base):
     """
 
     def checksum(
-            self,
-            path: str,
+        self,
+        path: str,
     ) -> str:
         r"""MD5 checksum for file on backend.
 
@@ -31,19 +31,19 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-            >>> unversioned.checksum('/f.ext')
+            >>> unversioned.checksum("/f.ext")
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
         return self.backend.checksum(path)
 
     def copy_file(
-            self,
-            src_path: str,
-            dst_path: str,
-            *,
-            validate: bool = False,
-            verbose: bool = False,
+        self,
+        src_path: str,
+        dst_path: str,
+        *,
+        validate: bool = False,
+        verbose: bool = False,
     ):
         r"""Copy file on backend.
 
@@ -75,10 +75,10 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-            >>> unversioned.exists('/copy.ext')
+            >>> unversioned.exists("/copy.ext")
             False
-            >>> unversioned.copy_file('/f.ext', '/copy.ext')
-            >>> unversioned.exists('/copy.ext')
+            >>> unversioned.copy_file("/f.ext", "/copy.ext")
+            >>> unversioned.exists("/copy.ext")
             True
 
         """
@@ -90,8 +90,8 @@ class Unversioned(Base):
         )
 
     def date(
-            self,
-            path: str,
+        self,
+        path: str,
     ) -> str:
         r"""Last modification date of file on backend.
 
@@ -111,17 +111,17 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-              >>> unversioned.date('/f.ext')
+              >>> unversioned.date("/f.ext")
               '1991-02-20'
 
         """
         return self.backend.date(path)
 
     def exists(
-            self,
-            path: str,
-            *,
-            suppress_backend_errors: bool = False,
+        self,
+        path: str,
+        *,
+        suppress_backend_errors: bool = False,
     ) -> bool:
         r"""Check if file exists on backend.
 
@@ -144,7 +144,7 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
-            >>> unversioned.exists('/f.ext')
+            >>> unversioned.exists("/f.ext")
             True
 
         """
@@ -154,13 +154,13 @@ class Unversioned(Base):
         )
 
     def get_archive(
-            self,
-            src_path: str,
-            dst_root: str,
-            *,
-            tmp_root: str = None,
-            validate: bool = False,
-            verbose: bool = False,
+        self,
+        src_path: str,
+        dst_root: str,
+        *,
+        tmp_root: str = None,
+        validate: bool = False,
+        verbose: bool = False,
     ) -> typing.List[str]:
         r"""Get archive from backend and extract.
 
@@ -204,7 +204,7 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-            >>> unversioned.get_archive('/a.zip', '.')
+            >>> unversioned.get_archive("/a.zip", ".")
             ['src.pth']
 
         """
@@ -217,12 +217,12 @@ class Unversioned(Base):
         )
 
     def get_file(
-            self,
-            src_path: str,
-            dst_path: str,
-            *,
-            validate: bool = False,
-            verbose: bool = False,
+        self,
+        src_path: str,
+        dst_path: str,
+        *,
+        validate: bool = False,
+        verbose: bool = False,
     ) -> str:
         r"""Get file from backend.
 
@@ -265,10 +265,10 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-            >>> os.path.exists('dst.pth')
+            >>> os.path.exists("dst.pth")
             False
-            >>> _ = unversioned.get_file('/f.ext', 'dst.pth')
-            >>> os.path.exists('dst.pth')
+            >>> _ = unversioned.get_file("/f.ext", "dst.pth")
+            >>> os.path.exists("dst.pth")
             True
 
         """
@@ -280,11 +280,11 @@ class Unversioned(Base):
         )
 
     def ls(
-            self,
-            path: str = '/',
-            *,
-            pattern: str = None,
-            suppress_backend_errors: bool = False,
+        self,
+        path: str = "/",
+        *,
+        pattern: str = None,
+        suppress_backend_errors: bool = False,
     ) -> typing.List[str]:
         r"""List files on backend.
 
@@ -327,13 +327,13 @@ class Unversioned(Base):
         Examples:
             >>> unversioned.ls()
             ['/a.zip', '/a/b.ext', '/f.ext']
-            >>> unversioned.ls('/f.ext')
+            >>> unversioned.ls("/f.ext")
             ['/f.ext']
-            >>> unversioned.ls(pattern='*.ext')
+            >>> unversioned.ls(pattern="*.ext")
             ['/a/b.ext', '/f.ext']
-            >>> unversioned.ls(pattern='b.*')
+            >>> unversioned.ls(pattern="b.*")
             ['/a/b.ext']
-            >>> unversioned.ls('/a/')
+            >>> unversioned.ls("/a/")
             ['/a/b.ext']
 
         """  # noqa: E501
@@ -344,12 +344,12 @@ class Unversioned(Base):
         )
 
     def move_file(
-            self,
-            src_path: str,
-            dst_path: str,
-            *,
-            validate: bool = False,
-            verbose: bool = False,
+        self,
+        src_path: str,
+        dst_path: str,
+        *,
+        validate: bool = False,
+        verbose: bool = False,
     ):
         r"""Move file on backend.
 
@@ -385,12 +385,12 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-            >>> unversioned.exists('/move.ext')
+            >>> unversioned.exists("/move.ext")
             False
-            >>> unversioned.move_file('/f.ext', '/move.ext')
-            >>> unversioned.exists('/move.ext')
+            >>> unversioned.move_file("/f.ext", "/move.ext")
+            >>> unversioned.exists("/move.ext")
             True
-            >>> unversioned.exists('/f.ext')
+            >>> unversioned.exists("/f.ext")
             False
 
         """
@@ -402,8 +402,8 @@ class Unversioned(Base):
         )
 
     def owner(
-            self,
-            path: str,
+        self,
+        path: str,
     ) -> str:
         r"""Owner of file on backend.
 
@@ -424,21 +424,21 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-              >>> unversioned.owner('/f.ext')
+              >>> unversioned.owner("/f.ext")
               'doctest'
 
         """
         return self.backend.owner(path)
 
     def put_archive(
-            self,
-            src_root: str,
-            dst_path: str,
-            *,
-            files: typing.Union[str, typing.Sequence[str]] = None,
-            tmp_root: str = None,
-            validate: bool = False,
-            verbose: bool = False,
+        self,
+        src_root: str,
+        dst_path: str,
+        *,
+        files: typing.Union[str, typing.Sequence[str]] = None,
+        tmp_root: str = None,
+        validate: bool = False,
+        verbose: bool = False,
     ):
         r"""Create archive and put on backend.
 
@@ -486,10 +486,10 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-            >>> unversioned.exists('/a.tar.gz')
+            >>> unversioned.exists("/a.tar.gz")
             False
-            >>> unversioned.put_archive('.', '/a.tar.gz')
-            >>> unversioned.exists('/a.tar.gz')
+            >>> unversioned.put_archive(".", "/a.tar.gz")
+            >>> unversioned.exists("/a.tar.gz")
             True
 
         """
@@ -503,12 +503,12 @@ class Unversioned(Base):
         )
 
     def put_file(
-            self,
-            src_path: str,
-            dst_path: str,
-            *,
-            validate: bool = False,
-            verbose: bool = False,
+        self,
+        src_path: str,
+        dst_path: str,
+        *,
+        validate: bool = False,
+        verbose: bool = False,
     ):
         r"""Put file on backend.
 
@@ -540,10 +540,10 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-            >>> unversioned.exists('/sub/f.ext')
+            >>> unversioned.exists("/sub/f.ext")
             False
-            >>> unversioned.put_file('src.pth', '/sub/f.ext')
-            >>> unversioned.exists('/sub/f.ext')
+            >>> unversioned.put_file("src.pth", "/sub/f.ext")
+            >>> unversioned.exists("/sub/f.ext")
             True
 
         """
@@ -555,8 +555,8 @@ class Unversioned(Base):
         )
 
     def remove_file(
-            self,
-            path: str,
+        self,
+        path: str,
     ):
         r"""Remove file from backend.
 
@@ -570,10 +570,10 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-            >>> unversioned.exists('/f.ext')
+            >>> unversioned.exists("/f.ext")
             True
-            >>> unversioned.remove_file('/f.ext')
-            >>> unversioned.exists('/f.ext')
+            >>> unversioned.remove_file("/f.ext")
+            >>> unversioned.exists("/f.ext")
             False
 
         """

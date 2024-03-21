@@ -13,15 +13,16 @@ class Repository:
         backend: repository backend
 
     Examples:
-        >>> Repository('data-local', '/data', 'file-system')
+        >>> Repository("data-local", "/data", "file-system")
         Repository('data-local', '/data', 'file-system')
 
     """
+
     def __init__(
-            self,
-            name: str,
-            host: str,
-            backend: str,
+        self,
+        name: str,
+        host: str,
+        backend: str,
     ):
         self.name = name
         r"""Repository name."""
