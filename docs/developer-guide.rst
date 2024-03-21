@@ -6,7 +6,7 @@
     import audeer
 
     _cwd_root = os.getcwd()
-    _tmp_root = audeer.mkdir(os.path.join('docs', 'tmp-developer-guide'))
+    _tmp_root = audeer.mkdir(os.path.join("docs", "tmp-developer-guide"))
     os.chdir(_tmp_root)
 
 
@@ -76,7 +76,7 @@ from a (config) file.
 
 .. jupyter-execute::
 
-    audbackend.register('files', audbackend.backend.FileSystem)
+    audbackend.register("files", audbackend.backend.FileSystem)
     list(audbackend.available())
 
 
@@ -99,7 +99,7 @@ It provides three functions:
 
 We store user information
 in a database under
-``'/user.map'``.
+``"/user.map"``.
 To access and update
 the database
 we implement the following
@@ -121,17 +121,17 @@ helper class.
             self.backend = backend
 
         def __enter__(self) -> shelve.Shelf:
-            if self.backend.exists('/user.db'):
-                self.backend.get_file('/user.db', '~.db')
-                self._map = shelve.open('~.db', flag='w', writeback=True)
+            if self.backend.exists("/user.db"):
+                self.backend.get_file("/user.db", "~.db")
+                self._map = shelve.open("~.db", flag="w", writeback=True)
             else:
-                self._map = shelve.open('~.db', writeback=True)
+                self._map = shelve.open("~.db", writeback=True)
             return self._map
 
         def __exit__(self, exc_type, exc_val, exc_tb):
             self._map.close()
-            self.backend.put_file('~.db', '/user.db')
-            os.remove('~.db')
+            self.backend.put_file("~.db", "/user.db")
+            os.remove("~.db")
 
 
 Now,
@@ -150,15 +150,15 @@ we implement the interface.
             r"""Upload user file."""
             with UserDB(self.backend) as map:
                 if username not in map or map[username] != password:
-                    raise ValueError('User does not exist or wrong password.')
-                self.backend.put_file(path, f'/{username}/{os.path.basename(path)}')
+                    raise ValueError("User does not exist or wrong password.")
+                self.backend.put_file(path, f"/{username}/{os.path.basename(path)}")
 
         def ls(self, username: str) -> list:
             r"""List files of user."""
             with UserDB(self.backend) as map:
                 if username not in map:
                     return []
-            return self.backend.ls(f'/{username}/')
+            return self.backend.ls(f"/{username}/")
 
 
 Let's create a repository
@@ -169,20 +169,20 @@ and upload a file:
 
     import audeer
 
-    audbackend.create('file-system', './host', 'repo')
-    interface = audbackend.access('file-system', './host', 'repo', interface=UserContent)
+    audbackend.create("file-system", "./host", "repo")
+    interface = audbackend.access("file-system", "./host", "repo", interface=UserContent)
 
-    interface.add_user('audeering', 'pa$$word')
-    audeer.touch('local.txt')
-    interface.upload('audeering', 'pa$$word', 'local.txt')
-    interface.ls('audeering')
+    interface.add_user("audeering", "pa$$word")
+    audeer.touch("local.txt")
+    interface.upload("audeering", "pa$$word", "local.txt")
+    interface.ls("audeering")
 
 
 At the end we clean up and delete our repo.
 
 .. jupyter-execute::
 
-    audbackend.delete('file-system', './host', 'repo')
+    audbackend.delete("file-system", "./host", "repo")
 
 
 .. _develop-new-backend:
@@ -223,7 +223,7 @@ in the constructor:
 
 * ``_path``: the path of the database,
   which we derive from the host and repository,
-  namely ``'<host>/<repository>/db'``.
+  namely ``"<host>/<repository>/db"``.
 * ``_db``: connection object to the database.
 
 .. jupyter-execute::
@@ -239,7 +239,7 @@ in the constructor:
                 repository: str,
         ):
             super().__init__(host, repository)
-            self._path = os.path.join(host, repository, 'db')
+            self._path = os.path.join(host, repository, "db")
             self._db = None
 
 
@@ -281,11 +281,11 @@ depends on the backend.
 
 
 We now register our new backend class
-under the name ``'sql'``.
+under the name ``"sql"``.
 
 .. jupyter-execute::
 
-    audbackend.register('sql', SQLite)
+    audbackend.register("sql", SQLite)
 
 
 Before we can instantiate an instance,
@@ -321,7 +321,7 @@ stored on our backend:
             )
         os.mkdir(os.path.dirname(self._path))
         self._db = sl.connect(self._path)
-        query = '''
+        query = """
             CREATE TABLE data (
                 path TEXT NOT NULL,
                 checksum TEXT NOT NULL,
@@ -330,7 +330,7 @@ stored on our backend:
                 owner TEXT NOT NULL,
                 PRIMARY KEY (path)
             );
-        '''
+        """
         with self._db as db:
             db.execute(query)
 
@@ -340,7 +340,7 @@ Now we create a repository.
 .. jupyter-execute::
     :hide-output:
 
-    audbackend.create('sql', './host', 'repo')
+    audbackend.create("sql", "./host", "repo")
 
 
 We also add a method to access
@@ -362,7 +362,7 @@ it is not found).
             )
         self._db = sl.connect(self._path)
 
-    interface = audbackend.access('sql', './host', 'repo')
+    interface = audbackend.access("sql", "./host", "repo")
 
 
 Next,
@@ -377,17 +377,17 @@ if a file exists.
             path: str,
     ) -> bool:
         with self._db as db:
-            query = f'''
+            query = f"""
                 SELECT EXISTS (
                     SELECT 1
                         FROM data
                         WHERE path="{path}"
                 );
-            '''
+            """
             result = db.execute(query).fetchone()[0] == 1
         return result
 
-    interface.exists('/file.txt', '1.0.0')
+    interface.exists("/file.txt", "1.0.0")
 
 
 And a method that uploads
@@ -407,14 +407,14 @@ a file to our backend.
             verbose: bool,
     ):
         with self._db as db:
-            with open(src_path, 'rb') as file:
+            with open(src_path, "rb") as file:
                 content = file.read()
-            query = '''
+            query = """
                 INSERT INTO data (path, checksum, content, date, owner)
                 VALUES (?, ?, ?, ?, ?)
-            '''
+            """
             owner = getpass.getuser()
-            date = datetime.datetime.today().strftime('%Y-%m-%d')
+            date = datetime.datetime.today().strftime("%Y-%m-%d")
             data = (dst_path, checksum, content, date, owner)
             db.execute(query, data)
 
@@ -423,9 +423,9 @@ Let's put a file on the backend.
 
 .. jupyter-execute::
 
-    file = audeer.touch('file.txt')
-    interface.put_file(file, '/file.txt', '1.0.0')
-    interface.exists('/file.txt', '1.0.0')
+    file = audeer.touch("file.txt")
+    interface.put_file(file, "/file.txt", "1.0.0")
+    interface.exists("/file.txt", "1.0.0")
 
 
 We need three more functions
@@ -439,15 +439,15 @@ to access its meta information.
             path: str,
     ) -> str:
         with self._db as db:
-            query = f'''
+            query = f"""
                 SELECT checksum
                 FROM data
                 WHERE path="{path}"
-            '''
+            """
             checksum = db.execute(query).fetchone()[0]
         return checksum
 
-    interface.checksum('/file.txt', '1.0.0')
+    interface.checksum("/file.txt", "1.0.0")
 
 .. jupyter-execute::
 
@@ -457,15 +457,15 @@ to access its meta information.
             path: str,
     ) -> str:
         with self._db as db:
-            query = f'''
+            query = f"""
                 SELECT date
                 FROM data
                 WHERE path="{path}"
-            '''
+            """
             date = db.execute(query).fetchone()[0]
         return date
 
-    interface.date('/file.txt', '1.0.0')
+    interface.date("/file.txt", "1.0.0")
 
 .. jupyter-execute::
 
@@ -475,15 +475,15 @@ to access its meta information.
             path: str,
     ) -> str:
         with self._db as db:
-            query = f'''
+            query = f"""
                 SELECT owner
                 FROM data
                 WHERE path="{path}"
-            '''
+            """
             owner = db.execute(query).fetchone()[0]
         return owner
 
-    interface.owner('/file.txt', '1.0.0')
+    interface.owner("/file.txt", "1.0.0")
 
 
 Implementing a copy function is optional.
@@ -503,22 +503,22 @@ we provide a more efficient implementation.
             verbose: bool,
     ):
         with self._db as db:
-            query = f'''
+            query = f"""
                 SELECT *
                 FROM data
                 WHERE path="{src_path}"
-            '''
+            """
             (_, checksum, content, _, owner) = db.execute(query).fetchone()
-            date = datetime.datetime.today().strftime('%Y-%m-%d')
-            query = '''
+            date = datetime.datetime.today().strftime("%Y-%m-%d")
+            query = """
                 INSERT INTO data (path, checksum, content, date, owner)
                 VALUES (?, ?, ?, ?, ?)
-            '''
+            """
             data = (dst_path, checksum, content, date, owner)
             db.execute(query, data)
 
-    interface.copy_file('/file.txt', '/copy/file.txt', version='1.0.0')
-    interface.exists('/copy/file.txt', '1.0.0')
+    interface.copy_file("/file.txt", "/copy/file.txt", version="1.0.0")
+    interface.exists("/copy/file.txt", "1.0.0")
 
 
 Implementing a move function is also optional,
@@ -534,15 +534,15 @@ but it is more efficient if we provide one.
             verbose: bool,
     ):
         with self._db as db:
-            query = f'''
+            query = f"""
                 UPDATE data
                 SET path="{dst_path}"
                 WHERE path="{src_path}"
-            '''
+            """
             db.execute(query)
 
-    interface.move_file('/copy/file.txt', '/move/file.txt', version='1.0.0')
-    interface.exists('/move/file.txt', '1.0.0')
+    interface.move_file("/copy/file.txt", "/move/file.txt", version="1.0.0")
+    interface.exists("/move/file.txt", "1.0.0")
 
 
 Finally,
@@ -560,13 +560,13 @@ from the backend.
             verbose: bool,
     ):
         with self._db as db:
-            query = f'''
+            query = f"""
                 SELECT content
                 FROM data
                 WHERE path="{src_path}"
-            '''
+            """
             content = db.execute(query).fetchone()[0]
-            with open(dst_path, 'wb') as fp:
+            with open(dst_path, "wb") as fp:
                 fp.write(content)
 
 
@@ -574,7 +574,7 @@ Which we then use to download the file.
 
 .. jupyter-execute::
 
-    file = interface.get_file('/file.txt', 'local.txt', '1.0.0')
+    file = interface.get_file("/file.txt", "local.txt", "1.0.0")
 
 
 To inspect the files
@@ -594,12 +594,12 @@ we provide a listing method.
         with self._db as db:
 
             # list all files and versions under sub-path
-            query = f'''
+            query = f"""
                 SELECT path
                 FROM data
                 WHERE path
                 LIKE ? || "%"
-            '''
+            """
             ls = db.execute(query, [path]).fetchall()
             ls = [x[0] for x in ls]
 
@@ -610,11 +610,11 @@ Let's test it.
 
 .. jupyter-execute::
 
-    interface.ls('/')
+    interface.ls("/")
 
 .. jupyter-execute::
 
-    interface.ls('/file.txt')
+    interface.ls("/file.txt")
 
 
 To delete a file
@@ -629,15 +629,15 @@ requires another method.
             path: str,
     ):
         with self._db as db:
-            query = f'''
+            query = f"""
                 DELETE
                 FROM data
                 WHERE path="{path}"
-            '''
+            """
             db.execute(query)
 
-    interface.remove_file('/file.txt', '1.0.0')
-    interface.ls('/')
+    interface.remove_file("/file.txt", "1.0.0")
+    interface.ls("/")
 
 
 Finally,
@@ -662,7 +662,7 @@ if the database does not exist).
         os.remove(self._path)
         os.rmdir(os.path.dirname(self._path))
 
-    audbackend.delete('sql', './host', 'repo')
+    audbackend.delete("sql", "./host", "repo")
 
 
 Let's check if the repository
@@ -671,7 +671,7 @@ is really gone.
 .. jupyter-execute::
 
     try:
-        audbackend.access('sql', './host', 'repo')
+        audbackend.access("sql", "./host", "repo")
     except audbackend.BackendError as ex:
         display(str(ex.exception))
 

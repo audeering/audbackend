@@ -6,7 +6,7 @@
     import audeer
 
     _cwd_root = os.getcwd()
-    _tmp_root = audeer.mkdir(os.path.join('docs', 'tmp'))
+    _tmp_root = audeer.mkdir(os.path.join("docs", "tmp"))
     os.chdir(_tmp_root)
 
 
@@ -50,9 +50,9 @@ you have to list those extensions explicitly.
 
     import audbackend
 
-    audbackend.create('file-system', './host', 'repo')
-    interface = audbackend.access('file-system', './host', 'repo')
-    extensions = ['tar.gz']
+    audbackend.create("file-system", "./host", "repo")
+    interface = audbackend.access("file-system", "./host", "repo")
+    extensions = ["tar.gz"]
     interface._use_legacy_file_structure(extensions=extensions)
 
 Afterwards we upload an TAR.GZ archive
@@ -64,10 +64,10 @@ and check that it is stored as expected.
     import tempfile
 
     with tempfile.TemporaryDirectory() as tmp:
-        audeer.touch(audeer.path(tmp, 'file.txt'))
-        interface.put_archive(tmp, '/file.tar.gz', '1.0.0')
+        audeer.touch(audeer.path(tmp, "file.txt"))
+        interface.put_archive(tmp, "/file.tar.gz", "1.0.0")
 
-    audeer.list_file_names('./host', recursive=True, basenames=True)
+    audeer.list_file_names("./host", recursive=True, basenames=True)
 
 
 .. reset working directory and clean up

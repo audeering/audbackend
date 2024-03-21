@@ -15,9 +15,9 @@ r"""Backend registry."""
 
 
 def _backend(
-        name: str,
-        host: str,
-        repository: str,
+    name: str,
+    host: str,
+    repository: str,
 ) -> Base:
     r"""Get backend instance."""
     if name not in backend_registry:
@@ -45,12 +45,12 @@ def _backend(
 
 
 def access(
-        name: str,
-        host: str,
-        repository: str,
-        *,
-        interface: typing.Type[Interface] = Versioned,
-        interface_kwargs: dict = None,
+    name: str,
+    host: str,
+    repository: str,
+    *,
+    interface: typing.Type[Interface] = Versioned,
+    interface_kwargs: dict = None,
 ) -> Interface:
     r"""Access repository.
 
@@ -82,7 +82,7 @@ def access(
             has been registered
 
     Examples:
-        >>> access('file-system', 'host', 'repo')
+        >>> access("file-system", "host", "repo")
         audbackend.core.interface.versioned.Versioned('audbackend.core.backend.filesystem.FileSystem', 'host', 'repo')
 
     """  # noqa: E501
@@ -108,7 +108,7 @@ def available() -> typing.Dict[str, typing.List[Base]]:
     Examples:
         >>> list(available())
         ['artifactory', 'file-system']
-        >>> available()['file-system'][0]
+        >>> available()["file-system"][0]
         ('audbackend.core.backend.filesystem.FileSystem', 'host', 'repo')
 
     """  # noqa: E501
@@ -125,9 +125,9 @@ def available() -> typing.Dict[str, typing.List[Base]]:
 
 
 def create(
-        name: str,
-        host: str,
-        repository: str,
+    name: str,
+    host: str,
+    repository: str,
 ):
     r"""Create repository.
 
@@ -160,7 +160,7 @@ def create(
             has been registered
 
     Examples:
-        >>> create('file-system', 'host', 'repository')
+        >>> create("file-system", "host", "repository")
 
     """  # noqa: E501
     backend = _backend(name, host, repository)
@@ -170,9 +170,9 @@ def create(
 
 
 def delete(
-        name: str,
-        host: str,
-        repository: str,
+    name: str,
+    host: str,
+    repository: str,
 ):
     r"""Delete repository.
 
@@ -198,11 +198,11 @@ def delete(
             has been registered
 
     Examples:
-        >>> access('file-system', 'host', 'repo').ls()
+        >>> access("file-system", "host", "repo").ls()
         [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-        >>> delete('file-system', 'host', 'repo')
-        >>> create('file-system', 'host', 'repo')
-        >>> access('file-system', 'host', 'repo').ls()
+        >>> delete("file-system", "host", "repo")
+        >>> create("file-system", "host", "repo")
+        >>> access("file-system", "host", "repo").ls()
         []
 
     """  # noqa: E501
@@ -212,8 +212,8 @@ def delete(
 
 
 def register(
-        name: str,
-        cls: typing.Type[Base],
+    name: str,
+    cls: typing.Type[Base],
 ):
     r"""Register backend class.
 
@@ -226,17 +226,18 @@ def register(
         cls: backend class
 
     Examples:
-        >>> register('file-system', FileSystem)
+        >>> register("file-system", FileSystem)
 
     """
     backend_registry[name] = cls
 
 
-register('file-system', FileSystem)
+register("file-system", FileSystem)
 
 # Register optional backends
 try:
     from audbackend.core.backend.artifactory import Artifactory
-    register('artifactory', Artifactory)
+
+    register("artifactory", Artifactory)
 except ImportError:  # pragma: no cover
     pass

@@ -11,9 +11,9 @@ from audbackend.core.backend.base import Base
 
 
 def _artifactory_path(
-        path,
-        username,
-        apikey,
+    path,
+    username,
+    apikey,
 ) -> artifactory.ArtifactoryPath:
     r"""Authenticate at Artifactory and get path object."""
     return artifactory.ArtifactoryPath(
@@ -24,75 +24,71 @@ def _artifactory_path(
 
 def _authentication(host) -> typing.Tuple[str, str]:
     """Look for username and API key."""
-    username = os.getenv('ARTIFACTORY_USERNAME', None)
-    api_key = os.getenv('ARTIFACTORY_API_KEY', None)
+    username = os.getenv("ARTIFACTORY_USERNAME", None)
+    api_key = os.getenv("ARTIFACTORY_API_KEY", None)
     config_file = os.getenv(
-        'ARTIFACTORY_CONFIG_FILE',
+        "ARTIFACTORY_CONFIG_FILE",
         artifactory.default_config_path,
     )
     config_file = audeer.path(config_file)
 
-    if (
-            os.path.exists(config_file) and
-            (api_key is None or username is None)
-    ):
+    if os.path.exists(config_file) and (api_key is None or username is None):
         config = artifactory.read_config(config_file)
         config_entry = artifactory.get_config_entry(config, host)
 
         if config_entry is not None:
             if username is None:
-                username = config_entry.get('username', None)
+                username = config_entry.get("username", None)
             if api_key is None:
-                api_key = config_entry.get('password', None)
+                api_key = config_entry.get("password", None)
 
     if username is None:
-        username = 'anonymous'
+        username = "anonymous"
     if api_key is None:
-        api_key = ''
+        api_key = ""
 
     return username, api_key
 
 
 def _deploy(
-        src_path: str,
-        dst_path: artifactory.ArtifactoryPath,
-        checksum: str,
-        *,
-        verbose: bool = False,
+    src_path: str,
+    dst_path: artifactory.ArtifactoryPath,
+    checksum: str,
+    *,
+    verbose: bool = False,
 ):
     r"""Deploy local file as an artifact."""
     if verbose:  # pragma: no cover
         desc = audeer.format_display_message(
-            f'Deploy {src_path}',
+            f"Deploy {src_path}",
             pbar=False,
         )
-        print(desc, end='\r')
+        print(desc, end="\r")
 
     if not dst_path.parent.exists():
         dst_path.parent.mkdir()
 
-    with open(src_path, 'rb') as fd:
+    with open(src_path, "rb") as fd:
         dst_path.deploy(fd, md5=checksum, quote_parameters=True)
 
     if verbose:  # pragma: no cover
         # Clear progress line
-        print(audeer.format_display_message(' ', pbar=False), end='\r')
+        print(audeer.format_display_message(" ", pbar=False), end="\r")
 
 
 def _download(
-        src_path: artifactory.ArtifactoryPath,
-        dst_path: str,
-        *,
-        chunk: int = 4 * 1024,
-        verbose=False,
+    src_path: artifactory.ArtifactoryPath,
+    dst_path: str,
+    *,
+    chunk: int = 4 * 1024,
+    verbose=False,
 ):
     r"""Download an artifact."""
     src_size = artifactory.ArtifactoryPath.stat(src_path).size
 
     with audeer.progress_bar(total=src_size, disable=not verbose) as pbar:
-
         desc = audeer.format_display_message(
-            'Download {}'.format(os.path.basename(str(src_path))),
+            "Download {}".format(os.path.basename(str(src_path))),
             pbar=True,
         )
         pbar.set_description_str(desc)
@@ -100,7 +96,7 @@ def _download(
 
         dst_size = 0
         with src_path.open() as src_fp:
-            with open(dst_path, 'wb') as dst_fp:
+            with open(dst_path, "wb") as dst_fp:
                 while src_size > dst_size:
                     data = src_fp.read(chunk)
                     n_data = len(data)
@@ -138,10 +134,11 @@ class Artifactory(Base):
     .. _`config file`: https://devopshq.github.io/artifactory/#global-configuration-file
 
     """  # noqa: E501
+
     def __init__(
-            self,
-            host,
-            repository,
+        self,
+        host,
+        repository,
     ):
         super().__init__(host, repository)
 
@@ -154,15 +151,15 @@ class Artifactory(Base):
         self._repo = path.find_repository_local(self.repository)
 
     def _access(
-            self,
+        self,
     ):
         r"""Access existing repository."""
         if self._repo is None:
             utils.raise_file_not_found_error(str(self._repo.path))
 
     def _checksum(
-            self,
-            path: str,
+        self,
+        path: str,
     ) -> str:
         r"""MD5 checksum of file on backend."""
         path = self._path(path)
@@ -170,8 +167,8 @@ class Artifactory(Base):
         return checksum
 
     def _collapse(
-            self,
-            path,
+        self,
+        path,
     ):
         r"""Convert to virtual path.
 
@@ -180,15 +177,15 @@ class Artifactory(Base):
         /<path>
 
         """
-        path = path[len(str(self._repo.path)) - 1:]
-        path = path.replace('/', self.sep)
+        path = path[len(str(self._repo.path)) - 1 :]
+        path = path.replace("/", self.sep)
         return path
 
     def _copy_file(
-            self,
-            src_path: str,
-            dst_path: str,
-            verbose: bool,
+        self,
+        src_path: str,
+        dst_path: str,
+        verbose: bool,
     ):
         r"""Copy file on backend."""
         src_path = self._path(src_path)
@@ -198,7 +195,7 @@ class Artifactory(Base):
         src_path.copy(dst_path)
 
     def _create(
-            self,
+        self,
     ):
         r"""Access existing repository."""
         if self._repo is not None:
@@ -217,8 +214,8 @@ class Artifactory(Base):
         self._repo.create()
 
     def _date(
-            self,
-            path: str,
+        self,
+        path: str,
     ) -> str:
         r"""Get last modification date of file on backend."""
         path = self._path(path)
@@ -227,22 +224,22 @@ class Artifactory(Base):
         return date
 
     def _delete(
-            self,
+        self,
     ):
         r"""Delete repository and all its content."""
         self._repo.delete()
 
     def _exists(
-            self,
-            path: str,
+        self,
+        path: str,
     ) -> bool:
         r"""Check if file exists on backend."""
         path = self._path(path)
         return path.exists()
 
     def _expand(
-            self,
-            path: str,
+        self,
+        path: str,
     ) -> str:
         r"""Convert to backend path.
 
@@ -251,25 +248,25 @@ class Artifactory(Base):
         <host>/<repository>/<path>
 
         """
-        path = path.replace(self.sep, '/')
-        if path.startswith('/'):
+        path = path.replace(self.sep, "/")
+        if path.startswith("/"):
             path = path[1:]
-        path = f'{self._repo.path}{path}'
+        path = f"{self._repo.path}{path}"
         return path
 
     def _get_file(
-            self,
-            src_path: str,
-            dst_path: str,
-            verbose: bool,
+        self,
+        src_path: str,
+        dst_path: str,
+        verbose: bool,
     ):
         r"""Get file from backend."""
         src_path = self._path(src_path)
         _download(src_path, dst_path, verbose=verbose)
 
     def _ls(
-            self,
-            path: str,
+        self,
+        path: str,
     ) -> typing.List[str]:
         r"""List all files under sub-path."""
         path = self._path(path)
@@ -282,10 +279,10 @@ class Artifactory(Base):
         return paths
 
     def _move_file(
-            self,
-            src_path: str,
-            dst_path: str,
-            verbose: bool,
+        self,
+        src_path: str,
+        dst_path: str,
+        verbose: bool,
     ):
         r"""Move file on backend."""
         src_path = self._path(src_path)
@@ -295,8 +292,8 @@ class Artifactory(Base):
         src_path.move(dst_path)
 
     def _owner(
-            self,
-            path: str,
+        self,
+        path: str,
     ) -> str:
         r"""Get owner of file on backend."""
         path = self._path(path)
@@ -304,8 +301,8 @@ class Artifactory(Base):
         return owner
 
     def _path(
-            self,
-            path: str,
+        self,
+        path: str,
     ) -> artifactory.ArtifactoryPath:
         r"""Convert to backend path.
 
@@ -323,19 +320,19 @@ class Artifactory(Base):
         return path
 
     def _put_file(
-            self,
-            src_path: str,
-            dst_path: str,
-            checksum: str,
-            verbose: bool,
+        self,
+        src_path: str,
+        dst_path: str,
+        checksum: str,
+        verbose: bool,
     ):
         r"""Put file to backend."""
         dst_path = self._path(dst_path)
         _deploy(src_path, dst_path, checksum, verbose=verbose)
 
     def _remove_file(
-            self,
-            path: str,
+        self,
+        path: str,
     ):
         r"""Remove file from backend."""
         path = self._path(path)

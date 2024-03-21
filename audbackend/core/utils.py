@@ -7,21 +7,21 @@ import typing
 from audbackend.core.errors import BackendError
 
 
-BACKEND_ALLOWED_CHARS = '[A-Za-z0-9/._-]+'
+BACKEND_ALLOWED_CHARS = "[A-Za-z0-9/._-]+"
 BACKEND_ALLOWED_CHARS_COMPILED = re.compile(BACKEND_ALLOWED_CHARS)
 
-BACKEND_SEPARATOR = '/'
+BACKEND_SEPARATOR = "/"
 
-VERSION_ALLOWED_CHARS = BACKEND_ALLOWED_CHARS.replace(BACKEND_SEPARATOR, '')
+VERSION_ALLOWED_CHARS = BACKEND_ALLOWED_CHARS.replace(BACKEND_SEPARATOR, "")
 VERSION_ALLOWED_CHARS_COMPILED = re.compile(VERSION_ALLOWED_CHARS)
 
 
 def call_function_on_backend(
-        function: typing.Callable,
-        *args,
-        suppress_backend_errors: bool = False,
-        fallback_return_value: typing.Any = None,
-        **kwargs,
+    function: typing.Callable,
+    *args,
+    suppress_backend_errors: bool = False,
+    fallback_return_value: typing.Any = None,
+    **kwargs,
 ) -> typing.Any:
     try:
         return function(*args, **kwargs)
@@ -37,8 +37,7 @@ def check_path(path: str) -> str:
     # Assert path starts with sep and does not contain invalid characters.
     if not path.startswith(BACKEND_SEPARATOR):
         raise ValueError(
-            f"Invalid backend path '{path}', "
-            f"must start with '{BACKEND_SEPARATOR}'."
+            f"Invalid backend path '{path}', " f"must start with '{BACKEND_SEPARATOR}'."
         )
     if path and BACKEND_ALLOWED_CHARS_COMPILED.fullmatch(path) is None:
         raise ValueError(
@@ -61,7 +60,7 @@ def check_version(version: str) -> str:
     r"""Check version."""
     # Assert version is not empty and does not contain invalid characters.
     if not version:
-        raise ValueError('Version must not be empty.')
+        raise ValueError("Version must not be empty.")
     if VERSION_ALLOWED_CHARS_COMPILED.fullmatch(version) is None:
         raise ValueError(
             f"Invalid version '{version}', "
@@ -72,14 +71,14 @@ def check_version(version: str) -> str:
 
 
 def date_format(date: datetime.datetime) -> str:
-    return date.strftime('%Y-%m-%d')
+    return date.strftime("%Y-%m-%d")
 
 
 def file_owner(path: str) -> str:
     r"""Get file owner."""
-    if os.name == 'nt':  # pragma: no cover
-
+    if os.name == "nt":  # pragma: no cover
         import win32security
+
         sd = win32security.GetFileSecurity(
             path,
             win32security.OWNER_SECURITY_INFORMATION,
@@ -88,8 +87,8 @@ def file_owner(path: str) -> str:
         owner, _, _ = win32security.LookupAccountSid(None, owner_sid)
 
     else:  # pragma: no Windows cover
-
         import pwd
+
         owner = pwd.getpwuid(os.stat(path).st_uid).pw_name
 
     return owner
