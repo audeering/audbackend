@@ -59,7 +59,7 @@ Version 1.0.0 (2023-10-16)
   to
   ``/sub/1.0.0/file.txt``
 * Changed: remove ``ext`` argument
-* Changed: path on backend must start with ``'/'``
+* Changed: path on backend must start with ``"/"``
 * Changed: version must be non-empty and may not contain invalid characters
 * Changed: option to install only specific backends
   and their dependencies
