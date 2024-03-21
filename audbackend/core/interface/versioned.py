@@ -19,8 +19,8 @@ class Versioned(Base):
     """
 
     def __init__(
-            self,
-            backend: Backend,
+        self,
+        backend: Backend,
     ):
         super().__init__(backend)
 
@@ -31,9 +31,9 @@ class Versioned(Base):
         self._legacy_file_structure_regex = False
 
     def checksum(
-            self,
-            path: str,
-            version: str,
+        self,
+        path: str,
+        version: str,
     ) -> str:
         r"""MD5 checksum for file on backend.
 
@@ -53,7 +53,7 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
-            >>> versioned.checksum('/f.ext', '1.0.0')
+            >>> versioned.checksum("/f.ext", "1.0.0")
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
@@ -61,13 +61,13 @@ class Versioned(Base):
         return self.backend.checksum(path_with_version)
 
     def copy_file(
-            self,
-            src_path: str,
-            dst_path: str,
-            *,
-            version: str = None,
-            validate: bool = False,
-            verbose: bool = False,
+        self,
+        src_path: str,
+        dst_path: str,
+        *,
+        version: str = None,
+        validate: bool = False,
+        verbose: bool = False,
     ):
         r"""Copy file on backend.
 
@@ -97,10 +97,10 @@ class Versioned(Base):
             verbose: show debug messages
 
         Examples:
-            >>> versioned.exists('/copy.ext', '1.0.0')
+            >>> versioned.exists("/copy.ext", "1.0.0")
             False
-            >>> versioned.copy_file('/f.ext', '/copy.ext', version='1.0.0')
-            >>> versioned.exists('/copy.ext', '1.0.0')
+            >>> versioned.copy_file("/f.ext", "/copy.ext", version="1.0.0")
+            >>> versioned.exists("/copy.ext", "1.0.0")
             True
 
         Raises:
@@ -129,9 +129,9 @@ class Versioned(Base):
             )
 
     def date(
-            self,
-            path: str,
-            version: str,
+        self,
+        path: str,
+        version: str,
     ) -> str:
         r"""Last modification date of file on backend.
 
@@ -154,7 +154,7 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
-              >>> versioned.date('/f.ext', '1.0.0')
+              >>> versioned.date("/f.ext", "1.0.0")
               '1991-02-20'
 
         """
@@ -162,11 +162,11 @@ class Versioned(Base):
         return self.backend.date(path_with_version)
 
     def exists(
-            self,
-            path: str,
-            version: str,
-            *,
-            suppress_backend_errors: bool = False,
+        self,
+        path: str,
+        version: str,
+        *,
+        suppress_backend_errors: bool = False,
     ) -> bool:
         r"""Check if file exists on backend.
 
@@ -190,7 +190,7 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
-            >>> versioned.exists('/f.ext', '1.0.0')
+            >>> versioned.exists("/f.ext", "1.0.0")
             True
 
         """
@@ -201,14 +201,14 @@ class Versioned(Base):
         )
 
     def get_archive(
-            self,
-            src_path: str,
-            dst_root: str,
-            version: str,
-            *,
-            tmp_root: str = None,
-            validate: bool = False,
-            verbose: bool = False,
+        self,
+        src_path: str,
+        dst_root: str,
+        version: str,
+        *,
+        tmp_root: str = None,
+        validate: bool = False,
+        verbose: bool = False,
     ) -> typing.List[str]:
         r"""Get archive from backend and extract.
 
@@ -255,7 +255,7 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
-            >>> versioned.get_archive('/a.zip', '.', '1.0.0')
+            >>> versioned.get_archive("/a.zip", ".", "1.0.0")
             ['src.pth']
 
         """
@@ -269,13 +269,13 @@ class Versioned(Base):
         )
 
     def get_file(
-            self,
-            src_path: str,
-            dst_path: str,
-            version: str,
-            *,
-            validate: bool = False,
-            verbose: bool = False,
+        self,
+        src_path: str,
+        dst_path: str,
+        version: str,
+        *,
+        validate: bool = False,
+        verbose: bool = False,
     ) -> str:
         r"""Get file from backend.
 
@@ -321,10 +321,10 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
-            >>> os.path.exists('dst.pth')
+            >>> os.path.exists("dst.pth")
             False
-            >>> _ = versioned.get_file('/f.ext', 'dst.pth', '1.0.0')
-            >>> os.path.exists('dst.pth')
+            >>> _ = versioned.get_file("/f.ext", "dst.pth", "1.0.0")
+            >>> os.path.exists("dst.pth")
             True
 
         """
@@ -337,8 +337,8 @@ class Versioned(Base):
         )
 
     def latest_version(
-            self,
-            path: str,
+        self,
+        path: str,
     ) -> str:
         r"""Latest version of a file.
 
@@ -355,7 +355,7 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-            >>> versioned.latest_version('/f.ext')
+            >>> versioned.latest_version("/f.ext")
             '2.0.0'
 
         """
@@ -363,12 +363,12 @@ class Versioned(Base):
         return vs[-1]
 
     def ls(
-            self,
-            path: str = '/',
-            *,
-            latest_version: bool = False,
-            pattern: str = None,
-            suppress_backend_errors: bool = False,
+        self,
+        path: str = "/",
+        *,
+        latest_version: bool = False,
+        pattern: str = None,
+        suppress_backend_errors: bool = False,
     ) -> typing.List[typing.Tuple[str, str]]:
         r"""List files on backend.
 
@@ -415,18 +415,17 @@ class Versioned(Base):
             [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
             >>> versioned.ls(latest_version=True)
             [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> versioned.ls('/f.ext')
+            >>> versioned.ls("/f.ext")
             [('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> versioned.ls(pattern='*.ext')
+            >>> versioned.ls(pattern="*.ext")
             [('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> versioned.ls(pattern='b.*')
+            >>> versioned.ls(pattern="b.*")
             [('/a/b.ext', '1.0.0')]
-            >>> versioned.ls('/a/')
+            >>> versioned.ls("/a/")
             [('/a/b.ext', '1.0.0')]
 
         """  # noqa: E501
-        if path.endswith('/'):  # find files under sub-path
-
+        if path.endswith("/"):  # find files under sub-path
             paths = self.backend.ls(
                 path,
                 pattern=pattern,
@@ -434,7 +433,6 @@ class Versioned(Base):
             )
 
         else:  # find versions of path
-
             root, file = self.split(path)
 
             paths = self.backend.ls(
@@ -445,24 +443,20 @@ class Versioned(Base):
 
             # filter for '/root/version/file'
             if self._legacy_file_structure:
-                depth = root.count('/') + 2
+                depth = root.count("/") + 2
                 name, ext = self._legacy_split_ext(file)
-                match = re.compile(rf'{name}-\d+\.\d+.\d+{ext}')
+                match = re.compile(rf"{name}-\d+\.\d+.\d+{ext}")
                 paths = [
-                    p for p in paths
-                    if (
-                            p.count('/') == depth and
-                            match.match(os.path.basename(p))
-                    )
+                    p
+                    for p in paths
+                    if (p.count("/") == depth and match.match(os.path.basename(p)))
                 ]
             else:
-                depth = root.count('/') + 1
+                depth = root.count("/") + 1
                 paths = [
-                    p for p in paths
-                    if (
-                            p.count('/') == depth and
-                            os.path.basename(p) == file
-                    )
+                    p
+                    for p in paths
+                    if (p.count("/") == depth and os.path.basename(p) == file)
                 ]
 
             if not paths and not suppress_backend_errors:
@@ -479,18 +473,16 @@ class Versioned(Base):
 
         paths_and_versions = []
         for p in paths:
-
             tokens = p.split(self.sep)
 
             name = tokens[-1]
             version = tokens[-2]
 
             if version:
-
                 if self._legacy_file_structure:
                     base = tokens[-3]
-                    ext = name[len(base) + len(version) + 1:]
-                    name = f'{base}{ext}'
+                    ext = name[len(base) + len(version) + 1 :]
+                    name = f"{base}{ext}"
                     path = self.sep.join(tokens[:-3])
                 else:
                     path = self.sep.join(tokens[:-2])
@@ -518,13 +510,13 @@ class Versioned(Base):
         return paths_and_versions
 
     def move_file(
-            self,
-            src_path: str,
-            dst_path: str,
-            *,
-            version: str = None,
-            validate: bool = False,
-            verbose: bool = False,
+        self,
+        src_path: str,
+        dst_path: str,
+        *,
+        version: str = None,
+        validate: bool = False,
+        verbose: bool = False,
     ):
         r"""Move file on backend.
 
@@ -567,12 +559,12 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
-            >>> versioned.exists('/move.ext', '1.0.0')
+            >>> versioned.exists("/move.ext", "1.0.0")
             False
-            >>> versioned.move_file('/f.ext', '/move.ext', version='1.0.0')
-            >>> versioned.exists('/move.ext', '1.0.0')
+            >>> versioned.move_file("/f.ext", "/move.ext", version="1.0.0")
+            >>> versioned.exists("/move.ext", "1.0.0")
             True
-            >>> versioned.exists('/f.ext', '1.0.0')
+            >>> versioned.exists("/f.ext", "1.0.0")
             False
 
         """
@@ -592,9 +584,9 @@ class Versioned(Base):
             )
 
     def owner(
-            self,
-            path: str,
-            version: str,
+        self,
+        path: str,
+        version: str,
     ) -> str:
         r"""Owner of file on backend.
 
@@ -618,7 +610,7 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
-              >>> versioned.owner('/f.ext', '1.0.0')
+              >>> versioned.owner("/f.ext", "1.0.0")
               'doctest'
 
         """
@@ -626,15 +618,15 @@ class Versioned(Base):
         return self.backend.owner(path_with_version)
 
     def put_archive(
-            self,
-            src_root: str,
-            dst_path: str,
-            version: str,
-            *,
-            files: typing.Union[str, typing.Sequence[str]] = None,
-            tmp_root: str = None,
-            validate: bool = False,
-            verbose: bool = False,
+        self,
+        src_root: str,
+        dst_path: str,
+        version: str,
+        *,
+        files: typing.Union[str, typing.Sequence[str]] = None,
+        tmp_root: str = None,
+        validate: bool = False,
+        verbose: bool = False,
     ):
         r"""Create archive and put on backend.
 
@@ -685,10 +677,10 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
-            >>> versioned.exists('/a.tar.gz', '1.0.0')
+            >>> versioned.exists("/a.tar.gz", "1.0.0")
             False
-            >>> versioned.put_archive('.', '/a.tar.gz', '1.0.0')
-            >>> versioned.exists('/a.tar.gz', '1.0.0')
+            >>> versioned.put_archive(".", "/a.tar.gz", "1.0.0")
+            >>> versioned.exists("/a.tar.gz", "1.0.0")
             True
 
         """
@@ -703,13 +695,13 @@ class Versioned(Base):
         )
 
     def put_file(
-            self,
-            src_path: str,
-            dst_path: str,
-            version: str,
-            *,
-            validate: bool = False,
-            verbose: bool = False,
+        self,
+        src_path: str,
+        dst_path: str,
+        version: str,
+        *,
+        validate: bool = False,
+        verbose: bool = False,
     ):
         r"""Put file on backend.
 
@@ -747,10 +739,10 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
-            >>> versioned.exists('/sub/f.ext', '3.0.0')
+            >>> versioned.exists("/sub/f.ext", "3.0.0")
             False
-            >>> versioned.put_file('src.pth', '/sub/f.ext', '3.0.0')
-            >>> versioned.exists('/sub/f.ext', '3.0.0')
+            >>> versioned.put_file("src.pth", "/sub/f.ext", "3.0.0")
+            >>> versioned.exists("/sub/f.ext", "3.0.0")
             True
 
         """
@@ -763,9 +755,9 @@ class Versioned(Base):
         )
 
     def remove_file(
-            self,
-            path: str,
-            version: str,
+        self,
+        path: str,
+        version: str,
     ):
         r"""Remove file from backend.
 
@@ -782,10 +774,10 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         Examples:
-            >>> versioned.exists('/f.ext', '1.0.0')
+            >>> versioned.exists("/f.ext", "1.0.0")
             True
-            >>> versioned.remove_file('/f.ext', '1.0.0')
-            >>> versioned.exists('/f.ext', '1.0.0')
+            >>> versioned.remove_file("/f.ext", "1.0.0")
+            >>> versioned.exists("/f.ext", "1.0.0")
             False
 
         """
@@ -793,10 +785,10 @@ class Versioned(Base):
         self.backend.remove_file(path_with_version)
 
     def versions(
-            self,
-            path: str,
-            *,
-            suppress_backend_errors: bool = False,
+        self,
+        path: str,
+        *,
+        suppress_backend_errors: bool = False,
     ) -> typing.List[str]:
         r"""Versions of a file.
 
@@ -817,7 +809,7 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-            >>> versioned.versions('/f.ext')
+            >>> versioned.versions("/f.ext")
             ['1.0.0', '2.0.0']
 
         """
@@ -826,8 +818,8 @@ class Versioned(Base):
         return vs
 
     def _legacy_split_ext(
-            self,
-            name: str,
+        self,
+        name: str,
     ) -> typing.Tuple[str, str]:
         r"""Split name into basename and extension."""
         ext = None
@@ -835,28 +827,28 @@ class Versioned(Base):
             # check for custom extension
             # ensure basename is not empty
             if self._legacy_file_structure_regex:
-                pattern = rf'\.({custom_ext})$'
+                pattern = rf"\.({custom_ext})$"
                 match = re.search(pattern, name[1:])
                 if match:
                     ext = match.group(1)
-            elif name[1:].endswith(f'.{custom_ext}'):
+            elif name[1:].endswith(f".{custom_ext}"):
                 ext = custom_ext
         if ext is None:
             # if no custom extension is found
             # use last string after dot
             ext = audeer.file_extension(name)
 
-        base = audeer.replace_file_extension(name, '', ext=ext)
+        base = audeer.replace_file_extension(name, "", ext=ext)
 
         if ext:
-            ext = f'.{ext}'
+            ext = f".{ext}"
 
         return base, ext
 
     def _path_with_version(
-            self,
-            path: str,
-            version: str,
+        self,
+        path: str,
+        version: str,
     ) -> str:
         r"""Convert to versioned path.
 
@@ -877,17 +869,17 @@ class Versioned(Base):
 
         if self._legacy_file_structure:
             base, ext = self._legacy_split_ext(name)
-            path = self.join(root, base, version, f'{base}-{version}{ext}')
+            path = self.join(root, base, version, f"{base}-{version}{ext}")
         else:
             path = self.join(root, version, name)
 
         return path
 
     def _use_legacy_file_structure(
-            self,
-            *,
-            extensions: typing.List[str] = None,
-            regex: bool = False,
+        self,
+        *,
+        extensions: typing.List[str] = None,
+        regex: bool = False,
     ):
         r"""Use legacy file structure.
 

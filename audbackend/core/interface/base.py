@@ -19,15 +19,16 @@ class Base:
         backend: backend object
 
     """
+
     def __init__(
-            self,
-            backend: Backend,
+        self,
+        backend: Backend,
     ):
         self._backend = backend
 
     def __repr__(self) -> str:  # noqa: D105
-        name = f'{self.__class__.__module__}.{self.__class__.__name__}'
-        return f'{name}{self.backend}'
+        name = f"{self.__class__.__module__}.{self.__class__.__name__}"
+        return f"{name}{self.backend}"
 
     @property
     def backend(self) -> Backend:
@@ -57,9 +58,9 @@ class Base:
         return self.backend.host
 
     def join(
-            self,
-            path: str,
-            *paths,
+        self,
+        path: str,
+        *paths,
     ) -> str:
         r"""Join to path on backend.
 
@@ -76,11 +77,11 @@ class Base:
                 or if joined path contains invalid character
 
         Examples:
-            >>> interface.join('/', 'f.ext')
+            >>> interface.join("/", "f.ext")
             '/f.ext'
-            >>> interface.join('/sub', 'f.ext')
+            >>> interface.join("/sub", "f.ext")
             '/sub/f.ext'
-            >>> interface.join('//sub//', '/', '', None, '/f.ext')
+            >>> interface.join("//sub//", "/", "", None, "/f.ext")
             '/sub/f.ext'
 
         """
@@ -115,8 +116,8 @@ class Base:
         return self.backend.sep
 
     def split(
-            self,
-            path: str,
+        self,
+        path: str,
     ) -> typing.Tuple[str, str]:
         r"""Split path on backend into sub-path and basename.
 
@@ -131,13 +132,13 @@ class Base:
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
-            >>> interface.split('/')
+            >>> interface.split("/")
             ('/', '')
-            >>> interface.split('/f.ext')
+            >>> interface.split("/f.ext")
             ('/', 'f.ext')
-            >>> interface.split('/sub/')
+            >>> interface.split("/sub/")
             ('/sub/', '')
-            >>> interface.split('/sub//f.ext')
+            >>> interface.split("/sub//f.ext")
             ('/sub/', 'f.ext')
 
         """
