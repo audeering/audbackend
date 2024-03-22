@@ -24,12 +24,6 @@ class Versioned(Base):
     ):
         super().__init__(backend)
 
-        # to support legacy file structure
-        # see _use_legacy_file_structure()
-        self._legacy_extensions = []
-        self._legacy_file_structure = False
-        self._legacy_file_structure_regex = False
-
     def checksum(
         self,
         path: str,
@@ -442,22 +436,12 @@ class Versioned(Base):
             )
 
             # filter for '/root/version/file'
-            if self._legacy_file_structure:
-                depth = root.count("/") + 2
-                name, ext = self._legacy_split_ext(file)
-                match = re.compile(rf"{name}-\d+\.\d+.\d+{ext}")
-                paths = [
-                    p
-                    for p in paths
-                    if (p.count("/") == depth and match.match(os.path.basename(p)))
-                ]
-            else:
-                depth = root.count("/") + 1
-                paths = [
-                    p
-                    for p in paths
-                    if (p.count("/") == depth and os.path.basename(p) == file)
-                ]
+            depth = root.count("/") + 1
+            paths = [
+                p
+                for p in paths
+                if (p.count("/") == depth and os.path.basename(p) == file)
+            ]
 
             if not paths and not suppress_backend_errors:
                 # since the backend does no longer raise an error
@@ -479,17 +463,9 @@ class Versioned(Base):
             version = tokens[-2]
 
             if version:
-                if self._legacy_file_structure:
-                    base = tokens[-3]
-                    ext = name[len(base) + len(version) + 1 :]
-                    name = f"{base}{ext}"
-                    path = self.sep.join(tokens[:-3])
-                else:
-                    path = self.sep.join(tokens[:-2])
-
+                path = self.sep.join(tokens[:-2])
                 path = self.sep + path
                 path = self.join(path, name)
-
                 paths_and_versions.append((path, version))
 
         paths_and_versions = sorted(paths_and_versions)
@@ -817,34 +793,6 @@ class Versioned(Base):
         vs = [v for _, v in paths]
         return vs
 
-    def _legacy_split_ext(
-        self,
-        name: str,
-    ) -> typing.Tuple[str, str]:
-        r"""Split name into basename and extension."""
-        ext = None
-        for custom_ext in self._legacy_extensions:
-            # check for custom extension
-            # ensure basename is not empty
-            if self._legacy_file_structure_regex:
-                pattern = rf"\.({custom_ext})$"
-                match = re.search(pattern, name[1:])
-                if match:
-                    ext = match.group(1)
-            elif name[1:].endswith(f".{custom_ext}"):
-                ext = custom_ext
-        if ext is None:
-            # if no custom extension is found
-            # use last string after dot
-            ext = audeer.file_extension(name)
-
-        base = audeer.replace_file_extension(name, "", ext=ext)
-
-        if ext:
-            ext = f".{ext}"
-
-        return base, ext
-
     def _path_with_version(
         self,
         path: str,
@@ -856,73 +804,8 @@ class Versioned(Base):
         ->
         <root>/<version>/<base><ext>
 
-        or legacy:
-
-        <root>/<base><ext>
-        ->
-        <root>/<base>/<version>/<base>-<version><ext>
-
         """
         version = utils.check_version(version)
-
         root, name = self.split(path)
-
-        if self._legacy_file_structure:
-            base, ext = self._legacy_split_ext(name)
-            path = self.join(root, base, version, f"{base}-{version}{ext}")
-        else:
-            path = self.join(root, version, name)
-
+        path = self.join(root, version, name)
         return path
-
-    def _use_legacy_file_structure(
-        self,
-        *,
-        extensions: typing.List[str] = None,
-        regex: bool = False,
-    ):
-        r"""Use legacy file structure.
-
-        Stores files under
-        ``'.../<name-wo-ext>/<version>/<name-wo-ext>-<version>.<ext>'``
-        instead of
-        ``'.../<version>/<name>'``.
-        By default,
-        the extension
-        ``<ext>``
-        is set to the string after the last dot.
-        I.e.,
-        the backend path
-        ``'.../file.tar.gz'``
-        will translate into
-        ``'.../file.tar/1.0.0/file.tar-1.0.0.gz'``.
-        However,
-        by passing a list with custom extensions
-        it is possible to overwrite
-        the default behavior
-        for certain extensions.
-        E.g.,
-        with
-        ``backend._use_legacy_file_structure(extensions=['tar.gz'])``
-        it is ensured that
-        ``'tar.gz'``
-        will be recognized as an extension
-        and the backend path
-        ``'.../file.tar.gz'``
-        will then translate into
-        ``'.../file/1.0.0/file-1.0.0.tar.gz'``.
-        If ``regex`` is set to ``True``,
-        the extensions are treated as regular expressions.
-        E.g.
-        with
-        ``backend._use_legacy_file_structure(extensions=['\d+.tar.gz'],
-        regex=True)``
-        the backend path
-        ``'.../file.99.tar.gz'``
-        will translate into
-        ``'.../file/1.0.0/file-1.0.0.99.tar.gz'``.
-
-        """
-        self._legacy_file_structure = True
-        self._legacy_extensions = extensions or []
-        self._legacy_file_structure_regex = regex
