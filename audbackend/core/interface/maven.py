@@ -59,7 +59,7 @@ class Maven(Versioned):
             are treated as regular expressions.
             E.g. ``"\d+.tar.gz"`` will match
             ``"1.tar.gz"``,
-            ``"1.tar.gz"``,
+            ``"2.tar.gz"``,
             ...
             as extensions
 
