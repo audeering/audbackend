@@ -12,6 +12,7 @@ can use the following interfaces:
     :toctree:
     :nosignatures:
 
+    Maven
     Unversioned
     Versioned
 
