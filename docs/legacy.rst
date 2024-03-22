@@ -15,7 +15,7 @@
 Legacy backends
 ===============
 
-The file structure on the backend
+The default file structure on the backend
 has changed with version 1.0.0.
 
 Before,
@@ -34,9 +34,7 @@ Now it is stored under
     /sub/1.0.0/file.txt
 
 To force the old file structure
-call the hidden method
-``_use_legacy_file_structure()``
-after instantiating the backend.
+use the :class:`audbackend.interface.Maven` interface.
 We recommend this 
 for existing repositories
 that store files
