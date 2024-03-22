@@ -137,19 +137,12 @@ def test_errors(tmpdir, interface):
 
 @pytest.mark.parametrize(
     "interface",
-    [("artifactory", audbackend.interface.Versioned)],
+    [("artifactory", audbackend.interface.Maven)],
     indirect=True,
 )
 @pytest.mark.parametrize(
     "file, version, extensions, regex, expected",
     [
-        (
-            "/file.tar.gz",
-            "1.0.0",
-            None,
-            False,
-            "file.tar/1.0.0/file.tar-1.0.0.gz",
-        ),
         (
             "/file.tar.gz",
             "1.0.0",
@@ -181,21 +174,21 @@ def test_errors(tmpdir, interface):
         (
             "/.tar.gz",
             "1.0.0",
-            None,
+            [],
             False,
             ".tar/1.0.0/.tar-1.0.0.gz",
         ),
         (
             "/.tar",
             "1.0.0",
-            None,
+            [],
             False,
             ".tar/1.0.0/.tar-1.0.0",
         ),
         (
             "/tar",
             "1.0.0",
-            None,
+            [],
             False,
             "tar/1.0.0/tar-1.0.0",
         ),
@@ -251,10 +244,11 @@ def test_errors(tmpdir, interface):
         ),
     ],
 )
-def test_legacy_file_structure(
+def test_maven_file_structure(
     tmpdir, interface, file, version, extensions, regex, expected
 ):
-    interface._use_legacy_file_structure(extensions=extensions, regex=regex)
+    interface.extensions = extensions
+    interface.regex = regex
 
     src_path = audeer.touch(audeer.path(tmpdir, "tmp"))
     interface.put_file(src_path, file, version)
