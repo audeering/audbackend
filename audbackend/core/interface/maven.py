@@ -1,3 +1,4 @@
+import fnmatch
 import os
 import re
 import typing
@@ -141,17 +142,14 @@ class Maven(Versioned):
         if path.endswith("/"):  # find files under sub-path
             paths = self.backend.ls(
                 path,
-                pattern=pattern,
                 suppress_backend_errors=suppress_backend_errors,
             )
-            print(f"{paths=}")
 
         else:  # find versions of path
             root, file = self.split(path)
 
             paths = self.backend.ls(
                 root,
-                pattern=pattern,
                 suppress_backend_errors=suppress_backend_errors,
             )
 
@@ -193,7 +191,8 @@ class Maven(Versioned):
                 path = self.sep + path
                 path = self.join(path, name)
 
-                paths_and_versions.append((path, version))
+                if not pattern or fnmatch.fnmatch(os.path.basename(path), pattern):
+                    paths_and_versions.append((path, version))
 
         paths_and_versions = sorted(paths_and_versions)
 

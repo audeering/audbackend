@@ -80,6 +80,10 @@ def test_ls(tmpdir, interface):
         ("/file.bar", True, None, root_bar_latest),
         ("/sub/file.foo", False, None, sub),
         ("/sub/file.foo", True, None, sub_latest),
+        ("/sub/file.foo", False, "file.*", sub),
+        ("/sub/file.foo", True, "file.*", sub_latest),
+        ("/sub/file.foo", False, "*.bar", []),
+        ("/sub/file.foo", True, "*.bar", []),
         ("/.sub/.file.foo", False, None, hidden),
         ("/.sub/.file.foo", True, None, hidden_latest),
     ]:
