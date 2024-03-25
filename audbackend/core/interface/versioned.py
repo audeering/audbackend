@@ -1,3 +1,4 @@
+import fnmatch
 import os
 import typing
 
@@ -421,7 +422,6 @@ class Versioned(Base):
         if path.endswith("/"):  # find files under sub-path
             paths = self.backend.ls(
                 path,
-                pattern=pattern,
                 suppress_backend_errors=suppress_backend_errors,
             )
 
@@ -430,7 +430,6 @@ class Versioned(Base):
 
             paths = self.backend.ls(
                 root,
-                pattern=pattern,
                 suppress_backend_errors=suppress_backend_errors,
             )
 
@@ -450,6 +449,9 @@ class Versioned(Base):
                     utils.raise_file_not_found_error(path)
                 except FileNotFoundError as ex:
                     raise BackendError(ex)
+
+        if pattern:
+            paths = [p for p in paths if fnmatch.fnmatch(os.path.basename(p), pattern)]
 
         if not paths:
             return []
