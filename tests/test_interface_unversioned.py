@@ -581,6 +581,8 @@ def test_ls(tmpdir, interface):
         ("/.sub/", None, hidden),
         ("/file.bar", None, root_bar),
         ("/sub/file.foo", None, sub),
+        ("/sub/file.foo", "file.*", sub),
+        ("/sub/file.foo", "*.bar", []),
         ("/.sub/.file.foo", None, hidden),
     ]:
         assert interface.ls(
