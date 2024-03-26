@@ -28,13 +28,6 @@ and presented to the user.
 In addition,
 :mod:`audbackend` supports different storage systems,
 so called :ref:`backends <backends>`.
-The names of all available backends can be listed by:
-
-.. jupyter-execute::
-
-    import audbackend
-
-    list(audbackend.available())
 
 
 .. _unversioned-data-on-a-file-system:
@@ -44,27 +37,27 @@ Unversioned data on a file system
 
 To store data on a backend
 we need to create a repository first.
-We select the ``"file-system"`` backend.
+We select the :class:`audbackend.backend.FileSystem` backend.
 
 .. jupyter-execute::
     :hide-output:
 
-    audbackend.create("file-system", "./host", "repo")
+    import audbackend
+
+    backend = audbackend.backend.FileSystem.create("./host", "repo")
 
 Once we have an existing repository,
-we can access it with :func:`audbackend.access`.
-We use the :class:`audbackend.interface.Unversioned` interface.
+we can access it by instantiating the backend class.
+In addition,
+we use :class:`audbackend.interface.Unversioned`
+as an interface to the backend.
 It does not support versioning,
 i.e. exactly one file exists for a backend path.
 
 .. jupyter-execute::
 
-    interface = audbackend.access(
-        "file-system",
-        "./host",
-        "repo",
-        interface=audbackend.interface.Unversioned,
-    )
+    backend = audbackend.backend.FileSystem("./host", "repo")
+    interface = audbackend.interface.Unversioned(backend)
 
 Now we can upload our first file to the repository.
 Note,
@@ -184,7 +177,7 @@ with all its content.
 
 .. jupyter-execute::
 
-    audbackend.delete("file-system", "host", "repo")
+    audbackend.backend.FileSystem.delete("host", "repo")
 
 
 If we now try to access the repository,
@@ -197,7 +190,7 @@ exception thrown by the backend.
 .. jupyter-execute::
 
     try:
-        audbackend.access("file-system", "host", "repo")
+        audbackend.backend.FileSystem("host", "repo")
     except audbackend.BackendError as ex:
         display(str(ex.exception))
 
@@ -209,20 +202,15 @@ Versioned data on a file system
 -------------------------------
 
 We start by creating a repository
-on the ``"file-system"`` backend.
+on the :class:`audbackend.backend.FileSystem` backend.
 This time we access it
 with the :class:`audbackend.interface.Versioned` interface
 (which is also used by default).
 
 .. jupyter-execute::
 
-    audbackend.create("file-system", "./host", "repo")
-    interface = audbackend.access(
-        "file-system",
-        "./host",
-        "repo",
-        interface=audbackend.interface.Versioned,
-    )
+    backend = audbackend.backend.FileSystem.create("./host", "repo")
+    interface = audbackend.interface.Versioned(backend)
 
 We then upload a file
 and assign version ``"1.0.0"`` to it.
