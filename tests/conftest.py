@@ -11,14 +11,6 @@ import audeer
 import audbackend
 
 
-# list of backends to test
-pytest.BACKENDS = [
-    "artifactory",
-    "file-system",
-    "single-folder",
-]
-
-
 # UID for test session
 # Repositories on the host will be named
 # unittest-<session-uid>-<repository-uid>
@@ -38,28 +30,17 @@ def hosts(tmpdir_factory):
         "artifactory": "https://audeering.jfrog.io/artifactory",
         "file-system": str(tmpdir_factory.mktemp("host")),
         "single-folder": str(tmpdir_factory.mktemp("host")),
-        # For tests using backend classes
-        audbackend.backend.Artifactory: "https://audeering.jfrog.io/artifactory",
-        audbackend.backend.FileSystem: str(tmpdir_factory.mktemp("host")),
-        SingleFolder: str(tmpdir_factory.mktemp("host")),
-        BadFileSystem: str(tmpdir_factory.mktemp("host")),
-    }
-
-
-@pytest.fixture(scope="package", autouse=False)
-def backends():
-    return {
-        "artifactory": audbackend.backend.Artifactory,
-        "file-system": audbackend.backend.FileSystem,
-        "single-folder": SingleFolder,
     }
 
 
 @pytest.fixture(scope="function", autouse=False)
 def owner(request):
     r"""Return expected owner value."""
-    backend = request.param
-    if backend == audbackend.backend.Artifactory:
+    backend_cls = request.param
+    if (
+            hasattr(audbackend.backend, "Artifactory")
+            and backend_cls == audbackend.backend.Artifactory
+    ):
         owner = audbackend.core.backend.artifactory._authentication(
             "audeering.jfrog.io/artifactory"
         )[0]
@@ -73,7 +54,7 @@ def owner(request):
 
 
 @pytest.fixture(scope="function", autouse=False)
-def interface(hosts, request):
+def interface(tmpdir_factory, request):
     r"""Create a backend with interface.
 
     This fixture should be called indirectly
@@ -93,7 +74,13 @@ def interface(hosts, request):
 
     """
     backend_cls, interface_cls = request.param
-    host = hosts[backend_cls]
+    if (
+            hasattr(audbackend.backend, "Artifactory")
+            and backend_cls == audbackend.backend.Artifactory
+    ):
+        host = "https://audeering.jfrog.io/artifactory"
+    else:
+        host = str(tmpdir_factory.mktemp("host"))
     repository = f"unittest-{pytest.UID}-{audeer.uid()[:8]}"
 
     backend = backend_cls.create(host, repository)
