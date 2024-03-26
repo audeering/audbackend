@@ -9,6 +9,11 @@ from audbackend.core import utils
 from audbackend.core.errors import BackendError
 
 
+# Backend type to annotate Backend.create().
+# From Python 3.11 on we can use typing.Self instead.
+# See https://stackoverflow.com/a/71118499
+Backend = typing.TypeVar("Backend", bound="Base")
+
 class Base:
     r"""Backend base class.
 
@@ -211,7 +216,7 @@ class Base:
         cls,
         host: str,
         repository: str,
-    ) -> "Backend":
+    ) -> Backend:
         r"""Create repository.
 
         Creates ``repository``
