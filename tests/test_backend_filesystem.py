@@ -6,34 +6,15 @@ import audeer
 
 import audbackend
 
-
-class BadFileSystem(audbackend.backend.FileSystem):
-    r"""Imitates a corrupted file system."""
-
-    def _get_file(
-        self,
-        src_path: str,
-        dst_path: str,
-        verbose: bool,
-    ):
-        super()._get_file(src_path, dst_path, verbose)
-        # raise error after file was retrieved
-        raise InterruptedError()
-
-
-@pytest.fixture(scope="function", autouse=False)
-def bad_file_system():
-    audbackend.register("file-system", BadFileSystem)
-    yield
-    audbackend.register("file-system", audbackend.backend.FileSystem)
+from bad_file_system import BadFileSystem
 
 
 @pytest.mark.parametrize(
     "interface",
-    [("file-system", audbackend.interface.Versioned)],
+    [(BadFileSystem, audbackend.interface.Versioned)],
     indirect=True,
 )
-def test_get_file_interrupt(tmpdir, bad_file_system, interface):
+def test_get_file_interrupt(tmpdir, interface):
     src_path = audeer.path(tmpdir, "~tmp")
 
     # put local file on backend
@@ -56,7 +37,7 @@ def test_get_file_interrupt(tmpdir, bad_file_system, interface):
 
 @pytest.mark.parametrize(
     "interface",
-    [("file-system", audbackend.interface.Maven)],
+    [(audbackend.backend.FileSystem, audbackend.interface.Maven)],
     indirect=True,
 )
 @pytest.mark.parametrize(

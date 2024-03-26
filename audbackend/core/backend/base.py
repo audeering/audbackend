@@ -206,6 +206,32 @@ class Base:
         """
         raise NotImplementedError()
 
+    @classmethod
+    def create(
+        cls,
+        host: str,
+        repository: str,
+    ) -> "Backend":
+        r"""Create repository.
+
+        Creates ``repository``
+        located at ``host``
+        on the backend.
+
+        Args:
+            host: host address
+            repository: repository name
+
+        Raises:
+            BackendError: if an error is raised on the backend,
+                e.g. repository exists already
+                or cannot be created
+
+        """
+        backend = cls(host, repository)
+        utils.call_function_on_backend(backend._create)
+        return backend
+
     def _date(
         self,
         path: str,
@@ -251,6 +277,30 @@ class Base:
     ):  # pragma: no cover
         r"""Delete repository and all its content."""
         raise NotImplementedError()
+
+    @classmethod
+    def delete(
+        cls,
+        host: str,
+        repository: str,
+    ):
+        r"""Delete repository.
+
+        Deletes ``repository``
+        located at ``host``
+        on the backend.
+
+        Args:
+            host: host address
+            repository: repository name
+
+        Raises:
+            BackendError: if an error is raised on the backend,
+                e.g. repository does not exist
+
+        """
+        backend = cls(host, repository)
+        utils.call_function_on_backend(backend._delete)
 
     def _exists(
         self,

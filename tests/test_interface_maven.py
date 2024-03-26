@@ -7,11 +7,19 @@ import pytest
 import audeer
 
 import audbackend
+from audbackend.backend import FileSystem
+from audbackend.interface import Maven
+
+from singlefolder import SingleFolder
+
 
 
 @pytest.mark.parametrize(
     "interface",
-    [("file-system", audbackend.interface.Maven)],
+    [
+        (FileSystem, Maven),
+        (SingleFolder, Maven),
+    ],
     indirect=True,
 )
 def test_errors(tmpdir, interface):
@@ -70,7 +78,10 @@ def test_errors(tmpdir, interface):
 
 @pytest.mark.parametrize(
     "interface",
-    [("file-system", audbackend.interface.Maven)],
+    [
+        (FileSystem, Maven),
+        (SingleFolder, Maven),
+    ],
     indirect=True,
 )
 def test_ls(tmpdir, interface):
