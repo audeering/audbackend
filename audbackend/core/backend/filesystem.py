@@ -26,6 +26,7 @@ class FileSystem(Base):
         super().__init__(host, repository)
 
         self._root = audeer.path(host, repository) + os.sep
+        self._access()
 
     def _access(
         self,

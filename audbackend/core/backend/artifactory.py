@@ -149,6 +149,7 @@ class Artifactory(Base):
             self._api_key,
         )
         self._repo = path.find_repository_local(self.repository)
+        self._access()
 
     def _access(
         self,
