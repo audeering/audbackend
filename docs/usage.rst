@@ -180,20 +180,13 @@ with all its content.
     audbackend.backend.FileSystem.delete("host", "repo")
 
 
-If we now try to access the repository,
-an error of type
-:class:`audbackend.BackendError`
-is raised,
-which wraps the original
-exception thrown by the backend.
+We can check if a repository exists
+by inspecting its root path.
 
 .. jupyter-execute::
 
-    try:
-        audbackend.backend.FileSystem("host", "repo")
-    except audbackend.BackendError as ex:
-        display(str(ex.exception))
-
+    backend = audbackend.backend.FileSystem("host", "repo")
+    backend.exists("/")
 
 
 .. _versioned-data-on-a-file-system:

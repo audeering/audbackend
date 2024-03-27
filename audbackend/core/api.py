@@ -3,6 +3,7 @@ import typing
 from audbackend.core import utils
 from audbackend.core.backend.base import Base
 from audbackend.core.backend.filesystem import FileSystem
+from audbackend.core.errors import BackendError
 from audbackend.core.interface.base import Base as Interface
 from audbackend.core.interface.versioned import Versioned
 
@@ -87,7 +88,8 @@ def access(
 
     """  # noqa: E501
     backend = _backend(name, host, repository)
-    utils.call_function_on_backend(backend._access)
+    if not utils.call_function_on_backend(backend._exists, "/"):
+        raise BackendError("Repository does not exists.")
     interface_kwargs = interface_kwargs or {}
     return interface(backend, **interface_kwargs)
 

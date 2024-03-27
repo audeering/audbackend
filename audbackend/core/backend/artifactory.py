@@ -149,14 +149,6 @@ class Artifactory(Base):
             self._api_key,
         )
         self._repo = path.find_repository_local(self.repository)
-        self._access()
-
-    def _access(
-        self,
-    ):
-        r"""Access existing repository."""
-        if self._repo is None:
-            utils.raise_file_not_found_error(str(self._repo.path))
 
     def _checksum(
         self,
