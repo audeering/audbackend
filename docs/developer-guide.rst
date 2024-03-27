@@ -162,6 +162,7 @@ As can be seen in the file
 :file:`audbackend/core/backend/base.py`,
 we need to implement the following private methods:
 
+* ``_access()``
 * ``_checksum()``
 * ``_create()``
 * ``_date()``
@@ -291,7 +292,27 @@ with the :class:`audbackend.interface.Versioned` interface.
     :hide-output:
 
     backend = SQLite.create("./host", "repo")
-    interface = audbackend.interface.Versioned(backend)
+   interface = audbackend.interface.Versioned(backend)
+
+
+We also add a method to access
+an existing database
+(or raise an error
+it is not found).
+
+.. jupyter-execute::
+
+    @add_method(SQLite)
+    def _access(
+            self,
+    ):
+        if not os.path.exists(self._path):
+            raise FileNotFoundError(
+                errno.ENOENT,
+                os.strerror(errno.ENOENT),
+                self._path,
+            )
+        self._db = sl.connect(self._path)
 
 
 Next,

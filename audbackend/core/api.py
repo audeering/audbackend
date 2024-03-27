@@ -88,8 +88,7 @@ def access(
 
     """  # noqa: E501
     backend = _backend(name, host, repository)
-    if not utils.call_function_on_backend(backend._exists, "/"):
-        raise BackendError("Repository does not exists.")
+    utils.call_function_on_backend(backend._access)
     interface_kwargs = interface_kwargs or {}
     return interface(backend, **interface_kwargs)
 
