@@ -3,7 +3,6 @@ import typing
 from audbackend.core import utils
 from audbackend.core.backend.base import Base
 from audbackend.core.backend.filesystem import FileSystem
-from audbackend.core.errors import BackendError
 from audbackend.core.interface.base import Base as Interface
 from audbackend.core.interface.versioned import Versioned
 
