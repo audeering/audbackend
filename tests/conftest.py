@@ -3,12 +3,12 @@ import os
 import time
 
 import pytest
-from bad_file_system import BadFileSystem
-from singlefolder import SingleFolder
 
 import audeer
 
 import audbackend
+
+from singlefolder import SingleFolder
 
 
 # UID for test session
@@ -38,8 +38,8 @@ def owner(request):
     r"""Return expected owner value."""
     backend_cls = request.param
     if (
-            hasattr(audbackend.backend, "Artifactory")
-            and backend_cls == audbackend.backend.Artifactory
+        hasattr(audbackend.backend, "Artifactory")
+        and backend_cls == audbackend.backend.Artifactory
     ):
         owner = audbackend.core.backend.artifactory._authentication(
             "audeering.jfrog.io/artifactory"
@@ -75,8 +75,8 @@ def interface(tmpdir_factory, request):
     """
     backend_cls, interface_cls = request.param
     if (
-            hasattr(audbackend.backend, "Artifactory")
-            and backend_cls == audbackend.backend.Artifactory
+        hasattr(audbackend.backend, "Artifactory")
+        and backend_cls == audbackend.backend.Artifactory
     ):
         host = "https://audeering.jfrog.io/artifactory"
     else:

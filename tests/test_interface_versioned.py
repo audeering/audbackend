@@ -17,7 +17,6 @@ from audbackend.interface import Versioned
 from singlefolder import SingleFolder
 
 
-
 @pytest.fixture(scope="function", autouse=False)
 def tree(tmpdir, request):
     r"""Create file tree."""

@@ -11,8 +11,8 @@ import pytest
 import audeer
 
 import audbackend
-from audbackend.backend import FileSystem
 from audbackend.backend import Artifactory
+from audbackend.backend import FileSystem
 from audbackend.interface import Unversioned
 
 from singlefolder import SingleFolder

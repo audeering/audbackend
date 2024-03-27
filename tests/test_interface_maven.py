@@ -13,7 +13,6 @@ from audbackend.interface import Maven
 from singlefolder import SingleFolder
 
 
-
 @pytest.mark.parametrize(
     "interface",
     [

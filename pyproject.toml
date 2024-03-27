@@ -162,6 +162,10 @@ section-order = [
     'first-party',
     'local-folder',
 ]
+known-local-folder = [
+    'bad_file_system',
+    'singlefolder',
+]
 [tool.ruff.lint.isort.sections]
 'audeering' = [
     'audb',
