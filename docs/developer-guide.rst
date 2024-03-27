@@ -289,10 +289,9 @@ And access the backend
 with the :class:`audbackend.interface.Versioned` interface.
 
 .. jupyter-execute::
-    :hide-output:
 
     backend = SQLite.create("./host", "repo")
-   interface = audbackend.interface.Versioned(backend)
+    interface = audbackend.interface.Versioned(backend)
 
 
 We also add a method to access
