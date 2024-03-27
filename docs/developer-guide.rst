@@ -25,15 +25,7 @@ that have not been
 invented yet :)
 
 This tutorial is divided
-into three parts.
-Under :ref:`register-a-backend`,
-we show how a backend class
-is assigned to an alias name
-that is used to create and access
-repositories with
-:func:`audbackend.create`
-and
-:func:`audbackend.access`.
+into two parts.
 In :ref:`develop-new-interface`,
 we show how to create a custom interface
 that manages user content.
@@ -42,42 +34,6 @@ we take a deep dive
 and develop a backend
 that stores files into
 a SQLite_ database.
-
-
-.. _register-a-backend:
-
-Register a backend
-------------------
-
-Backends are referred to by names.
-A backend can host
-an arbitrary number of repositories.
-Repositories created or accessed
-in the current session
-can be listed with:
-
-.. jupyter-execute::
-
-    import audbackend
-
-    list(audbackend.available())
-
-We register a backend class
-by assigning an alias to it.
-Functions like
-:func:`audbackend.create`
-and
-:func:`audbackend.access`
-expect the alias instead
-of the class name.
-This makes it easier
-to read available repositories
-from a (config) file.
-
-.. jupyter-execute::
-
-    audbackend.register("files", audbackend.backend.FileSystem)
-    list(audbackend.available())
 
 
 .. _develop-new-interface:
@@ -108,6 +64,7 @@ helper class.
 
 .. jupyter-execute::
 
+    import audbackend
     import shelve
 
     class UserDB:
@@ -169,8 +126,8 @@ and upload a file:
 
     import audeer
 
-    audbackend.create("file-system", "./host", "repo")
-    interface = audbackend.access("file-system", "./host", "repo", interface=UserContent)
+    backend = audbackend.backend.FileSystem.create("./host", "repo")
+    interface = UserContent(backend)
 
     interface.add_user("audeering", "pa$$word")
     audeer.touch("local.txt")
@@ -182,7 +139,7 @@ At the end we clean up and delete our repo.
 
 .. jupyter-execute::
 
-    audbackend.delete("file-system", "./host", "repo")
+    audbackend.backend.FileSystem.delete("./host", "repo")
 
 
 .. _develop-new-backend:
@@ -280,14 +237,6 @@ depends on the backend.
             self._db.close()
 
 
-We now register our new backend class
-under the name ``"sql"``.
-
-.. jupyter-execute::
-
-    audbackend.register("sql", SQLite)
-
-
 Before we can instantiate an instance,
 we implement a method that
 creates a new database
@@ -340,7 +289,7 @@ Now we create a repository.
 .. jupyter-execute::
     :hide-output:
 
-    audbackend.create("sql", "./host", "repo")
+    SQLite.create("./host", "repo")
 
 
 We also add a method to access
@@ -362,7 +311,7 @@ it is not found).
             )
         self._db = sl.connect(self._path)
 
-    interface = audbackend.access("sql", "./host", "repo")
+    interface = SQLite("./host", "repo")
 
 
 Next,
@@ -545,8 +494,7 @@ but it is more efficient if we provide one.
     interface.exists("/move/file.txt", "1.0.0")
 
 
-Finally,
-we implement a method
+We implement a method
 to fetch a file
 from the backend.
 
@@ -662,7 +610,7 @@ if the database does not exist).
         os.remove(self._path)
         os.rmdir(os.path.dirname(self._path))
 
-    audbackend.delete("sql", "./host", "repo")
+    SQLite.delete("./host", "repo")
 
 
 Let's check if the repository
@@ -671,7 +619,7 @@ is really gone.
 .. jupyter-execute::
 
     try:
-        audbackend.access("sql", "./host", "repo")
+        SQLite("./host", "repo")
     except audbackend.BackendError as ex:
         display(str(ex.exception))
 
