@@ -126,7 +126,8 @@ and upload a file:
 
     import audeer
 
-    backend = audbackend.backend.FileSystem.create("./host", "repo")
+    audbackend.backend.FileSystem.create("./host", "repo")
+    backend = audbackend.backend.FileSystem("./host", "repo")
     interface = UserContent(backend)
 
     interface.add_user("audeering", "pa$$word")
@@ -290,7 +291,8 @@ with the :class:`audbackend.interface.Versioned` interface.
 
 .. jupyter-execute::
 
-    backend = SQLite.create("./host", "repo")
+    SQLite.create("./host", "repo")
+    backend = SQLite("./host", "repo")
     interface = audbackend.interface.Versioned(backend)
 
 

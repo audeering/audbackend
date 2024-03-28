@@ -3,11 +3,6 @@ import os
 import tempfile
 import typing
 
-# Backend type to annotate Backend.create().
-# From Python 3.11 on we can use typing.Self instead.
-# See https://stackoverflow.com/a/71118499
-from typing_extensions import Self
-
 import audeer
 
 from audbackend.core import utils
@@ -216,7 +211,7 @@ class Base:
         cls,
         host: str,
         repository: str,
-    ) -> Self:
+    ):
         r"""Create repository.
 
         Creates ``repository``
@@ -235,7 +230,6 @@ class Base:
         """
         backend = cls(host, repository)
         utils.call_function_on_backend(backend._create)
-        return backend
 
     def _date(
         self,

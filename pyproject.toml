@@ -29,7 +29,6 @@ classifiers = [
 dependencies = [
     'audeer >=1.20.0',
     'pywin32; sys_platform == "win32"',
-    'typing-extensions',
 ]
 # Get version dynamically from git
 # (needs setuptools_scm tools config below)

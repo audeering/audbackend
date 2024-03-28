@@ -83,7 +83,8 @@ def interface(tmpdir_factory, request):
         host = str(tmpdir_factory.mktemp("host"))
     repository = f"unittest-{pytest.UID}-{audeer.uid()[:8]}"
 
-    backend = backend_cls.create(host, repository)
+    backend_cls.create(host, repository)
+    backend = backend_cls(host, repository)
     interface = interface_cls(backend)
 
     yield interface

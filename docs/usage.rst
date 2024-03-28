@@ -44,7 +44,8 @@ We select the :class:`audbackend.backend.FileSystem` backend.
 
     import audbackend
 
-    backend = audbackend.backend.FileSystem.create("./host", "repo")
+    audbackend.backend.FileSystem.create("./host", "repo")
+    backend = audbackend.backend.FileSystem("./host", "repo")
 
 Once we have an existing repository,
 we can access it by instantiating the backend class.
@@ -202,7 +203,8 @@ with the :class:`audbackend.interface.Versioned` interface
 
 .. jupyter-execute::
 
-    backend = audbackend.backend.FileSystem.create("./host", "repo")
+    audbackend.backend.FileSystem.create("./host", "repo")
+    backend = audbackend.backend.FileSystem("./host", "repo")
     interface = audbackend.interface.Versioned(backend)
 
 We then upload a file
