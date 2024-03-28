@@ -710,9 +710,7 @@ def test_validate(tmpdir):
     interface = audbackend.interface.Unversioned(
         audbackend.backend.FileSystem(tmpdir, "repo")
     )
-    interface_bad = audbackend.interface.Unversioned(
-        BadChecksumBackend(tmpdir, "repo")
-    )
+    interface_bad = audbackend.interface.Unversioned(BadChecksumBackend(tmpdir, "repo"))
 
     with pytest.raises(InterruptedError, match=error_msg):
         interface_bad.put_file(path, "/remote.txt", validate=True)
