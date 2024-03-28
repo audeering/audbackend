@@ -28,7 +28,7 @@ classifiers = [
 ]
 dependencies = [
     'audeer >=1.20.0',
-    'pywin32; sys_platform == "win32"'
+    'pywin32; sys_platform == "win32"',
 ]
 # Get version dynamically from git
 # (needs setuptools_scm tools config below)
@@ -160,6 +160,10 @@ section-order = [
     'audeering',
     'first-party',
     'local-folder',
+]
+known-local-folder = [
+    'bad_file_system',
+    'singlefolder',
 ]
 [tool.ruff.lint.isort.sections]
 'audeering' = [
