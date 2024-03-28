@@ -86,6 +86,10 @@ def access(
     return interface(backend, **interface_kwargs)
 
 
+@audeer.deprecated(
+    removal_version="2.2.0",
+    alternative="class method Backend.create() of corresponding backend",
+)
 def create(
     name: str,
     host: str,
@@ -103,6 +107,15 @@ def create(
         :class:`audbackend.interface.Versioned`.
         Since the return value might be removed in
         a future version it is not recommended to use it.
+
+    .. Warning::
+
+        ``audbackend.create()`` is deprecated
+        and will be removed in version 2.2.0.
+        Repositories on backends are instead created
+        by the class method ``create()``
+        for the desired backend,
+        e.g. :meth:`audbackend.backend.FileSystem.create`.
 
     Args:
         name: backend alias
