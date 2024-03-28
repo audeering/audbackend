@@ -89,8 +89,8 @@ def prepare_docstring_tests(doctest_namespace):
 
         yield
 
-        audbackend.delete("file-system", "host", "repo")
-        audbackend.delete("file-system", "host", "repo-unversioned")
+        DoctestFileSystem.delete("host", "repo")
+        DoctestFileSystem.delete("host", "repo-unversioned")
         with pytest.warns(UserWarning, match=warning):
             audbackend.register("file-system", audbackend.backend.FileSystem)
         doctest_namespace["create"] = audbackend.create
