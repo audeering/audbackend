@@ -79,10 +79,6 @@ def access(
         ValueError: if no backend class with alias ``name``
             has been registered
 
-    Examples:
-        >>> access("file-system", "host", "repo")
-        audbackend.core.interface.versioned.Versioned('audbackend.core.backend.filesystem.FileSystem', 'host', 'repo')
-
     """  # noqa: E501
     backend = _backend(name, host, repository)
     utils.call_function_on_backend(backend._access)
@@ -154,14 +150,6 @@ def delete(
             e.g. repository does not exist
         ValueError: if no backend class with alias ``name``
             has been registered
-
-    Examples:
-        >>> access("file-system", "host", "repo").ls()
-        [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-        >>> delete("file-system", "host", "repo")
-        >>> create("file-system", "host", "repo")
-        >>> access("file-system", "host", "repo").ls()
-        []
 
     """  # noqa: E501
     interface = access(name, host, repository)
