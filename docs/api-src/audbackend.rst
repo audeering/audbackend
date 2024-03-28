@@ -32,7 +32,6 @@ and functions are available.
     BackendError
     Repository
     access
-    available
     create
     delete
     register
