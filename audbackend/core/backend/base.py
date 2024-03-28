@@ -124,7 +124,7 @@ class Base:
     def close(
         self,
     ):
-        r"""Close connection to repository.
+        r"""Close connection to backend.
 
         Raises:
             BackendError: if an error is raised on the backend
@@ -740,30 +740,30 @@ class Base:
     def _open(
         self,
     ):  # pragma: no cover
-        r"""Open connection to repository.
+        r"""Open connection to backend.
 
         * If repository does not exist an error should be raised
 
         """
-        raise NotImplementedError()
+        pass
 
     def open(
         self,
     ):
-        r"""Open connection to repository.
+        r"""Open connection to backend.
 
         Repository must exist,
         use
-        :func:`audbackend.Base.create`
+        :func:`audbackend.backend.Base.create`
         to create it.
         Finally,
         use
-        :func:`audbackend.Base.close`
+        :func:`audbackend.backend.Base.close`
         to close the connection.
         Instead of explicitly calling
-        :func:`audbackend.Base.open`
+        :func:`audbackend.backend.Base.open`
         and
-        :func:`audbackend.Base.close`
+        :func:`audbackend.backend.Base.close`
         it is good practice to use a with statement.
 
         Raises:
