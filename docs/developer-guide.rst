@@ -626,7 +626,6 @@ we have a fully functional backend.
 
 Voilà!
 
-
 .. reset working directory and clean up
 .. jupyter-execute::
     :hide-code:
