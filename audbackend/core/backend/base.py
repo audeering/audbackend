@@ -26,19 +26,18 @@ class Base:
         self.repository = repository
         r"""Repository name."""
 
+    def __enter__(self):
+        r"""Open connection via context manager."""
+        self.open()
+        return self
+
+    def __exit__(self, type, value, traceback):
+        r"""Close connection via context manager."""
+        self.close()
+
     def __repr__(self) -> str:  # noqa: D105
         name = f"{self.__class__.__module__}.{self.__class__.__name__}"
         return str((name, self.host, self.repository))
-
-    def _access(
-        self,
-    ):  # pragma: no cover
-        r"""Access existing repository.
-
-        * If repository does not exist an error should be raised
-
-        """
-        raise NotImplementedError()
 
     def _assert_equal_checksum(
         self,
@@ -115,6 +114,23 @@ class Base:
             self._checksum,
             path,
         )
+
+    def _close(
+        self,
+    ):  # pragma: no cover
+        r"""Close connection to repository."""
+        pass
+
+    def close(
+        self,
+    ):
+        r"""Close connection to backend.
+
+        Raises:
+            BackendError: if an error is raised on the backend
+
+        """
+        utils.call_function_on_backend(self._close)
 
     def _copy_file(
         self,
@@ -720,6 +736,44 @@ class Base:
                 )
         else:
             self.remove_file(src_path)
+
+    def _open(
+        self,
+    ):  # pragma: no cover
+        r"""Open connection to backend.
+
+        * If repository does not exist an error should be raised
+
+        """
+        pass
+
+    def open(
+        self,
+    ):
+        r"""Open connection to backend.
+
+        Repository must exist,
+        use
+        :func:`audbackend.backend.Base.create`
+        to create it.
+        Finally,
+        use
+        :func:`audbackend.backend.Base.close`
+        to close the connection.
+        Instead of explicitly calling
+        :func:`audbackend.backend.Base.open`
+        and
+        :func:`audbackend.backend.Base.close`
+        it is good practice to use a with_ statement.
+
+        Raises:
+            BackendError: if an error is raised on the backend,
+                e.g. ``repository`` does not exist
+
+        .. _with: https://docs.python.org/3/reference/compound_stmts.html#with
+
+        """
+        utils.call_function_on_backend(self._open)
 
     def _owner(
         self,

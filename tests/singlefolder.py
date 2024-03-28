@@ -62,7 +62,7 @@ class SingleFolder(audbackend.backend.Base):
         self._path = audeer.path(self._root, ".map")
         self._lock = threading.Lock()
 
-    def _access(
+    def _open(
         self,
     ):
         if not os.path.exists(self._path):

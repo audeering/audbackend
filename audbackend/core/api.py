@@ -82,7 +82,7 @@ def access(
 
     """  # noqa: E501
     backend = _backend(name, host, repository)
-    utils.call_function_on_backend(backend._access)
+    utils.call_function_on_backend(backend._open)
     interface_kwargs = interface_kwargs or {}
     return interface(backend, **interface_kwargs)
 
