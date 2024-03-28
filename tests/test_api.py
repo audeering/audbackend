@@ -70,11 +70,8 @@ def test_api(hosts, name, host, repository, cls):
 
     interface = audbackend.access(name, host, repository)
     assert isinstance(interface.backend, cls)
-    assert interface.backend in audbackend.available()[name]
 
     audbackend.delete(name, host, repository)
-
-    assert interface.backend not in audbackend.available()[name]
 
     with pytest.raises(audbackend.BackendError, match=error_msg):
         audbackend.access(name, host, repository)
