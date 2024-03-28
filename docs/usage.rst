@@ -293,6 +293,12 @@ we can select the desired version.
     with open(path, "r") as file:
         display(file.read())
 
+When we are done,
+we close the connection to the repository.
+
+.. jupyter-execute::
+
+    backend.close()
 
 .. reset working directory and clean up
 .. jupyter-execute::
