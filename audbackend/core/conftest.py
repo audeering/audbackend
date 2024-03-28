@@ -1,6 +1,7 @@
 import datetime
 import os
 import tempfile
+import warnings
 
 import pytest
 
@@ -35,7 +36,9 @@ def doctest_create(
     repository: str,
 ):
     # call create without return value
-    audbackend.create(name, host, repository)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        audbackend.create(name, host, repository)
 
 
 @pytest.fixture(scope="function", autouse=True)
