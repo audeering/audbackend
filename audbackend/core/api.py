@@ -60,11 +60,6 @@ def access(
     on the backend with alias ``name``
     (see :func:`audbackend.register`).
 
-    Use :func:`audbackend.available`
-    to list available repositories
-    or :func:`audbackend.create`
-    to create a new repository.
-
     Args:
         name: backend alias
         host: host address
@@ -92,38 +87,6 @@ def access(
     return interface(backend, **interface_kwargs)
 
 
-def available() -> typing.Dict[str, typing.List[Base]]:
-    r"""List available repositories.
-
-    Returns a dictionary with
-    backend alias name as key
-    (see :func:`audbackend.register`)
-    and a list with repositories
-    on that backend as value
-    (see :func:`audbackend.create`).
-
-    Returns:
-        dictionary with repositories
-
-    Examples:
-        >>> list(available())
-        ['artifactory', 'file-system']
-        >>> available()["file-system"][0]
-        ('audbackend.core.backend.filesystem.FileSystem', 'host', 'repo')
-
-    """  # noqa: E501
-    result = {}
-
-    for name in sorted(backend_registry):
-        result[name] = []
-        if name in backends:
-            for repository in backends[name].values():
-                for backend in repository.values():
-                    result[name].append(backend)
-
-    return result
-
-
 def create(
     name: str,
     host: str,
@@ -135,11 +98,6 @@ def create(
     located at ``host``
     on the backend with alias ``name``
     (see :func:`audbackend.register`).
-
-    Use :func:`audbackend.available`
-    to list available repositories
-    and :func:`audbackend.access`
-    to access the repository.
 
     .. note:: For legacy reasons the method
         returns an (undocumented) instance of
@@ -181,10 +139,7 @@ def delete(
     Deletes the repository
     with name ``repository``
     located at ``host``
-    on the backend with alias ``name``
-    and removes it from the
-    list of available repositories
-    (see :func:`audbackend.available`).
+    on the backend with alias ``name``.
 
     Args:
         name: backend alias
