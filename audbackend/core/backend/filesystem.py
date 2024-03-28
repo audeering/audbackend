@@ -27,13 +27,6 @@ class FileSystem(Base):
 
         self._root = audeer.path(host, repository) + os.sep
 
-    def _access(
-        self,
-    ):
-        r"""Access existing repository."""
-        if not os.path.exists(self._root):
-            utils.raise_file_not_found_error(self._root)
-
     def _checksum(
         self,
         path: str,
@@ -159,6 +152,13 @@ class FileSystem(Base):
         dst_path = self._expand(dst_path)
         audeer.mkdir(os.path.dirname(dst_path))
         audeer.move(src_path, dst_path)
+
+    def _open(
+        self,
+    ):
+        r"""Access existing repository."""
+        if not os.path.exists(self._root):
+            utils.raise_file_not_found_error(self._root)
 
     def _owner(
         self,

@@ -30,16 +30,6 @@ class Base:
         name = f"{self.__class__.__module__}.{self.__class__.__name__}"
         return str((name, self.host, self.repository))
 
-    def _access(
-        self,
-    ):  # pragma: no cover
-        r"""Access existing repository.
-
-        * If repository does not exist an error should be raised
-
-        """
-        raise NotImplementedError()
-
     def _assert_equal_checksum(
         self,
         *,
@@ -720,6 +710,16 @@ class Base:
                 )
         else:
             self.remove_file(src_path)
+
+    def _open(
+        self,
+    ):  # pragma: no cover
+        r"""Access existing repository.
+
+        * If repository does not exist an error should be raised
+
+        """
+        raise NotImplementedError()
 
     def _owner(
         self,
