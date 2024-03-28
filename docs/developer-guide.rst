@@ -25,15 +25,7 @@ that have not been
 invented yet :)
 
 This tutorial is divided
-into three parts.
-Under :ref:`register-a-backend`,
-we show how a backend class
-is assigned to an alias name
-that is used to create and access
-repositories with
-:func:`audbackend.create`
-and
-:func:`audbackend.access`.
+into two parts.
 In :ref:`develop-new-interface`,
 we show how to create a custom interface
 that manages user content.
@@ -42,42 +34,6 @@ we take a deep dive
 and develop a backend
 that stores files into
 a SQLite_ database.
-
-
-.. _register-a-backend:
-
-Register a backend
-------------------
-
-Backends are referred to by names.
-A backend can host
-an arbitrary number of repositories.
-Repositories created or accessed
-in the current session
-can be listed with:
-
-.. jupyter-execute::
-
-    import audbackend
-
-    list(audbackend.available())
-
-We register a backend class
-by assigning an alias to it.
-Functions like
-:func:`audbackend.create`
-and
-:func:`audbackend.access`
-expect the alias instead
-of the class name.
-This makes it easier
-to read available repositories
-from a (config) file.
-
-.. jupyter-execute::
-
-    audbackend.register("files", audbackend.backend.FileSystem)
-    list(audbackend.available())
 
 
 .. _develop-new-interface:
@@ -108,6 +64,7 @@ helper class.
 
 .. jupyter-execute::
 
+    import audbackend
     import shelve
 
     class UserDB:
@@ -169,8 +126,9 @@ and upload a file:
 
     import audeer
 
-    audbackend.create("file-system", "./host", "repo")
-    interface = audbackend.access("file-system", "./host", "repo", interface=UserContent)
+    audbackend.backend.FileSystem.create("./host", "repo")
+    backend = audbackend.backend.FileSystem("./host", "repo")
+    interface = UserContent(backend)
 
     interface.add_user("audeering", "pa$$word")
     audeer.touch("local.txt")
@@ -182,7 +140,7 @@ At the end we clean up and delete our repo.
 
 .. jupyter-execute::
 
-    audbackend.delete("file-system", "./host", "repo")
+    audbackend.backend.FileSystem.delete("./host", "repo")
 
 
 .. _develop-new-backend:
@@ -280,14 +238,6 @@ depends on the backend.
             self._db.close()
 
 
-We now register our new backend class
-under the name ``"sql"``.
-
-.. jupyter-execute::
-
-    audbackend.register("sql", SQLite)
-
-
 Before we can instantiate an instance,
 we implement a method that
 creates a new database
@@ -336,350 +286,347 @@ stored on our backend:
 
 
 Now we create a repository.
-
-.. jupyter-execute::
-    :hide-output:
-
-    audbackend.create("sql", "./host", "repo")
-
-
-We also add a method to access
-an existing database
-(or raise an error
-it is not found).
+And access the backend
+with the :class:`audbackend.interface.Versioned` interface.
 
 .. jupyter-execute::
 
-    @add_method(SQLite)
-    def _access(
-            self,
-    ):
-        if not os.path.exists(self._path):
-            raise FileNotFoundError(
-                errno.ENOENT,
-                os.strerror(errno.ENOENT),
-                self._path,
-            )
-        self._db = sl.connect(self._path)
-
-    interface = audbackend.access("sql", "./host", "repo")
-
-
-Next,
-we implement a method to check
-if a file exists.
-
-.. jupyter-execute::
-
-    @add_method(SQLite)
-    def _exists(
-            self,
-            path: str,
-    ) -> bool:
-        with self._db as db:
-            query = f"""
-                SELECT EXISTS (
-                    SELECT 1
-                        FROM data
-                        WHERE path="{path}"
-                );
-            """
-            result = db.execute(query).fetchone()[0] == 1
-        return result
-
-    interface.exists("/file.txt", "1.0.0")
-
-
-And a method that uploads
-a file to our backend.
-
-.. jupyter-execute::
-
-    import datetime
-    import getpass
-
-    @add_method(SQLite)
-    def _put_file(
-            self,
-            src_path: str,
-            dst_path: str,
-            checksum: str,
-            verbose: bool,
-    ):
-        with self._db as db:
-            with open(src_path, "rb") as file:
-                content = file.read()
-            query = """
-                INSERT INTO data (path, checksum, content, date, owner)
-                VALUES (?, ?, ?, ?, ?)
-            """
-            owner = getpass.getuser()
-            date = datetime.datetime.today().strftime("%Y-%m-%d")
-            data = (dst_path, checksum, content, date, owner)
-            db.execute(query, data)
-
-
-Let's put a file on the backend.
-
-.. jupyter-execute::
-
-    file = audeer.touch("file.txt")
-    interface.put_file(file, "/file.txt", "1.0.0")
-    interface.exists("/file.txt", "1.0.0")
-
-
-We need three more functions
-to access its meta information.
-
-.. jupyter-execute::
-
-    @add_method(SQLite)
-    def _checksum(
-            self,
-            path: str,
-    ) -> str:
-        with self._db as db:
-            query = f"""
-                SELECT checksum
-                FROM data
-                WHERE path="{path}"
-            """
-            checksum = db.execute(query).fetchone()[0]
-        return checksum
-
-    interface.checksum("/file.txt", "1.0.0")
-
-.. jupyter-execute::
-
-    @add_method(SQLite)
-    def _date(
-            self,
-            path: str,
-    ) -> str:
-        with self._db as db:
-            query = f"""
-                SELECT date
-                FROM data
-                WHERE path="{path}"
-            """
-            date = db.execute(query).fetchone()[0]
-        return date
-
-    interface.date("/file.txt", "1.0.0")
-
-.. jupyter-execute::
-
-    @add_method(SQLite)
-    def _owner(
-            self,
-            path: str,
-    ) -> str:
-        with self._db as db:
-            query = f"""
-                SELECT owner
-                FROM data
-                WHERE path="{path}"
-            """
-            owner = db.execute(query).fetchone()[0]
-        return owner
-
-    interface.owner("/file.txt", "1.0.0")
-
-
-Implementing a copy function is optional.
-But the default implementation
-will temporarily download the file
-and then upload it again.
-Hence,
-we provide a more efficient implementation.
-
-.. jupyter-execute::
-
-    @add_method(SQLite)
-    def _copy_file(
-            self,
-            src_path: str,
-            dst_path: str,
-            verbose: bool,
-    ):
-        with self._db as db:
-            query = f"""
-                SELECT *
-                FROM data
-                WHERE path="{src_path}"
-            """
-            (_, checksum, content, _, owner) = db.execute(query).fetchone()
-            date = datetime.datetime.today().strftime("%Y-%m-%d")
-            query = """
-                INSERT INTO data (path, checksum, content, date, owner)
-                VALUES (?, ?, ?, ?, ?)
-            """
-            data = (dst_path, checksum, content, date, owner)
-            db.execute(query, data)
-
-    interface.copy_file("/file.txt", "/copy/file.txt", version="1.0.0")
-    interface.exists("/copy/file.txt", "1.0.0")
-
-
-Implementing a move function is also optional,
-but it is more efficient if we provide one.
-
-.. jupyter-execute::
-
-    @add_method(SQLite)
-    def _move_file(
-            self,
-            src_path: str,
-            dst_path: str,
-            verbose: bool,
-    ):
-        with self._db as db:
-            query = f"""
-                UPDATE data
-                SET path="{dst_path}"
-                WHERE path="{src_path}"
-            """
-            db.execute(query)
-
-    interface.move_file("/copy/file.txt", "/move/file.txt", version="1.0.0")
-    interface.exists("/move/file.txt", "1.0.0")
-
-
-Finally,
-we implement a method
-to fetch a file
-from the backend.
-
-.. jupyter-execute::
-
-    @add_method(SQLite)
-    def _get_file(
-            self,
-            src_path: str,
-            dst_path: str,
-            verbose: bool,
-    ):
-        with self._db as db:
-            query = f"""
-                SELECT content
-                FROM data
-                WHERE path="{src_path}"
-            """
-            content = db.execute(query).fetchone()[0]
-            with open(dst_path, "wb") as fp:
-                fp.write(content)
-
-
-Which we then use to download the file.
-
-.. jupyter-execute::
-
-    file = interface.get_file("/file.txt", "local.txt", "1.0.0")
-
-
-To inspect the files
-on our backend
-we provide a listing method.
-
-.. jupyter-execute::
-
-    import typing
-
-    @add_method(SQLite)
-    def _ls(
-            self,
-            path: str,
-    ) -> typing.List[str]:
-
-        with self._db as db:
-
-            # list all files and versions under sub-path
-            query = f"""
-                SELECT path
-                FROM data
-                WHERE path
-                LIKE ? || "%"
-            """
-            ls = db.execute(query, [path]).fetchall()
-            ls = [x[0] for x in ls]
-
-        return ls
-
-
-Let's test it.
-
-.. jupyter-execute::
-
-    interface.ls("/")
-
-.. jupyter-execute::
-
-    interface.ls("/file.txt")
-
-
-To delete a file
-from our backend
-requires another method.
-
-.. jupyter-execute::
-
-    @add_method(SQLite)
-    def _remove_file(
-            self,
-            path: str,
-    ):
-        with self._db as db:
-            query = f"""
-                DELETE
-                FROM data
-                WHERE path="{path}"
-            """
-            db.execute(query)
-
-    interface.remove_file("/file.txt", "1.0.0")
-    interface.ls("/")
-
-
-Finally,
-we add a method that
-deletes the database
-and removes the repository
-(or raises an error
-if the database does not exist).
-
-.. jupyter-execute::
-
-    @add_method(SQLite)
-    def _delete(
-            self,
-    ):
-        if not os.path.exists(self._path):
-            raise FileNotFoundError(
-                errno.ENOENT,
-                os.strerror(errno.ENOENT),
-                self._path,
-            )
-        os.remove(self._path)
-        os.rmdir(os.path.dirname(self._path))
-
-    audbackend.delete("sql", "./host", "repo")
-
-
-Let's check if the repository
-is really gone.
-
-.. jupyter-execute::
-
-    try:
-        audbackend.access("sql", "./host", "repo")
-    except audbackend.BackendError as ex:
-        display(str(ex.exception))
-
-
-And that's it,
-we have a fully functional backend.
-
-Voilà!
+    SQLite.create("./host", "repo")
+    backend = SQLite("./host", "repo")
+    interface = audbackend.interface.Versioned(backend)
+
+
+.. We also add a method to access
+.. an existing database
+.. (or raise an error
+.. it is not found).
+.. 
+.. .. jupyter-execute::
+.. 
+..     @add_method(SQLite)
+..     def _access(
+..             self,
+..     ):
+..         if not os.path.exists(self._path):
+..             raise FileNotFoundError(
+..                 errno.ENOENT,
+..                 os.strerror(errno.ENOENT),
+..                 self._path,
+..             )
+..         self._db = sl.connect(self._path)
+.. 
+.. 
+.. Next,
+.. we implement a method to check
+.. if a file exists.
+.. 
+.. .. jupyter-execute::
+.. 
+..     @add_method(SQLite)
+..     def _exists(
+..             self,
+..             path: str,
+..     ) -> bool:
+..         with self._db as db:
+..             query = f"""
+..                 SELECT EXISTS (
+..                     SELECT 1
+..                         FROM data
+..                         WHERE path="{path}"
+..                 );
+..             """
+..             result = db.execute(query).fetchone()[0] == 1
+..         return result
+.. 
+..     interface.exists("/file.txt", "1.0.0")
+.. 
+.. 
+.. And a method that uploads
+.. a file to our backend.
+.. 
+.. .. jupyter-execute::
+.. 
+..     import datetime
+..     import getpass
+.. 
+..     @add_method(SQLite)
+..     def _put_file(
+..             self,
+..             src_path: str,
+..             dst_path: str,
+..             checksum: str,
+..             verbose: bool,
+..     ):
+..         with self._db as db:
+..             with open(src_path, "rb") as file:
+..                 content = file.read()
+..             query = """
+..                 INSERT INTO data (path, checksum, content, date, owner)
+..                 VALUES (?, ?, ?, ?, ?)
+..             """
+..             owner = getpass.getuser()
+..             date = datetime.datetime.today().strftime("%Y-%m-%d")
+..             data = (dst_path, checksum, content, date, owner)
+..             db.execute(query, data)
+.. 
+.. 
+.. Let's put a file on the backend.
+.. 
+.. .. jupyter-execute::
+.. 
+..     file = audeer.touch("file.txt")
+..     interface.put_file(file, "/file.txt", "1.0.0")
+..     interface.exists("/file.txt", "1.0.0")
+.. 
+.. 
+.. We need three more functions
+.. to access its meta information.
+.. 
+.. .. jupyter-execute::
+.. 
+..     @add_method(SQLite)
+..     def _checksum(
+..             self,
+..             path: str,
+..     ) -> str:
+..         with self._db as db:
+..             query = f"""
+..                 SELECT checksum
+..                 FROM data
+..                 WHERE path="{path}"
+..             """
+..             checksum = db.execute(query).fetchone()[0]
+..         return checksum
+.. 
+..     interface.checksum("/file.txt", "1.0.0")
+.. 
+.. .. jupyter-execute::
+.. 
+..     @add_method(SQLite)
+..     def _date(
+..             self,
+..             path: str,
+..     ) -> str:
+..         with self._db as db:
+..             query = f"""
+..                 SELECT date
+..                 FROM data
+..                 WHERE path="{path}"
+..             """
+..             date = db.execute(query).fetchone()[0]
+..         return date
+.. 
+..     interface.date("/file.txt", "1.0.0")
+.. 
+.. .. jupyter-execute::
+.. 
+..     @add_method(SQLite)
+..     def _owner(
+..             self,
+..             path: str,
+..     ) -> str:
+..         with self._db as db:
+..             query = f"""
+..                 SELECT owner
+..                 FROM data
+..                 WHERE path="{path}"
+..             """
+..             owner = db.execute(query).fetchone()[0]
+..         return owner
+.. 
+..     interface.owner("/file.txt", "1.0.0")
+.. 
+.. 
+.. Implementing a copy function is optional.
+.. But the default implementation
+.. will temporarily download the file
+.. and then upload it again.
+.. Hence,
+.. we provide a more efficient implementation.
+.. 
+.. .. jupyter-execute::
+.. 
+..     @add_method(SQLite)
+..     def _copy_file(
+..             self,
+..             src_path: str,
+..             dst_path: str,
+..             verbose: bool,
+..     ):
+..         with self._db as db:
+..             query = f"""
+..                 SELECT *
+..                 FROM data
+..                 WHERE path="{src_path}"
+..             """
+..             (_, checksum, content, _, owner) = db.execute(query).fetchone()
+..             date = datetime.datetime.today().strftime("%Y-%m-%d")
+..             query = """
+..                 INSERT INTO data (path, checksum, content, date, owner)
+..                 VALUES (?, ?, ?, ?, ?)
+..             """
+..             data = (dst_path, checksum, content, date, owner)
+..             db.execute(query, data)
+.. 
+..     interface.copy_file("/file.txt", "/copy/file.txt", version="1.0.0")
+..     interface.exists("/copy/file.txt", "1.0.0")
+.. 
+.. 
+.. Implementing a move function is also optional,
+.. but it is more efficient if we provide one.
+.. 
+.. .. jupyter-execute::
+.. 
+..     @add_method(SQLite)
+..     def _move_file(
+..             self,
+..             src_path: str,
+..             dst_path: str,
+..             verbose: bool,
+..     ):
+..         with self._db as db:
+..             query = f"""
+..                 UPDATE data
+..                 SET path="{dst_path}"
+..                 WHERE path="{src_path}"
+..             """
+..             db.execute(query)
+.. 
+..     interface.move_file("/copy/file.txt", "/move/file.txt", version="1.0.0")
+..     interface.exists("/move/file.txt", "1.0.0")
+.. 
+.. 
+.. We implement a method
+.. to fetch a file
+.. from the backend.
+.. 
+.. .. jupyter-execute::
+.. 
+..     @add_method(SQLite)
+..     def _get_file(
+..             self,
+..             src_path: str,
+..             dst_path: str,
+..             verbose: bool,
+..     ):
+..         with self._db as db:
+..             query = f"""
+..                 SELECT content
+..                 FROM data
+..                 WHERE path="{src_path}"
+..             """
+..             content = db.execute(query).fetchone()[0]
+..             with open(dst_path, "wb") as fp:
+..                 fp.write(content)
+.. 
+.. 
+.. Which we then use to download the file.
+.. 
+.. .. jupyter-execute::
+.. 
+..     file = interface.get_file("/file.txt", "local.txt", "1.0.0")
+.. 
+.. 
+.. To inspect the files
+.. on our backend
+.. we provide a listing method.
+.. 
+.. .. jupyter-execute::
+.. 
+..     import typing
+.. 
+..     @add_method(SQLite)
+..     def _ls(
+..             self,
+..             path: str,
+..     ) -> typing.List[str]:
+.. 
+..         with self._db as db:
+.. 
+..             # list all files and versions under sub-path
+..             query = f"""
+..                 SELECT path
+..                 FROM data
+..                 WHERE path
+..                 LIKE ? || "%"
+..             """
+..             ls = db.execute(query, [path]).fetchall()
+..             ls = [x[0] for x in ls]
+.. 
+..         return ls
+.. 
+.. 
+.. Let's test it.
+.. 
+.. .. jupyter-execute::
+.. 
+..     interface.ls("/")
+.. 
+.. .. jupyter-execute::
+.. 
+..     interface.ls("/file.txt")
+.. 
+.. 
+.. To delete a file
+.. from our backend
+.. requires another method.
+.. 
+.. .. jupyter-execute::
+.. 
+..     @add_method(SQLite)
+..     def _remove_file(
+..             self,
+..             path: str,
+..     ):
+..         with self._db as db:
+..             query = f"""
+..                 DELETE
+..                 FROM data
+..                 WHERE path="{path}"
+..             """
+..             db.execute(query)
+.. 
+..     interface.remove_file("/file.txt", "1.0.0")
+..     interface.ls("/")
+.. 
+.. 
+.. Finally,
+.. we add a method that
+.. deletes the database
+.. and removes the repository
+.. (or raises an error
+.. if the database does not exist).
+.. 
+.. .. jupyter-execute::
+.. 
+..     @add_method(SQLite)
+..     def _delete(
+..             self,
+..     ):
+..         if not os.path.exists(self._path):
+..             raise FileNotFoundError(
+..                 errno.ENOENT,
+..                 os.strerror(errno.ENOENT),
+..                 self._path,
+..             )
+..         os.remove(self._path)
+..         os.rmdir(os.path.dirname(self._path))
+.. 
+..     SQLite.delete("./host", "repo")
+.. 
+.. 
+.. Let's check if the repository
+.. is really gone.
+.. 
+.. .. jupyter-execute::
+.. 
+..     backend.exists("/")
+.. 
+.. 
+.. And that's it,
+.. we have a fully functional backend.
+.. 
+.. Voilà!
 
 
 .. reset working directory and clean up

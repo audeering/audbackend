@@ -73,7 +73,7 @@ def test_authentication(tmpdir, hosts, hide_credentials):
 
 @pytest.mark.parametrize(
     "interface",
-    [("artifactory", audbackend.interface.Versioned)],
+    [(audbackend.backend.Artifactory, audbackend.interface.Versioned)],
     indirect=True,
 )
 def test_errors(tmpdir, interface):
@@ -137,7 +137,7 @@ def test_errors(tmpdir, interface):
 
 @pytest.mark.parametrize(
     "interface",
-    [("artifactory", audbackend.interface.Maven)],
+    [(audbackend.backend.Artifactory, audbackend.interface.Maven)],
     indirect=True,
 )
 @pytest.mark.parametrize(

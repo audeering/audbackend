@@ -48,15 +48,9 @@ you have to list those extensions explicitly.
 
     import audbackend
 
-    audbackend.create("file-system", "./host", "repo")
-
-    interface = audbackend.access(
-        "file-system",
-        "./host",
-        "repo",
-        interface=audbackend.interface.Maven,
-        interface_kwargs={"extensions": ["tar.gz"]},
-    )
+    audbackend.backend.FileSystem.create("./host", "repo")
+    backend = audbackend.backend.FileSystem("./host", "repo")
+    interface = audbackend.interface.Maven(backend, extensions=["tar.gz"])
 
 Afterwards we upload an TAR.GZ archive
 and check that it is stored as expected.
