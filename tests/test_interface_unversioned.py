@@ -11,9 +11,6 @@ import pytest
 import audeer
 
 import audbackend
-from audbackend.backend import Artifactory
-from audbackend.backend import FileSystem
-from audbackend.interface import Unversioned
 
 from singlefolder import SingleFolder
 
@@ -92,9 +89,9 @@ def tree(tmpdir, request):
 @pytest.mark.parametrize(
     "interface",
     [
-        (Artifactory, Unversioned),
-        (FileSystem, Unversioned),
-        (SingleFolder, Unversioned),
+        (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
+        (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
+        (SingleFolder, audbackend.interface.Unversioned),
     ],
     indirect=True,
 )
@@ -173,9 +170,9 @@ def test_archive(tmpdir, tree, archive, files, tmp_root, interface, expected):
 @pytest.mark.parametrize(
     "interface",
     [
-        (Artifactory, Unversioned),
-        (FileSystem, Unversioned),
-        (SingleFolder, Unversioned),
+        (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
+        (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
+        (SingleFolder, audbackend.interface.Unversioned),
     ],
     indirect=True,
 )
@@ -216,9 +213,9 @@ def test_copy(tmpdir, src_path, dst_path, interface):
 @pytest.mark.parametrize(
     "interface",
     [
-        (Artifactory, Unversioned),
-        (FileSystem, Unversioned),
-        (SingleFolder, Unversioned),
+        (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
+        (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
+        (SingleFolder, audbackend.interface.Unversioned),
     ],
     indirect=True,
 )
@@ -492,9 +489,9 @@ def test_errors(tmpdir, interface):
 @pytest.mark.parametrize(
     "interface",
     [
-        (Artifactory, Unversioned),
-        (FileSystem, Unversioned),
-        (SingleFolder, Unversioned),
+        (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
+        (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
+        (SingleFolder, audbackend.interface.Unversioned),
     ],
     indirect=True,
 )
@@ -531,9 +528,18 @@ def test_exists(tmpdir, path, interface):
 @pytest.mark.parametrize(
     "interface, owner",
     [
-        ((Artifactory, Unversioned), Artifactory),
-        ((FileSystem, Unversioned), FileSystem),
-        ((SingleFolder, Unversioned), SingleFolder),
+        (
+            (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
+            audbackend.backend.Artifactory,
+        ),
+        (
+            (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
+            audbackend.backend.FileSystem,
+        ),
+        (
+            (SingleFolder, audbackend.interface.Unversioned),
+            SingleFolder,
+        ),
     ],
     indirect=True,
 )
@@ -562,9 +568,9 @@ def test_file(tmpdir, src_path, dst_path, owner, interface):
 @pytest.mark.parametrize(
     "interface",
     [
-        (Artifactory, Unversioned),
-        (FileSystem, Unversioned),
-        (SingleFolder, Unversioned),
+        (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
+        (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
+        (SingleFolder, audbackend.interface.Unversioned),
     ],
     indirect=True,
 )
@@ -636,9 +642,9 @@ def test_ls(tmpdir, interface):
 @pytest.mark.parametrize(
     "interface",
     [
-        (Artifactory, Unversioned),
-        (FileSystem, Unversioned),
-        (SingleFolder, Unversioned),
+        (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
+        (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
+        (SingleFolder, audbackend.interface.Unversioned),
     ],
     indirect=True,
 )
@@ -701,8 +707,12 @@ def test_validate(tmpdir):
     path = audeer.touch(tmpdir, "~.txt")
     error_msg = "Execution is interrupted because"
 
-    interface = Unversioned(FileSystem(tmpdir, "repo"))
-    interface_bad = Unversioned(BadChecksumBackend(tmpdir, "repo"))
+    interface = audbackend.interface.Unversioned(
+        audbackend.backend.FileSystem(tmpdir, "repo")
+    )
+    interface_bad = audbackend.interface.Unversioned(
+        BadChecksumBackend(tmpdir, "repo")
+    )
 
     with pytest.raises(InterruptedError, match=error_msg):
         interface_bad.put_file(path, "/remote.txt", validate=True)
