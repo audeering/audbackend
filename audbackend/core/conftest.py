@@ -44,10 +44,16 @@ def prepare_docstring_tests(doctest_namespace):
         current_dir = os.getcwd()
         os.chdir(tmp)
 
+        warning = (
+            "register is deprecated and will be removed with version 2.2.0. "
+            "Use backend classes directly instead."
+        )
+
         file = "src.pth"
         audeer.touch(file)
 
-        audbackend.register("file-system", DoctestFileSystem)
+        with pytest.warns(UserWarning, match=warning):
+            audbackend.register("file-system", DoctestFileSystem)
         doctest_namespace["create"] = doctest_create
 
         # backend
@@ -85,7 +91,8 @@ def prepare_docstring_tests(doctest_namespace):
 
         audbackend.delete("file-system", "host", "repo")
         audbackend.delete("file-system", "host", "repo-unversioned")
-        audbackend.register("file-system", audbackend.backend.FileSystem)
+        with pytest.warns(UserWarning, match=warning):
+            audbackend.register("file-system", audbackend.backend.FileSystem)
         doctest_namespace["create"] = audbackend.create
 
         os.chdir(current_dir)

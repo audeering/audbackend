@@ -1,4 +1,5 @@
 import typing
+import warnings
 
 import audeer
 
@@ -195,12 +196,14 @@ def register(
     backend_registry[name] = cls
 
 
-register("file-system", FileSystem)
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    register("file-system", FileSystem)
 
-# Register optional backends
-try:
-    from audbackend.core.backend.artifactory import Artifactory
+    # Register optional backends
+    try:
+        from audbackend.core.backend.artifactory import Artifactory
 
-    register("artifactory", Artifactory)
-except ImportError:  # pragma: no cover
-    pass
+        register("artifactory", Artifactory)
+    except ImportError:  # pragma: no cover
+        pass
