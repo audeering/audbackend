@@ -1,5 +1,7 @@
 import typing
 
+import audeer
+
 from audbackend.core import utils
 from audbackend.core.backend.base import Base
 from audbackend.core.backend.filesystem import FileSystem
@@ -166,6 +168,7 @@ def delete(
     backends[name][host].pop(repository)
 
 
+@audeer.deprecated(removal_version="2.2.0", alternative="backend classes directly")
 def register(
     name: str,
     cls: typing.Type[Base],
@@ -176,12 +179,17 @@ def register(
     registered under the alias ``name``
     it will be overwritten.
 
+    ..Warning::
+
+        ``audbackend.register()`` is deprecated
+        and will be removed in version 2.2.0.
+        We now longer use names for backends,
+        but directly backend classes,
+        e.g. :class:`audbackend.backend.FileSystem`.
+
     Args:
         name: backend alias
         cls: backend class
-
-    Examples:
-        >>> register("file-system", FileSystem)
 
     """
     backend_registry[name] = cls
