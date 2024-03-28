@@ -65,28 +65,27 @@ def prepare_docstring_tests(doctest_namespace):
         DoctestFileSystem.create("host", "repo")
         DoctestFileSystem.create("host", "repo-unversioned")
 
-        with (
-            DoctestFileSystem("host", "repo") as backend_versioned,
-            DoctestFileSystem("host", "repo-unversioned") as backend_unversioned,
-        ):
-            # versioned interface
+        with DoctestFileSystem("host", "repo") as backend_versioned:
+            with DoctestFileSystem("host", "repo-unversioned") as backend_unversioned:
 
-            versioned = audbackend.interface.Versioned(backend_versioned)
-            versioned.put_archive(".", "/a.zip", "1.0.0", files=[file])
-            versioned.put_file(file, "/a/b.ext", "1.0.0")
-            for version in ["1.0.0", "2.0.0"]:
-                versioned.put_file(file, "/f.ext", version)
-            doctest_namespace["versioned"] = versioned
+                # versioned interface
 
-            # unversioned interface
+                versioned = audbackend.interface.Versioned(backend_versioned)
+                versioned.put_archive(".", "/a.zip", "1.0.0", files=[file])
+                versioned.put_file(file, "/a/b.ext", "1.0.0")
+                for version in ["1.0.0", "2.0.0"]:
+                    versioned.put_file(file, "/f.ext", version)
+                doctest_namespace["versioned"] = versioned
 
-            unversioned = audbackend.interface.Unversioned(backend_unversioned)
-            unversioned.put_archive(".", "/a.zip", files=[file])
-            unversioned.put_file(file, "/a/b.ext")
-            unversioned.put_file(file, "/f.ext")
-            doctest_namespace["unversioned"] = unversioned
+                # unversioned interface
 
-            yield
+                unversioned = audbackend.interface.Unversioned(backend_unversioned)
+                unversioned.put_archive(".", "/a.zip", files=[file])
+                unversioned.put_file(file, "/a/b.ext")
+                unversioned.put_file(file, "/f.ext")
+                doctest_namespace["unversioned"] = unversioned
+
+                yield
 
         audbackend.delete("file-system", "host", "repo")
         audbackend.delete("file-system", "host", "repo-unversioned")
