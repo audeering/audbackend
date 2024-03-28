@@ -62,18 +62,8 @@ def prepare_docstring_tests(doctest_namespace):
 
         # versioned interface
 
-        audbackend.create(
-            "file-system",
-            "host",
-            "repo",
-        )
-        versioned = audbackend.access(
-            "file-system",
-            "host",
-            "repo",
-            interface=audbackend.interface.Versioned,
-        )
-        assert isinstance(versioned, audbackend.interface.Versioned)
+        DoctestFileSystem.create("host", "repo")
+        versioned = audbackend.interface.Versioned(DoctestFileSystem("host", "repo"))
         versioned.put_archive(".", "/a.zip", "1.0.0", files=[file])
         versioned.put_file(file, "/a/b.ext", "1.0.0")
         for version in ["1.0.0", "2.0.0"]:
@@ -82,18 +72,10 @@ def prepare_docstring_tests(doctest_namespace):
 
         # unversioned interface
 
-        audbackend.create(
-            "file-system",
-            "host",
-            "repo-unversioned",
+        DoctestFileSystem.create("host", "repo-unversioned")
+        unversioned = audbackend.interface.Unversioned(
+            DoctestFileSystem("host", "repo-unversioned")
         )
-        unversioned = audbackend.access(
-            "file-system",
-            "host",
-            "repo-unversioned",
-            interface=audbackend.interface.Unversioned,
-        )
-        assert isinstance(unversioned, audbackend.interface.Unversioned)
         unversioned.put_archive(".", "/a.zip", files=[file])
         unversioned.put_file(file, "/a/b.ext")
         unversioned.put_file(file, "/f.ext")
