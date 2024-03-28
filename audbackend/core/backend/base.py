@@ -27,10 +27,12 @@ class Base:
         r"""Repository name."""
 
     def __enter__(self):
+        r"""Open connection via context manager."""
         self.open()
         return self
 
     def __exit__(self, type, value, traceback):
+        r"""Close connection via context manager."""
         self.close()
 
     def __repr__(self) -> str:  # noqa: D105
