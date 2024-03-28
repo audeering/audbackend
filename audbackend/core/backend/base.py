@@ -764,11 +764,13 @@ class Base:
         :func:`audbackend.backend.Base.open`
         and
         :func:`audbackend.backend.Base.close`
-        it is good practice to use a with statement.
+        it is good practice to use a with_ statement.
 
         Raises:
             BackendError: if an error is raised on the backend,
                 e.g. ``repository`` does not exist
+
+        .. _with: https://docs.python.org/3/reference/compound_stmts.html#with
 
         """
         utils.call_function_on_backend(self._open)
