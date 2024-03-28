@@ -45,7 +45,6 @@ We select the :class:`audbackend.backend.FileSystem` backend.
     import audbackend
 
     audbackend.backend.FileSystem.create("./host", "repo")
-    backend = audbackend.backend.FileSystem("./host", "repo")
 
 Once we have an existing repository,
 we can access it by instantiating the backend class.
