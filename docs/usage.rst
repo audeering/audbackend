@@ -47,16 +47,36 @@ We select the :class:`audbackend.backend.FileSystem` backend.
     audbackend.backend.FileSystem.create("./host", "repo")
 
 Once we have an existing repository,
-we can access it by instantiating the backend class.
-In addition,
-we use :class:`audbackend.interface.Unversioned`
-as an interface to the backend.
+we can access it by instantiating the backend class
+and open a connection by calling
+:meth:`audbackend.backend.open`.
+Later on,
+we will use
+:meth:`audbackend.backend.close`
+to close the connection.
+Instead of explicitly calling
+:meth:`audbackend.backend.open`
+and
+:meth:`audbackend.backend.close`
+it is good practise to use a with statement
+(not applicable in a notebook).
+
+.. jupyter-execute::
+
+    backend = audbackend.backend.FileSystem("./host", "repo")
+    backend.open()
+
+After establishing a connection
+we could directly execute read and write operations
+on the backend object.
+However,
+here we use :class:`audbackend.interface.Unversioned`
+as an interface to the repository.
 It does not support versioning,
 i.e. exactly one file exists for a backend path.
 
 .. jupyter-execute::
 
-    backend = audbackend.backend.FileSystem("./host", "repo")
     interface = audbackend.interface.Unversioned(backend)
 
 Now we can upload our first file to the repository.
@@ -172,21 +192,19 @@ We can remove files.
     interface.remove_file("/archives/folder.zip")
     interface.ls("/")
 
-Or even delete the whole repository
+Finally,
+we close the connection to the backend.
+
+.. jupyter-execute::
+
+    backend.close()
+
+And delete the whole repository
 with all its content.
 
 .. jupyter-execute::
 
     audbackend.backend.FileSystem.delete("host", "repo")
-
-
-We can check if a repository exists
-by inspecting its root path.
-
-.. jupyter-execute::
-
-    backend = audbackend.backend.FileSystem("host", "repo")
-    backend.exists("/")
 
 
 .. _versioned-data-on-a-file-system:
@@ -204,6 +222,7 @@ with the :class:`audbackend.interface.Versioned` interface
 
     audbackend.backend.FileSystem.create("./host", "repo")
     backend = audbackend.backend.FileSystem("./host", "repo")
+    backend.open()
     interface = audbackend.interface.Versioned(backend)
 
 We then upload a file
