@@ -126,6 +126,10 @@ def create(
     return Versioned(backend)
 
 
+@audeer.deprecated(
+    removal_version="2.2.0",
+    alternative="class method Backend.delete() of corresponding backend",
+)
 def delete(
     name: str,
     host: str,
@@ -133,12 +137,19 @@ def delete(
 ):
     r"""Delete repository.
 
-    .. warning:: Deletes the repository and all its content.
-
     Deletes the repository
     with name ``repository``
     located at ``host``
     on the backend with alias ``name``.
+
+    .. Warning::
+
+        ``audbackend.delete()`` is deprecated
+        and will be removed in version 2.2.0.
+        Repositories on backends are instead deleted
+        by the class method ``delete()``
+        for the desired backend,
+        e.g. :meth:`audbackend.backend.FileSystem.delete`.
 
     Args:
         name: backend alias
