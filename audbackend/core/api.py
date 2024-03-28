@@ -180,13 +180,13 @@ def register(
     registered under the alias ``name``
     it will be overwritten.
 
-    ..Warning::
+    .. Warning::
 
         ``audbackend.register()`` is deprecated
         and will be removed in version 2.2.0.
-        We now longer use names for backends,
-        but directly backend classes,
-        e.g. :class:`audbackend.backend.FileSystem`.
+        Instead of backend names
+        we now use backend classes,
+        such as :class:`audbackend.backend.FileSystem`.
 
     Args:
         name: backend alias
