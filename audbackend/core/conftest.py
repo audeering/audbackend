@@ -69,7 +69,6 @@ def prepare_docstring_tests(doctest_namespace):
             DoctestFileSystem("host", "repo") as backend_versioned,
             DoctestFileSystem("host", "repo-unversioned") as backend_unversioned,
         ):
-
             # versioned interface
 
             versioned = audbackend.interface.Versioned(backend_versioned)
