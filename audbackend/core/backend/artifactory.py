@@ -287,7 +287,7 @@ class Artifactory(Base):
     def _open(
         self,
     ):
-        r"""Access existing repository."""
+        r"""Open connection to repository."""
         if self._repo is None:
             utils.raise_file_not_found_error(str(self._repo.path))
 

@@ -26,6 +26,13 @@ class Base:
         self.repository = repository
         r"""Repository name."""
 
+    def __enter__(self):
+        self.open()
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.close()
+
     def __repr__(self) -> str:  # noqa: D105
         name = f"{self.__class__.__module__}.{self.__class__.__name__}"
         return str((name, self.host, self.repository))
@@ -105,6 +112,23 @@ class Base:
             self._checksum,
             path,
         )
+
+    def _close(
+        self,
+    ):  # pragma: no cover
+        r"""Close connection to repository."""
+        pass
+
+    def close(
+        self,
+    ):
+        r"""Close connection to repository.
+
+        Raises:
+            BackendError: if an error is raised on the backend
+
+        """
+        utils.call_function_on_backend(self._close)
 
     def _copy_file(
         self,
@@ -714,12 +738,38 @@ class Base:
     def _open(
         self,
     ):  # pragma: no cover
-        r"""Access existing repository.
+        r"""Open connection to repository.
 
         * If repository does not exist an error should be raised
 
         """
         raise NotImplementedError()
+
+    def open(
+        self,
+    ):
+        r"""Open connection to repository.
+
+        Repository must exist,
+        use
+        :func:`audbackend.Base.create`
+        to create it.
+        Finally,
+        use
+        :func:`audbackend.Base.close`
+        to close the connection.
+        Instead of explicitly calling
+        :func:`audbackend.Base.open`
+        and
+        :func:`audbackend.Base.close`
+        it is good practice to use a with statement.
+
+        Raises:
+            BackendError: if an error is raised on the backend,
+                e.g. ``repository`` does not exist
+
+        """
+        utils.call_function_on_backend(self._open)
 
     def _owner(
         self,

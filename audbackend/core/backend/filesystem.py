@@ -156,7 +156,7 @@ class FileSystem(Base):
     def _open(
         self,
     ):
-        r"""Access existing repository."""
+        r"""Open connection to repository."""
         if not os.path.exists(self._root):
             utils.raise_file_not_found_error(self._root)
 
