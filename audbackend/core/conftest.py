@@ -53,23 +53,6 @@ def prepare_docstring_tests(doctest_namespace):
             with DoctestFileSystem("host", "repo-unversioned") as backend_unversioned:
                 # versioned interface
 
-                versioned = audbackend.interface.Versioned(backend_versioned)
-                versioned.put_archive(".", "/a.zip", "1.0.0", files=[file])
-                versioned.put_file(file, "/a/b.ext", "1.0.0")
-                for version in ["1.0.0", "2.0.0"]:
-                    versioned.put_file(file, "/f.ext", version)
-                doctest_namespace["versioned"] = versioned
-
-                # unversioned interface
-
-                unversioned = audbackend.interface.Unversioned(backend_unversioned)
-                unversioned.put_archive(".", "/a.zip", files=[file])
-                unversioned.put_file(file, "/a/b.ext")
-                unversioned.put_file(file, "/f.ext")
-                doctest_namespace["unversioned"] = unversioned
-
-                yield
-
         DoctestFileSystem.delete("host", "repo")
         DoctestFileSystem.delete("host", "repo-unversioned")
 
