@@ -27,9 +27,8 @@ class Base:
         r"""Repository name."""
 
     def __repr__(self) -> str:  # noqa: D105
-        module = self.__class__.__module__.split(".")[0]
         name = self.__class__.__name__
-        return f"{module}.{name}('{self.host}', '{self.repository}')"
+        return f"audbackend.backend.{name}('{self.host}', '{self.repository}')"
 
     def _access(
         self,

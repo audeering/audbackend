@@ -27,9 +27,8 @@ class Base:
         self._backend = backend
 
     def __repr__(self) -> str:  # noqa: D105
-        module = self.__class__.__module__.split(".")[0]
         name = self.__class__.__name__
-        return f"{module}.{name}({self._backend})"
+        return f"audbackend.interface.{name}({self._backend})"
 
     @property
     def backend(self) -> Backend:
