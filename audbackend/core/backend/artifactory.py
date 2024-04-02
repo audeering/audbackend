@@ -150,13 +150,6 @@ class Artifactory(Base):
         )
         self._repo = path.find_repository_local(self.repository)
 
-    def _access(
-        self,
-    ):
-        r"""Access existing repository."""
-        if self._repo is None:
-            utils.raise_file_not_found_error(str(self._repo.path))
-
     def _checksum(
         self,
         path: str,
@@ -290,6 +283,13 @@ class Artifactory(Base):
         if not dst_path.parent.exists():
             dst_path.parent.mkdir()
         src_path.move(dst_path)
+
+    def _open(
+        self,
+    ):
+        r"""Open connection to backend."""
+        if self._repo is None:
+            utils.raise_file_not_found_error(str(self._repo.path))
 
     def _owner(
         self,
