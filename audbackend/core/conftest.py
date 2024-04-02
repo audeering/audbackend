@@ -16,6 +16,7 @@ import audbackend
 pytest_collect_file = sybil.Sybil(
     parsers=[DocTestParser(optionflags=doctest.ELLIPSIS)],
     patterns=["*.py"],
+    fixtures=["prepare_docstring_tests"],
 ).pytest()
 
 
