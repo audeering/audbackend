@@ -850,7 +850,7 @@ def test_repr():
         audbackend.backend.FileSystem("host", "repo")
     )
     assert interface.__repr__() == (
-        "audbackend.interface.Versioned(audbackend.backend.FileSystem('host', 'repo')"
+        "audbackend.interface.Versioned(audbackend.backend.FileSystem('host', 'repo'))"
     )
 
 

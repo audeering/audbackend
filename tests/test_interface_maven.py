@@ -168,5 +168,5 @@ def test_repr():
         audbackend.backend.FileSystem("host", "repo")
     )
     assert interface.__repr__() == (
-        "audbackend.interface.Maven(audbackend.backend.FileSystem('host', 'repo')"
+        "audbackend.interface.Maven(audbackend.backend.FileSystem('host', 'repo'))"
     )

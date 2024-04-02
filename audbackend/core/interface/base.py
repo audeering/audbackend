@@ -39,7 +39,7 @@ class Base:
 
         Examples:
             >>> interface.backend
-            audbackend.Base('host', 'repo')
+            audbackend.backend.Base('host', 'repo')
 
         """
         return self._backend
