@@ -48,15 +48,32 @@ We select the :class:`audbackend.backend.FileSystem` backend.
 
 Once we have an existing repository,
 we can access it by instantiating the backend class.
-In addition,
-we use :class:`audbackend.interface.Unversioned`
-as an interface to the backend.
+For some backends we have to establish a connection first.
+This can be achieved using a ``with`` statement,
+or by calling ``backend.open()`` at the beginning,
+and ``backend.close()`` at the end.
+If you are unsure
+whether your backend requires this step,
+just do it always.
+
+.. jupyter-execute::
+
+    backend = audbackend.backend.FileSystem("./host", "repo")
+    backend.open()
+
+After establishing a connection
+we could directly execute read and write operations
+on the backend object.
+However,
+we recommend to always use
+:mod:`interfaces <audbackend.interface>`
+to communicate with a backend.
+Here, we use :class:`audbackend.interface.Unversioned`.
 It does not support versioning,
 i.e. exactly one file exists for a backend path.
 
 .. jupyter-execute::
 
-    backend = audbackend.backend.FileSystem("./host", "repo")
     interface = audbackend.interface.Unversioned(backend)
 
 Now we can upload our first file to the repository.
@@ -172,21 +189,33 @@ We can remove files.
     interface.remove_file("/archives/folder.zip")
     interface.ls("/")
 
-Or even delete the whole repository
+Finally,
+we close the connection to the backend.
+
+.. jupyter-execute::
+
+    backend.close()
+
+And delete the whole repository
 with all its content.
 
 .. jupyter-execute::
 
     audbackend.backend.FileSystem.delete("host", "repo")
 
-
-We can check if a repository exists
-by inspecting its root path.
+Now,
+if we try to open the repository again,
+we will get an error
+(note that this behavior is not guaranteed
+for all backend classes
+as it depends on the implementation).
 
 .. jupyter-execute::
 
-    backend = audbackend.backend.FileSystem("host", "repo")
-    backend.exists("/")
+    try:
+        backend.open()
+    except audbackend.BackendError as ex:
+        display(str(ex.exception))
 
 
 .. _versioned-data-on-a-file-system:
@@ -204,6 +233,7 @@ with the :class:`audbackend.interface.Versioned` interface
 
     audbackend.backend.FileSystem.create("./host", "repo")
     backend = audbackend.backend.FileSystem("./host", "repo")
+    backend.open()
     interface = audbackend.interface.Versioned(backend)
 
 We then upload a file
@@ -274,6 +304,12 @@ we can select the desired version.
     with open(path, "r") as file:
         display(file.read())
 
+When we are done,
+we close the connection to the repository.
+
+.. jupyter-execute::
+
+    backend.close()
 
 .. reset working directory and clean up
 .. jupyter-execute::

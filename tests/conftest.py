@@ -84,10 +84,10 @@ def interface(tmpdir_factory, request):
     repository = f"unittest-{pytest.UID}-{audeer.uid()[:8]}"
 
     backend_cls.create(host, repository)
-    backend = backend_cls(host, repository)
-    interface = interface_cls(backend)
+    with backend_cls(host, repository) as backend:
+        interface = interface_cls(backend)
 
-    yield interface
+        yield interface
 
     # Deleting repositories on Artifactory might fail
     for n in range(3):
