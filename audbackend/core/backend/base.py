@@ -27,8 +27,9 @@ class Base:
         r"""Repository name."""
 
     def __repr__(self) -> str:  # noqa: D105
-        name = f"{self.__class__.__module__}.{self.__class__.__name__}"
-        return str((name, self.host, self.repository))
+        module = self.__class__.__module__.split(".")[0]
+        name = self.__class__.__name__
+        return f"{module}.{name}('{self.host}', '{self.repository}')"
 
     def _access(
         self,
