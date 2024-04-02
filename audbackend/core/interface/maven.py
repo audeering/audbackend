@@ -63,7 +63,19 @@ class Maven(Versioned):
             ...
             as extensions
 
-    """
+    Examples:
+        >>> import audeer
+        >>> file = "src.pth"
+        >>> _ = audeer.touch(file)
+        >>> interface = Maven(FileSystem("host", "repo"))
+        >>> interface.put_archive(".", "/a.zip", "1.0.0", files=[file])
+        >>> interface.put_file(file, "/a/b.ext", "1.0.0")
+        >>> for version in ["1.0.0", "2.0.0"]:
+        ...     interface.put_file(file, "/f.ext", version)
+        >>> interface.ls()
+        [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
+
+    """  # noqa: E501
 
     def __init__(
         self,
@@ -124,18 +136,19 @@ class Maven(Versioned):
             ValueError: if ``path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> interface = Maven(FileSystem("host", "repo"))
+
         Examples:
-            >>> versioned.ls()
+            >>> interface.ls()
             [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> versioned.ls(latest_version=True)
+            >>> interface.ls(latest_version=True)
             [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> versioned.ls("/f.ext")
+            >>> interface.ls("/f.ext")
             [('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> versioned.ls(pattern="*.ext")
+            >>> interface.ls(pattern="*.ext")
             [('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> versioned.ls(pattern="b.*")
-            [('/a/b.ext', '1.0.0')]
-            >>> versioned.ls("/a/")
+            >>> interface.ls(pattern="b.*")
             [('/a/b.ext', '1.0.0')]
 
         """  # noqa: E501

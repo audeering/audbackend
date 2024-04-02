@@ -18,6 +18,16 @@ class Base:
     Args:
         backend: backend object
 
+    .. Prepare backend and interface for docstring examples
+
+        >>> import audeer
+        >>> audeer.rmdir("host", "repo")
+        >>> _ = audeer.mkdir("host")
+        >>> FileSystem.create("host", "repo")
+
+    Examples:
+        >>> interface = Base(FileSystem("host", "repo"))
+
     """
 
     def __init__(
@@ -37,9 +47,12 @@ class Base:
         Returns:
             backend object
 
+        ..
+            >>> interface = Base(FileSystem("host", "repo"))
+
         Examples:
             >>> interface.backend
-            audbackend.backend.Base('host', 'repo')
+            audbackend.backend.FileSystem('host', 'repo')
 
         """
         return self._backend
@@ -49,6 +62,9 @@ class Base:
         r"""Host path.
 
         Returns: host path
+
+        ..
+            >>> interface = Base(FileSystem("host", "repo"))
 
         Examples:
             >>> interface.host
@@ -76,6 +92,9 @@ class Base:
                 or does not start with ``'/'``,
                 or if joined path contains invalid character
 
+        ..
+            >>> interface = Base(FileSystem("host", "repo"))
+
         Examples:
             >>> interface.join("/", "f.ext")
             '/f.ext'
@@ -94,6 +113,9 @@ class Base:
         Returns:
             repository name
 
+        ..
+            >>> interface = Base(FileSystem("host", "repo"))
+
         Examples:
             >>> interface.repository
             'repo'
@@ -107,6 +129,9 @@ class Base:
 
         Returns:
             file separator
+
+        ..
+            >>> interface = Base(FileSystem("host", "repo"))
 
         Examples:
             >>> interface.sep
@@ -130,6 +155,9 @@ class Base:
         Raises:
             ValueError: if ``path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
+
+        ..
+            >>> interface = Base(FileSystem("host", "repo"))
 
         Examples:
             >>> interface.split("/")

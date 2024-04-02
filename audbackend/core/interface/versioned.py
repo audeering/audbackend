@@ -16,7 +16,24 @@ class Versioned(Base):
     Use this interface if you care about versioning.
     For each file on the backend path one or more versions may exist.
 
-    """
+    Args:
+        backend: backend object
+
+    .. Prepare backend and interface for docstring examples
+
+    Examples:
+        >>> import audeer
+        >>> file = "src.pth"
+        >>> _ = audeer.touch(file)
+        >>> interface = Versioned(FileSystem("host", "repo"))
+        >>> interface.put_archive(".", "/a.zip", "1.0.0", files=[file])
+        >>> interface.put_file(file, "/a/b.ext", "1.0.0")
+        >>> for version in ["1.0.0", "2.0.0"]:
+        ...     interface.put_file(file, "/f.ext", version)
+        >>> interface.ls()
+        [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
+
+    """  # noqa: E501
 
     def __init__(
         self,
@@ -46,8 +63,11 @@ class Versioned(Base):
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
 
+        ..
+            >>> interface = Versioned(FileSystem("host", "repo"))
+
         Examples:
-            >>> versioned.checksum("/f.ext", "1.0.0")
+            >>> interface.checksum("/f.ext", "1.0.0")
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
@@ -90,13 +110,6 @@ class Versioned(Base):
             version: version string
             verbose: show debug messages
 
-        Examples:
-            >>> versioned.exists("/copy.ext", "1.0.0")
-            False
-            >>> versioned.copy_file("/f.ext", "/copy.ext", version="1.0.0")
-            >>> versioned.exists("/copy.ext", "1.0.0")
-            True
-
         Raises:
             BackendError: if an error is raised on the backend
             InterruptedError: if validation fails
@@ -105,6 +118,17 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+
+        ..
+            >>> interface = Versioned(FileSystem("host", "repo"))
+
+        Examples:
+            >>> interface.exists("/copy.ext", "1.0.0")
+            False
+            >>> interface.copy_file("/f.ext", "/copy.ext", version="1.0.0")
+            >>> interface.exists("/copy.ext", "1.0.0")
+            True
+            >>> interface.remove_file("/copy.ext", "1.0.0")
 
         """
         if version is None:
@@ -147,8 +171,11 @@ class Versioned(Base):
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
 
+        ..
+            >>> interface = Versioned(FileSystem("host", "repo"))
+
         Examples:
-              >>> versioned.date("/f.ext", "1.0.0")
+              >>> interface.date("/f.ext", "1.0.0")
               '1991-02-20'
 
         """
@@ -183,8 +210,11 @@ class Versioned(Base):
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
 
+        ..
+            >>> interface = Versioned(FileSystem("host", "repo"))
+
         Examples:
-            >>> versioned.exists("/f.ext", "1.0.0")
+            >>> interface.exists("/f.ext", "1.0.0")
             True
 
         """
@@ -248,8 +278,11 @@ class Versioned(Base):
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
 
+        ..
+            >>> interface = Versioned(FileSystem("host", "repo"))
+
         Examples:
-            >>> versioned.get_archive("/a.zip", ".", "1.0.0")
+            >>> interface.get_archive("/a.zip", ".", "1.0.0")
             ['src.pth']
 
         """
@@ -314,10 +347,13 @@ class Versioned(Base):
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
 
+        ..
+            >>> interface = Versioned(FileSystem("host", "repo"))
+
         Examples:
             >>> os.path.exists("dst.pth")
             False
-            >>> _ = versioned.get_file("/f.ext", "dst.pth", "1.0.0")
+            >>> _ = interface.get_file("/f.ext", "dst.pth", "1.0.0")
             >>> os.path.exists("dst.pth")
             True
 
@@ -348,8 +384,11 @@ class Versioned(Base):
             ValueError: if ``path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
 
+         ..
+            >>> interface = Versioned(FileSystem("host", "repo"))
+
         Examples:
-            >>> versioned.latest_version("/f.ext")
+            >>> interface.latest_version("/f.ext")
             '2.0.0'
 
         """
@@ -404,18 +443,21 @@ class Versioned(Base):
             ValueError: if ``path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> interface = Versioned(FileSystem("host", "repo"))
+
         Examples:
-            >>> versioned.ls()
+            >>> interface.ls()
             [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> versioned.ls(latest_version=True)
+            >>> interface.ls(latest_version=True)
             [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> versioned.ls("/f.ext")
+            >>> interface.ls("/f.ext")
             [('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> versioned.ls(pattern="*.ext")
+            >>> interface.ls(pattern="*.ext")
             [('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> versioned.ls(pattern="b.*")
+            >>> interface.ls(pattern="b.*")
             [('/a/b.ext', '1.0.0')]
-            >>> versioned.ls("/a/")
+            >>> interface.ls("/a/")
             [('/a/b.ext', '1.0.0')]
 
         """  # noqa: E501
@@ -535,14 +577,18 @@ class Versioned(Base):
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
 
+        ..
+            >>> interface = Versioned(FileSystem("host", "repo"))
+
         Examples:
-            >>> versioned.exists("/move.ext", "1.0.0")
+            >>> interface.exists("/move.ext", "1.0.0")
             False
-            >>> versioned.move_file("/f.ext", "/move.ext", version="1.0.0")
-            >>> versioned.exists("/move.ext", "1.0.0")
+            >>> interface.move_file("/f.ext", "/move.ext", version="1.0.0")
+            >>> interface.exists("/move.ext", "1.0.0")
             True
-            >>> versioned.exists("/f.ext", "1.0.0")
+            >>> interface.exists("/f.ext", "1.0.0")
             False
+            >>> interface.move_file("/move.ext", "/f.ext", version="1.0.0")
 
         """
         if version is None:
@@ -586,8 +632,11 @@ class Versioned(Base):
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
 
+        ..
+            >>> interface = Versioned(FileSystem("host", "repo"))
+
         Examples:
-              >>> versioned.owner("/f.ext", "1.0.0")
+              >>> interface.owner("/f.ext", "1.0.0")
               'doctest'
 
         """
@@ -653,11 +702,14 @@ class Versioned(Base):
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
 
+        ..
+            >>> interface = Versioned(FileSystem("host", "repo"))
+
         Examples:
-            >>> versioned.exists("/a.tar.gz", "1.0.0")
+            >>> interface.exists("/a.tar.gz", "1.0.0")
             False
-            >>> versioned.put_archive(".", "/a.tar.gz", "1.0.0")
-            >>> versioned.exists("/a.tar.gz", "1.0.0")
+            >>> interface.put_archive(".", "/a.tar.gz", "1.0.0")
+            >>> interface.exists("/a.tar.gz", "1.0.0")
             True
 
         """
@@ -715,11 +767,14 @@ class Versioned(Base):
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
 
+        ..
+            >>> interface = Versioned(FileSystem("host", "repo"))
+
         Examples:
-            >>> versioned.exists("/sub/f.ext", "3.0.0")
+            >>> interface.exists("/sub/f.ext", "3.0.0")
             False
-            >>> versioned.put_file("src.pth", "/sub/f.ext", "3.0.0")
-            >>> versioned.exists("/sub/f.ext", "3.0.0")
+            >>> interface.put_file("src.pth", "/sub/f.ext", "3.0.0")
+            >>> interface.exists("/sub/f.ext", "3.0.0")
             True
 
         """
@@ -750,12 +805,16 @@ class Versioned(Base):
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
 
+        ..
+            >>> interface = Versioned(FileSystem("host", "repo"))
+
         Examples:
-            >>> versioned.exists("/f.ext", "1.0.0")
+            >>> interface.exists("/f.ext", "1.0.0")
             True
-            >>> versioned.remove_file("/f.ext", "1.0.0")
-            >>> versioned.exists("/f.ext", "1.0.0")
+            >>> interface.remove_file("/f.ext", "1.0.0")
+            >>> interface.exists("/f.ext", "1.0.0")
             False
+            >>> interface.put_file("src.pth", "/f.ext", "1.0.0")
 
         """
         path_with_version = self._path_with_version(path, version)
@@ -785,8 +844,11 @@ class Versioned(Base):
             ValueError: if ``path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> interface = Versioned(FileSystem("host", "repo"))
+
         Examples:
-            >>> versioned.versions("/f.ext")
+            >>> interface.versions("/f.ext")
             ['1.0.0', '2.0.0']
 
         """

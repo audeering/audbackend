@@ -10,6 +10,9 @@ import audbackend
 
 
 class DoctestFileSystem(audbackend.backend.FileSystem):
+    def __repr__(self) -> str:  # noqa: D105
+        return f"audbackend.backend.FileSystem('{self.host}', '{self.repository}')"
+
     def _date(
         self,
         path: str,
@@ -25,35 +28,24 @@ class DoctestFileSystem(audbackend.backend.FileSystem):
         return "doctest"
 
 
-@pytest.fixture(scope="function", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def prepare_docstring_tests(doctest_namespace):
     with tempfile.TemporaryDirectory() as tmp:
+        # Change to tmp dir
         current_dir = os.getcwd()
         os.chdir(tmp)
-
-        file = "src.pth"
-        audeer.touch(file)
-
-        # backend
-
-        backend = audbackend.backend.Base("host", "repo")
-        doctest_namespace["backend"] = backend
-
-        # interface
-
-        interface = audbackend.interface.Base(backend)
-        doctest_namespace["interface"] = interface
-
-        # create backends
-
+        # Prepare backend
+        audeer.mkdir("host")
         DoctestFileSystem.create("host", "repo")
-        DoctestFileSystem.create("host", "repo-unversioned")
+        # Provide DoctestFileSystem as FileSystem,
+        # and audbackend
+        # in docstring examples
+        doctest_namespace["FileSystem"] = DoctestFileSystem
+        doctest_namespace["audbackend"] = audbackend
 
-        with DoctestFileSystem("host", "repo") as backend_versioned:
-            with DoctestFileSystem("host", "repo-unversioned") as backend_unversioned:
-                # versioned interface
+        yield
 
+        # Remove backend
         DoctestFileSystem.delete("host", "repo")
-        DoctestFileSystem.delete("host", "repo-unversioned")
-
+        # Change back to current dir
         os.chdir(current_dir)

@@ -10,6 +10,20 @@ class Unversioned(Base):
     Use this interface if you don't care about versioning.
     For every backend path exactly one file exists on the backend.
 
+    Args:
+        backend: backend object
+
+    Examples:
+        >>> import audeer
+        >>> file = "src.pth"
+        >>> _ = audeer.touch(file)
+        >>> interface = Unversioned(FileSystem("host", "repo"))
+        >>> interface.put_archive(".", "/a.zip", files=[file])
+        >>> interface.put_file(file, "/a/b.ext")
+        >>> interface.put_file(file, "/f.ext")
+        >>> interface.ls()
+        ['/a.zip', '/a/b.ext', '/f.ext']
+
     """
 
     def checksum(
@@ -30,8 +44,11 @@ class Unversioned(Base):
             ValueError: if ``path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> interface = Unversioned(FileSystem("host", "repo"))
+
         Examples:
-            >>> unversioned.checksum("/f.ext")
+            >>> interface.checksum("/f.ext")
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
@@ -74,12 +91,16 @@ class Unversioned(Base):
                 does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> interface = Unversioned(FileSystem("host", "repo"))
+
         Examples:
-            >>> unversioned.exists("/copy.ext")
+            >>> interface.exists("/copy.ext")
             False
-            >>> unversioned.copy_file("/f.ext", "/copy.ext")
-            >>> unversioned.exists("/copy.ext")
+            >>> interface.copy_file("/f.ext", "/copy.ext")
+            >>> interface.exists("/copy.ext")
             True
+            >>> interface.remove_file("/copy.ext")
 
         """
         self.backend.copy_file(
@@ -110,8 +131,11 @@ class Unversioned(Base):
             ValueError: if ``path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> interface = Unversioned(FileSystem("host", "repo"))
+
         Examples:
-              >>> unversioned.date("/f.ext")
+              >>> interface.date("/f.ext")
               '1991-02-20'
 
         """
@@ -143,8 +167,11 @@ class Unversioned(Base):
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
 
+        ..
+            >>> interface = Unversioned(FileSystem("host", "repo"))
+
         Examples:
-            >>> unversioned.exists("/f.ext")
+            >>> interface.exists("/f.ext")
             True
 
         """
@@ -203,8 +230,11 @@ class Unversioned(Base):
             ValueError: if ``src_path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> interface = Unversioned(FileSystem("host", "repo"))
+
         Examples:
-            >>> unversioned.get_archive("/a.zip", ".")
+            >>> interface.get_archive("/a.zip", ".")
             ['src.pth']
 
         """
@@ -264,10 +294,13 @@ class Unversioned(Base):
             ValueError: if ``src_path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> interface = Unversioned(FileSystem("host", "repo"))
+
         Examples:
             >>> os.path.exists("dst.pth")
             False
-            >>> _ = unversioned.get_file("/f.ext", "dst.pth")
+            >>> _ = interface.get_file("/f.ext", "dst.pth")
             >>> os.path.exists("dst.pth")
             True
 
@@ -324,16 +357,19 @@ class Unversioned(Base):
             ValueError: if ``path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> interface = Unversioned(FileSystem("host", "repo"))
+
         Examples:
-            >>> unversioned.ls()
+            >>> interface.ls()
             ['/a.zip', '/a/b.ext', '/f.ext']
-            >>> unversioned.ls("/f.ext")
+            >>> interface.ls("/f.ext")
             ['/f.ext']
-            >>> unversioned.ls(pattern="*.ext")
+            >>> interface.ls(pattern="*.ext")
             ['/a/b.ext', '/f.ext']
-            >>> unversioned.ls(pattern="b.*")
+            >>> interface.ls(pattern="b.*")
             ['/a/b.ext']
-            >>> unversioned.ls("/a/")
+            >>> interface.ls("/a/")
             ['/a/b.ext']
 
         """  # noqa: E501
@@ -384,14 +420,18 @@ class Unversioned(Base):
                 does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> interface = Unversioned(FileSystem("host", "repo"))
+
         Examples:
-            >>> unversioned.exists("/move.ext")
+            >>> interface.exists("/move.ext")
             False
-            >>> unversioned.move_file("/f.ext", "/move.ext")
-            >>> unversioned.exists("/move.ext")
+            >>> interface.move_file("/f.ext", "/move.ext")
+            >>> interface.exists("/move.ext")
             True
-            >>> unversioned.exists("/f.ext")
+            >>> interface.exists("/f.ext")
             False
+            >>> interface.move_file("/move.ext", "/f.ext")
 
         """
         self.backend.move_file(
@@ -423,8 +463,11 @@ class Unversioned(Base):
             ValueError: if ``path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> interface = Unversioned(FileSystem("host", "repo"))
+
         Examples:
-              >>> unversioned.owner("/f.ext")
+              >>> interface.owner("/f.ext")
               'doctest'
 
         """
@@ -485,11 +528,14 @@ class Unversioned(Base):
             ValueError: if ``dst_path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> interface = Unversioned(FileSystem("host", "repo"))
+
         Examples:
-            >>> unversioned.exists("/a.tar.gz")
+            >>> interface.exists("/a.tar.gz")
             False
-            >>> unversioned.put_archive(".", "/a.tar.gz")
-            >>> unversioned.exists("/a.tar.gz")
+            >>> interface.put_archive(".", "/a.tar.gz")
+            >>> interface.exists("/a.tar.gz")
             True
 
         """
@@ -539,11 +585,14 @@ class Unversioned(Base):
             ValueError: if ``dst_path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> interface = Unversioned(FileSystem("host", "repo"))
+
         Examples:
-            >>> unversioned.exists("/sub/f.ext")
+            >>> interface.exists("/sub/f.ext")
             False
-            >>> unversioned.put_file("src.pth", "/sub/f.ext")
-            >>> unversioned.exists("/sub/f.ext")
+            >>> interface.put_file("src.pth", "/sub/f.ext")
+            >>> interface.exists("/sub/f.ext")
             True
 
         """
@@ -569,11 +618,14 @@ class Unversioned(Base):
             ValueError: if ``path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> interface = Unversioned(FileSystem("host", "repo"))
+
         Examples:
-            >>> unversioned.exists("/f.ext")
+            >>> interface.exists("/f.ext")
             True
-            >>> unversioned.remove_file("/f.ext")
-            >>> unversioned.exists("/f.ext")
+            >>> interface.remove_file("/f.ext")
+            >>> interface.exists("/f.ext")
             False
 
         """

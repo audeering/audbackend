@@ -4,14 +4,24 @@ class BackendError(Exception):
     Args:
         exception: exception raised by backend
 
+    .. Prepare backend and interface for docstring examples
+
+        >>> import audeer
+        >>> audeer.rmdir("host", "repo")
+        >>> _ = audeer.mkdir("host")
+        >>> FileSystem.create("host", "repo")
+
     Examples:
+        >>> backend = FileSystem("host", "repo")
         >>> try:
-        ...     unversioned.checksum("/does/not/exist")
+        ...     interface = audbackend.interface.Unversioned(backend)
+        ...     interface.checksum("/does/not/exist")
         ... except BackendError as ex:
         ...     ex.exception
         FileNotFoundError(2, 'No such file or directory')
         >>> try:
-        ...     versioned.checksum("/does/not/exist", "1.0.0")
+        ...     interface = audbackend.interface.Versioned(backend)
+        ...     interface.checksum("/does/not/exist", "1.0.0")
         ... except BackendError as ex:
         ...     ex.exception
         FileNotFoundError(2, 'No such file or directory')
