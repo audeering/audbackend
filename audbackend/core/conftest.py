@@ -1,12 +1,22 @@
 import datetime
+import doctest
 import os
 import tempfile
 
 import pytest
+import sybil
+from sybil.parsers.rest import DocTestParser
 
 import audeer
 
 import audbackend
+
+
+# Collect doctests
+pytest_collect_file = sybil.Sybil(
+    parsers=[DocTestParser(optionflags=doctest.ELLIPSIS)],
+    patterns=["*.py"],
+).pytest()
 
 
 class DoctestFileSystem(audbackend.backend.FileSystem):

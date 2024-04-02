@@ -80,7 +80,6 @@ skip = './audbackend.egg-info,./build,.docs/api,./docs/_templates'
 cache_dir = '.cache/pytest'
 xfail_strict = true
 addopts = '''
-    --doctest-plus
     --cov=audbackend
     --cov-fail-under=100
     --cov-report term-missing
