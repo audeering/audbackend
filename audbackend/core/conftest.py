@@ -10,9 +10,6 @@ import audbackend
 
 
 class DoctestFileSystem(audbackend.backend.FileSystem):
-    def __repr__(self) -> str:
-        name = "audbackend.core.backend.filesystem.FileSystem"
-        return str((name, self.host, self.repository))
 
     def _date(
         self,
