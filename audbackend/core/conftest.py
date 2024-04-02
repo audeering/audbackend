@@ -10,7 +10,6 @@ import audbackend
 
 
 class DoctestFileSystem(audbackend.backend.FileSystem):
-
     def _date(
         self,
         path: str,
