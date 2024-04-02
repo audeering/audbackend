@@ -165,12 +165,14 @@ we need to implement the following private methods:
 
 * ``_access()``
 * ``_checksum()``
+* ``_close()``
 * ``_create()``
 * ``_date()``
 * ``_delete()``
 * ``_exists()``
 * ``_get_file()``
 * ``_ls()``
+* ``_open()``
 * ``_owner()``
 * ``_put_file()``
 * ``_remove_file()``
