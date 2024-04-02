@@ -129,9 +129,6 @@ def create(
         ValueError: if no backend class with alias ``name``
             has been registered
 
-    Examples:
-        >>> create("file-system", "host", "repository")
-
     """  # noqa: E501
     backend = _backend(name, host, repository)
     utils.call_function_on_backend(backend._create)

@@ -26,17 +26,6 @@ class DoctestFileSystem(audbackend.backend.FileSystem):
         return "doctest"
 
 
-def doctest_create(
-    name: str,
-    host: str,
-    repository: str,
-):
-    # call create without return value
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        audbackend.create(name, host, repository)
-
-
 @pytest.fixture(scope="function", autouse=True)
 def prepare_docstring_tests(doctest_namespace):
     with tempfile.TemporaryDirectory() as tmp:
@@ -53,7 +42,6 @@ def prepare_docstring_tests(doctest_namespace):
 
         with pytest.warns(UserWarning, match=warning):
             audbackend.register("file-system", DoctestFileSystem)
-        doctest_namespace["create"] = doctest_create
 
         # backend
 
