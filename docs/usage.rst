@@ -47,19 +47,14 @@ We select the :class:`audbackend.backend.FileSystem` backend.
     audbackend.backend.FileSystem.create("./host", "repo")
 
 Once we have an existing repository,
-we can access it by instantiating the backend class
-and open a connection by calling
-:meth:`audbackend.backend.open`.
-Later on,
-we will use
-:meth:`audbackend.backend.close`
-to close the connection.
-Instead of explicitly calling
-:meth:`audbackend.backend.open`
-and
-:meth:`audbackend.backend.close`
-it is good practise to use a with statement
-(not applicable in a notebook).
+we can access it by instantiating the backend class.
+For some backends we have to establish a connection first.
+This can be achieved using a ``with`` statement,
+or by calling ``backend.open()`` at the beginning,
+and ``backend.close()`` at the end.
+If you are unsure
+whether your backend requires this step,
+just do it always.
 
 .. jupyter-execute::
 
@@ -70,8 +65,10 @@ After establishing a connection
 we could directly execute read and write operations
 on the backend object.
 However,
-here we use :class:`audbackend.interface.Unversioned`
-as an interface to the repository.
+we recommend to always use
+:mod:`interfaces <audbackend.interface>`
+to communicate with a backend.
+Here, we use :class:`audbackend.interface.Unversioned`.
 It does not support versioning,
 i.e. exactly one file exists for a backend path.
 
@@ -205,6 +202,20 @@ with all its content.
 .. jupyter-execute::
 
     audbackend.backend.FileSystem.delete("host", "repo")
+
+Now,
+if we try to open the repository again,
+we will get an error
+(note that this behavior is not guaranteed
+for all backend classes
+as it depends on the implementation).
+
+.. jupyter-execute::
+
+    try:
+        backend.open()
+    except audbackend.BackendError as ex:
+        display(str(ex.exception))
 
 
 .. _versioned-data-on-a-file-system:
