@@ -1,7 +1,6 @@
 import datetime
 import os
 import tempfile
-import warnings
 
 import pytest
 
