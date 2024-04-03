@@ -144,6 +144,15 @@ class Maven(Versioned):
                 path,
                 suppress_backend_errors=suppress_backend_errors,
             )
+            # Files are also stored as sub-folder,
+            # e.g. `/file/version/file-version.ext`,
+            # so we need to skip those
+            sub_paths = len(path.split("/")) - 2
+            if sub_paths > 0:
+                paths = [
+                    path for path in paths
+                    if len(path.split(self.sep)) > 3 + sub_paths
+                ]
 
         else:  # find versions of path
             root, file = self.split(path)
