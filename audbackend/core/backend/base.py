@@ -36,8 +36,8 @@ class Base:
         self.close()
 
     def __repr__(self) -> str:  # noqa: D105
-        name = f"{self.__class__.__module__}.{self.__class__.__name__}"
-        return str((name, self.host, self.repository))
+        name = self.__class__.__name__
+        return f"audbackend.backend.{name}('{self.host}', '{self.repository}')"
 
     def _assert_equal_checksum(
         self,

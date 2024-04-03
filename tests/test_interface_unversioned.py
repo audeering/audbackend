@@ -689,6 +689,17 @@ def test_move(tmpdir, src_path, dst_path, interface):
     interface.remove_file(dst_path)
 
 
+def test_repr():
+    interface = audbackend.interface.Unversioned(
+        audbackend.backend.FileSystem("host", "repo")
+    )
+    assert interface.__repr__() == (
+        "audbackend.interface.Unversioned("
+        "audbackend.backend.FileSystem('host', 'repo')"
+        ")"
+    )
+
+
 def test_validate(tmpdir):
     class BadChecksumBackend(audbackend.backend.FileSystem):
         r"""Return random checksum."""
