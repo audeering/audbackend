@@ -81,86 +81,256 @@ def test_errors(tmpdir, interface):
     ],
     indirect=True,
 )
-def test_ls(tmpdir, interface):
+@pytest.mark.parametrize(
+    "files",
+    [
+        [
+            ("/file.bar", "1.0.0"),
+            ("/file.bar", "2.0.0"),
+            ("/file.foo", "1.0.0"),
+            ("/sub/file.foo", "1.0.0"),
+            ("/sub/file.foo", "2.0.0"),
+            ("/sub/sub.ext", "1.0.0"),
+            ("/sub/sub/sub.ext", "1.0.0"),
+            ("/.sub/.file.foo", "1.0.0"),
+            ("/.sub/.file.foo", "2.0.0"),
+        ],
+    ],
+)
+@pytest.mark.parametrize(
+    "path, latest, pattern, expected",
+    [
+        (
+            "/",
+            False,
+            None,
+            [
+                ("/file.bar", "1.0.0"),
+                ("/file.bar", "2.0.0"),
+                ("/file.foo", "1.0.0"),
+                ("/sub/file.foo", "1.0.0"),
+                ("/sub/file.foo", "2.0.0"),
+                ("/sub/sub.ext", "1.0.0"),
+                ("/sub/sub/sub.ext", "1.0.0"),
+                ("/.sub/.file.foo", "1.0.0"),
+                ("/.sub/.file.foo", "2.0.0"),
+            ],
+        ),
+        (
+            "/",
+            True,
+            None,
+            [
+                ("/file.bar", "2.0.0"),
+                ("/file.foo", "1.0.0"),
+                ("/sub/file.foo", "2.0.0"),
+                ("/sub/sub.ext", "1.0.0"),
+                ("/sub/sub/sub.ext", "1.0.0"),
+                ("/.sub/.file.foo", "2.0.0"),
+            ],
+        ),
+        (
+            "/",
+            False,
+            "*.foo",
+            [
+                ("/file.foo", "1.0.0"),
+                ("/sub/file.foo", "1.0.0"),
+                ("/sub/file.foo", "2.0.0"),
+                ("/.sub/.file.foo", "1.0.0"),
+                ("/.sub/.file.foo", "2.0.0"),
+            ],
+        ),
+        (
+            "/",
+            True,
+            "*.foo",
+            [
+                ("/file.foo", "1.0.0"),
+                ("/sub/file.foo", "2.0.0"),
+                ("/.sub/.file.foo", "2.0.0"),
+            ],
+        ),
+        (
+            "/sub/",
+            False,
+            None,
+            [
+                ("/sub/file.foo", "1.0.0"),
+                ("/sub/file.foo", "2.0.0"),
+                ("/sub/sub.ext", "1.0.0"),
+                ("/sub/sub/sub.ext", "1.0.0"),
+            ],
+        ),
+        (
+            "/sub/",
+            True,
+            None,
+            [
+                ("/sub/file.foo", "2.0.0"),
+                ("/sub/sub.ext", "1.0.0"),
+                ("/sub/sub/sub.ext", "1.0.0"),
+            ],
+        ),
+        (
+            "/sub/",
+            False,
+            "*.bar",
+            [],
+        ),
+        (
+            "/sub/",
+            True,
+            "*.bar",
+            [],
+        ),
+        (
+            "/sub/",
+            False,
+            "file.*",
+            [
+                ("/sub/file.foo", "1.0.0"),
+                ("/sub/file.foo", "2.0.0"),
+            ],
+        ),
+        (
+            "/sub/",
+            True,
+            "file.*",
+            [
+                ("/sub/file.foo", "2.0.0"),
+            ],
+        ),
+        (
+            "/.sub/",
+            False,
+            None,
+            [
+                ("/.sub/.file.foo", "1.0.0"),
+                ("/.sub/.file.foo", "2.0.0"),
+            ],
+        ),
+        (
+            "/.sub/",
+            True,
+            None,
+            [
+                ("/.sub/.file.foo", "2.0.0"),
+            ],
+        ),
+        (
+            "/file.bar",
+            False,
+            None,
+            [
+                ("/file.bar", "1.0.0"),
+                ("/file.bar", "2.0.0"),
+            ],
+        ),
+        (
+            "/file.bar",
+            True,
+            None,
+            [
+                ("/file.bar", "2.0.0"),
+            ],
+        ),
+        (
+            "/sub/file.foo",
+            False,
+            None,
+            [
+                ("/sub/file.foo", "1.0.0"),
+                ("/sub/file.foo", "2.0.0"),
+            ],
+        ),
+        (
+            "/sub/file.foo",
+            True,
+            None,
+            [
+                ("/sub/file.foo", "2.0.0"),
+            ],
+        ),
+        (
+            "/sub/file.foo",
+            False,
+            "file.*",
+            [
+                ("/sub/file.foo", "1.0.0"),
+                ("/sub/file.foo", "2.0.0"),
+            ],
+        ),
+        (
+            "/sub/file.foo",
+            True,
+            "file.*",
+            [
+                ("/sub/file.foo", "2.0.0"),
+            ],
+        ),
+        (
+            "/sub/file.foo",
+            False,
+            "*.bar",
+            [],
+        ),
+        (
+            "/sub/file.foo",
+            True,
+            "*.bar",
+            [],
+        ),
+        (
+            "/.sub/.file.foo",
+            False,
+            None,
+            [
+                ("/.sub/.file.foo", "1.0.0"),
+                ("/.sub/.file.foo", "2.0.0"),
+            ],
+        ),
+        (
+            "/.sub/.file.foo",
+            True,
+            None,
+            [
+                ("/.sub/.file.foo", "2.0.0"),
+            ],
+        ),
+        (
+            "/sub/sub/",
+            False,
+            None,
+            [
+                ("/sub/sub/sub.ext", "1.0.0"),
+            ],
+        ),
+        (
+            "/sub/sub/",
+            True,
+            None,
+            [
+                ("/sub/sub/sub.ext", "1.0.0"),
+            ],
+        ),
+    ],
+)
+def test_ls(tmpdir, interface, files, path, latest, pattern, expected):
     assert interface.ls() == []
     assert interface.ls("/") == []
 
-    root = [
-        ("/file.bar", "1.0.0"),
-        ("/file.bar", "2.0.0"),
-        ("/file.foo", "1.0.0"),
-    ]
-    root_latest = [
-        ("/file.bar", "2.0.0"),
-        ("/file.foo", "1.0.0"),
-    ]
-    root_foo = [
-        ("/file.foo", "1.0.0"),
-    ]
-    root_bar = [
-        ("/file.bar", "1.0.0"),
-        ("/file.bar", "2.0.0"),
-    ]
-    root_bar_latest = [
-        ("/file.bar", "2.0.0"),
-    ]
-    sub = [
-        ("/sub/file.foo", "1.0.0"),
-        ("/sub/file.foo", "2.0.0"),
-    ]
-    sub_latest = [
-        ("/sub/file.foo", "2.0.0"),
-    ]
-    hidden = [
-        ("/.sub/.file.foo", "1.0.0"),
-        ("/.sub/.file.foo", "2.0.0"),
-    ]
-    hidden_latest = [
-        ("/.sub/.file.foo", "2.0.0"),
-    ]
-
     # create content
-
-    tmp_file = os.path.join(tmpdir, "~")
-    for path, version in root + sub + hidden:
-        audeer.touch(tmp_file)
-        interface.put_file(
-            tmp_file,
-            path,
-            version,
-        )
+    tmp_file = audeer.touch(tmpdir, "~")
+    for file_path, file_version in files:
+        interface.put_file(tmp_file, file_path, file_version)
 
     # test
-
-    for path, latest, pattern, expected in [
-        ("/", False, None, root + sub + hidden),
-        ("/", True, None, root_latest + sub_latest + hidden_latest),
-        ("/", False, "*.foo", root_foo + sub + hidden),
-        ("/", True, "*.foo", root_foo + sub_latest + hidden_latest),
-        ("/sub/", False, None, sub),
-        ("/sub/", True, None, sub_latest),
-        ("/sub/", False, "*.bar", []),
-        ("/sub/", True, "*.bar", []),
-        ("/sub/", False, "file.*", sub),
-        ("/sub/", True, "file.*", sub_latest),
-        ("/.sub/", False, None, hidden),
-        ("/.sub/", True, None, hidden_latest),
-        ("/file.bar", False, None, root_bar),
-        ("/file.bar", True, None, root_bar_latest),
-        ("/sub/file.foo", False, None, sub),
-        ("/sub/file.foo", True, None, sub_latest),
-        ("/sub/file.foo", False, "file.*", sub),
-        ("/sub/file.foo", True, "file.*", sub_latest),
-        ("/sub/file.foo", False, "*.bar", []),
-        ("/sub/file.foo", True, "*.bar", []),
-        ("/.sub/.file.foo", False, None, hidden),
-        ("/.sub/.file.foo", True, None, hidden_latest),
-    ]:
-        assert interface.ls(
-            path,
-            latest_version=latest,
-            pattern=pattern,
-        ) == sorted(expected)
+    assert interface.ls(
+        path,
+        latest_version=latest,
+        pattern=pattern,
+    ) == sorted(expected)
 
 
 def test_repr():
