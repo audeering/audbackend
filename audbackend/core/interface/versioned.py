@@ -248,7 +248,7 @@ class Versioned(Base):
             RuntimeError: if extension of ``src_path`` is not supported
                 or ``src_path`` is a malformed archive
             ValueError: if ``src_path`` does not start with ``'/'``,
-                ends on ``'/'`',
+                ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
@@ -315,7 +315,7 @@ class Versioned(Base):
             PermissionError: if the user lacks write permissions
                 for ``dst_path``
             ValueError: if ``src_path`` does not start with ``'/'``,
-                ends on ``'/'`',
+                ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
