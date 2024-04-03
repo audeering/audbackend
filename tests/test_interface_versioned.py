@@ -342,6 +342,22 @@ def test_errors(tmpdir, interface):
     with pytest.raises(ValueError, match=error_empty_version):
         interface.copy_file(remote_file, "/file.txt", version=empty_version)
 
+    # --- date ---
+    # `path` without leading '/'
+    with pytest.raises(ValueError, match=error_invalid_path):
+        interface.date(file_invalid_path, version)
+    # `path` without trailing '/'
+    with pytest.raises(ValueError, match=error_sub_path):
+        interface.date(file_sub_path, version)
+    # `path` contains invalid character
+    with pytest.raises(ValueError, match=error_invalid_char):
+        interface.date(file_invalid_char, version)
+    # invalid version
+    with pytest.raises(ValueError, match=error_empty_version):
+        interface.date(remote_file, empty_version)
+    with pytest.raises(ValueError, match=error_invalid_version):
+        interface.date(remote_file, invalid_version)
+
     # --- exists ---
     # `path` without leading '/'
     with pytest.raises(ValueError, match=error_invalid_path):
@@ -489,7 +505,7 @@ def test_errors(tmpdir, interface):
     with pytest.raises(ValueError, match=error_invalid_char):
         interface.ls(file_invalid_char)
 
-    # --- copy_file ---
+    # --- move_file ---
     # `src_path` missing
     with pytest.raises(audbackend.BackendError, match=error_backend):
         interface.move_file("/missing.txt", "/file.txt")
@@ -515,6 +531,22 @@ def test_errors(tmpdir, interface):
     with pytest.raises(ValueError, match=error_empty_version):
         interface.move_file(remote_file, "/file.txt", version=empty_version)
 
+    # --- owner ---
+    # `path` without leading '/'
+    with pytest.raises(ValueError, match=error_invalid_path):
+        interface.owner(file_invalid_path, version)
+    # `path` without trailing '/'
+    with pytest.raises(ValueError, match=error_sub_path):
+        interface.owner(file_sub_path, version)
+    # `path` contains invalid character
+    with pytest.raises(ValueError, match=error_invalid_char):
+        interface.owner(file_invalid_char, version)
+    # invalid version
+    with pytest.raises(ValueError, match=error_empty_version):
+        interface.owner(remote_file, empty_version)
+    with pytest.raises(ValueError, match=error_invalid_version):
+        interface.owner(remote_file, invalid_version)
+
     # --- put_archive ---
     # `src_root` missing
     error_msg = "No such file or directory: ..."
@@ -537,6 +569,14 @@ def test_errors(tmpdir, interface):
         interface.put_archive(
             tmpdir,
             file_invalid_path,
+            version,
+            files=local_file,
+        )
+    # `dst_path` with trailing '/'
+    with pytest.raises(ValueError, match=error_sub_path):
+        interface.put_archive(
+            tmpdir,
+            file_sub_path,
             version,
             files=local_file,
         )

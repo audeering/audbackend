@@ -303,6 +303,17 @@ def test_errors(tmpdir, interface):
     with pytest.raises(ValueError, match=error_invalid_char):
         interface.copy_file("/file.txt", file_invalid_char)
 
+    # --- date ---
+    # `path` without leading '/'
+    with pytest.raises(ValueError, match=error_invalid_path):
+        interface.date(file_invalid_path)
+    # `path` without trailing '/'
+    with pytest.raises(ValueError, match=error_sub_path):
+        interface.date(file_sub_path)
+    # `path` contains invalid character
+    with pytest.raises(ValueError, match=error_invalid_char):
+        interface.date(file_invalid_char)
+
     # --- exists ---
     # `path` without leading '/'
     with pytest.raises(ValueError, match=error_invalid_path):
@@ -436,6 +447,17 @@ def test_errors(tmpdir, interface):
     # `dst_path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
         interface.move_file("/file.txt", file_invalid_char)
+
+    # --- owner ---
+    # `path` without leading '/'
+    with pytest.raises(ValueError, match=error_invalid_path):
+        interface.owner(file_invalid_path)
+    # `path` without trailing '/'
+    with pytest.raises(ValueError, match=error_sub_path):
+        interface.owner(file_sub_path)
+    # `path` contains invalid character
+    with pytest.raises(ValueError, match=error_invalid_char):
+        interface.owner(file_invalid_char)
 
     # --- put_archive ---
     # `src_root` missing
