@@ -845,6 +845,15 @@ def test_move(tmpdir, src_path, src_versions, dst_path, version, interface):
         interface.remove_file(dst_path, v)
 
 
+def test_repr():
+    interface = audbackend.interface.Versioned(
+        audbackend.backend.FileSystem("host", "repo")
+    )
+    assert interface.__repr__() == (
+        "audbackend.interface.Versioned(audbackend.backend.FileSystem('host', 'repo'))"
+    )
+
+
 @pytest.mark.parametrize("dst_path", ["/file.ext", "/sub/file.ext"])
 @pytest.mark.parametrize(
     "interface",

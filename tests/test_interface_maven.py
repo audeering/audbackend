@@ -161,3 +161,12 @@ def test_ls(tmpdir, interface):
             latest_version=latest,
             pattern=pattern,
         ) == sorted(expected)
+
+
+def test_repr():
+    interface = audbackend.interface.Maven(
+        audbackend.backend.FileSystem("host", "repo")
+    )
+    assert interface.__repr__() == (
+        "audbackend.interface.Maven(audbackend.backend.FileSystem('host', 'repo'))"
+    )

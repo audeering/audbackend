@@ -61,17 +61,28 @@ def test_api(hosts, name, host, repository, cls):
         audbackend.access(name, host, repository)
 
     # returns versioned interface for legacy reasons
-    interface = audbackend.create(name, host, repository)
+    warning = (
+        "create is deprecated and will be removed with version 2.2.0. "
+        r"Use class method Backend.create\(\) of corresponding backend instead."
+    )
+    with pytest.warns(UserWarning, match=warning):
+        interface = audbackend.create(name, host, repository)
     assert isinstance(interface, audbackend.interface.Versioned)
     assert isinstance(interface.backend, cls)
 
     with pytest.raises(audbackend.BackendError, match=error_msg):
-        audbackend.create(name, host, repository)
+        with pytest.warns(UserWarning, match=warning):
+            audbackend.create(name, host, repository)
 
     interface = audbackend.access(name, host, repository)
     assert isinstance(interface.backend, cls)
 
-    audbackend.delete(name, host, repository)
+    warning = (
+        "delete is deprecated and will be removed with version 2.2.0. "
+        r"Use class method Backend.delete\(\) of corresponding backend instead."
+    )
+    with pytest.warns(UserWarning, match=warning):
+        audbackend.delete(name, host, repository)
 
     with pytest.raises(audbackend.BackendError, match=error_msg):
         audbackend.access(name, host, repository)
