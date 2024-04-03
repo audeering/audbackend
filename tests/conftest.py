@@ -1,6 +1,7 @@
 import getpass
 import os
 import time
+import warnings
 
 import pytest
 
@@ -96,14 +97,14 @@ def interface(tmpdir_factory, request):
             break
         except audbackend.BackendError:
             if n == 2:
-                error_msg = (
+                warning_msg = (
                     f"Cleaning up of repo {repository} failed.\n"
                     "Please delete remaining repositories manually \n"
                     "by running the following command \n"
                     "when no tests are actively running:\n"
                     f"python tests/misc/cleanup_artifactory.py"
                 )
-                raise RuntimeError(error_msg)
+                warnings.warn(warning_msg, UserWarning)
             time.sleep(1)
 
 
