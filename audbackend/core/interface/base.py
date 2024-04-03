@@ -27,8 +27,8 @@ class Base:
         self._backend = backend
 
     def __repr__(self) -> str:  # noqa: D105
-        name = f"{self.__class__.__module__}.{self.__class__.__name__}"
-        return f"{name}{self.backend}"
+        name = self.__class__.__name__
+        return f"audbackend.interface.{name}({self._backend})"
 
     @property
     def backend(self) -> Backend:
@@ -39,7 +39,7 @@ class Base:
 
         Examples:
             >>> interface.backend
-            ('audbackend.core.backend.base.Base', 'host', 'repo')
+            audbackend.backend.Base('host', 'repo')
 
         """
         return self._backend

@@ -1,4 +1,7 @@
 import typing
+import warnings
+
+import audeer
 
 from audbackend.core import utils
 from audbackend.core.backend.base import Base
@@ -76,10 +79,6 @@ def access(
         ValueError: if no backend class with alias ``name``
             has been registered
 
-    Examples:
-        >>> access("file-system", "host", "repo")
-        audbackend.core.interface.versioned.Versioned('audbackend.core.backend.filesystem.FileSystem', 'host', 'repo')
-
     """  # noqa: E501
     backend = _backend(name, host, repository)
     utils.call_function_on_backend(backend._open)
@@ -87,6 +86,10 @@ def access(
     return interface(backend, **interface_kwargs)
 
 
+@audeer.deprecated(
+    removal_version="2.2.0",
+    alternative="class method Backend.create() of corresponding backend",
+)
 def create(
     name: str,
     host: str,
@@ -105,6 +108,15 @@ def create(
         Since the return value might be removed in
         a future version it is not recommended to use it.
 
+    .. Warning::
+
+        ``audbackend.create()`` is deprecated
+        and will be removed in version 2.2.0.
+        Repositories on backends are instead created
+        by the class method ``create()``
+        for the desired backend,
+        e.g. :meth:`audbackend.backend.FileSystem.create`.
+
     Args:
         name: backend alias
         host: host address
@@ -117,9 +129,6 @@ def create(
         ValueError: if no backend class with alias ``name``
             has been registered
 
-    Examples:
-        >>> create("file-system", "host", "repository")
-
     """  # noqa: E501
     backend = _backend(name, host, repository)
     utils.call_function_on_backend(backend._create)
@@ -127,6 +136,10 @@ def create(
     return Versioned(backend)
 
 
+@audeer.deprecated(
+    removal_version="2.2.0",
+    alternative="class method Backend.delete() of corresponding backend",
+)
 def delete(
     name: str,
     host: str,
@@ -134,12 +147,19 @@ def delete(
 ):
     r"""Delete repository.
 
-    .. warning:: Deletes the repository and all its content.
-
     Deletes the repository
     with name ``repository``
     located at ``host``
     on the backend with alias ``name``.
+
+    .. Warning::
+
+        ``audbackend.delete()`` is deprecated
+        and will be removed in version 2.2.0.
+        Repositories on backends are instead deleted
+        by the class method ``delete()``
+        for the desired backend,
+        e.g. :meth:`audbackend.backend.FileSystem.delete`.
 
     Args:
         name: backend alias
@@ -152,20 +172,13 @@ def delete(
         ValueError: if no backend class with alias ``name``
             has been registered
 
-    Examples:
-        >>> access("file-system", "host", "repo").ls()
-        [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-        >>> delete("file-system", "host", "repo")
-        >>> create("file-system", "host", "repo")
-        >>> access("file-system", "host", "repo").ls()
-        []
-
     """  # noqa: E501
     interface = access(name, host, repository)
     utils.call_function_on_backend(interface._backend._delete)
     backends[name][host].pop(repository)
 
 
+@audeer.deprecated(removal_version="2.2.0", alternative="backend classes directly")
 def register(
     name: str,
     cls: typing.Type[Base],
@@ -176,23 +189,30 @@ def register(
     registered under the alias ``name``
     it will be overwritten.
 
+    .. Warning::
+
+        ``audbackend.register()`` is deprecated
+        and will be removed in version 2.2.0.
+        Instead of backend names
+        we now use backend classes,
+        such as :class:`audbackend.backend.FileSystem`.
+
     Args:
         name: backend alias
         cls: backend class
-
-    Examples:
-        >>> register("file-system", FileSystem)
 
     """
     backend_registry[name] = cls
 
 
-register("file-system", FileSystem)
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    register("file-system", FileSystem)
 
-# Register optional backends
-try:
-    from audbackend.core.backend.artifactory import Artifactory
+    # Register optional backends
+    try:
+        from audbackend.core.backend.artifactory import Artifactory
 
-    register("artifactory", Artifactory)
-except ImportError:  # pragma: no cover
-    pass
+        register("artifactory", Artifactory)
+    except ImportError:  # pragma: no cover
+        pass

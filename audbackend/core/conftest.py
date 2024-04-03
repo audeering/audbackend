@@ -10,10 +10,6 @@ import audbackend
 
 
 class DoctestFileSystem(audbackend.backend.FileSystem):
-    def __repr__(self) -> str:
-        name = "audbackend.core.backend.filesystem.FileSystem"
-        return str((name, self.host, self.repository))
-
     def _date(
         self,
         path: str,
@@ -29,15 +25,6 @@ class DoctestFileSystem(audbackend.backend.FileSystem):
         return "doctest"
 
 
-def doctest_create(
-    name: str,
-    host: str,
-    repository: str,
-):
-    # call create without return value
-    audbackend.create(name, host, repository)
-
-
 @pytest.fixture(scope="function", autouse=True)
 def prepare_docstring_tests(doctest_namespace):
     with tempfile.TemporaryDirectory() as tmp:
@@ -46,9 +33,6 @@ def prepare_docstring_tests(doctest_namespace):
 
         file = "src.pth"
         audeer.touch(file)
-
-        audbackend.register("file-system", DoctestFileSystem)
-        doctest_namespace["create"] = doctest_create
 
         # backend
 
@@ -86,9 +70,7 @@ def prepare_docstring_tests(doctest_namespace):
 
                 yield
 
-        audbackend.delete("file-system", "host", "repo")
-        audbackend.delete("file-system", "host", "repo-unversioned")
-        audbackend.register("file-system", audbackend.backend.FileSystem)
-        doctest_namespace["create"] = audbackend.create
+        DoctestFileSystem.delete("host", "repo")
+        DoctestFileSystem.delete("host", "repo-unversioned")
 
         os.chdir(current_dir)
