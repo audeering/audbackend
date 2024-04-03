@@ -27,8 +27,9 @@ class Unversioned(Base):
         Raises:
             BackendError: if an error is raised on the backend,
                 e.g. ``path`` does not exist
-            ValueError: if ``path`` does not start with ``'/'`` or
-                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``path`` does not start with ``'/'``,
+                ends on ``'/'``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
             >>> unversioned.checksum("/f.ext")
@@ -107,8 +108,9 @@ class Unversioned(Base):
         Raises:
             BackendError: if an error is raised on the backend,
                 e.g. ``path`` does not exist
-            ValueError: if ``path`` does not start with ``'/'`` or
-                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``path`` does not start with ``'/'``,
+                ends on ``'/'``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
               >>> unversioned.date("/f.ext")
@@ -138,8 +140,9 @@ class Unversioned(Base):
             BackendError: if ``suppress_backend_errors`` is ``False``
                 and an error is raised on the backend,
                 e.g. due to a connection timeout
-            ValueError: if ``path`` does not start with ``'/'`` or
-                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``path`` does not start with ``'/'``,
+                ends on ``'/'``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
 
@@ -420,8 +423,9 @@ class Unversioned(Base):
         Raises:
             BackendError: if an error is raised on the backend,
                 e.g. ``path`` does not exist
-            ValueError: if ``path`` does not start with ``'/'`` or
-                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``path`` does not start with ``'/'``,
+                ends on ``'/'``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
               >>> unversioned.owner("/f.ext")
@@ -566,8 +570,9 @@ class Unversioned(Base):
         Raises:
             BackendError: if an error is raised on the backend,
                 e.g. ``path`` does not exist
-            ValueError: if ``path`` does not start with ``'/'`` or
-                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``path`` does not start with ``'/'``,
+                ends on ``'/'``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
 
         Examples:
             >>> unversioned.exists("/f.ext")
