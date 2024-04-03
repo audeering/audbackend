@@ -150,6 +150,8 @@ class Maven(Versioned):
             [('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
             >>> interface.ls(pattern="b.*")
             [('/a/b.ext', '1.0.0')]
+            >>> interface.ls("/a/")
+            [('/a/b.ext', '1.0.0')]
 
         """  # noqa: E501
         if path.endswith("/"):  # find files under sub-path
