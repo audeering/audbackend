@@ -711,6 +711,9 @@ def test_ls(tmpdir, interface):
     sub_latest = [
         ("/sub/file.foo", "2.0.0"),
     ]
+    sub_extra = [
+        ("/sub/sub.ext", "1.0.0"),
+    ]
     hidden = [
         ("/.sub/.file.foo", "1.0.0"),
         ("/.sub/.file.foo", "2.0.0"),
@@ -722,7 +725,7 @@ def test_ls(tmpdir, interface):
     # create content
 
     tmp_file = os.path.join(tmpdir, "~")
-    for path, version in root + sub + hidden:
+    for path, version in root + sub + sub_extra + hidden:
         audeer.touch(tmp_file)
         interface.put_file(
             tmp_file,
@@ -733,12 +736,12 @@ def test_ls(tmpdir, interface):
     # test
 
     for path, latest, pattern, expected in [
-        ("/", False, None, root + sub + hidden),
-        ("/", True, None, root_latest + sub_latest + hidden_latest),
+        ("/", False, None, root + sub + sub_extra + hidden),
+        ("/", True, None, root_latest + sub_latest + sub_extra + hidden_latest),
         ("/", False, "*.foo", root_foo + sub + hidden),
         ("/", True, "*.foo", root_foo + sub_latest + hidden_latest),
-        ("/sub/", False, None, sub),
-        ("/sub/", True, None, sub_latest),
+        ("/sub/", False, None, sub + sub_extra),
+        ("/sub/", True, None, sub_latest + sub_extra),
         ("/sub/", False, "*.bar", []),
         ("/sub/", True, "*.bar", []),
         ("/sub/", False, "file.*", sub),
