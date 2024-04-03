@@ -790,8 +790,11 @@ class Versioned(Base):
             ['1.0.0', '2.0.0']
 
         """
+        utils.check_path(path)
+
         paths = self.ls(path, suppress_backend_errors=suppress_backend_errors)
         vs = [v for _, v in paths]
+
         return vs
 
     def _path_with_version(
@@ -806,6 +809,7 @@ class Versioned(Base):
         <root>/<version>/<base><ext>
 
         """
+        path = utils.check_path(path)
         version = utils.check_version(version)
         root, name = self.split(path)
         path = self.join(root, version, name)

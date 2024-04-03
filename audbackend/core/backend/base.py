@@ -533,7 +533,7 @@ class Base:
         path: str,
         *paths,
     ) -> str:
-        r"""Join to path on backend.
+        r"""Join to (sub-)path on backend.
 
         Args:
             path: first part of path
@@ -548,13 +548,13 @@ class Base:
                 or if joined path contains invalid character
 
         """
-        path = utils.check_path(path)
+        path = utils.check_path(path, allow_sub_path=True)
 
         paths = [path] + [p for p in paths]
         paths = [path for path in paths if path]  # remove empty or None
         path = self.sep.join(paths)
 
-        path = utils.check_path(path)
+        path = utils.check_path(path, allow_sub_path=True)
 
         return path
 
@@ -616,7 +616,7 @@ class Base:
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         """
-        path = utils.check_path(path)
+        path = utils.check_path(path, allow_sub_path=True)
 
         if path.endswith("/"):  # find files under sub-path
             paths = utils.call_function_on_backend(
@@ -1024,7 +1024,7 @@ class Base:
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         """
-        path = utils.check_path(path)
+        path = utils.check_path(path, allow_sub_path=True)
 
         root = self.sep.join(path.split(self.sep)[:-1]) + self.sep
         basename = path.split(self.sep)[-1]
