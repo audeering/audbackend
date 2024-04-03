@@ -69,6 +69,5 @@ def prepare_docstring_tests(doctest_namespace):
 
         DoctestFileSystem.delete("host", "repo")
         DoctestFileSystem.delete("host", "repo-unversioned")
-        doctest_namespace["create"] = audbackend.create
 
         os.chdir(current_dir)
