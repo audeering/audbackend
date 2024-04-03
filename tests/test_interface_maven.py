@@ -89,10 +89,12 @@ def test_ls(tmpdir, interface):
         ("/file.bar", "1.0.0"),
         ("/file.bar", "2.0.0"),
         ("/file.foo", "1.0.0"),
+        ("/sub.ext", "1.0.0"),
     ]
     root_latest = [
         ("/file.bar", "2.0.0"),
         ("/file.foo", "1.0.0"),
+        ("/sub.ext", "1.0.0"),
     ]
     root_foo = [
         ("/file.foo", "1.0.0"),
