@@ -15,15 +15,14 @@ class Unversioned(Base):
 
     Examples:
         >>> import audeer
-        >>> file = "src.pth"
+        >>> file = "src.txt"
         >>> _ = audeer.touch(file)
         >>> backend = audbackend.backend.FileSystem("host", "repo")
         >>> interface = Unversioned(backend)
-        >>> interface.put_archive(".", "/a.zip", files=[file])
-        >>> interface.put_file(file, "/a/b.ext")
-        >>> interface.put_file(file, "/f.ext")
+        >>> interface.put_file(file, "/file.txt")
+        >>> interface.put_archive(".", "/sub/archive.zip", files=[file])
         >>> interface.ls()
-        ['/a.zip', '/a/b.ext', '/f.ext']
+        ['/file.txt', '/sub/archive.zip']
 
     """
 
@@ -50,7 +49,7 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
-            >>> interface.checksum("/f.ext")
+            >>> interface.checksum("/file.txt")
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
@@ -98,12 +97,12 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
-            >>> interface.exists("/copy.ext")
+            >>> interface.exists("/copy.txt")
             False
-            >>> interface.copy_file("/f.ext", "/copy.ext")
-            >>> interface.exists("/copy.ext")
+            >>> interface.copy_file("/file.txt", "/copy.txt")
+            >>> interface.exists("/copy.txt")
             True
-            >>> interface.remove_file("/copy.ext")
+            >>> interface.remove_file("/copy.txt")
 
         """
         self.backend.copy_file(
@@ -139,7 +138,7 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
-              >>> interface.date("/f.ext")
+              >>> interface.date("/copy.txt")
               '1991-02-20'
 
         """
@@ -176,7 +175,7 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
-            >>> interface.exists("/f.ext")
+            >>> interface.exists("/file.txt")
             True
 
         """
@@ -240,8 +239,8 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
-            >>> interface.get_archive("/a.zip", ".")
-            ['src.pth']
+            >>> interface.get_archive("/sub/archive.zip", ".")
+            ['src.txt']
 
         """
         return self.backend.get_archive(
@@ -305,10 +304,10 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
-            >>> os.path.exists("dst.pth")
+            >>> os.path.exists("dst.txt")
             False
-            >>> _ = interface.get_file("/f.ext", "dst.pth")
-            >>> os.path.exists("dst.pth")
+            >>> _ = interface.get_file("/file.txt", "dst.txt")
+            >>> os.path.exists("dst.txt")
             True
 
         """
@@ -370,15 +369,15 @@ class Unversioned(Base):
 
         Examples:
             >>> interface.ls()
-            ['/a.zip', '/a/b.ext', '/f.ext']
-            >>> interface.ls("/f.ext")
-            ['/f.ext']
-            >>> interface.ls(pattern="*.ext")
-            ['/a/b.ext', '/f.ext']
-            >>> interface.ls(pattern="b.*")
-            ['/a/b.ext']
-            >>> interface.ls("/a/")
-            ['/a/b.ext']
+            ['/file.txt', '/sub/archive.zip']
+            >>> interface.ls("/file.txt")
+            ['/file.txt']
+            >>> interface.ls(pattern="*.txt")
+            ['/file.txt']
+            >>> interface.ls(pattern="archive.*")
+            ['/sub/archive.zip']
+            >>> interface.ls("/sub/")
+            ['/sub/archive.zip']
 
         """  # noqa: E501
         return self.backend.ls(
@@ -433,14 +432,14 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
-            >>> interface.exists("/move.ext")
+            >>> interface.exists("/move.txt")
             False
-            >>> interface.move_file("/f.ext", "/move.ext")
-            >>> interface.exists("/move.ext")
+            >>> interface.move_file("/file.txt", "/move.txt")
+            >>> interface.exists("/move.txt")
             True
-            >>> interface.exists("/f.ext")
+            >>> interface.exists("/file.txt")
             False
-            >>> interface.move_file("/move.ext", "/f.ext")
+            >>> interface.move_file("/move.txt", "/file.txt")
 
         """
         self.backend.move_file(
@@ -477,7 +476,7 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
-              >>> interface.owner("/f.ext")
+              >>> interface.owner("/file.txt")
               'doctest'
 
         """
@@ -543,10 +542,10 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
-            >>> interface.exists("/a.tar.gz")
+            >>> interface.exists("/sub/archive.tar.gz")
             False
-            >>> interface.put_archive(".", "/a.tar.gz")
-            >>> interface.exists("/a.tar.gz")
+            >>> interface.put_archive(".", "/sub/archive.tar.gz")
+            >>> interface.exists("/sub/archive.tar.gz")
             True
 
         """
@@ -601,10 +600,10 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
-            >>> interface.exists("/sub/f.ext")
+            >>> interface.exists("/sub/file.txt")
             False
-            >>> interface.put_file("src.pth", "/sub/f.ext")
-            >>> interface.exists("/sub/f.ext")
+            >>> interface.put_file("src.txt", "/sub/file.txt")
+            >>> interface.exists("/sub/file.txt")
             True
 
         """
@@ -635,10 +634,10 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
-            >>> interface.exists("/f.ext")
+            >>> interface.exists("/file.txt")
             True
-            >>> interface.remove_file("/f.ext")
-            >>> interface.exists("/f.ext")
+            >>> interface.remove_file("/file.txt")
+            >>> interface.exists("/file.txt")
             False
 
         """
