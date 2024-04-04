@@ -32,12 +32,20 @@ def call_function_on_backend(
             raise BackendError(ex)
 
 
-def check_path(path: str) -> str:
+def check_path(
+    path: str,
+    *,
+    allow_sub_path: bool = False,
+) -> str:
     r"""Check path."""
     # Assert path starts with sep and does not contain invalid characters.
     if not path.startswith(BACKEND_SEPARATOR):
         raise ValueError(
-            f"Invalid backend path '{path}', " f"must start with '{BACKEND_SEPARATOR}'."
+            f"Invalid backend path '{path}', must start with '{BACKEND_SEPARATOR}'."
+        )
+    if not allow_sub_path and path.endswith(BACKEND_SEPARATOR):
+        raise ValueError(
+            f"Invalid backend path '{path}', must not end on '{BACKEND_SEPARATOR}'."
         )
     if path and BACKEND_ALLOWED_CHARS_COMPILED.fullmatch(path) is None:
         raise ValueError(
