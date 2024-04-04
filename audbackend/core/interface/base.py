@@ -18,10 +18,6 @@ class Base:
     Args:
         backend: backend object
 
-    Examples:
-        >>> backend = audbackend.backend.FileSystem("host", "repo")
-        >>> interface = Base(backend)
-
     """
 
     def __init__(
