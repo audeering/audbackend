@@ -105,8 +105,9 @@ class Base:
         Raises:
             BackendError: if an error is raised on the backend,
                 e.g. ``path`` does not exist
-            ValueError: if ``path`` does not start with ``'/'`` or
-                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``path`` does not start with ``'/'``,
+                ends on ``'/'``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
 
         """
         path = utils.check_path(path)
@@ -186,8 +187,9 @@ class Base:
             BackendError: if an error is raised on the backend
             InterruptedError: if validation fails
             ValueError: if ``src_path`` or ``dst_path``
-                does not start with ``'/'`` or
-                does not match ``'[A-Za-z0-9/._-]+'``
+                does not start with ``'/'``,
+                ends on ``'/'``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
 
         """
         src_path = utils.check_path(src_path)
@@ -277,8 +279,9 @@ class Base:
         Raises:
             BackendError: if an error is raised on the backend,
                 e.g. ``path`` does not exist
-            ValueError: if ``path`` does not start with ``'/'`` or
-                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``path`` does not start with ``'/'``,
+                ends on ``'/'``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
 
         """
         path = utils.check_path(path)
@@ -345,8 +348,9 @@ class Base:
             BackendError: if ``suppress_backend_errors`` is ``False``
                 and an error is raised on the backend,
                 e.g. due to a connection timeout
-            ValueError: if ``path`` does not start with ``'/'`` or
-                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``path`` does not start with ``'/'``,
+                ends on ``'/'``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
 
@@ -406,8 +410,9 @@ class Base:
                 for ``dst_path``
             RuntimeError: if extension of ``src_path`` is not supported
                 or ``src_path`` is a malformed archive
-            ValueError: if ``src_path`` does not start with ``'/'`` or
-                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``src_path`` does not start with ``'/'``,
+                ends on ``'/'``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
 
         """
         src_path = utils.check_path(src_path)
@@ -485,8 +490,9 @@ class Base:
             IsADirectoryError: if ``dst_path`` points to an existing folder
             PermissionError: if the user lacks write permissions
                 for ``dst_path``
-            ValueError: if ``src_path`` does not start with ``'/'`` or
-                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``src_path`` does not start with ``'/'``,
+                ends on ``'/'``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
 
         """
         src_path = utils.check_path(src_path)
@@ -533,7 +539,7 @@ class Base:
         path: str,
         *paths,
     ) -> str:
-        r"""Join to path on backend.
+        r"""Join to (sub-)path on backend.
 
         Args:
             path: first part of path
@@ -548,13 +554,13 @@ class Base:
                 or if joined path contains invalid character
 
         """
-        path = utils.check_path(path)
+        path = utils.check_path(path, allow_sub_path=True)
 
         paths = [path] + [p for p in paths]
         paths = [path for path in paths if path]  # remove empty or None
         path = self.sep.join(paths)
 
-        path = utils.check_path(path)
+        path = utils.check_path(path, allow_sub_path=True)
 
         return path
 
@@ -616,7 +622,7 @@ class Base:
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         """
-        path = utils.check_path(path)
+        path = utils.check_path(path, allow_sub_path=True)
 
         if path.endswith("/"):  # find files under sub-path
             paths = utils.call_function_on_backend(
@@ -706,8 +712,9 @@ class Base:
             BackendError: if an error is raised on the backend
             InterruptedError: if validation fails
             ValueError: if ``src_path`` or ``dst_path``
-                does not start with ``'/'`` or
-                does not match ``'[A-Za-z0-9/._-]+'``
+                does not start with ``'/'``,
+                ends on ``'/'``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
 
         """
         src_path = utils.check_path(src_path)
@@ -805,8 +812,9 @@ class Base:
         Raises:
             BackendError: if an error is raised on the backend,
                 e.g. ``path`` does not exist
-            ValueError: if ``path`` does not start with ``'/'`` or
-                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``path`` does not start with ``'/'``,
+                ends on ``'/'``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
 
         """
         path = utils.check_path(path)
@@ -867,8 +875,9 @@ class Base:
             RuntimeError: if ``dst_path`` does not end with
                 ``zip`` or ``tar.gz``
                 or a file in ``files`` is not below ``root``
-            ValueError: if ``dst_path`` does not start with ``'/'`` or
-                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``dst_path`` does not start with ``'/'``,
+                ends on ``'/'``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
 
         """
         dst_path = utils.check_path(dst_path)
@@ -939,8 +948,9 @@ class Base:
             FileNotFoundError: if ``src_path`` does not exist
             InterruptedError: if validation fails
             IsADirectoryError: if ``src_path`` is a folder
-            ValueError: if ``dst_path`` does not start with ``'/'`` or
-                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``dst_path`` does not start with ``'/'``,
+                ends on ``'/'``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
 
         """
         dst_path = utils.check_path(dst_path)
@@ -988,8 +998,9 @@ class Base:
         Raises:
             BackendError: if an error is raised on the backend,
                 e.g. ``path`` does not exist
-            ValueError: if ``path`` does not start with ``'/'`` or
-                does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``path`` does not start with ``'/'``,
+                ends on ``'/'``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
 
         """
         path = utils.check_path(path)
@@ -1024,7 +1035,7 @@ class Base:
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         """
-        path = utils.check_path(path)
+        path = utils.check_path(path, allow_sub_path=True)
 
         root = self.sep.join(path.split(self.sep)[:-1]) + self.sep
         basename = path.split(self.sep)[-1]
