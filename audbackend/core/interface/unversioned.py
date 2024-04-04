@@ -138,7 +138,7 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
-              >>> interface.date("/copy.txt")
+              >>> interface.date("/file.txt")
               '1991-02-20'
 
         """
