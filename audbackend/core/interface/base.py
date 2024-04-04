@@ -18,15 +18,9 @@ class Base:
     Args:
         backend: backend object
 
-    .. Prepare backend and interface for docstring examples
-
-        >>> import audeer
-        >>> audeer.rmdir("host", "repo")
-        >>> _ = audeer.mkdir("host")
-        >>> FileSystem.create("host", "repo")
-
     Examples:
-        >>> interface = Base(FileSystem("host", "repo"))
+        >>> backend = audbackend.backend.FileSystem("host", "repo")
+        >>> interface = Base(backend)
 
     """
 
@@ -48,7 +42,8 @@ class Base:
             backend object
 
         ..
-            >>> interface = Base(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Base(backend)
 
         Examples:
             >>> interface.backend
@@ -64,7 +59,8 @@ class Base:
         Returns: host path
 
         ..
-            >>> interface = Base(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Base(backend)
 
         Examples:
             >>> interface.host
@@ -93,7 +89,8 @@ class Base:
                 or if joined path contains invalid character
 
         ..
-            >>> interface = Base(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Base(backend)
 
         Examples:
             >>> interface.join("/", "f.ext")
@@ -114,7 +111,8 @@ class Base:
             repository name
 
         ..
-            >>> interface = Base(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Base(backend)
 
         Examples:
             >>> interface.repository
@@ -131,7 +129,8 @@ class Base:
             file separator
 
         ..
-            >>> interface = Base(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Base(backend)
 
         Examples:
             >>> interface.sep
@@ -157,7 +156,8 @@ class Base:
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         ..
-            >>> interface = Base(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Base(backend)
 
         Examples:
             >>> interface.split("/")

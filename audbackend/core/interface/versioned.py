@@ -25,7 +25,8 @@ class Versioned(Base):
         >>> import audeer
         >>> file = "src.pth"
         >>> _ = audeer.touch(file)
-        >>> interface = Versioned(FileSystem("host", "repo"))
+        >>> backend = audbackend.backend.FileSystem("host", "repo")
+        >>> interface = Versioned(backend)
         >>> interface.put_archive(".", "/a.zip", "1.0.0", files=[file])
         >>> interface.put_file(file, "/a/b.ext", "1.0.0")
         >>> for version in ["1.0.0", "2.0.0"]:
@@ -64,7 +65,8 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         ..
-            >>> interface = Versioned(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Versioned(backend)
 
         Examples:
             >>> interface.checksum("/f.ext", "1.0.0")
@@ -120,7 +122,8 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         ..
-            >>> interface = Versioned(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Versioned(backend)
 
         Examples:
             >>> interface.exists("/copy.ext", "1.0.0")
@@ -172,7 +175,8 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         ..
-            >>> interface = Versioned(FileSystem("host", "repo"))
+            >>> backend = DoctestFileSystem("host", "repo")
+            >>> interface = Versioned(backend)
 
         Examples:
               >>> interface.date("/f.ext", "1.0.0")
@@ -211,7 +215,8 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         ..
-            >>> interface = Versioned(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Versioned(backend)
 
         Examples:
             >>> interface.exists("/f.ext", "1.0.0")
@@ -279,7 +284,8 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         ..
-            >>> interface = Versioned(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Versioned(backend)
 
         Examples:
             >>> interface.get_archive("/a.zip", ".", "1.0.0")
@@ -348,7 +354,8 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         ..
-            >>> interface = Versioned(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Versioned(backend)
 
         Examples:
             >>> os.path.exists("dst.pth")
@@ -385,7 +392,8 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
          ..
-            >>> interface = Versioned(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Versioned(backend)
 
         Examples:
             >>> interface.latest_version("/f.ext")
@@ -444,7 +452,8 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         ..
-            >>> interface = Versioned(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Versioned(backend)
 
         Examples:
             >>> interface.ls()
@@ -578,7 +587,8 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         ..
-            >>> interface = Versioned(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Versioned(backend)
 
         Examples:
             >>> interface.exists("/move.ext", "1.0.0")
@@ -633,7 +643,8 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         ..
-            >>> interface = Versioned(FileSystem("host", "repo"))
+            >>> backend = DoctestFileSystem("host", "repo")
+            >>> interface = Versioned(backend)
 
         Examples:
               >>> interface.owner("/f.ext", "1.0.0")
@@ -703,7 +714,8 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         ..
-            >>> interface = Versioned(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Versioned(backend)
 
         Examples:
             >>> interface.exists("/a.tar.gz", "1.0.0")
@@ -768,7 +780,8 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         ..
-            >>> interface = Versioned(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Versioned(backend)
 
         Examples:
             >>> interface.exists("/sub/f.ext", "3.0.0")
@@ -806,7 +819,8 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         ..
-            >>> interface = Versioned(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Versioned(backend)
 
         Examples:
             >>> interface.exists("/f.ext", "1.0.0")
@@ -845,7 +859,8 @@ class Versioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         ..
-            >>> interface = Versioned(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Versioned(backend)
 
         Examples:
             >>> interface.versions("/f.ext")

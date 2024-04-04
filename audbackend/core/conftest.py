@@ -10,9 +10,6 @@ import audbackend
 
 
 class DoctestFileSystem(audbackend.backend.FileSystem):
-    def __repr__(self) -> str:  # noqa: D105
-        return f"audbackend.backend.FileSystem('{self.host}', '{self.repository}')"
-
     def _date(
         self,
         path: str,
@@ -36,16 +33,16 @@ def prepare_docstring_tests(doctest_namespace):
         os.chdir(tmp)
         # Prepare backend
         audeer.mkdir("host")
-        DoctestFileSystem.create("host", "repo")
+        audbackend.backend.FileSystem.create("host", "repo")
         # Provide DoctestFileSystem as FileSystem,
         # and audbackend
         # in docstring examples
-        doctest_namespace["FileSystem"] = DoctestFileSystem
+        doctest_namespace["DoctestFileSystem"] = DoctestFileSystem
         doctest_namespace["audbackend"] = audbackend
 
         yield
 
         # Remove backend
-        DoctestFileSystem.delete("host", "repo")
+        audbackend.backend.FileSystem.delete("host", "repo")
         # Change back to current dir
         os.chdir(current_dir)

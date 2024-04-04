@@ -67,7 +67,8 @@ class Maven(Versioned):
         >>> import audeer
         >>> file = "src.pth"
         >>> _ = audeer.touch(file)
-        >>> interface = Maven(FileSystem("host", "repo"))
+        >>> backend = audbackend.backend.FileSystem("host", "repo")
+        >>> interface = Maven(backend)
         >>> interface.put_archive(".", "/a.zip", "1.0.0", files=[file])
         >>> interface.put_file(file, "/a/b.ext", "1.0.0")
         >>> for version in ["1.0.0", "2.0.0"]:
@@ -137,7 +138,8 @@ class Maven(Versioned):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         ..
-            >>> interface = Maven(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Maven(backend)
 
         Examples:
             >>> interface.ls()

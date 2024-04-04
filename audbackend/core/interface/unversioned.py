@@ -17,7 +17,8 @@ class Unversioned(Base):
         >>> import audeer
         >>> file = "src.pth"
         >>> _ = audeer.touch(file)
-        >>> interface = Unversioned(FileSystem("host", "repo"))
+        >>> backend = audbackend.backend.FileSystem("host", "repo")
+        >>> interface = Unversioned(backend)
         >>> interface.put_archive(".", "/a.zip", files=[file])
         >>> interface.put_file(file, "/a/b.ext")
         >>> interface.put_file(file, "/f.ext")
@@ -45,7 +46,8 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         ..
-            >>> interface = Unversioned(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Unversioned(backend)
 
         Examples:
             >>> interface.checksum("/f.ext")
@@ -92,7 +94,8 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         ..
-            >>> interface = Unversioned(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Unversioned(backend)
 
         Examples:
             >>> interface.exists("/copy.ext")
@@ -132,7 +135,8 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         ..
-            >>> interface = Unversioned(FileSystem("host", "repo"))
+            >>> backend = DoctestFileSystem("host", "repo")
+            >>> interface = Unversioned(backend)
 
         Examples:
               >>> interface.date("/f.ext")
@@ -168,7 +172,8 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9._-]+'``
 
         ..
-            >>> interface = Unversioned(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Unversioned(backend)
 
         Examples:
             >>> interface.exists("/f.ext")
@@ -231,7 +236,8 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         ..
-            >>> interface = Unversioned(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Unversioned(backend)
 
         Examples:
             >>> interface.get_archive("/a.zip", ".")
@@ -295,7 +301,8 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         ..
-            >>> interface = Unversioned(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Unversioned(backend)
 
         Examples:
             >>> os.path.exists("dst.pth")
@@ -358,7 +365,8 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         ..
-            >>> interface = Unversioned(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Unversioned(backend)
 
         Examples:
             >>> interface.ls()
@@ -421,7 +429,8 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         ..
-            >>> interface = Unversioned(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Unversioned(backend)
 
         Examples:
             >>> interface.exists("/move.ext")
@@ -464,7 +473,8 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         ..
-            >>> interface = Unversioned(FileSystem("host", "repo"))
+            >>> backend = DoctestFileSystem("host", "repo")
+            >>> interface = Unversioned(backend)
 
         Examples:
               >>> interface.owner("/f.ext")
@@ -529,7 +539,8 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         ..
-            >>> interface = Unversioned(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Unversioned(backend)
 
         Examples:
             >>> interface.exists("/a.tar.gz")
@@ -586,7 +597,8 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         ..
-            >>> interface = Unversioned(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Unversioned(backend)
 
         Examples:
             >>> interface.exists("/sub/f.ext")
@@ -619,7 +631,8 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         ..
-            >>> interface = Unversioned(FileSystem("host", "repo"))
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Unversioned(backend)
 
         Examples:
             >>> interface.exists("/f.ext")
