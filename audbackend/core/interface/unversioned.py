@@ -138,8 +138,8 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
-              >>> interface.date("/file.txt")
-              '1991-02-20'
+            >>> interface.date("/file.txt")
+            '1991-02-20'
 
         """
         return self.backend.date(path)
@@ -476,8 +476,8 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
-              >>> interface.owner("/file.txt")
-              'doctest'
+            >>> interface.owner("/file.txt")
+            'doctest'
 
         """
         return self.backend.owner(path)

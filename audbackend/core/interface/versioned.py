@@ -178,8 +178,8 @@ class Versioned(Base):
             >>> interface = Versioned(backend)
 
         Examples:
-              >>> interface.date("/file.txt", "1.0.0")
-              '1991-02-20'
+            >>> interface.date("/file.txt", "1.0.0")
+            '1991-02-20'
 
         """
         path_with_version = self._path_with_version(path, version)
@@ -646,8 +646,8 @@ class Versioned(Base):
             >>> interface = Versioned(backend)
 
         Examples:
-              >>> interface.owner("/file.txt", "1.0.0")
-              'doctest'
+            >>> interface.owner("/file.txt", "1.0.0")
+            'doctest'
 
         """
         path_with_version = self._path_with_version(path, version)
