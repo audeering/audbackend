@@ -23,18 +23,17 @@ class Versioned(Base):
 
     Examples:
         >>> import audeer
-        >>> file = "src.pth"
+        >>> file = "src.txt"
         >>> _ = audeer.touch(file)
         >>> backend = audbackend.backend.FileSystem("host", "repo")
         >>> interface = Versioned(backend)
-        >>> interface.put_archive(".", "/a.zip", "1.0.0", files=[file])
-        >>> interface.put_file(file, "/a/b.ext", "1.0.0")
+        >>> interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
         >>> for version in ["1.0.0", "2.0.0"]:
-        ...     interface.put_file(file, "/f.ext", version)
+        ...     interface.put_file(file, "/file.txt", version)
         >>> interface.ls()
-        [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
+        [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
 
-    """  # noqa: E501
+    """
 
     def __init__(
         self,
@@ -69,7 +68,7 @@ class Versioned(Base):
             >>> interface = Versioned(backend)
 
         Examples:
-            >>> interface.checksum("/f.ext", "1.0.0")
+            >>> interface.checksum("/file.txt", "1.0.0")
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
@@ -126,12 +125,12 @@ class Versioned(Base):
             >>> interface = Versioned(backend)
 
         Examples:
-            >>> interface.exists("/copy.ext", "1.0.0")
+            >>> interface.exists("/copy.txt", "1.0.0")
             False
-            >>> interface.copy_file("/f.ext", "/copy.ext", version="1.0.0")
-            >>> interface.exists("/copy.ext", "1.0.0")
+            >>> interface.copy_file("/file.txt", "/copy.txt", version="1.0.0")
+            >>> interface.exists("/copy.txt", "1.0.0")
             True
-            >>> interface.remove_file("/copy.ext", "1.0.0")
+            >>> interface.remove_file("/copy.txt", "1.0.0")
 
         """
         if version is None:
@@ -179,7 +178,7 @@ class Versioned(Base):
             >>> interface = Versioned(backend)
 
         Examples:
-              >>> interface.date("/f.ext", "1.0.0")
+              >>> interface.date("/file.txt", "1.0.0")
               '1991-02-20'
 
         """
@@ -219,7 +218,7 @@ class Versioned(Base):
             >>> interface = Versioned(backend)
 
         Examples:
-            >>> interface.exists("/f.ext", "1.0.0")
+            >>> interface.exists("/file.txt", "1.0.0")
             True
 
         """
@@ -288,8 +287,8 @@ class Versioned(Base):
             >>> interface = Versioned(backend)
 
         Examples:
-            >>> interface.get_archive("/a.zip", ".", "1.0.0")
-            ['src.pth']
+            >>> interface.get_archive("/sub/archive.zip", ".", "1.0.0")
+            ['src.txt']
 
         """
         src_path_with_version = self._path_with_version(src_path, version)
@@ -358,10 +357,10 @@ class Versioned(Base):
             >>> interface = Versioned(backend)
 
         Examples:
-            >>> os.path.exists("dst.pth")
+            >>> os.path.exists("dst.txt")
             False
-            >>> _ = interface.get_file("/f.ext", "dst.pth", "1.0.0")
-            >>> os.path.exists("dst.pth")
+            >>> _ = interface.get_file("/file.txt", "dst.txt", "1.0.0")
+            >>> os.path.exists("dst.txt")
             True
 
         """
@@ -396,7 +395,7 @@ class Versioned(Base):
             >>> interface = Versioned(backend)
 
         Examples:
-            >>> interface.latest_version("/f.ext")
+            >>> interface.latest_version("/file.txt")
             '2.0.0'
 
         """
@@ -457,17 +456,17 @@ class Versioned(Base):
 
         Examples:
             >>> interface.ls()
-            [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
+            [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
             >>> interface.ls(latest_version=True)
-            [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> interface.ls("/f.ext")
-            [('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> interface.ls(pattern="*.ext")
-            [('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> interface.ls(pattern="b.*")
-            [('/a/b.ext', '1.0.0')]
-            >>> interface.ls("/a/")
-            [('/a/b.ext', '1.0.0')]
+            [('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
+            >>> interface.ls("/file.txt")
+            [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0')]
+            >>> interface.ls(pattern="*.txt")
+            [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0')]
+            >>> interface.ls(pattern="archive.*")
+            [('/sub/archive.zip', '1.0.0')]
+            >>> interface.ls("/sub/")
+            [('/sub/archive.zip', '1.0.0')]
 
         """  # noqa: E501
         if path.endswith("/"):  # find files under sub-path
@@ -591,14 +590,14 @@ class Versioned(Base):
             >>> interface = Versioned(backend)
 
         Examples:
-            >>> interface.exists("/move.ext", "1.0.0")
+            >>> interface.exists("/move.txt", "1.0.0")
             False
-            >>> interface.move_file("/f.ext", "/move.ext", version="1.0.0")
-            >>> interface.exists("/move.ext", "1.0.0")
+            >>> interface.move_file("/file.txt", "/move.txt", version="1.0.0")
+            >>> interface.exists("/move.txt", "1.0.0")
             True
-            >>> interface.exists("/f.ext", "1.0.0")
+            >>> interface.exists("/file.txt", "1.0.0")
             False
-            >>> interface.move_file("/move.ext", "/f.ext", version="1.0.0")
+            >>> interface.move_file("/move.txt", "/file.txt", version="1.0.0")
 
         """
         if version is None:
@@ -647,7 +646,7 @@ class Versioned(Base):
             >>> interface = Versioned(backend)
 
         Examples:
-              >>> interface.owner("/f.ext", "1.0.0")
+              >>> interface.owner("/file.txt", "1.0.0")
               'doctest'
 
         """
@@ -718,10 +717,10 @@ class Versioned(Base):
             >>> interface = Versioned(backend)
 
         Examples:
-            >>> interface.exists("/a.tar.gz", "1.0.0")
+            >>> interface.exists("/sub/archive.tar.gz", "1.0.0")
             False
-            >>> interface.put_archive(".", "/a.tar.gz", "1.0.0")
-            >>> interface.exists("/a.tar.gz", "1.0.0")
+            >>> interface.put_archive(".", "/sub/archive.tar.gz", "1.0.0")
+            >>> interface.exists("/sub/archive.tar.gz", "1.0.0")
             True
 
         """
@@ -784,10 +783,10 @@ class Versioned(Base):
             >>> interface = Versioned(backend)
 
         Examples:
-            >>> interface.exists("/sub/f.ext", "3.0.0")
+            >>> interface.exists("/sub/file.txt", "3.0.0")
             False
-            >>> interface.put_file("src.pth", "/sub/f.ext", "3.0.0")
-            >>> interface.exists("/sub/f.ext", "3.0.0")
+            >>> interface.put_file("src.txt", "/sub/file.txt", "3.0.0")
+            >>> interface.exists("/sub/file.txt", "3.0.0")
             True
 
         """
@@ -823,12 +822,12 @@ class Versioned(Base):
             >>> interface = Versioned(backend)
 
         Examples:
-            >>> interface.exists("/f.ext", "1.0.0")
+            >>> interface.exists("/file.txt", "1.0.0")
             True
-            >>> interface.remove_file("/f.ext", "1.0.0")
-            >>> interface.exists("/f.ext", "1.0.0")
+            >>> interface.remove_file("/file.txt", "1.0.0")
+            >>> interface.exists("/file.txt", "1.0.0")
             False
-            >>> interface.put_file("src.pth", "/f.ext", "1.0.0")
+            >>> interface.put_file("src.txt", "/file.txt", "1.0.0")
 
         """
         path_with_version = self._path_with_version(path, version)
@@ -863,7 +862,7 @@ class Versioned(Base):
             >>> interface = Versioned(backend)
 
         Examples:
-            >>> interface.versions("/f.ext")
+            >>> interface.versions("/file.txt")
             ['1.0.0', '2.0.0']
 
         """

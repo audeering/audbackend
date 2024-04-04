@@ -89,12 +89,12 @@ class Base:
             >>> interface = Base(backend)
 
         Examples:
-            >>> interface.join("/", "f.ext")
-            '/f.ext'
-            >>> interface.join("/sub", "f.ext")
-            '/sub/f.ext'
-            >>> interface.join("//sub//", "/", "", None, "/f.ext")
-            '/sub/f.ext'
+            >>> interface.join("/", "file.txt")
+            '/file.txt'
+            >>> interface.join("/sub", "file.txt")
+            '/sub/file.txt'
+            >>> interface.join("//sub//", "/", "", None, "/file.txt")
+            '/sub/file.txt'
 
         """
         return self.backend.join(path, *paths)
@@ -158,12 +158,12 @@ class Base:
         Examples:
             >>> interface.split("/")
             ('/', '')
-            >>> interface.split("/f.ext")
-            ('/', 'f.ext')
+            >>> interface.split("/file.txt")
+            ('/', 'file.txt')
             >>> interface.split("/sub/")
             ('/sub/', '')
-            >>> interface.split("/sub//f.ext")
-            ('/sub/', 'f.ext')
+            >>> interface.split("/sub//file.txt")
+            ('/sub/', 'file.txt')
 
         """
         return self.backend.split(path)

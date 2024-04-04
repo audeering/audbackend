@@ -65,16 +65,15 @@ class Maven(Versioned):
 
     Examples:
         >>> import audeer
-        >>> file = "src.pth"
+        >>> file = "src.txt"
         >>> _ = audeer.touch(file)
         >>> backend = audbackend.backend.FileSystem("host", "repo")
         >>> interface = Maven(backend)
-        >>> interface.put_archive(".", "/a.zip", "1.0.0", files=[file])
-        >>> interface.put_file(file, "/a/b.ext", "1.0.0")
+        >>> interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
         >>> for version in ["1.0.0", "2.0.0"]:
-        ...     interface.put_file(file, "/f.ext", version)
+        ...     interface.put_file(file, "/file.txt", version)
         >>> interface.ls()
-        [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
+        [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
 
     """  # noqa: E501
 
@@ -143,17 +142,17 @@ class Maven(Versioned):
 
         Examples:
             >>> interface.ls()
-            [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
+            [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
             >>> interface.ls(latest_version=True)
-            [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> interface.ls("/f.ext")
-            [('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> interface.ls(pattern="*.ext")
-            [('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> interface.ls(pattern="b.*")
-            [('/a/b.ext', '1.0.0')]
-            >>> interface.ls("/a/")
-            [('/a/b.ext', '1.0.0')]
+            [('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
+            >>> interface.ls("/file.txt")
+            [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0')]
+            >>> interface.ls(pattern="*.txt")
+            [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0')]
+            >>> interface.ls(pattern="archive.*")
+            [('/sub/archive.zip', '1.0.0')]
+            >>> interface.ls("/sub/")
+            [('/sub/archive.zip', '1.0.0')]
 
         """  # noqa: E501
         if path.endswith("/"):  # find files under sub-path
