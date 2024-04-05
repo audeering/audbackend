@@ -64,9 +64,7 @@ class Maven(Versioned):
             as extensions
 
     Examples:
-        >>> import audeer
         >>> file = "src.txt"
-        >>> _ = audeer.touch(file)
         >>> backend = audbackend.backend.FileSystem("host", "repo")
         >>> interface = Maven(backend)
         >>> interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
@@ -74,6 +72,8 @@ class Maven(Versioned):
         ...     interface.put_file(file, "/file.txt", version)
         >>> interface.ls()
         [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
+        >>> interface.get_file("/file.txt", "dst.txt", "2.0.0")
+        '.../dst.txt'
 
     """  # noqa: E501
 
@@ -141,6 +141,10 @@ class Maven(Versioned):
             >>> interface = Maven(backend)
 
         Examples:
+            >>> file = "src.txt"
+            >>> interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
+            >>> for version in ["1.0.0", "2.0.0"]:
+            ...     interface.put_file(file, "/file.txt", version)
             >>> interface.ls()
             [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
             >>> interface.ls(latest_version=True)

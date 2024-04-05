@@ -627,7 +627,7 @@ class Unversioned(Base):
             >>> file = "src.txt"
             >>> interface.exists("/file.txt")
             False
-            >>> interface.put_file("src.txt", "/file.txt")
+            >>> interface.put_file(file, "/file.txt")
             >>> interface.exists("/file.txt")
             True
 
