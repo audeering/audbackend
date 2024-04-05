@@ -9,7 +9,6 @@ import requests
 import audbackend
 
 
-name = "artifactory"
 host = "https://audeering.jfrog.io/artifactory"
 
 username, api_key = audbackend.core.backend.artifactory._authentication(host)
@@ -21,7 +20,7 @@ if r.status_code == 200:
     length = len(repos)
     for n, repo in enumerate(repos):
         try:
-            audbackend.delete(name, host, repo)
+            audbackend.backend.Artifactory.delete(host, repo)
             print(f"{n + 1:4.0f} / {length:4.0f} Deleted {repo}")
         except audbackend.BackendError:
             raise RuntimeError(
