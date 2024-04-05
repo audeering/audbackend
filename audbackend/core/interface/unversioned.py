@@ -14,15 +14,15 @@ class Unversioned(Base):
         backend: backend object
 
     Examples:
-        >>> import audeer
         >>> file = "src.txt"
-        >>> _ = audeer.touch(file)
         >>> backend = audbackend.backend.FileSystem("host", "repo")
         >>> interface = Unversioned(backend)
         >>> interface.put_file(file, "/file.txt")
         >>> interface.put_archive(".", "/sub/archive.zip", files=[file])
         >>> interface.ls()
         ['/file.txt', '/sub/archive.zip']
+        >>> interface.get_file("/file.txt", "dst.txt")
+        '.../dst.txt'
 
     """
 
@@ -49,6 +49,11 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
+            >>> file = "src.txt"
+            >>> import audeer
+            >>> audeer.md5(file)
+            'd41d8cd98f00b204e9800998ecf8427e'
+            >>> interface.put_file(file, "/file.txt")
             >>> interface.checksum("/file.txt")
             'd41d8cd98f00b204e9800998ecf8427e'
 
@@ -97,12 +102,13 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt")
             >>> interface.exists("/copy.txt")
             False
             >>> interface.copy_file("/file.txt", "/copy.txt")
             >>> interface.exists("/copy.txt")
             True
-            >>> interface.remove_file("/copy.txt")
 
         """
         self.backend.copy_file(
@@ -138,6 +144,8 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt")
             >>> interface.date("/file.txt")
             '1991-02-20'
 
@@ -175,6 +183,10 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
+            >>> file = "src.txt"
+            >>> interface.exists("/file.txt")
+            False
+            >>> interface.put_file(file, "/file.txt")
             >>> interface.exists("/file.txt")
             True
 
@@ -239,6 +251,9 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
+            >>> file = "src.txt"
+            >>> interface.put_archive(".", "/sub/archive.zip", files=[file])
+            >>> os.remove(file)
             >>> interface.get_archive("/sub/archive.zip", ".")
             ['src.txt']
 
@@ -304,6 +319,8 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt")
             >>> os.path.exists("dst.txt")
             False
             >>> _ = interface.get_file("/file.txt", "dst.txt")
@@ -368,6 +385,9 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt")
+            >>> interface.put_archive(".", "/sub/archive.zip", files=[file])
             >>> interface.ls()
             ['/file.txt', '/sub/archive.zip']
             >>> interface.ls("/file.txt")
@@ -432,6 +452,8 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt")
             >>> interface.exists("/move.txt")
             False
             >>> interface.move_file("/file.txt", "/move.txt")
@@ -439,7 +461,6 @@ class Unversioned(Base):
             True
             >>> interface.exists("/file.txt")
             False
-            >>> interface.move_file("/move.txt", "/file.txt")
 
         """
         self.backend.move_file(
@@ -476,6 +497,8 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt")
             >>> interface.owner("/file.txt")
             'doctest'
 
@@ -542,6 +565,7 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
+            >>> file = "src.txt"
             >>> interface.exists("/sub/archive.tar.gz")
             False
             >>> interface.put_archive(".", "/sub/archive.tar.gz")
@@ -600,6 +624,7 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
+            >>> file = "src.txt"
             >>> interface.exists("/sub/file.txt")
             False
             >>> interface.put_file("src.txt", "/sub/file.txt")
@@ -634,6 +659,8 @@ class Unversioned(Base):
             >>> interface = Unversioned(backend)
 
         Examples:
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt")
             >>> interface.exists("/file.txt")
             True
             >>> interface.remove_file("/file.txt")

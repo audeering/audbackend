@@ -25,7 +25,7 @@ class DoctestFileSystem(audbackend.backend.FileSystem):
         return "doctest"
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="function", autouse=True)
 def prepare_docstring_tests(doctest_namespace):
     with tempfile.TemporaryDirectory() as tmp:
         # Change to tmp dir
@@ -34,6 +34,8 @@ def prepare_docstring_tests(doctest_namespace):
         # Prepare backend
         audeer.mkdir("host")
         audbackend.backend.FileSystem.create("host", "repo")
+        # Provide example file `src.txt`
+        audeer.touch("src.txt")
         # Provide DoctestFileSystem as FileSystem,
         # and audbackend
         # in docstring examples
