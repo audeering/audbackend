@@ -10,6 +10,20 @@ class Unversioned(Base):
     Use this interface if you don't care about versioning.
     For every backend path exactly one file exists on the backend.
 
+    Args:
+        backend: backend object
+
+    Examples:
+        >>> file = "src.txt"
+        >>> backend = audbackend.backend.FileSystem("host", "repo")
+        >>> interface = Unversioned(backend)
+        >>> interface.put_file(file, "/file.txt")
+        >>> interface.put_archive(".", "/sub/archive.zip", files=[file])
+        >>> interface.ls()
+        ['/file.txt', '/sub/archive.zip']
+        >>> interface.get_file("/file.txt", "dst.txt")
+        '...dst.txt'
+
     """
 
     def checksum(
@@ -31,8 +45,17 @@ class Unversioned(Base):
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Unversioned(backend)
+
         Examples:
-            >>> unversioned.checksum("/f.ext")
+            >>> file = "src.txt"
+            >>> import audeer
+            >>> audeer.md5(file)
+            'd41d8cd98f00b204e9800998ecf8427e'
+            >>> interface.put_file(file, "/file.txt")
+            >>> interface.checksum("/file.txt")
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
@@ -76,11 +99,17 @@ class Unversioned(Base):
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Unversioned(backend)
+
         Examples:
-            >>> unversioned.exists("/copy.ext")
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt")
+            >>> interface.exists("/copy.txt")
             False
-            >>> unversioned.copy_file("/f.ext", "/copy.ext")
-            >>> unversioned.exists("/copy.ext")
+            >>> interface.copy_file("/file.txt", "/copy.txt")
+            >>> interface.exists("/copy.txt")
             True
 
         """
@@ -113,9 +142,15 @@ class Unversioned(Base):
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> backend = DoctestFileSystem("host", "repo")
+            >>> interface = Unversioned(backend)
+
         Examples:
-              >>> unversioned.date("/f.ext")
-              '1991-02-20'
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt")
+            >>> interface.date("/file.txt")
+            '1991-02-20'
 
         """
         return self.backend.date(path)
@@ -147,8 +182,16 @@ class Unversioned(Base):
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
 
+        ..
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Unversioned(backend)
+
         Examples:
-            >>> unversioned.exists("/f.ext")
+            >>> file = "src.txt"
+            >>> interface.exists("/file.txt")
+            False
+            >>> interface.put_file(file, "/file.txt")
+            >>> interface.exists("/file.txt")
             True
 
         """
@@ -208,9 +251,16 @@ class Unversioned(Base):
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Unversioned(backend)
+
         Examples:
-            >>> unversioned.get_archive("/a.zip", ".")
-            ['src.pth']
+            >>> file = "src.txt"
+            >>> interface.put_archive(".", "/sub/archive.zip", files=[file])
+            >>> os.remove(file)
+            >>> interface.get_archive("/sub/archive.zip", ".")
+            ['src.txt']
 
         """
         return self.backend.get_archive(
@@ -270,11 +320,17 @@ class Unversioned(Base):
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Unversioned(backend)
+
         Examples:
-            >>> os.path.exists("dst.pth")
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt")
+            >>> os.path.exists("dst.txt")
             False
-            >>> _ = unversioned.get_file("/f.ext", "dst.pth")
-            >>> os.path.exists("dst.pth")
+            >>> _ = interface.get_file("/file.txt", "dst.txt")
+            >>> os.path.exists("dst.txt")
             True
 
         """
@@ -330,17 +386,24 @@ class Unversioned(Base):
             ValueError: if ``path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Unversioned(backend)
+
         Examples:
-            >>> unversioned.ls()
-            ['/a.zip', '/a/b.ext', '/f.ext']
-            >>> unversioned.ls("/f.ext")
-            ['/f.ext']
-            >>> unversioned.ls(pattern="*.ext")
-            ['/a/b.ext', '/f.ext']
-            >>> unversioned.ls(pattern="b.*")
-            ['/a/b.ext']
-            >>> unversioned.ls("/a/")
-            ['/a/b.ext']
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt")
+            >>> interface.put_archive(".", "/sub/archive.zip", files=[file])
+            >>> interface.ls()
+            ['/file.txt', '/sub/archive.zip']
+            >>> interface.ls("/file.txt")
+            ['/file.txt']
+            >>> interface.ls(pattern="*.txt")
+            ['/file.txt']
+            >>> interface.ls(pattern="archive.*")
+            ['/sub/archive.zip']
+            >>> interface.ls("/sub/")
+            ['/sub/archive.zip']
 
         """  # noqa: E501
         return self.backend.ls(
@@ -391,13 +454,19 @@ class Unversioned(Base):
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Unversioned(backend)
+
         Examples:
-            >>> unversioned.exists("/move.ext")
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt")
+            >>> interface.exists("/move.txt")
             False
-            >>> unversioned.move_file("/f.ext", "/move.ext")
-            >>> unversioned.exists("/move.ext")
+            >>> interface.move_file("/file.txt", "/move.txt")
+            >>> interface.exists("/move.txt")
             True
-            >>> unversioned.exists("/f.ext")
+            >>> interface.exists("/file.txt")
             False
 
         """
@@ -431,9 +500,15 @@ class Unversioned(Base):
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> backend = DoctestFileSystem("host", "repo")
+            >>> interface = Unversioned(backend)
+
         Examples:
-              >>> unversioned.owner("/f.ext")
-              'doctest'
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt")
+            >>> interface.owner("/file.txt")
+            'doctest'
 
         """
         return self.backend.owner(path)
@@ -494,11 +569,16 @@ class Unversioned(Base):
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Unversioned(backend)
+
         Examples:
-            >>> unversioned.exists("/a.tar.gz")
+            >>> file = "src.txt"
+            >>> interface.exists("/sub/archive.tar.gz")
             False
-            >>> unversioned.put_archive(".", "/a.tar.gz")
-            >>> unversioned.exists("/a.tar.gz")
+            >>> interface.put_archive(".", "/sub/archive.tar.gz")
+            >>> interface.exists("/sub/archive.tar.gz")
             True
 
         """
@@ -549,11 +629,16 @@ class Unversioned(Base):
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Unversioned(backend)
+
         Examples:
-            >>> unversioned.exists("/sub/f.ext")
+            >>> file = "src.txt"
+            >>> interface.exists("/file.txt")
             False
-            >>> unversioned.put_file("src.pth", "/sub/f.ext")
-            >>> unversioned.exists("/sub/f.ext")
+            >>> interface.put_file(file, "/file.txt")
+            >>> interface.exists("/file.txt")
             True
 
         """
@@ -580,11 +665,17 @@ class Unversioned(Base):
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Unversioned(backend)
+
         Examples:
-            >>> unversioned.exists("/f.ext")
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt")
+            >>> interface.exists("/file.txt")
             True
-            >>> unversioned.remove_file("/f.ext")
-            >>> unversioned.exists("/f.ext")
+            >>> interface.remove_file("/file.txt")
+            >>> interface.exists("/file.txt")
             False
 
         """
