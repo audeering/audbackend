@@ -63,7 +63,19 @@ class Maven(Versioned):
             ...
             as extensions
 
-    """
+    Examples:
+        >>> file = "src.txt"
+        >>> backend = audbackend.backend.FileSystem("host", "repo")
+        >>> interface = Maven(backend)
+        >>> interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
+        >>> for version in ["1.0.0", "2.0.0"]:
+        ...     interface.put_file(file, "/file.txt", version)
+        >>> interface.ls()
+        [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
+        >>> interface.get_file("/file.txt", "dst.txt", "2.0.0")
+        '...dst.txt'
+
+    """  # noqa: E501
 
     def __init__(
         self,
@@ -124,19 +136,27 @@ class Maven(Versioned):
             ValueError: if ``path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Maven(backend)
+
         Examples:
-            >>> versioned.ls()
-            [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> versioned.ls(latest_version=True)
-            [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> versioned.ls("/f.ext")
-            [('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> versioned.ls(pattern="*.ext")
-            [('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> versioned.ls(pattern="b.*")
-            [('/a/b.ext', '1.0.0')]
-            >>> versioned.ls("/a/")
-            [('/a/b.ext', '1.0.0')]
+            >>> file = "src.txt"
+            >>> interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
+            >>> for version in ["1.0.0", "2.0.0"]:
+            ...     interface.put_file(file, "/file.txt", version)
+            >>> interface.ls()
+            [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
+            >>> interface.ls(latest_version=True)
+            [('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
+            >>> interface.ls("/file.txt")
+            [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0')]
+            >>> interface.ls(pattern="*.txt")
+            [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0')]
+            >>> interface.ls(pattern="archive.*")
+            [('/sub/archive.zip', '1.0.0')]
+            >>> interface.ls("/sub/")
+            [('/sub/archive.zip', '1.0.0')]
 
         """  # noqa: E501
         if path.endswith("/"):  # find files under sub-path

@@ -16,6 +16,24 @@ class Versioned(Base):
     Use this interface if you care about versioning.
     For each file on the backend path one or more versions may exist.
 
+    Args:
+        backend: backend object
+
+    .. Prepare backend and interface for docstring examples
+
+    Examples:
+        >>> file = "src.txt"
+        >>> backend = audbackend.backend.FileSystem("host", "repo")
+        >>> interface = Versioned(backend)
+        >>> interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
+        >>> for version in ["1.0.0", "2.0.0"]:
+        ...     interface.put_file(file, "/file.txt", version)
+        >>> interface.ls()
+        [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
+        >>> interface.get_file("/file.txt", "dst.txt", "2.0.0")
+        '...dst.txt'
+
+
     """
 
     def __init__(
@@ -47,8 +65,17 @@ class Versioned(Base):
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
 
+        ..
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Versioned(backend)
+
         Examples:
-            >>> versioned.checksum("/f.ext", "1.0.0")
+            >>> file = "src.txt"
+            >>> import audeer
+            >>> audeer.md5(file)
+            'd41d8cd98f00b204e9800998ecf8427e'
+            >>> interface.put_file(file, "/file.txt", "1.0.0")
+            >>> interface.checksum("/file.txt", "1.0.0")
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
@@ -91,13 +118,6 @@ class Versioned(Base):
             version: version string
             verbose: show debug messages
 
-        Examples:
-            >>> versioned.exists("/copy.ext", "1.0.0")
-            False
-            >>> versioned.copy_file("/f.ext", "/copy.ext", version="1.0.0")
-            >>> versioned.exists("/copy.ext", "1.0.0")
-            True
-
         Raises:
             BackendError: if an error is raised on the backend
             InterruptedError: if validation fails
@@ -107,6 +127,19 @@ class Versioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+
+        ..
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Versioned(backend)
+
+        Examples:
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt", "1.0.0")
+            >>> interface.exists("/copy.txt", "1.0.0")
+            False
+            >>> interface.copy_file("/file.txt", "/copy.txt", version="1.0.0")
+            >>> interface.exists("/copy.txt", "1.0.0")
+            True
 
         """
         if version is None:
@@ -150,9 +183,15 @@ class Versioned(Base):
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
 
+        ..
+            >>> backend = DoctestFileSystem("host", "repo")
+            >>> interface = Versioned(backend)
+
         Examples:
-              >>> versioned.date("/f.ext", "1.0.0")
-              '1991-02-20'
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt", "1.0.0")
+            >>> interface.date("/file.txt", "1.0.0")
+            '1991-02-20'
 
         """
         path_with_version = self._path_with_version(path, version)
@@ -187,8 +226,16 @@ class Versioned(Base):
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
 
+        ..
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Versioned(backend)
+
         Examples:
-            >>> versioned.exists("/f.ext", "1.0.0")
+            >>> file = "src.txt"
+            >>> interface.exists("/file.txt", "1.0.0")
+            False
+            >>> interface.put_file(file, "/file.txt", "1.0.0")
+            >>> interface.exists("/file.txt", "1.0.0")
             True
 
         """
@@ -253,9 +300,16 @@ class Versioned(Base):
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
 
+        ..
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Versioned(backend)
+
         Examples:
-            >>> versioned.get_archive("/a.zip", ".", "1.0.0")
-            ['src.pth']
+            >>> file = "src.txt"
+            >>> interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
+            >>> os.remove(file)
+            >>> interface.get_archive("/sub/archive.zip", ".", "1.0.0")
+            ['src.txt']
 
         """
         src_path_with_version = self._path_with_version(src_path, version)
@@ -320,11 +374,17 @@ class Versioned(Base):
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
 
+        ..
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Versioned(backend)
+
         Examples:
-            >>> os.path.exists("dst.pth")
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt", "1.0.0")
+            >>> os.path.exists("dst.txt")
             False
-            >>> _ = versioned.get_file("/f.ext", "dst.pth", "1.0.0")
-            >>> os.path.exists("dst.pth")
+            >>> _ = interface.get_file("/file.txt", "dst.txt", "1.0.0")
+            >>> os.path.exists("dst.txt")
             True
 
         """
@@ -355,8 +415,15 @@ class Versioned(Base):
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
+         ..
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Versioned(backend)
+
         Examples:
-            >>> versioned.latest_version("/f.ext")
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt", "1.0.0")
+            >>> interface.put_file(file, "/file.txt", "2.0.0")
+            >>> interface.latest_version("/file.txt")
             '2.0.0'
 
         """
@@ -411,19 +478,27 @@ class Versioned(Base):
             ValueError: if ``path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Versioned(backend)
+
         Examples:
-            >>> versioned.ls()
-            [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> versioned.ls(latest_version=True)
-            [('/a.zip', '1.0.0'), ('/a/b.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> versioned.ls("/f.ext")
-            [('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> versioned.ls(pattern="*.ext")
-            [('/a/b.ext', '1.0.0'), ('/f.ext', '1.0.0'), ('/f.ext', '2.0.0')]
-            >>> versioned.ls(pattern="b.*")
-            [('/a/b.ext', '1.0.0')]
-            >>> versioned.ls("/a/")
-            [('/a/b.ext', '1.0.0')]
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt", "1.0.0")
+            >>> interface.put_file(file, "/file.txt", "2.0.0")
+            >>> interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
+            >>> interface.ls()
+            [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
+            >>> interface.ls(latest_version=True)
+            [('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
+            >>> interface.ls("/file.txt")
+            [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0')]
+            >>> interface.ls(pattern="*.txt")
+            [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0')]
+            >>> interface.ls(pattern="archive.*")
+            [('/sub/archive.zip', '1.0.0')]
+            >>> interface.ls("/sub/")
+            [('/sub/archive.zip', '1.0.0')]
 
         """  # noqa: E501
         if path.endswith("/"):  # find files under sub-path
@@ -543,13 +618,19 @@ class Versioned(Base):
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
 
+        ..
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Versioned(backend)
+
         Examples:
-            >>> versioned.exists("/move.ext", "1.0.0")
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt", "1.0.0")
+            >>> interface.exists("/move.txt", "1.0.0")
             False
-            >>> versioned.move_file("/f.ext", "/move.ext", version="1.0.0")
-            >>> versioned.exists("/move.ext", "1.0.0")
+            >>> interface.move_file("/file.txt", "/move.txt", version="1.0.0")
+            >>> interface.exists("/move.txt", "1.0.0")
             True
-            >>> versioned.exists("/f.ext", "1.0.0")
+            >>> interface.exists("/file.txt", "1.0.0")
             False
 
         """
@@ -595,9 +676,15 @@ class Versioned(Base):
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
 
+        ..
+            >>> backend = DoctestFileSystem("host", "repo")
+            >>> interface = Versioned(backend)
+
         Examples:
-              >>> versioned.owner("/f.ext", "1.0.0")
-              'doctest'
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt", "1.0.0")
+            >>> interface.owner("/file.txt", "1.0.0")
+            'doctest'
 
         """
         path_with_version = self._path_with_version(path, version)
@@ -663,11 +750,16 @@ class Versioned(Base):
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
 
+        ..
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Versioned(backend)
+
         Examples:
-            >>> versioned.exists("/a.tar.gz", "1.0.0")
+            >>> file = "src.txt"
+            >>> interface.exists("/sub/archive.tar.gz", "1.0.0")
             False
-            >>> versioned.put_archive(".", "/a.tar.gz", "1.0.0")
-            >>> versioned.exists("/a.tar.gz", "1.0.0")
+            >>> interface.put_archive(".", "/sub/archive.tar.gz", "1.0.0")
+            >>> interface.exists("/sub/archive.tar.gz", "1.0.0")
             True
 
         """
@@ -726,11 +818,16 @@ class Versioned(Base):
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
 
+        ..
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Versioned(backend)
+
         Examples:
-            >>> versioned.exists("/sub/f.ext", "3.0.0")
+            >>> file = "src.txt"
+            >>> interface.exists("/file.txt", "3.0.0")
             False
-            >>> versioned.put_file("src.pth", "/sub/f.ext", "3.0.0")
-            >>> versioned.exists("/sub/f.ext", "3.0.0")
+            >>> interface.put_file(file, "/file.txt", "3.0.0")
+            >>> interface.exists("/file.txt", "3.0.0")
             True
 
         """
@@ -762,11 +859,17 @@ class Versioned(Base):
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
 
+        ..
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Versioned(backend)
+
         Examples:
-            >>> versioned.exists("/f.ext", "1.0.0")
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt", "1.0.0")
+            >>> interface.exists("/file.txt", "1.0.0")
             True
-            >>> versioned.remove_file("/f.ext", "1.0.0")
-            >>> versioned.exists("/f.ext", "1.0.0")
+            >>> interface.remove_file("/file.txt", "1.0.0")
+            >>> interface.exists("/file.txt", "1.0.0")
             False
 
         """
@@ -798,8 +901,15 @@ class Versioned(Base):
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
+        ..
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Versioned(backend)
+
         Examples:
-            >>> versioned.versions("/f.ext")
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt", "1.0.0")
+            >>> interface.put_file(file, "/file.txt", "2.0.0")
+            >>> interface.versions("/file.txt")
             ['1.0.0', '2.0.0']
 
         """
