@@ -22,7 +22,7 @@ class Unversioned(Base):
         >>> interface.ls()
         ['/file.txt', '/sub/archive.zip']
         >>> interface.get_file("/file.txt", "dst.txt")
-        '.../dst.txt'
+        '...dst.txt'
 
     """
 

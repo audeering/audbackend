@@ -31,7 +31,7 @@ class Versioned(Base):
         >>> interface.ls()
         [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
         >>> interface.get_file("/file.txt", "dst.txt", "2.0.0")
-        '.../dst.txt'
+        '...dst.txt'
 
 
     """
