@@ -625,10 +625,10 @@ class Unversioned(Base):
 
         Examples:
             >>> file = "src.txt"
-            >>> interface.exists("/sub/file.txt")
+            >>> interface.exists("/file.txt")
             False
-            >>> interface.put_file("src.txt", "/sub/file.txt")
-            >>> interface.exists("/sub/file.txt")
+            >>> interface.put_file("src.txt", "/file.txt")
+            >>> interface.exists("/file.txt")
             True
 
         """
