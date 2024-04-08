@@ -47,6 +47,10 @@ def _backend(
     return backend
 
 
+@audeer.deprecated(
+    removal_version="2.2.0",
+    alternative="Backend.__init__() of corresponding backend",
+)
 def access(
     name: str,
     host: str,
@@ -62,6 +66,14 @@ def access(
     located at ``host``
     on the backend with alias ``name``
     (see :func:`audbackend.register`).
+
+    .. Warning::
+
+        ``audbackend.access()`` is deprecated
+        and will be removed in version 2.2.0.
+        Repositories on backends are instead accessed
+        by instantiating the corresponding backend class,
+        e.g. :meth:`audbackend.backend.FileSystem(host, repo)`.
 
     Args:
         name: backend alias
