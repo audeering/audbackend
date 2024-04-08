@@ -185,7 +185,9 @@ def delete(
             has been registered
 
     """  # noqa: E501
-    interface = access(name, host, repository)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        interface = access(name, host, repository)
     utils.call_function_on_backend(interface._backend._delete)
     backends[name][host].pop(repository)
 

@@ -50,7 +50,8 @@ def test_api(hosts, name, host, repository, cls):
     error_msg = "A backend class with name 'bad' does not exist."
 
     with pytest.raises(ValueError, match=error_msg):
-        audbackend.access("bad", host, repository)
+        with pytest.warns(UserWarning, match=warning):
+            audbackend.access("bad", host, repository)
 
     error_msg = (
         "An exception was raised by the backend, "
@@ -58,7 +59,8 @@ def test_api(hosts, name, host, repository, cls):
     )
 
     with pytest.raises(audbackend.BackendError, match=error_msg):
-        audbackend.access(name, host, repository)
+        with pytest.warns(UserWarning, match=warning):
+            audbackend.access(name, host, repository)
 
     # returns versioned interface for legacy reasons
     warning = (
@@ -74,7 +76,8 @@ def test_api(hosts, name, host, repository, cls):
         with pytest.warns(UserWarning, match=warning):
             audbackend.create(name, host, repository)
 
-    interface = audbackend.access(name, host, repository)
+    with pytest.warns(UserWarning, match=warning):
+        interface = audbackend.access(name, host, repository)
     assert isinstance(interface.backend, cls)
 
     warning = (
@@ -85,4 +88,5 @@ def test_api(hosts, name, host, repository, cls):
         audbackend.delete(name, host, repository)
 
     with pytest.raises(audbackend.BackendError, match=error_msg):
-        audbackend.access(name, host, repository)
+        with pytest.warns(UserWarning, match=warning):
+            audbackend.access(name, host, repository)
