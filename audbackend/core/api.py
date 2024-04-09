@@ -73,7 +73,13 @@ def access(
         and will be removed in version 2.2.0.
         Repositories on backends are instead accessed
         by instantiating the corresponding backend class,
-        e.g. :meth:`audbackend.backend.FileSystem(host, repo)`.
+        and connecting to it using the ``open()`` method,
+        e.g.
+
+        .. code-block:: python
+
+            backend = audbackend.backend.FileSystem(host, repo)
+            backend.open()
 
     Args:
         name: backend alias
