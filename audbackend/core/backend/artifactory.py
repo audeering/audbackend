@@ -7,47 +7,7 @@ import dohq_artifactory
 import audeer
 
 from audbackend.core import utils
-from audbackend.core.backend.base import Base
-
-
-def _artifactory_path(
-    path,
-    username,
-    apikey,
-) -> artifactory.ArtifactoryPath:
-    r"""Authenticate at Artifactory and get path object."""
-    return artifactory.ArtifactoryPath(
-        path,
-        auth=(username, apikey),
-    )
-
-
-def _authentication(host) -> typing.Tuple[str, str]:
-    """Look for username and API key."""
-    username = os.getenv("ARTIFACTORY_USERNAME", None)
-    api_key = os.getenv("ARTIFACTORY_API_KEY", None)
-    config_file = os.getenv(
-        "ARTIFACTORY_CONFIG_FILE",
-        artifactory.default_config_path,
-    )
-    config_file = audeer.path(config_file)
-
-    if os.path.exists(config_file) and (api_key is None or username is None):
-        config = artifactory.read_config(config_file)
-        config_entry = artifactory.get_config_entry(config, host)
-
-        if config_entry is not None:
-            if username is None:
-                username = config_entry.get("username", None)
-            if api_key is None:
-                api_key = config_entry.get("password", None)
-
-    if username is None:
-        username = "anonymous"
-    if api_key is None:
-        api_key = ""
-
-    return username, api_key
+from audbackend.core.backend.base import BaseAuthentication
 
 
 def _deploy(
@@ -106,30 +66,30 @@ def _download(
                         pbar.update(n_data)
 
 
-class Artifactory(Base):
+class Artifactory(BaseAuthentication):
     r"""Backend for Artifactory.
-
-    Looks for the two environment variables
-    ``ARTIFACTORY_USERNAME`` and
-    ``ARTIFACTORY_API_KEY``.
-    Otherwise,
-    tries to extract missing values
-    from a global `config file`_.
-    The default path of the config file
-    (:file:`~/.artifactory_python.cfg`)
-    can be overwritten with the environment variable
-    ``ARTIFACTORY_CONFIG_FILE``.
-    If no config file exists
-    or if it does not contain an
-    entry for the ``host``,
-    the username is set to ``'anonymous'``
-    and the API key to an empty string.
-    In that case the ``host``
-    should support anonymous access.
 
     Args:
         host: host address
         repository: repository name
+        auth: ``(username, password)`` tuple.
+            If ``None`` it looks for the two environment variables
+            ``ARTIFACTORY_USERNAME`` and
+            ``ARTIFACTORY_API_KEY``.
+            Otherwise,
+            tries to extract missing values
+            from a global `config file`_.
+            The default path of the config file
+            (:file:`~/.artifactory_python.cfg`)
+            can be overwritten with the environment variable
+            ``ARTIFACTORY_CONFIG_FILE``.
+            If no config file exists
+            or if it does not contain an
+            entry for the ``host``,
+            the username is set to ``'anonymous'``
+            and the API key to an empty string.
+            In that case the ``host``
+            should support anonymous access.
 
     .. _`config file`: https://devopshq.github.io/artifactory/#global-configuration-file
 
@@ -137,10 +97,88 @@ class Artifactory(Base):
 
     def __init__(
         self,
-        host,
-        repository,
+        host: str,
+        repository: str,
+        *,
+        auth: typing.Any = None,
     ):
-        super().__init__(host, repository)
+        super().__init__(host, repository, auth=auth)
+
+        if auth is None:
+            self.auth = self.authentication(host)
+
+        # We only look for the actual repository
+        # when opening a conncetion to the backend.
+        # The repository name does not cover the actual type of repo,
+        # hence we store the actual repo path inside ``_repo``.
+        self._repo = None
+
+    @classmethod
+    def authentication(cls, host: str) -> typing.Tuple[str, str]:
+        """Username and password/access token for given host.
+
+        Returns a username
+        and password / API key / access token,
+        which can be used to authenticate
+        with an Artifactory server.
+
+        Note, API keys are deprecated
+        and will no longer work
+        with version of Artifactory.
+
+        To get the username,
+        password/access token combination,
+        the function looks first
+        for the two environment variables
+        ``ARTIFACTORY_USERNAME`` and
+        ``ARTIFACTORY_API_KEY``.
+        Otherwise,
+        it tries to extract missing values
+        from a global `config file`_.
+        The default path of the config file
+        (:file:`~/.artifactory_python.cfg`)
+        can be overwritten with the environment variable
+        ``ARTIFACTORY_CONFIG_FILE``.
+        If no config file exists
+        or if it does not contain an
+        entry for the ``host``,
+        the username is set to ``'anonymous'``
+        and the password/key to an empty string.
+        In that case the ``host``
+        has to support anonymous access,
+        when trying to authenticate.
+
+        Args:
+            host: hostname of Artifactory backend
+
+        Returns:
+            username, password / API key / access token tuple
+
+        """
+        username = os.getenv("ARTIFACTORY_USERNAME", None)
+        api_key = os.getenv("ARTIFACTORY_API_KEY", None)
+        config_file = os.getenv(
+            "ARTIFACTORY_CONFIG_FILE",
+            artifactory.default_config_path,
+        )
+        config_file = audeer.path(config_file)
+
+        if os.path.exists(config_file) and (api_key is None or username is None):
+            config = artifactory.read_config(config_file)
+            config_entry = artifactory.get_config_entry(config, host)
+
+            if config_entry is not None:
+                if username is None:
+                    username = config_entry.get("username", None)
+                if api_key is None:
+                    api_key = config_entry.get("password", None)
+
+        if username is None:
+            username = "anonymous"
+        if api_key is None:
+            api_key = ""
+
+        return username, api_key
 
     def _checksum(
         self,
@@ -183,8 +221,7 @@ class Artifactory(Base):
         self,
     ):
         r"""Access existing repository."""
-        username, api_key = _authentication(self.host)
-        path = _artifactory_path(self.host, username, api_key)
+        path = artifactory.ArtifactoryPath(self.host, auth=self.auth)
         repo = dohq_artifactory.RepositoryLocal(
             path,
             self.repository,
@@ -233,6 +270,8 @@ class Artifactory(Base):
         path = path.replace(self.sep, "/")
         if path.startswith("/"):
             path = path[1:]
+        if self._repo is None:
+
         path = f"{self._repo.path}{path}"
         return path
 
@@ -277,12 +316,7 @@ class Artifactory(Base):
         self,
     ):
         r"""Open connection to backend."""
-        self._username, self._api_key = _authentication(self.host)
-        path = _artifactory_path(
-            self.host,
-            self._username,
-            self._api_key,
-        )
+        path = self._path(self.host)
         self._repo = path.find_repository_local(self.repository)
         if self._repo is None:
             utils.raise_file_not_found_error(self.repository)
@@ -308,11 +342,7 @@ class Artifactory(Base):
 
         """
         path = self._expand(path)
-        path = _artifactory_path(
-            path,
-            self._username,
-            self._api_key,
-        )
+        path = artifactory.ArtifactoryPath(path, auth=self.auth)
         return path
 
     def _put_file(

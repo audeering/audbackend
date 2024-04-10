@@ -38,25 +38,22 @@ def test_authentication(tmpdir, hosts, hide_credentials):
 
     # config file does not exist
 
-    username, api_key = audbackend.core.backend.artifactory._authentication(host)
-    assert username == "anonymous"
-    assert api_key == ""
+    backend = audbackend.backend.Artifactory(host, "repository")
+    assert backend.auth == ("anonymous", "")
 
     # config file is empty
 
     audeer.touch(config_path)
-    username, api_key = audbackend.core.backend.artifactory._authentication(host)
-    assert username == "anonymous"
-    assert api_key == ""
+    backend = audbackend.backend.Artifactory(host, "repository")
+    assert backend.auth == ("anonymous", "")
 
     # config file entry without username and password
 
     with open(config_path, "w") as fp:
         fp.write(f"[{host}]\n")
 
-    username, api_key = audbackend.core.backend.artifactory._authentication(host)
-    assert username == "anonymous"
-    assert api_key == ""
+    backend = audbackend.backend.Artifactory(host, "repository")
+    assert backend.auth == ("anonymous", "")
 
     # config file entry with username and password
 
@@ -67,9 +64,10 @@ def test_authentication(tmpdir, hosts, hide_credentials):
         fp.write(f"username = {username}\n")
         fp.write(f"password = {api_key}\n")
 
-    username, api_key = audbackend.core.backend.artifactory._authentication(host)
-    assert username == "bad"
-    assert api_key == "bad"
+    backend = audbackend.backend.Artifactory(host, "repository")
+    assert backend.auth == ("bad", "bad")
+    with pytest.raises(audbackend.BackendError):
+        backend.open()
 
 
 @pytest.mark.parametrize(
@@ -78,8 +76,7 @@ def test_authentication(tmpdir, hosts, hide_credentials):
     indirect=True,
 )
 def test_errors(tmpdir, interface):
-    interface.backend._username = "non-existing"
-    interface.backend._api_key = "non-existing"
+    interface.backend.auth == ("non-existing", "non-existing")
 
     local_file = audeer.touch(audeer.path(tmpdir, "file.txt"))
     remote_file = interface.join(
