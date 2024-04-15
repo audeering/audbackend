@@ -8,10 +8,11 @@ class BackendError(Exception):
 
         >>> import audeer
         >>> audeer.rmdir("host", "repo")
-        >>> _ = audeer.mkdir("host")
+        >>> _ = audeer.mkdir("host", "repo")
 
     Examples:
         >>> backend = audbackend.backend.FileSystem("host", "repo")
+        >>> backend.open()
         >>> try:
         ...     interface = audbackend.interface.Unversioned(backend)
         ...     interface.checksum("/does/not/exist")

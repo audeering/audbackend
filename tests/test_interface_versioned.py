@@ -1163,10 +1163,14 @@ def test_validate(tmpdir):
     path = audeer.touch(tmpdir, "~.txt")
     error_msg = "Execution is interrupted because"
 
-    interface = audbackend.interface.Versioned(
-        audbackend.backend.FileSystem(tmpdir, "repo")
-    )
-    interface_bad = audbackend.interface.Versioned(BadChecksumBackend(tmpdir, "repo"))
+    audbackend.backend.FileSystem.create(tmpdir, "repo")
+    file_system_backend = audbackend.backend.FileSystem(tmpdir, "repo")
+    file_system_backend.open()
+    bad_checksum_backend = BadChecksumBackend(tmpdir, "repo")
+    bad_checksum_backend.open()
+
+    interface = audbackend.interface.Versioned(file_system_backend)
+    interface_bad = audbackend.interface.Versioned(bad_checksum_backend)
 
     with pytest.raises(InterruptedError, match=error_msg):
         interface_bad.put_file(path, "/remote.txt", "1.0.0", validate=True)

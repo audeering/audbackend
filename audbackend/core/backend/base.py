@@ -9,6 +9,9 @@ from audbackend.core import utils
 from audbackend.core.errors import BackendError
 
 
+backend_not_opened_error = "'Backend.open()' needs to be run first."
+
+
 class Base:
     r"""Backend base class.
 
@@ -25,6 +28,8 @@ class Base:
         r"""Host path."""
         self.repository = repository
         r"""Repository name."""
+        self.opened = False
+        r"""If backend is opened."""
 
     def __enter__(self):
         r"""Open connection via context manager."""
@@ -103,13 +108,16 @@ class Base:
             MD5 checksum
 
         Raises:
-            BackendError: if an error is raised on the backend,
+            BackendError: if backend was not opened,
+                or an error is raised on the backend,
                 e.g. ``path`` does not exist
             ValueError: if ``path`` does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
         """
+        if not self.opened:
+            raise RuntimeError(backend_not_opened_error)
         path = utils.check_path(path)
         return utils.call_function_on_backend(
             self._checksum,
@@ -131,7 +139,9 @@ class Base:
             BackendError: if an error is raised on the backend
 
         """
-        utils.call_function_on_backend(self._close)
+        if self.opened:
+            utils.call_function_on_backend(self._close)
+            self.opened = False
 
     def _copy_file(
         self,
@@ -184,7 +194,8 @@ class Base:
             verbose: show debug messages
 
         Raises:
-            BackendError: if an error is raised on the backend
+            BackendError: if backend was not opened,
+                or an error is raised on the backend
             InterruptedError: if validation fails
             ValueError: if ``src_path`` or ``dst_path``
                 does not start with ``'/'``,
@@ -192,6 +203,9 @@ class Base:
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
         """
+        if not self.opened:
+            raise RuntimeError(backend_not_opened_error)
+
         src_path = utils.check_path(src_path)
         dst_path = utils.check_path(dst_path)
 
@@ -277,13 +291,16 @@ class Base:
             date in format ``'yyyy-mm-dd'``
 
         Raises:
-            BackendError: if an error is raised on the backend,
+            BackendError: if backend was not opened,
+                or an error is raised on the backend,
                 e.g. ``path`` does not exist
             ValueError: if ``path`` does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
         """
+        if not self.opened:
+            raise RuntimeError(backend_not_opened_error)
         path = utils.check_path(path)
         return utils.call_function_on_backend(
             self._date,
@@ -345,6 +362,7 @@ class Base:
             ``True`` if file exists
 
         Raises:
+            BackendError: if backend was not opened
             BackendError: if ``suppress_backend_errors`` is ``False``
                 and an error is raised on the backend,
                 e.g. due to a connection timeout
@@ -355,6 +373,8 @@ class Base:
                 does not match ``'[A-Za-z0-9._-]+'``
 
         """
+        if not self.opened:
+            raise RuntimeError(backend_not_opened_error)
         path = utils.check_path(path)
         return utils.call_function_on_backend(
             self._exists,
@@ -401,7 +421,8 @@ class Base:
             extracted files
 
         Raises:
-            BackendError: if an error is raised on the backend,
+            BackendError: if backend was not opened,
+                or an error is raised on the backend,
                 e.g. ``src_path`` does not exist
             FileNotFoundError: if ``tmp_root`` does not exist
             InterruptedError: if validation fails
@@ -415,6 +436,9 @@ class Base:
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
         """
+        if not self.opened:
+            raise BackendError(backend_not_opened_error)
+
         src_path = utils.check_path(src_path)
 
         with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
@@ -484,7 +508,8 @@ class Base:
             full path to local file
 
         Raises:
-            BackendError: if an error is raised on the backend,
+            BackendError: if backend was not opened,
+                or an error is raised on the backend,
                 e.g. ``src_path`` does not exist
             InterruptedError: if validation fails
             IsADirectoryError: if ``dst_path`` points to an existing folder
@@ -495,6 +520,9 @@ class Base:
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
         """
+        if not self.opened:
+            raise RuntimeError(backend_not_opened_error)
+
         src_path = utils.check_path(src_path)
         dst_path = audeer.path(dst_path)
         if os.path.isdir(dst_path):
@@ -615,6 +643,7 @@ class Base:
             list of tuples (path, version)
 
         Raises:
+            BackendError: if backend was not opened
             BackendError: if ``suppress_backend_errors`` is ``False``
                 and an error is raised on the backend,
                 e.g. ``path`` does not exist
@@ -622,6 +651,9 @@ class Base:
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         """
+        if not self.opened:
+            raise RuntimeError(backend_not_opened_error)
+
         path = utils.check_path(path, allow_sub_path=True)
 
         if path.endswith("/"):  # find files under sub-path
@@ -709,7 +741,8 @@ class Base:
             verbose: show debug messages
 
         Raises:
-            BackendError: if an error is raised on the backend
+            BackendError: if backend was not opened,
+                or an error is raised on the backend
             InterruptedError: if validation fails
             ValueError: if ``src_path`` or ``dst_path``
                 does not start with ``'/'``,
@@ -717,6 +750,9 @@ class Base:
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
         """
+        if not self.opened:
+            raise RuntimeError(backend_not_opened_error)
+
         src_path = utils.check_path(src_path)
         dst_path = utils.check_path(dst_path)
 
@@ -781,6 +817,7 @@ class Base:
 
         """
         utils.call_function_on_backend(self._open)
+        self.opened = True
 
     def _owner(
         self,
@@ -810,13 +847,16 @@ class Base:
             owner
 
         Raises:
-            BackendError: if an error is raised on the backend,
+            BackendError: if backend was not opened,
+                or an error is raised on the backend,
                 e.g. ``path`` does not exist
             ValueError: if ``path`` does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
         """
+        if not self.opened:
+            raise RuntimeError(backend_not_opened_error)
         path = utils.check_path(path)
         return utils.call_function_on_backend(
             self._owner,
@@ -866,7 +906,8 @@ class Base:
             verbose: show debug messages
 
         Raises:
-            BackendError: if an error is raised on the backend
+            BackendError: if backend was not opened,
+                or an error is raised on the backend
             FileNotFoundError: if ``src_root``,
                 ``tmp_root``,
                 or one or more ``files`` do not exist
@@ -880,6 +921,9 @@ class Base:
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
         """
+        if not self.opened:
+            raise RuntimeError(backend_not_opened_error)
+
         dst_path = utils.check_path(dst_path)
         src_root = audeer.path(src_root)
 
@@ -944,7 +988,8 @@ class Base:
             verbose: show debug messages
 
         Raises:
-            BackendError: if an error is raised on the backend
+            BackendError: if backend was not opened,
+                or an error is raised on the backend
             FileNotFoundError: if ``src_path`` does not exist
             InterruptedError: if validation fails
             IsADirectoryError: if ``src_path`` is a folder
@@ -953,6 +998,9 @@ class Base:
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
         """
+        if not self.opened:
+            raise RuntimeError(backend_not_opened_error)
+
         dst_path = utils.check_path(dst_path)
         if not os.path.exists(src_path):
             utils.raise_file_not_found_error(src_path)
@@ -996,13 +1044,16 @@ class Base:
             path: path to file on backend
 
         Raises:
-            BackendError: if an error is raised on the backend,
+            BackendError: if backend was not opened,
+                or an error is raised on the backend,
                 e.g. ``path`` does not exist
             ValueError: if ``path`` does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
         """
+        if not self.opened:
+            raise RuntimeError(backend_not_opened_error)
         path = utils.check_path(path)
         utils.call_function_on_backend(
             self._remove_file,

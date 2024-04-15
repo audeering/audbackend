@@ -24,6 +24,7 @@ class Versioned(Base):
     Examples:
         >>> file = "src.txt"
         >>> backend = audbackend.backend.FileSystem("host", "repo")
+        >>> backend.open()
         >>> interface = Versioned(backend)
         >>> interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
         >>> for version in ["1.0.0", "2.0.0"]:
@@ -67,6 +68,7 @@ class Versioned(Base):
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -130,6 +132,7 @@ class Versioned(Base):
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -185,6 +188,7 @@ class Versioned(Base):
 
         ..
             >>> backend = DoctestFileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -228,6 +232,7 @@ class Versioned(Base):
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -302,6 +307,7 @@ class Versioned(Base):
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -376,6 +382,7 @@ class Versioned(Base):
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -417,6 +424,7 @@ class Versioned(Base):
 
          ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -480,6 +488,7 @@ class Versioned(Base):
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -620,6 +629,7 @@ class Versioned(Base):
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -678,6 +688,7 @@ class Versioned(Base):
 
         ..
             >>> backend = DoctestFileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -752,6 +763,7 @@ class Versioned(Base):
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -820,6 +832,7 @@ class Versioned(Base):
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -861,6 +874,7 @@ class Versioned(Base):
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -903,6 +917,7 @@ class Versioned(Base):
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:

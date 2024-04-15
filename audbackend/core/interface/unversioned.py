@@ -16,6 +16,7 @@ class Unversioned(Base):
     Examples:
         >>> file = "src.txt"
         >>> backend = audbackend.backend.FileSystem("host", "repo")
+        >>> backend.open()
         >>> interface = Unversioned(backend)
         >>> interface.put_file(file, "/file.txt")
         >>> interface.put_archive(".", "/sub/archive.zip", files=[file])
@@ -47,6 +48,7 @@ class Unversioned(Base):
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Unversioned(backend)
 
         Examples:
@@ -101,6 +103,7 @@ class Unversioned(Base):
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Unversioned(backend)
 
         Examples:
@@ -144,6 +147,7 @@ class Unversioned(Base):
 
         ..
             >>> backend = DoctestFileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Unversioned(backend)
 
         Examples:
@@ -184,6 +188,7 @@ class Unversioned(Base):
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Unversioned(backend)
 
         Examples:
@@ -253,6 +258,7 @@ class Unversioned(Base):
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Unversioned(backend)
 
         Examples:
@@ -322,6 +328,7 @@ class Unversioned(Base):
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Unversioned(backend)
 
         Examples:
@@ -388,6 +395,7 @@ class Unversioned(Base):
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Unversioned(backend)
 
         Examples:
@@ -456,6 +464,7 @@ class Unversioned(Base):
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Unversioned(backend)
 
         Examples:
@@ -502,6 +511,7 @@ class Unversioned(Base):
 
         ..
             >>> backend = DoctestFileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Unversioned(backend)
 
         Examples:
@@ -571,6 +581,7 @@ class Unversioned(Base):
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Unversioned(backend)
 
         Examples:
@@ -631,6 +642,7 @@ class Unversioned(Base):
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Unversioned(backend)
 
         Examples:
@@ -667,6 +679,7 @@ class Unversioned(Base):
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Unversioned(backend)
 
         Examples:

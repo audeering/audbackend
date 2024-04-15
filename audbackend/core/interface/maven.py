@@ -66,6 +66,7 @@ class Maven(Versioned):
     Examples:
         >>> file = "src.txt"
         >>> backend = audbackend.backend.FileSystem("host", "repo")
+        >>> backend.open()
         >>> interface = Maven(backend)
         >>> interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
         >>> for version in ["1.0.0", "2.0.0"]:
@@ -138,6 +139,7 @@ class Maven(Versioned):
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Maven(backend)
 
         Examples:
