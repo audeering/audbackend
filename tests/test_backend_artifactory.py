@@ -1,6 +1,5 @@
 import os
 
-import dohq_artifactory
 import pytest
 
 import audeer
