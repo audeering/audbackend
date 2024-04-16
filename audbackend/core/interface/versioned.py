@@ -65,6 +65,7 @@ class Versioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
@@ -129,6 +130,7 @@ class Versioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
@@ -185,6 +187,7 @@ class Versioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = DoctestFileSystem("host", "repo")
@@ -229,6 +232,7 @@ class Versioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
@@ -304,6 +308,7 @@ class Versioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
@@ -379,6 +384,7 @@ class Versioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
@@ -421,6 +427,7 @@ class Versioned(Base):
             ValueError: if ``path`` does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
          ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
@@ -485,6 +492,7 @@ class Versioned(Base):
                 e.g. ``path`` does not exist
             ValueError: if ``path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
@@ -626,6 +634,7 @@ class Versioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
@@ -685,6 +694,7 @@ class Versioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = DoctestFileSystem("host", "repo")
@@ -760,6 +770,7 @@ class Versioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
@@ -829,6 +840,7 @@ class Versioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
@@ -871,6 +883,7 @@ class Versioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
@@ -914,6 +927,7 @@ class Versioned(Base):
             ValueError: if ``path`` does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")

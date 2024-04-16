@@ -136,6 +136,7 @@ class Maven(Versioned):
                 e.g. ``path`` does not exist
             ValueError: if ``path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
