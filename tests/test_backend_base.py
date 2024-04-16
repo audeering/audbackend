@@ -1,3 +1,5 @@
+import re
+
 import pytest
 
 import audbackend
@@ -81,3 +83,42 @@ def test_join(paths, expected, backend):
 )
 def test_split(path, expected, backend):
     assert backend.split(path) == expected
+
+
+@pytest.mark.parametrize(
+    "backend",
+    [
+        audbackend.backend.Base("host", "repository"),
+    ],
+)
+def test_errors(tmpdir, backend):
+    # Check errors when backend is not opened
+    error_msg = re.escape("'Backend.open()' needs to be run first.")
+    path = "file.txt"
+    src_path = "src.txt"
+    dst_path = "dst.txt"
+    src_root = "."
+    with pytest.raises(RuntimeError, match=error_msg):
+        backend.checksum(path)
+    with pytest.raises(RuntimeError, match=error_msg):
+        backend.copy_file(src_path, dst_path)
+    with pytest.raises(RuntimeError, match=error_msg):
+        backend.date(path)
+    with pytest.raises(RuntimeError, match=error_msg):
+        backend.exists(path)
+    with pytest.raises(RuntimeError, match=error_msg):
+        backend.get_archive(src_path, dst_path)
+    with pytest.raises(RuntimeError, match=error_msg):
+        backend.get_file(src_path, dst_path)
+    with pytest.raises(RuntimeError, match=error_msg):
+        backend.ls(path)
+    with pytest.raises(RuntimeError, match=error_msg):
+        backend.move_file(src_path, dst_path)
+    with pytest.raises(RuntimeError, match=error_msg):
+        backend.owner(path)
+    with pytest.raises(RuntimeError, match=error_msg):
+        backend.put_archive(src_root, dst_path)
+    with pytest.raises(RuntimeError, match=error_msg):
+        backend.put_file(src_path, dst_path)
+    with pytest.raises(RuntimeError, match=error_msg):
+        backend.remove_file(path)

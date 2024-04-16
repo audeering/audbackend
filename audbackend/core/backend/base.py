@@ -108,12 +108,12 @@ class Base:
             MD5 checksum
 
         Raises:
-            BackendError: if backend was not opened,
-                or an error is raised on the backend,
+            BackendError: if an error is raised on the backend,
                 e.g. ``path`` does not exist
             ValueError: if ``path`` does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         """
         if not self.opened:
@@ -194,13 +194,13 @@ class Base:
             verbose: show debug messages
 
         Raises:
-            BackendError: if backend was not opened,
-                or an error is raised on the backend
+            BackendError: if an error is raised on the backend
             InterruptedError: if validation fails
             ValueError: if ``src_path`` or ``dst_path``
                 does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         """
         if not self.opened:
@@ -291,12 +291,12 @@ class Base:
             date in format ``'yyyy-mm-dd'``
 
         Raises:
-            BackendError: if backend was not opened,
-                or an error is raised on the backend,
+            BackendError: if an error is raised on the backend,
                 e.g. ``path`` does not exist
             ValueError: if ``path`` does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         """
         if not self.opened:
@@ -362,7 +362,6 @@ class Base:
             ``True`` if file exists
 
         Raises:
-            BackendError: if backend was not opened
             BackendError: if ``suppress_backend_errors`` is ``False``
                 and an error is raised on the backend,
                 e.g. due to a connection timeout
@@ -371,6 +370,7 @@ class Base:
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
 
         """
         if not self.opened:
@@ -421,8 +421,7 @@ class Base:
             extracted files
 
         Raises:
-            BackendError: if backend was not opened,
-                or an error is raised on the backend,
+            BackendError: if an error is raised on the backend,
                 e.g. ``src_path`` does not exist
             FileNotFoundError: if ``tmp_root`` does not exist
             InterruptedError: if validation fails
@@ -434,10 +433,11 @@ class Base:
             ValueError: if ``src_path`` does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         """
         if not self.opened:
-            raise BackendError(backend_not_opened_error)
+            raise RuntimeError(backend_not_opened_error)
 
         src_path = utils.check_path(src_path)
 
@@ -508,8 +508,7 @@ class Base:
             full path to local file
 
         Raises:
-            BackendError: if backend was not opened,
-                or an error is raised on the backend,
+            BackendError: if an error is raised on the backend,
                 e.g. ``src_path`` does not exist
             InterruptedError: if validation fails
             IsADirectoryError: if ``dst_path`` points to an existing folder
@@ -518,6 +517,7 @@ class Base:
             ValueError: if ``src_path`` does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         """
         if not self.opened:
@@ -643,12 +643,12 @@ class Base:
             list of tuples (path, version)
 
         Raises:
-            BackendError: if backend was not opened
             BackendError: if ``suppress_backend_errors`` is ``False``
                 and an error is raised on the backend,
                 e.g. ``path`` does not exist
             ValueError: if ``path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         """
         if not self.opened:
@@ -741,13 +741,13 @@ class Base:
             verbose: show debug messages
 
         Raises:
-            BackendError: if backend was not opened,
-                or an error is raised on the backend
+            BackendError: if an error is raised on the backend
             InterruptedError: if validation fails
             ValueError: if ``src_path`` or ``dst_path``
                 does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         """
         if not self.opened:
@@ -847,12 +847,12 @@ class Base:
             owner
 
         Raises:
-            BackendError: if backend was not opened,
-                or an error is raised on the backend,
+            BackendError: if an error is raised on the backend,
                 e.g. ``path`` does not exist
             ValueError: if ``path`` does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         """
         if not self.opened:
@@ -906,8 +906,7 @@ class Base:
             verbose: show debug messages
 
         Raises:
-            BackendError: if backend was not opened,
-                or an error is raised on the backend
+            BackendError: if an error is raised on the backend
             FileNotFoundError: if ``src_root``,
                 ``tmp_root``,
                 or one or more ``files`` do not exist
@@ -919,6 +918,7 @@ class Base:
             ValueError: if ``dst_path`` does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         """
         if not self.opened:
@@ -988,14 +988,14 @@ class Base:
             verbose: show debug messages
 
         Raises:
-            BackendError: if backend was not opened,
-                or an error is raised on the backend
+            BackendError: if an error is raised on the backend
             FileNotFoundError: if ``src_path`` does not exist
             InterruptedError: if validation fails
             IsADirectoryError: if ``src_path`` is a folder
             ValueError: if ``dst_path`` does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         """
         if not self.opened:
@@ -1044,12 +1044,12 @@ class Base:
             path: path to file on backend
 
         Raises:
-            BackendError: if backend was not opened,
-                or an error is raised on the backend,
+            BackendError: if an error is raised on the backend,
                 e.g. ``path`` does not exist
             ValueError: if ``path`` does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         """
         if not self.opened:
