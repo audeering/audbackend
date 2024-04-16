@@ -50,6 +50,7 @@ you have to list those extensions explicitly.
 
     audbackend.backend.FileSystem.create("./host", "repo")
     backend = audbackend.backend.FileSystem("./host", "repo")
+    backend.open()
     interface = audbackend.interface.Maven(backend, extensions=["tar.gz"])
 
 Afterwards we upload an TAR.GZ archive

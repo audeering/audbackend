@@ -128,6 +128,7 @@ and upload a file:
 
     audbackend.backend.FileSystem.create("./host", "repo")
     backend = audbackend.backend.FileSystem("./host", "repo")
+    backend.open()
     interface = UserContent(backend)
 
     interface.add_user("audeering", "pa$$word")
