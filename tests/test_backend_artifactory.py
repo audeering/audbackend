@@ -96,49 +96,49 @@ def test_errors(tmpdir, interface):
             "1.0.0",
             [],
             False,
-            "file.tar/1.0.0/file.tar-1.0.0.gz",
+            "/file.tar/1.0.0/file.tar-1.0.0.gz",
         ),
         (
             "/file.tar.gz",
             "1.0.0",
             ["tar.gz"],
             False,
-            "file/1.0.0/file-1.0.0.tar.gz",
+            "/file/1.0.0/file-1.0.0.tar.gz",
         ),
         (
             "/.tar.gz",
             "1.0.0",
             ["tar.gz"],
             False,
-            ".tar/1.0.0/.tar-1.0.0.gz",
+            "/.tar/1.0.0/.tar-1.0.0.gz",
         ),
         (
             "/tar.gz",
             "1.0.0",
             ["tar.gz"],
             False,
-            "tar/1.0.0/tar-1.0.0.gz",
+            "/tar/1.0.0/tar-1.0.0.gz",
         ),
         (
             "/.tar.gz",
             "1.0.0",
             [],
             False,
-            ".tar/1.0.0/.tar-1.0.0.gz",
+            "/.tar/1.0.0/.tar-1.0.0.gz",
         ),
         (
             "/.tar",
             "1.0.0",
             [],
             False,
-            ".tar/1.0.0/.tar-1.0.0",
+            "/.tar/1.0.0/.tar-1.0.0",
         ),
         (
             "/tar",
             "1.0.0",
             [],
             False,
-            "tar/1.0.0/tar-1.0.0",
+            "/tar/1.0.0/tar-1.0.0",
         ),
         # test regex
         (
@@ -146,49 +146,49 @@ def test_errors(tmpdir, interface):
             "1.0.0",
             [r"\d+.tar.gz"],
             False,
-            "file.0.tar/1.0.0/file.0.tar-1.0.0.gz",
+            "/file.0.tar/1.0.0/file.0.tar-1.0.0.gz",
         ),
         (
             "/file.0.tar.gz",
             "1.0.0",
             [r"\d+.tar.gz"],
             True,
-            "file/1.0.0/file-1.0.0.0.tar.gz",
+            "/file/1.0.0/file-1.0.0.0.tar.gz",
         ),
         (
             "/file.99.tar.gz",
             "1.0.0",
             [r"\d+.tar.gz"],
             True,
-            "file/1.0.0/file-1.0.0.99.tar.gz",
+            "/file/1.0.0/file-1.0.0.99.tar.gz",
         ),
         (
             "/file.prediction.99.tar.gz",
             "1.0.0",
             [r"prediction.\d+.tar.gz", r"truth.tar.gz"],
             True,
-            "file/1.0.0/file-1.0.0.prediction.99.tar.gz",
+            "/file/1.0.0/file-1.0.0.prediction.99.tar.gz",
         ),
         (
             "/file.truth.tar.gz",
             "1.0.0",
             [r"prediction.\d+.tar.gz", r"truth.tar.gz"],
             True,
-            "file/1.0.0/file-1.0.0.truth.tar.gz",
+            "/file/1.0.0/file-1.0.0.truth.tar.gz",
         ),
         (
             "/file.99.tar.gz",
             "1.0.0",
             [r"(\d+.)?tar.gz"],
             True,
-            "file/1.0.0/file-1.0.0.99.tar.gz",
+            "/file/1.0.0/file-1.0.0.99.tar.gz",
         ),
         (
             "/file.tar.gz",
             "1.0.0",
             [r"(\d+.)?tar.gz"],
             True,
-            "file/1.0.0/file-1.0.0.tar.gz",
+            "/file/1.0.0/file-1.0.0.tar.gz",
         ),
     ],
 )
@@ -201,7 +201,7 @@ def test_maven_file_structure(
     src_path = audeer.touch(audeer.path(tmpdir, "tmp"))
     interface.put_file(src_path, file, version)
 
-    url = f"{str(interface.backend._repo.path)}{expected}"
+    url = f"{str(interface.backend.path(expected))}"
     url_expected = str(
         interface.backend.path(interface._path_with_version(file, version))
     )

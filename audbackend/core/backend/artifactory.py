@@ -183,7 +183,7 @@ class Artifactory(Base):
         /<path>
 
         """
-        path = path[len(str(self._repo.path)) - 1 :]
+        path = path[len(str(self.path("/"))) - 1 :]
         path = path.replace("/", self.sep)
         return path
 
