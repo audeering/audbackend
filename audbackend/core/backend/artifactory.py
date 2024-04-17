@@ -168,7 +168,7 @@ class Artifactory(Base):
         path: str,
     ) -> str:
         r"""MD5 checksum of file on backend."""
-        path = self._path(path)
+        path = self.path(path)
         checksum = artifactory.ArtifactoryPath.stat(path).md5
         return checksum
 
@@ -194,8 +194,8 @@ class Artifactory(Base):
         verbose: bool,
     ):
         r"""Copy file on backend."""
-        src_path = self._path(src_path)
-        dst_path = self._path(dst_path)
+        src_path = self.path(src_path)
+        dst_path = self.path(dst_path)
         if not dst_path.parent.exists():
             dst_path.parent.mkdir()
         src_path.copy(dst_path)
@@ -219,7 +219,7 @@ class Artifactory(Base):
         path: str,
     ) -> str:
         r"""Get last modification date of file on backend."""
-        path = self._path(path)
+        path = self.path(path)
         date = path.stat().mtime
         date = utils.date_format(date)
         return date
@@ -236,7 +236,7 @@ class Artifactory(Base):
         path: str,
     ) -> bool:
         r"""Check if file exists on backend."""
-        path = self._path(path)
+        path = self.path(path)
         return path.exists()
 
     def _get_file(
@@ -246,7 +246,7 @@ class Artifactory(Base):
         verbose: bool,
     ):
         r"""Get file from backend."""
-        src_path = self._path(src_path)
+        src_path = self.path(src_path)
         _download(src_path, dst_path, verbose=verbose)
 
     def _ls(
@@ -254,7 +254,7 @@ class Artifactory(Base):
         path: str,
     ) -> typing.List[str]:
         r"""List all files under sub-path."""
-        path = self._path(path)
+        path = self.path(path)
         if not path.exists():
             return []
 
@@ -270,8 +270,8 @@ class Artifactory(Base):
         verbose: bool,
     ):
         r"""Move file on backend."""
-        src_path = self._path(src_path)
-        dst_path = self._path(dst_path)
+        src_path = self.path(src_path)
+        dst_path = self.path(dst_path)
         if not dst_path.parent.exists():
             dst_path.parent.mkdir()
         src_path.move(dst_path)
@@ -290,11 +290,11 @@ class Artifactory(Base):
         path: str,
     ) -> str:
         r"""Get owner of file on backend."""
-        path = self._path(path)
+        path = self.path(path)
         owner = path.stat().modified_by
         return owner
 
-    def _path(
+    def path(
         self,
         path: str,
     ) -> artifactory.ArtifactoryPath:
@@ -303,6 +303,12 @@ class Artifactory(Base):
         <path>
         ->
         <host>/<repository>/<path>
+
+        Args:
+            path: path on backend
+
+        Returns:
+            Artifactory path object
 
         """
         path = path.replace(self.sep, "/")
@@ -318,7 +324,7 @@ class Artifactory(Base):
         verbose: bool,
     ):
         r"""Put file to backend."""
-        dst_path = self._path(dst_path)
+        dst_path = self.path(dst_path)
         _deploy(src_path, dst_path, checksum, verbose=verbose)
 
     def _remove_file(
@@ -326,5 +332,5 @@ class Artifactory(Base):
         path: str,
     ):
         r"""Remove file from backend."""
-        path = self._path(path)
+        path = self.path(path)
         path.unlink()

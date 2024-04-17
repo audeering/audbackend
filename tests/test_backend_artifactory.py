@@ -203,7 +203,7 @@ def test_maven_file_structure(
 
     url = f"{str(interface.backend._repo.path)}{expected}"
     url_expected = str(
-        interface.backend._path(interface._path_with_version(file, version))
+        interface.backend.path(interface._path_with_version(file, version))
     )
     assert url_expected == url
     assert interface.ls(file) == [(file, version)]
