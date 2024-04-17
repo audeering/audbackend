@@ -76,61 +76,11 @@ def test_authentication(tmpdir, hosts, hide_credentials):
     indirect=True,
 )
 def test_errors(tmpdir, interface):
-    interface.backend.auth == ("non-existing", "non-existing")
-
-    local_file = audeer.touch(audeer.path(tmpdir, "file.txt"))
-    remote_file = interface.join(
-        "/",
-        audeer.uid()[:8],
-        "file.txt",
-    )
-    version = "1.0.0"
-
-    # --- exists ---
+    # Reconnect with wrong authentication
+    interface.backend.close()
+    interface.backend.auth = ("non-existing", "non-existing")
     with pytest.raises(audbackend.BackendError):
-        interface.exists(remote_file, version)
-    assert (
-        interface.exists(
-            remote_file,
-            version,
-            suppress_backend_errors=True,
-        )
-        is False
-    )
-
-    # --- put_file ---
-    with pytest.raises(audbackend.BackendError):
-        interface.put_file(
-            local_file,
-            remote_file,
-            version,
-        )
-
-    # --- latest_version ---
-    with pytest.raises(audbackend.BackendError):
-        interface.latest_version(remote_file)
-
-    # --- ls ---
-    with pytest.raises(audbackend.BackendError):
-        interface.ls("/")
-    assert (
-        interface.ls(
-            "/",
-            suppress_backend_errors=True,
-        )
-        == []
-    )
-
-    # --- versions ---
-    with pytest.raises(audbackend.BackendError):
-        interface.versions(remote_file)
-    assert (
-        interface.versions(
-            remote_file,
-            suppress_backend_errors=True,
-        )
-        == []
-    )
+        interface.backend.open()
 
 
 @pytest.mark.parametrize(
@@ -252,8 +202,8 @@ def test_maven_file_structure(
     interface.put_file(src_path, file, version)
 
     url = f"{str(interface.backend._repo.path)}{expected}"
-    url_expected = interface.backend._expand(
-        interface._path_with_version(file, version),
+    url_expected = str(
+        interface.backend._path(interface._path_with_version(file, version))
     )
     assert url_expected == url
     assert interface.ls(file) == [(file, version)]

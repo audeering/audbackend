@@ -47,9 +47,7 @@ def owner(request):
         hasattr(audbackend.backend, "Artifactory")
         and backend_cls == audbackend.backend.Artifactory
     ):
-        owner = audbackend.core.backend.artifactory._authentication(
-            "audeering.jfrog.io/artifactory"
-        )[0]
+        owner = backend_cls.authentication("audeering.jfrog.io/artifactory")[0]
     else:
         if os.name == "nt":
             owner = "Administrators"

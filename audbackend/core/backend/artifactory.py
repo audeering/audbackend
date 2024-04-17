@@ -106,11 +106,9 @@ class Artifactory(BaseAuthentication):
 
         if auth is None:
             self.auth = self.authentication(host)
-
-        # We only look for the actual repository
-        # when opening a conncetion to the backend.
-        # The repository name does not cover the actual type of repo,
-        # hence we store the actual repo path inside ``_repo``.
+ 
+        # Store ArtifactoryPath object to the repository,
+        # when opening the backend.
         self._repo = None
 
     @classmethod
@@ -256,25 +254,6 @@ class Artifactory(BaseAuthentication):
         path = self._path(path)
         return path.exists()
 
-    def _expand(
-        self,
-        path: str,
-    ) -> str:
-        r"""Convert to backend path.
-
-        <path>
-        ->
-        <host>/<repository>/<path>
-
-        """
-        path = path.replace(self.sep, "/")
-        if path.startswith("/"):
-            path = path[1:]
-        if self._repo is None:
-
-        path = f"{self._repo.path}{path}"
-        return path
-
     def _get_file(
         self,
         src_path: str,
@@ -316,7 +295,7 @@ class Artifactory(BaseAuthentication):
         self,
     ):
         r"""Open connection to backend."""
-        path = self._path(self.host)
+        path = artifactory.ArtifactoryPath(self.host, auth=self.auth)
         self._repo = path.find_repository_local(self.repository)
         if self._repo is None:
             utils.raise_file_not_found_error(self.repository)
@@ -341,9 +320,10 @@ class Artifactory(BaseAuthentication):
         <host>/<repository>/<path>
 
         """
-        path = self._expand(path)
-        path = artifactory.ArtifactoryPath(path, auth=self.auth)
-        return path
+        path = path.replace(self.sep, "/")
+        if path.startswith("/"):
+            path = path[1:]
+        return self._repo / path
 
     def _put_file(
         self,
