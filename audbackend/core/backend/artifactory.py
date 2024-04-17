@@ -72,26 +72,9 @@ class Artifactory(BaseAuthentication):
     Args:
         host: host address
         repository: repository name
-        auth: ``(username, password)`` tuple.
-            If ``None`` it looks for the two environment variables
-            ``ARTIFACTORY_USERNAME`` and
-            ``ARTIFACTORY_API_KEY``.
-            Otherwise,
-            tries to extract missing values
-            from a global `config file`_.
-            The default path of the config file
-            (:file:`~/.artifactory_python.cfg`)
-            can be overwritten with the environment variable
-            ``ARTIFACTORY_CONFIG_FILE``.
-            If no config file exists
-            or if it does not contain an
-            entry for the ``host``,
-            the username is set to ``'anonymous'``
-            and the API key to an empty string.
-            In that case the ``host``
-            should support anonymous access.
-
-    .. _`config file`: https://devopshq.github.io/artifactory/#global-configuration-file
+        auth: username, password / API key / access token tuple.
+            If ``None``,
+            it requests it by calling :meth:`authentication`
 
     """  # noqa: E501
 
@@ -100,7 +83,7 @@ class Artifactory(BaseAuthentication):
         host: str,
         repository: str,
         *,
-        auth: typing.Any = None,
+        auth: typing.Tuple = None,
     ):
         super().__init__(host, repository, auth=auth)
 
@@ -145,6 +128,8 @@ class Artifactory(BaseAuthentication):
         In that case the ``host``
         has to support anonymous access,
         when trying to authenticate.
+
+        .. _`config file`: https://devopshq.github.io/artifactory/#global-configuration-file
 
         Args:
             host: hostname of Artifactory backend

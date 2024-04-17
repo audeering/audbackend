@@ -1122,7 +1122,7 @@ class BaseAuthentication(Base):
         super().__init__(host, repository)
 
         self.auth = auth
-        r"""Access token."""
+        r"""Access token object, e.g. username, password tuple."""
 
     @classmethod
     def create(
@@ -1142,8 +1142,7 @@ class BaseAuthentication(Base):
             host: host address
             repository: repository name
             auth: access token
-                for backends
-                that require authentication,
+                for authentication,
                 e.g. username, password tuple
 
         Raises:
@@ -1173,8 +1172,7 @@ class BaseAuthentication(Base):
             host: host address
             repository: repository name
             auth: access token
-                for backends
-                that require authentication,
+                for authentication,
                 e.g. username, password tuple
 
         Raises:
