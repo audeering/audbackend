@@ -106,7 +106,7 @@ class Artifactory(BaseAuthentication):
 
         if auth is None:
             self.auth = self.authentication(host)
- 
+
         # Store ArtifactoryPath object to the repository,
         # when opening the backend.
         self._repo = None
