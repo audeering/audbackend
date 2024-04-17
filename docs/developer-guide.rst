@@ -141,6 +141,7 @@ At the end we clean up and delete our repo.
 
 .. jupyter-execute::
 
+    backend.close()
     audbackend.backend.FileSystem.delete("./host", "repo")
 
 
