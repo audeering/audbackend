@@ -300,9 +300,9 @@ class Artifactory(Base):
     ) -> artifactory.ArtifactoryPath:
         r"""Convert to backend path.
 
-        <path>
-        ->
-        <host>/<repository>/<path>
+        This extends the relative ``path`` on the backend
+        by :attr:`host` and :attr:`repository`,
+        and returns an :class:`artifactory.ArtifactortPath` object.
 
         Args:
             path: path on backend
@@ -314,6 +314,7 @@ class Artifactory(Base):
         path = path.replace(self.sep, "/")
         if path.startswith("/"):
             path = path[1:]
+        # path -> host/repository/path
         return self._repo / path
 
     def _put_file(
