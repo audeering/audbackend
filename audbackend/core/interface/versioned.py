@@ -24,6 +24,7 @@ class Versioned(Base):
     Examples:
         >>> file = "src.txt"
         >>> backend = audbackend.backend.FileSystem("host", "repo")
+        >>> backend.open()
         >>> interface = Versioned(backend)
         >>> interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
         >>> for version in ["1.0.0", "2.0.0"]:
@@ -64,9 +65,11 @@ class Versioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -127,9 +130,11 @@ class Versioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -182,9 +187,11 @@ class Versioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = DoctestFileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -225,9 +232,11 @@ class Versioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -299,9 +308,11 @@ class Versioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -373,9 +384,11 @@ class Versioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -414,9 +427,11 @@ class Versioned(Base):
             ValueError: if ``path`` does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
          ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -477,9 +492,11 @@ class Versioned(Base):
                 e.g. ``path`` does not exist
             ValueError: if ``path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -617,9 +634,11 @@ class Versioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -675,9 +694,11 @@ class Versioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = DoctestFileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -749,9 +770,11 @@ class Versioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -817,9 +840,11 @@ class Versioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -858,9 +883,11 @@ class Versioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
@@ -900,9 +927,11 @@ class Versioned(Base):
             ValueError: if ``path`` does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Versioned(backend)
 
         Examples:
