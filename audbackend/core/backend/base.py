@@ -1,4 +1,5 @@
 import fnmatch
+import inspect
 import os
 import tempfile
 import typing
@@ -25,11 +26,15 @@ class Base:
         self,
         host: str,
         repository: str,
+        *,
+        auth: typing.Any = None,
     ):
         self.host = host
         r"""Host path."""
         self.repository = repository
         r"""Repository name."""
+        self.auth = auth
+        r"""Access token object, e.g. username, password tuple."""
         self.opened = False
         r"""If a connection to the repository has been established."""
 
@@ -251,6 +256,8 @@ class Base:
         cls,
         host: str,
         repository: str,
+        *,
+        auth: typing.Any = None,
     ):
         r"""Create repository.
 
@@ -261,6 +268,9 @@ class Base:
         Args:
             host: host address
             repository: repository name
+            auth: access token
+                for possible authentication,
+                e.g. username, password tuple
 
         Raises:
             BackendError: if an error is raised on the backend,
@@ -268,7 +278,11 @@ class Base:
                 or cannot be created
 
         """
-        backend = cls(host, repository)
+        signature = inspect.signature(cls)
+        if "auth" in signature.parameters:
+            backend = cls(host, repository, auth=auth)
+        else:
+            backend = cls(host, repository)
         utils.call_function_on_backend(backend._create)
 
     def _date(
@@ -326,6 +340,8 @@ class Base:
         cls,
         host: str,
         repository: str,
+        *,
+        auth: typing.Any = None,
     ):
         r"""Delete repository.
 
@@ -336,13 +352,20 @@ class Base:
         Args:
             host: host address
             repository: repository name
+            auth: access token
+                for possible authentication,
+                e.g. username, password tuple
 
         Raises:
             BackendError: if an error is raised on the backend,
                 e.g. repository does not exist
 
         """
-        backend = cls(host, repository)
+        signature = inspect.signature(cls)
+        if "auth" in signature.parameters:
+            backend = cls(host, repository, auth=auth)
+        else:
+            backend = cls(host, repository)
         utils.call_function_on_backend(backend._delete)
 
     def _exists(
@@ -1103,82 +1126,3 @@ class Base:
         basename = path.split(self.sep)[-1]
 
         return root, basename
-
-
-class BaseAuthentication(Base):
-    r"""Backend base class with authentication.
-
-    Derive from this class to implement a new backend.
-
-    """
-
-    def __init__(
-        self,
-        host: str,
-        repository: str,
-        *,
-        auth: typing.Any = None,
-    ):
-        super().__init__(host, repository)
-
-        self.auth = auth
-        r"""Access token object, e.g. username, password tuple."""
-
-    @classmethod
-    def create(
-        cls,
-        host: str,
-        repository: str,
-        *,
-        auth: typing.Any = None,
-    ):
-        r"""Create repository.
-
-        Creates ``repository``
-        located at ``host``
-        on the backend.
-
-        Args:
-            host: host address
-            repository: repository name
-            auth: access token
-                for authentication,
-                e.g. username, password tuple
-
-        Raises:
-            BackendError: if an error is raised on the backend,
-                e.g. repository exists already
-                or cannot be created
-
-        """
-        backend = cls(host, repository, auth=auth)
-        utils.call_function_on_backend(backend._create)
-
-    @classmethod
-    def delete(
-        cls,
-        host: str,
-        repository: str,
-        *,
-        auth: typing.Any = None,
-    ):
-        r"""Delete repository.
-
-        Deletes ``repository``
-        located at ``host``
-        on the backend.
-
-        Args:
-            host: host address
-            repository: repository name
-            auth: access token
-                for authentication,
-                e.g. username, password tuple
-
-        Raises:
-            BackendError: if an error is raised on the backend,
-                e.g. repository does not exist
-
-        """
-        backend = cls(host, repository, auth=auth)
-        utils.call_function_on_backend(backend._delete)

@@ -1,5 +1,4 @@
 from audbackend.core.backend.base import Base
-from audbackend.core.backend.base import BaseAuthentication
 from audbackend.core.backend.filesystem import FileSystem
 
 # Import optional backends

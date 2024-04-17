@@ -7,7 +7,7 @@ import dohq_artifactory
 import audeer
 
 from audbackend.core import utils
-from audbackend.core.backend.base import BaseAuthentication
+from audbackend.core.backend.base import Base
 
 
 def _deploy(
@@ -66,7 +66,7 @@ def _download(
                         pbar.update(n_data)
 
 
-class Artifactory(BaseAuthentication):
+class Artifactory(Base):
     r"""Backend for Artifactory.
 
     Args:
