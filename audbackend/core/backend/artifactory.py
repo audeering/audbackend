@@ -208,9 +208,8 @@ class Artifactory(Base):
         self,
     ):
         r"""Delete repository and all its content."""
-        self.open()
-        self._repo.delete()
-        self.close()
+        with self:
+            self._repo.delete()
 
     def _exists(
         self,
