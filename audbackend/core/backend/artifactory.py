@@ -122,7 +122,7 @@ class Artifactory(BaseAuthentication):
 
         Note, API keys are deprecated
         and will no longer work
-        with version of Artifactory.
+        with newer versions of Artifactory.
 
         To get the username,
         password/access token combination,
