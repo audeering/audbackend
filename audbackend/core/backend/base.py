@@ -129,7 +129,13 @@ class Base:
     def _close(
         self,
     ):  # pragma: no cover
-        r"""Close connection to repository."""
+        r"""Close connection to repository.
+
+        An error should be raised,
+        if the connection to the backend
+        cannot be closed.
+
+        """
         pass
 
     def close(
@@ -787,7 +793,9 @@ class Base:
     ):  # pragma: no cover
         r"""Open connection to backend.
 
-        * If repository does not exist an error should be raised
+        If repository does not exist,
+        or the backend cannot be opened,
+        an error should be raised.
 
         """
         pass
