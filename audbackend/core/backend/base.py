@@ -9,7 +9,9 @@ from audbackend.core import utils
 from audbackend.core.errors import BackendError
 
 
-backend_not_opened_error = "'Backend.open()' needs to be run first."
+backend_not_opened_error = (
+    "Call 'Backend.open()' to establish a connection to the repository first."
+)
 
 
 class Base:

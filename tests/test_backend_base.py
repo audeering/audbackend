@@ -93,7 +93,9 @@ def test_split(path, expected, backend):
 )
 def test_errors(tmpdir, backend):
     # Check errors when backend is not opened
-    error_msg = re.escape("'Backend.open()' needs to be run first.")
+    error_msg = re.escape(
+        "Call 'Backend.open()' to establish a connection to the repository first."
+    )
     path = "file.txt"
     src_path = "src.txt"
     dst_path = "dst.txt"
