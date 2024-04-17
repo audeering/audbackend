@@ -17,10 +17,12 @@ backends are supported:
 
 Users can implement their own
 backend by deriving from
-:class:`audbackend.backend.Base`.
+:class:`audbackend.backend.Base`,
+or :class:`audbackend.backend.BaseAuthentication`.
 
 .. autosummary::
     :toctree:
     :nosignatures:
 
     Base
+    BaseAuthentication
