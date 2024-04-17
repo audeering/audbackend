@@ -31,7 +31,7 @@ class Base:
         self.repository = repository
         r"""Repository name."""
         self.opened = False
-        r"""If backend is opened."""
+        r"""If a connection to the repository has been established."""
 
     def __enter__(self):
         r"""Open connection via context manager."""
