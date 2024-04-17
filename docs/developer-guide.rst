@@ -128,6 +128,7 @@ and upload a file:
 
     audbackend.backend.FileSystem.create("./host", "repo")
     backend = audbackend.backend.FileSystem("./host", "repo")
+    backend.open()
     interface = UserContent(backend)
 
     interface.add_user("audeering", "pa$$word")
@@ -140,6 +141,7 @@ At the end we clean up and delete our repo.
 
 .. jupyter-execute::
 
+    backend.close()
     audbackend.backend.FileSystem.delete("./host", "repo")
 
 

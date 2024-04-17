@@ -142,14 +142,6 @@ class Artifactory(Base):
     ):
         super().__init__(host, repository)
 
-        self._username, self._api_key = _authentication(host)
-        path = _artifactory_path(
-            self.host,
-            self._username,
-            self._api_key,
-        )
-        self._repo = path.find_repository_local(self.repository)
-
     def _checksum(
         self,
         path: str,
@@ -191,20 +183,16 @@ class Artifactory(Base):
         self,
     ):
         r"""Access existing repository."""
-        if self._repo is not None:
-            utils.raise_file_exists_error(str(self._repo.path))
-
-        path = _artifactory_path(
-            self.host,
-            self._username,
-            self._api_key,
-        )
-        self._repo = dohq_artifactory.RepositoryLocal(
+        username, api_key = _authentication(self.host)
+        path = _artifactory_path(self.host, username, api_key)
+        repo = dohq_artifactory.RepositoryLocal(
             path,
             self.repository,
             package_type=dohq_artifactory.RepositoryLocal.GENERIC,
         )
-        self._repo.create()
+        if repo.path.exists():
+            utils.raise_file_exists_error(str(repo.path))
+        repo.create()
 
     def _date(
         self,
@@ -220,7 +208,8 @@ class Artifactory(Base):
         self,
     ):
         r"""Delete repository and all its content."""
-        self._repo.delete()
+        with self:
+            self._repo.delete()
 
     def _exists(
         self,
@@ -288,8 +277,15 @@ class Artifactory(Base):
         self,
     ):
         r"""Open connection to backend."""
+        self._username, self._api_key = _authentication(self.host)
+        path = _artifactory_path(
+            self.host,
+            self._username,
+            self._api_key,
+        )
+        self._repo = path.find_repository_local(self.repository)
         if self._repo is None:
-            utils.raise_file_not_found_error(str(self._repo.path))
+            utils.raise_file_not_found_error(self.repository)
 
     def _owner(
         self,
