@@ -818,8 +818,9 @@ class Base:
         .. _with: https://docs.python.org/3/reference/compound_stmts.html#with
 
         """
-        utils.call_function_on_backend(self._open)
-        self.opened = True
+        if not self.opened:
+            utils.call_function_on_backend(self._open)
+            self.opened = True
 
     def _owner(
         self,
