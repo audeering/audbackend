@@ -29,6 +29,11 @@ def test_get_file_interrupt(tmpdir, interface):
     checksum_local = audeer.md5(src_path)
     assert checksum_local != checksum_remote
 
+    # Try to use malfanctioning exists() method
+    with pytest.raises(audbackend.BackendError):
+        interface.exists("/file", "1.0.0")
+    assert interface.exists("/file", "1.0.0", suppress_backend_errors=True) is False
+
     # try to read remote file, local file remains unchanged
     with pytest.raises(audbackend.BackendError):
         interface.get_file("/file", src_path, "1.0.0")
