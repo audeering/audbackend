@@ -16,6 +16,7 @@ class Unversioned(Base):
     Examples:
         >>> file = "src.txt"
         >>> backend = audbackend.backend.FileSystem("host", "repo")
+        >>> backend.open()
         >>> interface = Unversioned(backend)
         >>> interface.put_file(file, "/file.txt")
         >>> interface.put_archive(".", "/sub/archive.zip", files=[file])
@@ -44,9 +45,11 @@ class Unversioned(Base):
             ValueError: if ``path`` does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Unversioned(backend)
 
         Examples:
@@ -98,9 +101,11 @@ class Unversioned(Base):
                 does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Unversioned(backend)
 
         Examples:
@@ -141,9 +146,11 @@ class Unversioned(Base):
             ValueError: if ``path`` does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = DoctestFileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Unversioned(backend)
 
         Examples:
@@ -181,9 +188,11 @@ class Unversioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             ValueError: if ``version`` is empty or
                 does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Unversioned(backend)
 
         Examples:
@@ -250,9 +259,11 @@ class Unversioned(Base):
             ValueError: if ``src_path`` does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Unversioned(backend)
 
         Examples:
@@ -319,9 +330,11 @@ class Unversioned(Base):
             ValueError: if ``src_path`` does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Unversioned(backend)
 
         Examples:
@@ -385,9 +398,11 @@ class Unversioned(Base):
                 e.g. ``path`` does not exist
             ValueError: if ``path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Unversioned(backend)
 
         Examples:
@@ -453,9 +468,11 @@ class Unversioned(Base):
                 does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Unversioned(backend)
 
         Examples:
@@ -499,9 +516,11 @@ class Unversioned(Base):
             ValueError: if ``path`` does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = DoctestFileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Unversioned(backend)
 
         Examples:
@@ -568,9 +587,11 @@ class Unversioned(Base):
             ValueError: if ``dst_path`` does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Unversioned(backend)
 
         Examples:
@@ -628,9 +649,11 @@ class Unversioned(Base):
             ValueError: if ``dst_path`` does not start with ``'/'``,
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Unversioned(backend)
 
         Examples:
@@ -667,6 +690,7 @@ class Unversioned(Base):
 
         ..
             >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> backend.open()
             >>> interface = Unversioned(backend)
 
         Examples:

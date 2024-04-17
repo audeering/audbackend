@@ -38,25 +38,25 @@ def test_authentication(tmpdir, hosts, hide_credentials):
 
     # config file does not exist
 
-    backend = audbackend.backend.Artifactory(host, "repository")
-    assert backend._username == "anonymous"
-    assert backend._api_key == ""
+    username, api_key = audbackend.core.backend.artifactory._authentication(host)
+    assert username == "anonymous"
+    assert api_key == ""
 
     # config file is empty
 
     audeer.touch(config_path)
-    backend = audbackend.backend.Artifactory(host, "repository")
-    assert backend._username == "anonymous"
-    assert backend._api_key == ""
+    username, api_key = audbackend.core.backend.artifactory._authentication(host)
+    assert username == "anonymous"
+    assert api_key == ""
 
     # config file entry without username and password
 
     with open(config_path, "w") as fp:
         fp.write(f"[{host}]\n")
 
-    backend = audbackend.backend.Artifactory(host, "repository")
-    assert backend._username == "anonymous"
-    assert backend._api_key == ""
+    username, api_key = audbackend.core.backend.artifactory._authentication(host)
+    assert username == "anonymous"
+    assert api_key == ""
 
     # config file entry with username and password
 
@@ -67,8 +67,9 @@ def test_authentication(tmpdir, hosts, hide_credentials):
         fp.write(f"username = {username}\n")
         fp.write(f"password = {api_key}\n")
 
-    with pytest.raises(dohq_artifactory.exception.ArtifactoryException):
-        audbackend.backend.Artifactory(host, "repository")
+    username, api_key = audbackend.core.backend.artifactory._authentication(host)
+    assert username == "bad"
+    assert api_key == "bad"
 
 
 @pytest.mark.parametrize(
