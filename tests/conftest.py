@@ -1,7 +1,5 @@
 import getpass
 import os
-import time
-import warnings
 
 import pytest
 
@@ -82,8 +80,10 @@ def interface(tmpdir_factory, request):
         hasattr(audbackend.backend, "Artifactory")
         and backend_cls == audbackend.backend.Artifactory
     ):
+        artifactory = True
         host = "https://audeering.jfrog.io/artifactory"
     else:
+        artifactory = False
         host = str(tmpdir_factory.mktemp("host"))
     repository = f"unittest-{pytest.UID}-{audeer.uid()[:8]}"
 
@@ -93,22 +93,14 @@ def interface(tmpdir_factory, request):
 
         yield interface
 
-    # Deleting repositories on Artifactory might fail
-    for n in range(3):
-        try:
-            backend_cls.delete(host, repository)
-            break
-        except audbackend.BackendError:
-            if n == 2:
-                warning_msg = (
-                    f"Cleaning up of repo {repository} failed.\n"
-                    "Please delete remaining repositories manually \n"
-                    "by running the following command \n"
-                    "when no tests are actively running:\n"
-                    f"python tests/misc/cleanup_artifactory.py"
-                )
-                warnings.warn(warning_msg, UserWarning)
-            time.sleep(1)
+        if artifactory:
+            if not backend.opened:
+                backend.auth = None
+                backend.open()
+            backend._repo.delete()
+
+    if not artifactory:
+        backend_cls.delete(host, repository)
 
 
 @pytest.fixture(scope="package", autouse=True)
