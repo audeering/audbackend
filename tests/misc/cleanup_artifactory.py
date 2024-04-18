@@ -4,6 +4,7 @@
 # NOTE: it is important to only call this script
 # when no test pipeline is running
 
+import artifactory
 import requests
 
 import audbackend
@@ -11,18 +12,23 @@ import audbackend
 
 host = "https://audeering.jfrog.io/artifactory"
 
-username, api_key = audbackend.core.backend.artifactory._authentication(host)
-r = requests.get(f"{host}/api/repositories", auth=(username, api_key))
+auth = audbackend.Artifactory.authentication(host)
+r = requests.get(f"{host}/api/repositories", auth=auth)
 
 if r.status_code == 200:
+    # Collect names of leftover unittest repositories
     repos = [entry["key"] for entry in r.json()]
     repos = [repo for repo in repos if repo.startswith("unittest-")]
     length = len(repos)
+    # Delete leftover repositories
+    path = artifactory.ArtifactoryPath(host, auth=auth)
     for n, repo in enumerate(repos):
         try:
-            audbackend.backend.Artifactory.delete(host, repo)
+            repo_path = path.find_repository(repo)
+            if repo_path is not None:
+                repo_path.delete()
             print(f"{n + 1:4.0f} / {length:4.0f} Deleted {repo}")
-        except audbackend.BackendError:
+        except Exception:
             raise RuntimeError(
                 f"Cleaning up of repo {repo} failed. "
                 f"Please try to run this script later again."
