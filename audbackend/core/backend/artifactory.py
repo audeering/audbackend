@@ -281,7 +281,7 @@ class Artifactory(Base):
     ):
         r"""Open connection to backend."""
         path = artifactory.ArtifactoryPath(self.host, auth=self.auth)
-        self._repo = path.find_repository_local(self.repository)
+        self._repo = path.find_repository(self.repository)
         if self._repo is None:
             utils.raise_file_not_found_error(self.repository)
 
