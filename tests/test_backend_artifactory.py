@@ -77,17 +77,13 @@ def test_create_delete_repositories(host, repository):
     audbackend.backend.Artifactory.delete(host, repository)
 
 
-@pytest.mark.parametrize(
-    "interface",
-    [(audbackend.backend.Artifactory, audbackend.interface.Versioned)],
-    indirect=True,
-)
-def test_errors(tmpdir, interface):
-    # Reconnect with wrong authentication
-    interface.backend.close()
-    interface.backend.auth = ("non-existing", "non-existing")
+@pytest.mark.parametrize("host", ["https://audeering.jfrog.io/artifactory"])
+@pytest.mark.parametrize("repository", [f"unittest-{pytest.UID}-{audeer.uid()[:8]}"])
+@pytest.mark.parametrize("auth", [("non-existing", "non-existing")])
+def test_errors(host, repository, auth):
+    backend = audbackend.backend.Artifactory(host, repository, auth=auth)
     with pytest.raises(audbackend.BackendError):
-        interface.backend.open()
+        backend.open()
 
 
 @pytest.mark.parametrize(

@@ -94,9 +94,6 @@ def interface(tmpdir_factory, request):
         yield interface
 
         if artifactory:
-            if not backend.opened:
-                backend.auth = None
-                backend.open()
             backend._repo.delete()
 
     if not artifactory:
