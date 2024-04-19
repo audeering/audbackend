@@ -6,6 +6,7 @@ import audbackend
 class BadFileSystem(audbackend.backend.FileSystem):
     r"""Imitates a corrupted file system."""
 
+    # Overwrite `put_file()` to avoid calling it `exists()`
     def put_file(
         self,
         src_path: str,
