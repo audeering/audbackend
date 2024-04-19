@@ -1,3 +1,9 @@
+import audeer
+
+
+@audeer.deprecated(
+    removal_version="2.2.0",
+)
 class Repository:
     r"""Repository object.
 
@@ -7,14 +13,19 @@ class Repository:
     host,
     and backend.
 
+    .. Warning::
+
+        ``audbackend.Repository`` is deprecated
+        and will be removed in version 2.2.0.
+        If an application requires
+        repository objects,
+        that assign string names to backends,
+        they should be provided by the application.
+
     Args:
         name: repository name
         host: repository host
         backend: repository backend
-
-    Examples:
-        >>> Repository("data-local", "/data", "file-system")
-        Repository('data-local', '/data', 'file-system')
 
     """
 
