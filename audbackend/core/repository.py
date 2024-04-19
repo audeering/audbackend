@@ -1,9 +1,6 @@
-import audeer
+import warnings
 
 
-@audeer.deprecated(
-    removal_version="2.2.0",
-)
 class Repository:
     r"""Repository object.
 
@@ -41,6 +38,12 @@ class Repository:
         r"""Repository host."""
         self.backend = backend
         r"""Repository backend."""
+
+        message = (
+            "audbackend.Repository is deprecated and will be removed "
+            "with version 2.2.0."
+        )
+        warnings.warn(message, category=UserWarning, stacklevel=2)
 
     def __repr__(self):  # noqa: D105
         return (
