@@ -39,10 +39,7 @@ class Repository:
         self.backend = backend
         r"""Repository backend."""
 
-        message = (
-            "audbackend.Repository is deprecated and will be removed "
-            "with version 2.2.0."
-        )
+        message = "Repository is deprecated and will be removed with version 2.2.0."
         warnings.warn(message, category=UserWarning, stacklevel=2)
 
     def __repr__(self):  # noqa: D105
