@@ -268,9 +268,8 @@ class Base:
         Args:
             host: host address
             repository: repository name
-            auth: access token
-                for possible authentication,
-                e.g. username, password tuple
+            auth: object used for authentication,
+                e.g. a tuple with username and password
 
         Raises:
             BackendError: if an error is raised on the backend,

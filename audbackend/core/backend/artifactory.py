@@ -83,7 +83,7 @@ class Artifactory(Base):
         host: str,
         repository: str,
         *,
-        auth: typing.Tuple = None,
+        auth: typing.Tuple[str, str] = None,
     ):
         super().__init__(host, repository, auth=auth)
 
@@ -302,7 +302,7 @@ class Artifactory(Base):
 
         This extends the relative ``path`` on the backend
         by :attr:`host` and :attr:`repository`,
-        and returns an :class:`artifactory.ArtifactortPath` object.
+        and returns an :class:`artifactory.ArtifactoryPath` object.
 
         Args:
             path: path on backend
