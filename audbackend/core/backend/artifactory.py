@@ -72,9 +72,9 @@ class Artifactory(Base):
     Args:
         host: host address
         repository: repository name
-        auth: username, password / API key / access token tuple.
+        authentication: username, password / API key / access token tuple.
             If ``None``,
-            it requests it by calling :meth:`authentication`
+            it requests it by calling :meth:`get_authentication`
 
     """  # noqa: E501
 
@@ -83,19 +83,19 @@ class Artifactory(Base):
         host: str,
         repository: str,
         *,
-        auth: typing.Tuple[str, str] = None,
+        authentication: typing.Tuple[str, str] = None,
     ):
-        super().__init__(host, repository, auth=auth)
+        super().__init__(host, repository, authentication=authentication)
 
-        if auth is None:
-            self.auth = self.authentication(host)
+        if authentication is None:
+            self.authentication = self.get_authentication(host)
 
         # Store ArtifactoryPath object to the repository,
         # when opening the backend.
         self._repo = None
 
     @classmethod
-    def authentication(cls, host: str) -> typing.Tuple[str, str]:
+    def get_authentication(cls, host: str) -> typing.Tuple[str, str]:
         """Username and password/access token for given host.
 
         Returns a username
@@ -204,7 +204,7 @@ class Artifactory(Base):
         self,
     ):
         r"""Access existing repository."""
-        path = artifactory.ArtifactoryPath(self.host, auth=self.auth)
+        path = artifactory.ArtifactoryPath(self.host, auth=self.authentication)
         repo = dohq_artifactory.RepositoryLocal(
             path,
             self.repository,
@@ -280,7 +280,7 @@ class Artifactory(Base):
         self,
     ):
         r"""Open connection to backend."""
-        path = artifactory.ArtifactoryPath(self.host, auth=self.auth)
+        path = artifactory.ArtifactoryPath(self.host, auth=self.authentication)
         self._repo = path.find_repository(self.repository)
         if self._repo is None:
             utils.raise_file_not_found_error(self.repository)

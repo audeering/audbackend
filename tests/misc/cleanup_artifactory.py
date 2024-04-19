@@ -12,8 +12,8 @@ import audbackend
 
 host = "https://audeering.jfrog.io/artifactory"
 
-auth = audbackend.Artifactory.authentication(host)
-r = requests.get(f"{host}/api/repositories", auth=auth)
+authentication = audbackend.Artifactory.get_authentication(host)
+r = requests.get(f"{host}/api/repositories", auth=authentication)
 
 if r.status_code == 200:
     # Collect names of leftover unittest repositories
@@ -21,7 +21,7 @@ if r.status_code == 200:
     repos = [repo for repo in repos if repo.startswith("unittest-")]
     length = len(repos)
     # Delete leftover repositories
-    path = artifactory.ArtifactoryPath(host, auth=auth)
+    path = artifactory.ArtifactoryPath(host, auth=authentication)
     for n, repo in enumerate(repos):
         try:
             repo_path = path.find_repository(repo)

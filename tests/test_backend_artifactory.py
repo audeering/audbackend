@@ -39,13 +39,13 @@ def test_authentication(tmpdir, hosts, hide_credentials):
     # config file does not exist
 
     backend = audbackend.backend.Artifactory(host, "repository")
-    assert backend.auth == ("anonymous", "")
+    assert backend.authentication == ("anonymous", "")
 
     # config file is empty
 
     audeer.touch(config_path)
     backend = audbackend.backend.Artifactory(host, "repository")
-    assert backend.auth == ("anonymous", "")
+    assert backend.authentication == ("anonymous", "")
 
     # config file entry without username and password
 
@@ -53,7 +53,7 @@ def test_authentication(tmpdir, hosts, hide_credentials):
         fp.write(f"[{host}]\n")
 
     backend = audbackend.backend.Artifactory(host, "repository")
-    assert backend.auth == ("anonymous", "")
+    assert backend.authentication == ("anonymous", "")
 
     # config file entry with username and password
 
@@ -65,7 +65,7 @@ def test_authentication(tmpdir, hosts, hide_credentials):
         fp.write(f"password = {api_key}\n")
 
     backend = audbackend.backend.Artifactory(host, "repository")
-    assert backend.auth == ("bad", "bad")
+    assert backend.authentication == ("bad", "bad")
     with pytest.raises(audbackend.BackendError):
         backend.open()
 
@@ -79,9 +79,11 @@ def test_create_delete_repositories(host, repository):
 
 @pytest.mark.parametrize("host", ["https://audeering.jfrog.io/artifactory"])
 @pytest.mark.parametrize("repository", [f"unittest-{pytest.UID}-{audeer.uid()[:8]}"])
-@pytest.mark.parametrize("auth", [("non-existing", "non-existing")])
-def test_errors(host, repository, auth):
-    backend = audbackend.backend.Artifactory(host, repository, auth=auth)
+@pytest.mark.parametrize("authentication", [("non-existing", "non-existing")])
+def test_errors(host, repository, authentication):
+    backend = audbackend.backend.Artifactory(
+        host, repository, authentication=authentication
+    )
     with pytest.raises(audbackend.BackendError):
         backend.open()
 

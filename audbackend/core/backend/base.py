@@ -27,14 +27,14 @@ class Base:
         host: str,
         repository: str,
         *,
-        auth: typing.Any = None,
+        authentication: typing.Any = None,
     ):
         self.host = host
         r"""Host path."""
         self.repository = repository
         r"""Repository name."""
-        self.auth = auth
-        r"""Access token object, e.g. username, password tuple."""
+        self.authentication = authentication
+        r"""Object used for authentication, e.g. username, password tuple."""
         self.opened = False
         r"""If a connection to the repository has been established."""
 
@@ -257,7 +257,7 @@ class Base:
         host: str,
         repository: str,
         *,
-        auth: typing.Any = None,
+        authentication: typing.Any = None,
     ):
         r"""Create repository.
 
@@ -268,7 +268,7 @@ class Base:
         Args:
             host: host address
             repository: repository name
-            auth: object used for authentication,
+            authentication: object used for authentication,
                 e.g. a tuple with username and password
 
         Raises:
@@ -278,8 +278,8 @@ class Base:
 
         """
         signature = inspect.signature(cls)
-        if "auth" in signature.parameters:
-            backend = cls(host, repository, auth=auth)
+        if "authentication" in signature.parameters:
+            backend = cls(host, repository, authentication=authentication)
         else:
             backend = cls(host, repository)
         utils.call_function_on_backend(backend._create)
@@ -340,7 +340,7 @@ class Base:
         host: str,
         repository: str,
         *,
-        auth: typing.Any = None,
+        authentication: typing.Any = None,
     ):
         r"""Delete repository.
 
@@ -351,7 +351,7 @@ class Base:
         Args:
             host: host address
             repository: repository name
-            auth: access token
+            authentication: access token
                 for possible authentication,
                 e.g. username, password tuple
 
@@ -361,8 +361,8 @@ class Base:
 
         """
         signature = inspect.signature(cls)
-        if "auth" in signature.parameters:
-            backend = cls(host, repository, auth=auth)
+        if "authentication" in signature.parameters:
+            backend = cls(host, repository, authentication=authentication)
         else:
             backend = cls(host, repository)
         utils.call_function_on_backend(backend._delete)
