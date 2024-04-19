@@ -13,3 +13,4 @@ def test_repository():
     assert repo.name == name
     assert repo.host == host
     assert repo.backend == backend
+    assert repo.__repr__() == f"Repository('{name}', '{host}', '{backend}')"
