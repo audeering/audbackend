@@ -1,4 +1,5 @@
 import fnmatch
+import inspect
 import os
 import tempfile
 import typing
@@ -25,11 +26,15 @@ class Base:
         self,
         host: str,
         repository: str,
+        *,
+        authentication: typing.Any = None,
     ):
         self.host = host
         r"""Host path."""
         self.repository = repository
         r"""Repository name."""
+        self.authentication = authentication
+        r"""Object used for authentication, e.g. username, password tuple."""
         self.opened = False
         r"""If a connection to the repository has been established."""
 
@@ -251,6 +256,8 @@ class Base:
         cls,
         host: str,
         repository: str,
+        *,
+        authentication: typing.Any = None,
     ):
         r"""Create repository.
 
@@ -261,6 +268,8 @@ class Base:
         Args:
             host: host address
             repository: repository name
+            authentication: object used for authentication,
+                e.g. a tuple with username and password
 
         Raises:
             BackendError: if an error is raised on the backend,
@@ -268,7 +277,11 @@ class Base:
                 or cannot be created
 
         """
-        backend = cls(host, repository)
+        signature = inspect.signature(cls)
+        if "authentication" in signature.parameters:
+            backend = cls(host, repository, authentication=authentication)
+        else:
+            backend = cls(host, repository)
         utils.call_function_on_backend(backend._create)
 
     def _date(
@@ -326,6 +339,8 @@ class Base:
         cls,
         host: str,
         repository: str,
+        *,
+        authentication: typing.Any = None,
     ):
         r"""Delete repository.
 
@@ -336,13 +351,20 @@ class Base:
         Args:
             host: host address
             repository: repository name
+            authentication: access token
+                for possible authentication,
+                e.g. username, password tuple
 
         Raises:
             BackendError: if an error is raised on the backend,
                 e.g. repository does not exist
 
         """
-        backend = cls(host, repository)
+        signature = inspect.signature(cls)
+        if "authentication" in signature.parameters:
+            backend = cls(host, repository, authentication=authentication)
+        else:
+            backend = cls(host, repository)
         utils.call_function_on_backend(backend._delete)
 
     def _exists(

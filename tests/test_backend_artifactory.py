@@ -38,25 +38,22 @@ def test_authentication(tmpdir, hosts, hide_credentials):
 
     # config file does not exist
 
-    username, api_key = audbackend.core.backend.artifactory._authentication(host)
-    assert username == "anonymous"
-    assert api_key == ""
+    backend = audbackend.backend.Artifactory(host, "repository")
+    assert backend.authentication == ("anonymous", "")
 
     # config file is empty
 
     audeer.touch(config_path)
-    username, api_key = audbackend.core.backend.artifactory._authentication(host)
-    assert username == "anonymous"
-    assert api_key == ""
+    backend = audbackend.backend.Artifactory(host, "repository")
+    assert backend.authentication == ("anonymous", "")
 
     # config file entry without username and password
 
     with open(config_path, "w") as fp:
         fp.write(f"[{host}]\n")
 
-    username, api_key = audbackend.core.backend.artifactory._authentication(host)
-    assert username == "anonymous"
-    assert api_key == ""
+    backend = audbackend.backend.Artifactory(host, "repository")
+    assert backend.authentication == ("anonymous", "")
 
     # config file entry with username and password
 
@@ -67,73 +64,28 @@ def test_authentication(tmpdir, hosts, hide_credentials):
         fp.write(f"username = {username}\n")
         fp.write(f"password = {api_key}\n")
 
-    username, api_key = audbackend.core.backend.artifactory._authentication(host)
-    assert username == "bad"
-    assert api_key == "bad"
+    backend = audbackend.backend.Artifactory(host, "repository")
+    assert backend.authentication == ("bad", "bad")
+    with pytest.raises(audbackend.BackendError):
+        backend.open()
 
 
-@pytest.mark.parametrize(
-    "interface",
-    [(audbackend.backend.Artifactory, audbackend.interface.Versioned)],
-    indirect=True,
-)
-def test_errors(tmpdir, interface):
-    interface.backend._username = "non-existing"
-    interface.backend._api_key = "non-existing"
+@pytest.mark.parametrize("host", ["https://audeering.jfrog.io/artifactory"])
+@pytest.mark.parametrize("repository", [f"unittest-{pytest.UID}-{audeer.uid()[:8]}"])
+def test_create_delete_repositories(host, repository):
+    audbackend.backend.Artifactory.create(host, repository)
+    audbackend.backend.Artifactory.delete(host, repository)
 
-    local_file = audeer.touch(audeer.path(tmpdir, "file.txt"))
-    remote_file = interface.join(
-        "/",
-        audeer.uid()[:8],
-        "file.txt",
+
+@pytest.mark.parametrize("host", ["https://audeering.jfrog.io/artifactory"])
+@pytest.mark.parametrize("repository", [f"unittest-{pytest.UID}-{audeer.uid()[:8]}"])
+@pytest.mark.parametrize("authentication", [("non-existing", "non-existing")])
+def test_errors(host, repository, authentication):
+    backend = audbackend.backend.Artifactory(
+        host, repository, authentication=authentication
     )
-    version = "1.0.0"
-
-    # --- exists ---
     with pytest.raises(audbackend.BackendError):
-        interface.exists(remote_file, version)
-    assert (
-        interface.exists(
-            remote_file,
-            version,
-            suppress_backend_errors=True,
-        )
-        is False
-    )
-
-    # --- put_file ---
-    with pytest.raises(audbackend.BackendError):
-        interface.put_file(
-            local_file,
-            remote_file,
-            version,
-        )
-
-    # --- latest_version ---
-    with pytest.raises(audbackend.BackendError):
-        interface.latest_version(remote_file)
-
-    # --- ls ---
-    with pytest.raises(audbackend.BackendError):
-        interface.ls("/")
-    assert (
-        interface.ls(
-            "/",
-            suppress_backend_errors=True,
-        )
-        == []
-    )
-
-    # --- versions ---
-    with pytest.raises(audbackend.BackendError):
-        interface.versions(remote_file)
-    assert (
-        interface.versions(
-            remote_file,
-            suppress_backend_errors=True,
-        )
-        == []
-    )
+        backend.open()
 
 
 @pytest.mark.parametrize(
@@ -149,49 +101,49 @@ def test_errors(tmpdir, interface):
             "1.0.0",
             [],
             False,
-            "file.tar/1.0.0/file.tar-1.0.0.gz",
+            "/file.tar/1.0.0/file.tar-1.0.0.gz",
         ),
         (
             "/file.tar.gz",
             "1.0.0",
             ["tar.gz"],
             False,
-            "file/1.0.0/file-1.0.0.tar.gz",
+            "/file/1.0.0/file-1.0.0.tar.gz",
         ),
         (
             "/.tar.gz",
             "1.0.0",
             ["tar.gz"],
             False,
-            ".tar/1.0.0/.tar-1.0.0.gz",
+            "/.tar/1.0.0/.tar-1.0.0.gz",
         ),
         (
             "/tar.gz",
             "1.0.0",
             ["tar.gz"],
             False,
-            "tar/1.0.0/tar-1.0.0.gz",
+            "/tar/1.0.0/tar-1.0.0.gz",
         ),
         (
             "/.tar.gz",
             "1.0.0",
             [],
             False,
-            ".tar/1.0.0/.tar-1.0.0.gz",
+            "/.tar/1.0.0/.tar-1.0.0.gz",
         ),
         (
             "/.tar",
             "1.0.0",
             [],
             False,
-            ".tar/1.0.0/.tar-1.0.0",
+            "/.tar/1.0.0/.tar-1.0.0",
         ),
         (
             "/tar",
             "1.0.0",
             [],
             False,
-            "tar/1.0.0/tar-1.0.0",
+            "/tar/1.0.0/tar-1.0.0",
         ),
         # test regex
         (
@@ -199,49 +151,49 @@ def test_errors(tmpdir, interface):
             "1.0.0",
             [r"\d+.tar.gz"],
             False,
-            "file.0.tar/1.0.0/file.0.tar-1.0.0.gz",
+            "/file.0.tar/1.0.0/file.0.tar-1.0.0.gz",
         ),
         (
             "/file.0.tar.gz",
             "1.0.0",
             [r"\d+.tar.gz"],
             True,
-            "file/1.0.0/file-1.0.0.0.tar.gz",
+            "/file/1.0.0/file-1.0.0.0.tar.gz",
         ),
         (
             "/file.99.tar.gz",
             "1.0.0",
             [r"\d+.tar.gz"],
             True,
-            "file/1.0.0/file-1.0.0.99.tar.gz",
+            "/file/1.0.0/file-1.0.0.99.tar.gz",
         ),
         (
             "/file.prediction.99.tar.gz",
             "1.0.0",
             [r"prediction.\d+.tar.gz", r"truth.tar.gz"],
             True,
-            "file/1.0.0/file-1.0.0.prediction.99.tar.gz",
+            "/file/1.0.0/file-1.0.0.prediction.99.tar.gz",
         ),
         (
             "/file.truth.tar.gz",
             "1.0.0",
             [r"prediction.\d+.tar.gz", r"truth.tar.gz"],
             True,
-            "file/1.0.0/file-1.0.0.truth.tar.gz",
+            "/file/1.0.0/file-1.0.0.truth.tar.gz",
         ),
         (
             "/file.99.tar.gz",
             "1.0.0",
             [r"(\d+.)?tar.gz"],
             True,
-            "file/1.0.0/file-1.0.0.99.tar.gz",
+            "/file/1.0.0/file-1.0.0.99.tar.gz",
         ),
         (
             "/file.tar.gz",
             "1.0.0",
             [r"(\d+.)?tar.gz"],
             True,
-            "file/1.0.0/file-1.0.0.tar.gz",
+            "/file/1.0.0/file-1.0.0.tar.gz",
         ),
     ],
 )
@@ -254,9 +206,9 @@ def test_maven_file_structure(
     src_path = audeer.touch(audeer.path(tmpdir, "tmp"))
     interface.put_file(src_path, file, version)
 
-    url = f"{str(interface.backend._repo.path)}{expected}"
-    url_expected = interface.backend._expand(
-        interface._path_with_version(file, version),
+    url = str(interface.backend.path(expected))
+    url_expected = str(
+        interface.backend.path(interface._path_with_version(file, version))
     )
     assert url_expected == url
     assert interface.ls(file) == [(file, version)]
