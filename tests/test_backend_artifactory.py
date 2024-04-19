@@ -204,7 +204,7 @@ def test_maven_file_structure(
     src_path = audeer.touch(audeer.path(tmpdir, "tmp"))
     interface.put_file(src_path, file, version)
 
-    url = f"{str(interface.backend.path(expected))}"
+    url = str(interface.backend.path(expected))
     url_expected = str(
         interface.backend.path(interface._path_with_version(file, version))
     )
