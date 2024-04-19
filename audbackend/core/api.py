@@ -36,11 +36,8 @@ def _backend(
     if host not in backends[name]:
         backends[name][host] = {}
     if repository not in backends[name][host]:
-        backend = utils.call_function_on_backend(
-            backend_registry[name],
-            host,
-            repository,
-        )
+        backend_cls = backend_registry[name]
+        backend = backend_cls(host, repository)
         backends[name][host][repository] = backend
 
     backend = backends[name][host][repository]
