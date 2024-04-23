@@ -3,6 +3,7 @@ import typing
 
 import artifactory
 import dohq_artifactory
+import requests
 
 import audeer
 
@@ -94,6 +95,9 @@ class Artifactory(Base):
         # when opening the backend.
         self._repo = None
 
+        # Store request.Session as handed to ArtifactoryPath
+        self._session = None
+
     @classmethod
     def get_authentication(cls, host: str) -> typing.Tuple[str, str]:
         """Username and password/access token for given host.
@@ -172,6 +176,19 @@ class Artifactory(Base):
         checksum = artifactory.ArtifactoryPath.stat(path).md5
         return checksum
 
+    def _close(
+        self,
+    ):  # pragma: no cover
+        r"""Close connection to repository.
+
+        An error should be raised,
+        if the connection to the backend
+        cannot be closed.
+
+        """
+        if self._session is not None:
+            self._session.close()
+
     def _collapse(
         self,
         path,
@@ -204,7 +221,9 @@ class Artifactory(Base):
         self,
     ):
         r"""Access existing repository."""
-        path = artifactory.ArtifactoryPath(self.host, auth=self.authentication)
+        session = requests.Session()
+        session.auth = self.authentication
+        path = artifactory.ArtifactoryPath(self.host, session=session)
         repo = dohq_artifactory.RepositoryLocal(
             path,
             self.repository,
@@ -213,6 +232,7 @@ class Artifactory(Base):
         if repo.path.exists():
             utils.raise_file_exists_error(str(repo.path))
         repo.create()
+        session.close()
 
     def _date(
         self,
@@ -280,7 +300,9 @@ class Artifactory(Base):
         self,
     ):
         r"""Open connection to backend."""
-        path = artifactory.ArtifactoryPath(self.host, auth=self.authentication)
+        self._session = requests.Session()
+        self._session.auth = self.authentication
+        path = artifactory.ArtifactoryPath(self.host, session=self._session)
         self._repo = path.find_repository(self.repository)
         if self._repo is None:
             utils.raise_file_not_found_error(self.repository)
