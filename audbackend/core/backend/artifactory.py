@@ -178,7 +178,7 @@ class Artifactory(Base):
 
     def _close(
         self,
-    ):  # pragma: no cover
+    ):
         r"""Close connection to repository.
 
         An error should be raised,
