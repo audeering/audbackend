@@ -221,18 +221,17 @@ class Artifactory(Base):
         self,
     ):
         r"""Access existing repository."""
-        session = requests.Session()
-        session.auth = self.authentication
-        path = artifactory.ArtifactoryPath(self.host, session=session)
-        repo = dohq_artifactory.RepositoryLocal(
-            path,
-            self.repository,
-            package_type=dohq_artifactory.RepositoryLocal.GENERIC,
-        )
-        if repo.path.exists():
-            utils.raise_file_exists_error(str(repo.path))
-        repo.create()
-        session.close()
+        with requests.Session() as session:
+            session.auth = self.authentication
+            path = artifactory.ArtifactoryPath(self.host, session=session)
+            repo = dohq_artifactory.RepositoryLocal(
+                path,
+                self.repository,
+                package_type=dohq_artifactory.RepositoryLocal.GENERIC,
+            )
+            if repo.path.exists():
+                utils.raise_file_exists_error(str(repo.path))
+            repo.create()
 
     def _date(
         self,
