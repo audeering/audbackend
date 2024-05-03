@@ -7,6 +7,90 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 2.0.0 (2024-05-XX)
+--------------------------
+
+* Added: ``audbackend.interface`` sub-module
+  including an backend interface base class
+  ``audbackend.interface.Base``,
+  and the three interfaces
+  ``audbackend.interface.Maven``,
+  ``audbackend.interface.Unversioned``,
+  ``audbackend.interface.Versioned``
+* Added: ``audbackend.backend`` sub-module
+  including the backend base class
+  ``audbackend.backend.Base``,
+  and the two backends
+  ``audbackend.backend.Artifactory``,
+  ``audbackend.backend.FileSystem``
+* Added: ``audbackend.backend.*.copy_file()``
+  and ``audbackend.interface.*.copy_file()``
+  methods
+  to copy a file directly on the backend
+* Added: ``audbackend.backend.*.move_file()``
+  and ``audbackend.interface.*.move_file()``
+  methods
+  to move a file directly on the backend
+* Added: ``validate=False`` argument to the
+  ``copy_file()``,
+  ``get_archive()``,
+  ``get_file()``,
+  ``move_file()``,
+  ``put_archive()``,
+  ``put_file()``
+  methods in ``audbackend.backend.*``
+  and ``audbackend.interface.*``.
+  If ``True``
+  the checksum of the resulting file is checked
+* Added: ``audbackend.backend.*.create()``
+  and ``audbackend.backend.*.delete()``
+  class methods
+  to create or delete a repository
+  on a backend
+* Added: ``audbackend.backend.*.open()``
+  and ``audbackend.backend.*.close()``
+  methods
+  to connect to a backend,
+  or disconnect from a backend
+* Added: ``audbackend.backend.Artifactory.get_authentication()``
+  to get the current Artifactory username, password
+  from the configuration file/environment variable
+* Added: ``authentication`` argument
+  to ``audbackend.backend.Artifactory``
+  and ``audbackend.backend.Base``
+* Added: ``audbackend.backend.Artifactory.path()``
+  returning an ``artifactory.ArtifactoryPath`` object
+* Added: ``audbackend.backend.Artifactory.authentication``
+  attribute,
+  holding the current authentication object,
+  e.g. user, password tuple
+* Fixed: all backend methods now raise a ``ValueError``,
+  if a backend path ends on ``"/"``
+  with the exception of ``ls()``,
+  ``split()``
+  and ``join()``,
+  as those methods support sub-paths as argument
+* Deprecated: ``audbackend.create()``,
+  use ``audbackend.backend.*.create()`` instead
+* Deprecated: ``audbackend.delete()``,
+  use ``audbackend.backend.*.delete()`` instead
+* Deprecated: ``audbackend.register()``,
+  as we no longer use alias names
+  for backends
+* Deprecated: ``audbackend.access()``,
+  instantiate and open a backend instead
+* Deprecated: ``audbackend.Repository``,
+  as we no longer use alias names
+  for backends
+* Removed: ``audbackend.Artifactory``
+  and ``audbackend.FileSystem``,
+  use
+  ``audbackend.backend.Artifactory``
+  and ``audbackend.backend.FileSystem``
+  instead
+* Removed: ``audbackend.available()``
+
+
 Version 1.0.2 (2024-02-13)
 --------------------------
 
