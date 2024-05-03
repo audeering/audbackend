@@ -1,5 +1,6 @@
 import os
 
+import dohq_artifactory
 import pytest
 
 import audeer
@@ -69,10 +70,8 @@ def test_authentication(tmpdir, hosts, hide_credentials):
         fp.write(f'username = {username}\n')
         fp.write(f'password = {api_key}\n')
 
-    backend = audbackend.Artifactory(host, 'repository')
-    assert backend._username == username
-    assert backend._api_key == api_key
-    assert backend._repo is None
+    with pytest.raises(dohq_artifactory.exception.ArtifactoryException):
+        audbackend.Artifactory(host, 'repository')
 
 
 @pytest.mark.parametrize(
