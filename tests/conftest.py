@@ -94,7 +94,19 @@ def interface(tmpdir_factory, request):
         yield interface
 
         if artifactory:
-            backend._repo.delete()
+            import dohq_artifactory
+
+            try:
+                backend._repo.delete()
+            except dohq_artifactory.exception.ArtifactoryException:
+                # It might happen from time to time,
+                # that a repository cannot be deleted.
+                # In those cases,
+                # we don't raise an error here,
+                # but rely on the user calling the clean up script
+                # from time to time:
+                # $ python tests/misc/cleanup_artifactory.py
+                pass
 
     if not artifactory:
         backend_cls.delete(host, repository)
