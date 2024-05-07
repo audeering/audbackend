@@ -26,11 +26,11 @@ Version 2.0.0 (2024-05-10)
 * Added: ``audbackend.backend.*.copy_file()``
   and ``audbackend.interface.*.copy_file()``
   methods
-  to copy a file directly on the backend
+  to copy a file on the backend
 * Added: ``audbackend.backend.*.move_file()``
   and ``audbackend.interface.*.move_file()``
   methods
-  to move a file directly on the backend
+  to move a file on the backend
 * Added: ``validate=False`` argument to the
   ``copy_file()``,
   ``get_archive()``,
