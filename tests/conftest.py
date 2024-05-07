@@ -1,7 +1,6 @@
 import getpass
 import os
 
-import dohq_artifactory
 import pytest
 
 import audeer
@@ -95,6 +94,8 @@ def interface(tmpdir_factory, request):
         yield interface
 
         if artifactory:
+            import dohq_artifactory
+
             try:
                 backend._repo.delete()
             except dohq_artifactory.exception.ArtifactoryException:
