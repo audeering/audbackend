@@ -7,7 +7,7 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
-Version 2.0.0 (2024-05-XX)
+Version 2.0.0 (2024-05-10)
 --------------------------
 
 * Added: ``audbackend.interface`` sub-module
