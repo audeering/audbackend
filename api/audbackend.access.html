@@ -33,7 +33,7 @@
   <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="available()" href="audbackend.available.html" />
+    <link rel="next" title="create()" href="audbackend.create.html" />
     <link rel="prev" title="Repository" href="audbackend.Repository.html" />
     
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                1.0.2
+                2.0.0
               </div>
             
           
@@ -95,23 +95,22 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer-guide.html">Developer guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../legacy.html">Legacy backends</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="audbackend.html">audbackend</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="audbackend.Artifactory.html">Artifactory</a></li>
-<li class="toctree-l2"><a class="reference internal" href="audbackend.FileSystem.html">FileSystem</a></li>
-<li class="toctree-l2"><a class="reference internal" href="audbackend.Backend.html">Backend</a></li>
 <li class="toctree-l2"><a class="reference internal" href="audbackend.BackendError.html">BackendError</a></li>
 <li class="toctree-l2"><a class="reference internal" href="audbackend.Repository.html">Repository</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">access()</a></li>
-<li class="toctree-l2"><a class="reference internal" href="audbackend.available.html">available()</a></li>
 <li class="toctree-l2"><a class="reference internal" href="audbackend.create.html">create()</a></li>
 <li class="toctree-l2"><a class="reference internal" href="audbackend.delete.html">delete()</a></li>
 <li class="toctree-l2"><a class="reference internal" href="audbackend.register.html">register()</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="audbackend.backend.html">audbackend.backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audbackend.interface.html">audbackend.interface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Development</span></p>
@@ -159,35 +158,41 @@
 <h1>access()<a class="headerlink" href="#access" title="Permalink to this heading">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="audbackend.access">
-<span class="sig-prename descclassname"><span class="pre">audbackend.</span></span><span class="sig-name descname"><span class="pre">access</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repository</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/api.html#access"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.access" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">audbackend.</span></span><span class="sig-name descname"><span class="pre">access</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repository</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interface=&lt;class</span> <span class="pre">'audbackend.core.interface.versioned.Versioned'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interface_kwargs=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/api.html#access"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.access" title="Permalink to this definition">¶</a></dt>
 <dd><p>Access repository.</p>
-<p>Returns a backend instance
-for the <code class="docutils literal notranslate"><span class="pre">repository</span></code>
-on the <code class="docutils literal notranslate"><span class="pre">host</span></code>.
-The instance is an object of the class
-registered under the alias <code class="docutils literal notranslate"><span class="pre">name</span></code>
-with <a class="reference internal" href="audbackend.register.html#audbackend.register" title="audbackend.register"><code class="xref py py-func docutils literal notranslate"><span class="pre">audbackend.register()</span></code></a>.</p>
-<p>If the repository does not exist
-or cannot be accessed for other reasons
-(e.g. user lacks permission)
-an error of type
-<a class="reference internal" href="audbackend.BackendError.html#audbackend.BackendError" title="audbackend.BackendError"><code class="xref py py-class docutils literal notranslate"><span class="pre">audbackend.BackendError</span></code></a>
-is raised.</p>
-<p>Use <a class="reference internal" href="audbackend.available.html#audbackend.available" title="audbackend.available"><code class="xref py py-func docutils literal notranslate"><span class="pre">audbackend.available()</span></code></a>
-to list available backend instances.</p>
+<p>Returns an <code class="docutils literal notranslate"><span class="pre">interface</span></code> instance
+to access the <code class="docutils literal notranslate"><span class="pre">repository</span></code>
+located at <code class="docutils literal notranslate"><span class="pre">host</span></code>
+on the backend with alias <code class="docutils literal notranslate"><span class="pre">name</span></code>
+(see <a class="reference internal" href="audbackend.register.html#audbackend.register" title="audbackend.register"><code class="xref py py-func docutils literal notranslate"><span class="pre">audbackend.register()</span></code></a>).</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><code class="docutils literal notranslate"><span class="pre">audbackend.access()</span></code> is deprecated
+and will be removed in version 2.2.0.
+Repositories on backends are instead accessed
+by instantiating the corresponding backend class,
+and connecting to it using the <code class="docutils literal notranslate"><span class="pre">open()</span></code> method,
+e.g.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">backend</span> <span class="o">=</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">repo</span><span class="p">)</span>
+<span class="n">backend</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – alias under which backend class is registered</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – backend alias</p></li>
 <li><p><strong>host</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – host address</p></li>
 <li><p><strong>repository</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – repository name</p></li>
+<li><p><strong>interface</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Type" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code></a>[<a class="reference internal" href="audbackend.interface.Base.html#audbackend.interface.Base" title="audbackend.core.interface.base.Base"><code class="xref py py-class docutils literal notranslate"><span class="pre">Base</span></code></a>]) – interface class</p></li>
+<li><p><strong>interface_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]) – keyword arguments for interface class</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="audbackend.Backend.html#audbackend.Backend" title="audbackend.core.backend.Backend"><code class="xref py py-class docutils literal notranslate"><span class="pre">Backend</span></code></a></p>
+<dd class="field-even"><p><a class="reference internal" href="audbackend.interface.Base.html#audbackend.interface.Base" title="audbackend.core.interface.base.Base"><code class="xref py py-class docutils literal notranslate"><span class="pre">Base</span></code></a></p>
 </dd>
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>backend object</p>
+<dd class="field-odd"><p>interface object</p>
 </dd>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><ul class="simple">
@@ -198,11 +203,6 @@ to list available backend instances.</p>
 </ul>
 </dd>
 </dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">access</span><span class="p">(</span><span class="s1">&#39;file-system&#39;</span><span class="p">,</span> <span class="s1">&#39;host&#39;</span><span class="p">,</span> <span class="s1">&#39;doctest&#39;</span><span class="p">)</span>
-<span class="go">(&#39;audbackend.core.filesystem.FileSystem&#39;, &#39;host&#39;, &#39;doctest&#39;)</span>
-</pre></div>
-</div>
 </dd></dl>
 
 </div>
@@ -215,7 +215,7 @@ to list available backend instances.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="audbackend.available.html" class="btn btn-neutral float-right" title="available()" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="audbackend.create.html" class="btn btn-neutral float-right" title="create()" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="audbackend.Repository.html" class="btn btn-neutral float-left" title="Repository" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
@@ -230,7 +230,7 @@ to list available backend instances.</p>
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/02/13 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/05/10 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>

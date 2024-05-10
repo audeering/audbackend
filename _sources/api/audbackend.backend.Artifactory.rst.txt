@@ -1,18 +1,38 @@
 ﻿Artifactory
 ===========
 
-.. currentmodule:: audbackend
+.. currentmodule:: audbackend.backend
 
 .. autoclass:: Artifactory
 
 
+authentication
+--------------
+.. autoattribute:: Artifactory.authentication
+    
 checksum\(\)
 ------------
 .. automethod:: Artifactory.checksum
     
+close\(\)
+---------
+.. automethod:: Artifactory.close
+    
+copy\_file\(\)
+--------------
+.. automethod:: Artifactory.copy_file
+    
+create\(\)
+----------
+.. automethod:: Artifactory.create
+    
 date\(\)
 --------
 .. automethod:: Artifactory.date
+    
+delete\(\)
+----------
+.. automethod:: Artifactory.delete
     
 exists\(\)
 ----------
@@ -21,6 +41,10 @@ exists\(\)
 get\_archive\(\)
 ----------------
 .. automethod:: Artifactory.get_archive
+    
+get\_authentication\(\)
+-----------------------
+.. automethod:: Artifactory.get_authentication
     
 get\_file\(\)
 -------------
@@ -34,17 +58,29 @@ join\(\)
 --------
 .. automethod:: Artifactory.join
     
-latest\_version\(\)
--------------------
-.. automethod:: Artifactory.latest_version
-    
 ls\(\)
 ------
 .. automethod:: Artifactory.ls
     
+move\_file\(\)
+--------------
+.. automethod:: Artifactory.move_file
+    
+open\(\)
+--------
+.. automethod:: Artifactory.open
+    
+opened
+------
+.. autoattribute:: Artifactory.opened
+    
 owner\(\)
 ---------
 .. automethod:: Artifactory.owner
+    
+path\(\)
+--------
+.. automethod:: Artifactory.path
     
 put\_archive\(\)
 ----------------
@@ -69,8 +105,4 @@ sep
 split\(\)
 ---------
 .. automethod:: Artifactory.split
-    
-versions\(\)
-------------
-.. automethod:: Artifactory.versions
     

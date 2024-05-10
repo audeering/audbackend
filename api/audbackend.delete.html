@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                1.0.2
+                2.0.0
               </div>
             
           
@@ -95,23 +95,22 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer-guide.html">Developer guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../legacy.html">Legacy backends</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="audbackend.html">audbackend</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="audbackend.Artifactory.html">Artifactory</a></li>
-<li class="toctree-l2"><a class="reference internal" href="audbackend.FileSystem.html">FileSystem</a></li>
-<li class="toctree-l2"><a class="reference internal" href="audbackend.Backend.html">Backend</a></li>
 <li class="toctree-l2"><a class="reference internal" href="audbackend.BackendError.html">BackendError</a></li>
 <li class="toctree-l2"><a class="reference internal" href="audbackend.Repository.html">Repository</a></li>
 <li class="toctree-l2"><a class="reference internal" href="audbackend.access.html">access()</a></li>
-<li class="toctree-l2"><a class="reference internal" href="audbackend.available.html">available()</a></li>
 <li class="toctree-l2"><a class="reference internal" href="audbackend.create.html">create()</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">delete()</a></li>
 <li class="toctree-l2"><a class="reference internal" href="audbackend.register.html">register()</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="audbackend.backend.html">audbackend.backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audbackend.interface.html">audbackend.interface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Development</span></p>
@@ -161,17 +160,23 @@
 <dt class="sig sig-object py" id="audbackend.delete">
 <span class="sig-prename descclassname"><span class="pre">audbackend.</span></span><span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repository</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/api.html#delete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete repository.</p>
+<p>Deletes the repository
+with name <code class="docutils literal notranslate"><span class="pre">repository</span></code>
+located at <code class="docutils literal notranslate"><span class="pre">host</span></code>
+on the backend with alias <code class="docutils literal notranslate"><span class="pre">name</span></code>.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>Deletes the repository and all its content.</p>
+<p><code class="docutils literal notranslate"><span class="pre">audbackend.delete()</span></code> is deprecated
+and will be removed in version 2.2.0.
+Repositories on backends are instead deleted
+by the class method <code class="docutils literal notranslate"><span class="pre">delete()</span></code>
+for the desired backend,
+e.g. <a class="reference internal" href="audbackend.backend.FileSystem.html#audbackend.backend.FileSystem.delete" title="audbackend.backend.FileSystem.delete"><code class="xref py py-meth docutils literal notranslate"><span class="pre">audbackend.backend.FileSystem.delete()</span></code></a>.</p>
 </div>
-<p>If an instance of the backend exists,
-it will be removed from the available instances.
-See also <a class="reference internal" href="audbackend.available.html#audbackend.available" title="audbackend.available"><code class="xref py py-func docutils literal notranslate"><span class="pre">audbackend.available()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – alias under which backend class is registered</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – backend alias</p></li>
 <li><p><strong>host</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – host address</p></li>
 <li><p><strong>repository</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – repository name</p></li>
 </ul>
@@ -185,14 +190,6 @@ See also <a class="reference internal" href="audbackend.available.html#audbacken
 </ul>
 </dd>
 </dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">access</span><span class="p">(</span><span class="s1">&#39;file-system&#39;</span><span class="p">,</span> <span class="s1">&#39;host&#39;</span><span class="p">,</span> <span class="s1">&#39;doctest&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">ls</span><span class="p">()</span>
-<span class="go">[(&#39;/a.zip&#39;, &#39;1.0.0&#39;), (&#39;/a/b.ext&#39;, &#39;1.0.0&#39;), (&#39;/f.ext&#39;, &#39;1.0.0&#39;), (&#39;/f.ext&#39;, &#39;2.0.0&#39;)]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">delete</span><span class="p">(</span><span class="s1">&#39;file-system&#39;</span><span class="p">,</span> <span class="s1">&#39;host&#39;</span><span class="p">,</span> <span class="s1">&#39;doctest&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">create</span><span class="p">(</span><span class="s1">&#39;file-system&#39;</span><span class="p">,</span> <span class="s1">&#39;host&#39;</span><span class="p">,</span> <span class="s1">&#39;doctest&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">ls</span><span class="p">()</span>
-<span class="go">[]</span>
-</pre></div>
-</div>
 </dd></dl>
 
 </div>
@@ -220,7 +217,7 @@ See also <a class="reference internal" href="audbackend.available.html#audbacken
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/02/13 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/05/10 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>

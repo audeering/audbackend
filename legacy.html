@@ -34,7 +34,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="audbackend" href="api/audbackend.html" />
-    <link rel="prev" title="Usage" href="usage.html" />
+    <link rel="prev" title="Developer guide" href="developer-guide.html" />
     
   
 
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                1.0.2
+                2.0.0
               </div>
             
           
@@ -95,11 +95,14 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developer-guide.html">Developer guide</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Legacy backends</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api/audbackend.html">audbackend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/audbackend.backend.html">audbackend.backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/audbackend.interface.html">audbackend.interface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Development</span></p>
@@ -148,12 +151,8 @@
 </div>
 <div class="section" id="legacy-backends">
 <span id="id1"></span><h1>Legacy backends<a class="headerlink" href="#legacy-backends" title="Permalink to this heading">¶</a></h1>
-<p>The file structure on the backend
-has changed for
-<a class="reference internal" href="api/audbackend.FileSystem.html#audbackend.FileSystem" title="audbackend.FileSystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">audbackend.FileSystem</span></code></a>
-and <a class="reference internal" href="api/audbackend.Artifactory.html#audbackend.Artifactory" title="audbackend.Artifactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">audbackend.Artifactory</span></code></a>
-in version 1.0.0
-of <a class="reference internal" href="api/audbackend.html#module-audbackend" title="audbackend"><code class="xref py py-mod docutils literal notranslate"><span class="pre">audbackend</span></code></a>.</p>
+<p>The default file structure on the backend
+has changed with version 1.0.0.</p>
 <p>Before,
 a file <code class="docutils literal notranslate"><span class="pre">/sub/file.txt</span></code>
 with version <code class="docutils literal notranslate"><span class="pre">1.0.0</span></code>
@@ -166,9 +165,7 @@ was stored under</p>
 </pre></div>
 </div>
 <p>To force the old file structure
-call the hidden method
-<code class="docutils literal notranslate"><span class="pre">_use_legacy_file_structure()</span></code>
-after instantiating the backend.
+use the <a class="reference internal" href="api/audbackend.interface.Maven.html#audbackend.interface.Maven" title="audbackend.interface.Maven"><code class="xref py py-class docutils literal notranslate"><span class="pre">audbackend.interface.Maven</span></code></a> interface.
 We recommend this
 for existing repositories
 that store files
@@ -181,9 +178,10 @@ you have to list those extensions explicitly.</p>
 <div class="cell_input code_cell docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">audbackend</span>
 
-<span class="n">backend</span> <span class="o">=</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s1">&#39;file-system&#39;</span><span class="p">,</span> <span class="s1">&#39;./host&#39;</span><span class="p">,</span> <span class="s1">&#39;repo&#39;</span><span class="p">)</span>
-<span class="n">extensions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;tar.gz&#39;</span><span class="p">]</span>
-<span class="n">backend</span><span class="o">.</span><span class="n">_use_legacy_file_structure</span><span class="p">(</span><span class="n">extensions</span><span class="o">=</span><span class="n">extensions</span><span class="p">)</span>
+<span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;./host&quot;</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
+<span class="n">backend</span> <span class="o">=</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="p">(</span><span class="s2">&quot;./host&quot;</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
+<span class="n">backend</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+<span class="n">interface</span> <span class="o">=</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">Maven</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="n">extensions</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;tar.gz&quot;</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -198,10 +196,10 @@ and check that it is stored as expected.</p>
 <span class="kn">import</span> <span class="nn">tempfile</span>
 
 <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
-    <span class="n">audeer</span><span class="o">.</span><span class="n">touch</span><span class="p">(</span><span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="s1">&#39;file.txt&#39;</span><span class="p">))</span>
-    <span class="n">backend</span><span class="o">.</span><span class="n">put_archive</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="s1">&#39;/file.tar.gz&#39;</span><span class="p">,</span> <span class="s1">&#39;1.0.0&#39;</span><span class="p">)</span>
+    <span class="n">audeer</span><span class="o">.</span><span class="n">touch</span><span class="p">(</span><span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="s2">&quot;file.txt&quot;</span><span class="p">))</span>
+    <span class="n">interface</span><span class="o">.</span><span class="n">put_archive</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="s2">&quot;/file.tar.gz&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
 
-<span class="n">audeer</span><span class="o">.</span><span class="n">list_file_names</span><span class="p">(</span><span class="s1">&#39;./host&#39;</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">basenames</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">audeer</span><span class="o">.</span><span class="n">list_file_names</span><span class="p">(</span><span class="s2">&quot;./host&quot;</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">basenames</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -228,7 +226,7 @@ and check that it is stored as expected.</p>
         <a href="api/audbackend.html" class="btn btn-neutral float-right" title="audbackend" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="usage.html" class="btn btn-neutral float-left" title="Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="developer-guide.html" class="btn btn-neutral float-left" title="Developer guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -240,7 +238,7 @@ and check that it is stored as expected.</p>
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/02/13 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/05/10 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>

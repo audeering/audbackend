@@ -1,0 +1,80 @@
+﻿Unversioned
+===========
+
+.. currentmodule:: audbackend.interface
+
+.. autoclass:: Unversioned
+
+
+backend
+-------
+.. autoattribute:: Unversioned.backend
+    
+checksum\(\)
+------------
+.. automethod:: Unversioned.checksum
+    
+copy\_file\(\)
+--------------
+.. automethod:: Unversioned.copy_file
+    
+date\(\)
+--------
+.. automethod:: Unversioned.date
+    
+exists\(\)
+----------
+.. automethod:: Unversioned.exists
+    
+get\_archive\(\)
+----------------
+.. automethod:: Unversioned.get_archive
+    
+get\_file\(\)
+-------------
+.. automethod:: Unversioned.get_file
+    
+host
+----
+.. autoattribute:: Unversioned.host
+    
+join\(\)
+--------
+.. automethod:: Unversioned.join
+    
+ls\(\)
+------
+.. automethod:: Unversioned.ls
+    
+move\_file\(\)
+--------------
+.. automethod:: Unversioned.move_file
+    
+owner\(\)
+---------
+.. automethod:: Unversioned.owner
+    
+put\_archive\(\)
+----------------
+.. automethod:: Unversioned.put_archive
+    
+put\_file\(\)
+-------------
+.. automethod:: Unversioned.put_file
+    
+remove\_file\(\)
+----------------
+.. automethod:: Unversioned.remove_file
+    
+repository
+----------
+.. autoattribute:: Unversioned.repository
+    
+sep
+---
+.. autoattribute:: Unversioned.sep
+    
+split\(\)
+---------
+.. automethod:: Unversioned.split
+    

@@ -1,6 +1,0 @@
-﻿available\(\)
-=============
-
-.. currentmodule:: audbackend
-
-.. autofunction:: audbackend.available

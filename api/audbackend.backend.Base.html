@@ -1,0 +1,972 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Base &mdash; Documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.png"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/audeering.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/jupyter-sphinx.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/thebelab.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="audbackend.interface" href="audbackend.interface.html" />
+    <link rel="prev" title="FileSystem" href="audbackend.backend.FileSystem.html" />
+    
+  
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          <a href="../index.html">
+          
+            <img src="../_static/images/audeering.png" class="logo" alt="audEERING"/>
+          
+          
+            <span> audbackend</span>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer-guide.html">Developer guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../legacy.html">Legacy backends</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="audbackend.html">audbackend</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="audbackend.backend.html">audbackend.backend</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="audbackend.backend.Artifactory.html">Artifactory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="audbackend.backend.FileSystem.html">FileSystem</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Base</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#authentication">authentication</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#checksum">checksum()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#close">close()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#copy-file">copy_file()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create">create()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#date">date()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#delete">delete()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#exists">exists()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#get-archive">get_archive()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#get-file">get_file()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#host">host</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#join">join()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ls">ls()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#move-file">move_file()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#open">open()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#opened">opened</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#owner">owner()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#put-archive">put_archive()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#put-file">put_file()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#remove-file">remove_file()</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#repository">repository</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#sep">sep</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#split">split()</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="audbackend.interface.html">audbackend.interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">audbackend</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="audbackend.backend.html">audbackend.backend</a> &raquo;</li>
+      <li>Base</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/audeering/audbackend/" class="fa fa-github"> GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="base">
+<h1>Base<a class="headerlink" href="#base" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="audbackend.backend.Base">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">audbackend.backend.</span></span><span class="sig-name descname"><span class="pre">Base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repository</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">authentication</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/backend/base.html#Base"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.backend.Base" title="Permalink to this definition">¶</a></dt>
+<dd><p>Backend base class.</p>
+<p>Derive from this class to implement a new backend.</p>
+</dd></dl>
+
+<div class="section" id="authentication">
+<h2>authentication<a class="headerlink" href="#authentication" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="audbackend.backend.Base.authentication">
+<span class="sig-prename descclassname"><span class="pre">Base.</span></span><span class="sig-name descname"><span class="pre">authentication</span></span><a class="headerlink" href="#audbackend.backend.Base.authentication" title="Permalink to this definition">¶</a></dt>
+<dd><p>Object used for authentication, e.g. username, password tuple.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="checksum">
+<h2>checksum()<a class="headerlink" href="#checksum" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="audbackend.backend.Base.checksum">
+<span class="sig-prename descclassname"><span class="pre">Base.</span></span><span class="sig-name descname"><span class="pre">checksum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/backend/base.html#Base.checksum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.backend.Base.checksum" title="Permalink to this definition">¶</a></dt>
+<dd><p>MD5 checksum for file on backend.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – path to file on backend</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>MD5 checksum</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="audbackend.BackendError.html#audbackend.BackendError" title="audbackend.BackendError"><strong>BackendError</strong></a> – if an error is raised on the backend,
+    e.g. <code class="docutils literal notranslate"><span class="pre">path</span></code> does not exist</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">path</span></code> does not start with <code class="docutils literal notranslate"><span class="pre">'/'</span></code>,
+    ends on <code class="docutils literal notranslate"><span class="pre">'/'</span></code>,
+    or does not match <code class="docutils literal notranslate"><span class="pre">'[A-Za-z0-9/._-]+'</span></code></p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if backend was not opened</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="close">
+<h2>close()<a class="headerlink" href="#close" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="audbackend.backend.Base.close">
+<span class="sig-prename descclassname"><span class="pre">Base.</span></span><span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/backend/base.html#Base.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.backend.Base.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close connection to backend.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="audbackend.BackendError.html#audbackend.BackendError" title="audbackend.BackendError"><strong>BackendError</strong></a> – if an error is raised on the backend</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="copy-file">
+<h2>copy_file()<a class="headerlink" href="#copy-file" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="audbackend.backend.Base.copy_file">
+<span class="sig-prename descclassname"><span class="pre">Base.</span></span><span class="sig-name descname"><span class="pre">copy_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/backend/base.html#Base.copy_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.backend.Base.copy_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy file on backend.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">dst_path</span></code> exists
+and has a different checksum,
+it is overwritten.
+Otherwise,
+the operation is silently skipped.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">validate</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>,
+a final check is performed to assert that
+<code class="docutils literal notranslate"><span class="pre">src_path</span></code> and <code class="docutils literal notranslate"><span class="pre">dst_path</span></code>
+have the same checksum.
+If it fails,
+<code class="docutils literal notranslate"><span class="pre">dst_path</span></code> is removed and
+an <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#InterruptedError" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">InterruptedError</span></code></a> is raised.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>src_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – source path to file on backend</p></li>
+<li><p><strong>dst_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – destination path to file on backend</p></li>
+<li><p><strong>validate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – verify file was successfully copied</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – show debug messages</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="audbackend.BackendError.html#audbackend.BackendError" title="audbackend.BackendError"><strong>BackendError</strong></a> – if an error is raised on the backend</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#InterruptedError" title="(in Python v3.12)"><strong>InterruptedError</strong></a> – if validation fails</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">src_path</span></code> or <code class="docutils literal notranslate"><span class="pre">dst_path</span></code>
+    does not start with <code class="docutils literal notranslate"><span class="pre">'/'</span></code>,
+    ends on <code class="docutils literal notranslate"><span class="pre">'/'</span></code>,
+    or does not match <code class="docutils literal notranslate"><span class="pre">'[A-Za-z0-9/._-]+'</span></code></p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if backend was not opened</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="create">
+<h2>create()<a class="headerlink" href="#create" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="audbackend.backend.Base.create">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Base.</span></span><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repository</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">authentication</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/backend/base.html#Base.create"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.backend.Base.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create repository.</p>
+<p>Creates <code class="docutils literal notranslate"><span class="pre">repository</span></code>
+located at <code class="docutils literal notranslate"><span class="pre">host</span></code>
+on the backend.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>host</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – host address</p></li>
+<li><p><strong>repository</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – repository name</p></li>
+<li><p><strong>authentication</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]) – object used for authentication,
+e.g. a tuple with username and password</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="audbackend.BackendError.html#audbackend.BackendError" title="audbackend.BackendError"><strong>BackendError</strong></a> – if an error is raised on the backend,
+    e.g. repository exists already
+    or cannot be created</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="date">
+<h2>date()<a class="headerlink" href="#date" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="audbackend.backend.Base.date">
+<span class="sig-prename descclassname"><span class="pre">Base.</span></span><span class="sig-name descname"><span class="pre">date</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/backend/base.html#Base.date"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.backend.Base.date" title="Permalink to this definition">¶</a></dt>
+<dd><p>Last modification date of file on backend.</p>
+<p>If the date cannot be determined,
+an empty string is returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – path to file on backend</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>date in format <code class="docutils literal notranslate"><span class="pre">'yyyy-mm-dd'</span></code></p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="audbackend.BackendError.html#audbackend.BackendError" title="audbackend.BackendError"><strong>BackendError</strong></a> – if an error is raised on the backend,
+    e.g. <code class="docutils literal notranslate"><span class="pre">path</span></code> does not exist</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">path</span></code> does not start with <code class="docutils literal notranslate"><span class="pre">'/'</span></code>,
+    ends on <code class="docutils literal notranslate"><span class="pre">'/'</span></code>,
+    or does not match <code class="docutils literal notranslate"><span class="pre">'[A-Za-z0-9/._-]+'</span></code></p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if backend was not opened</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="delete">
+<h2>delete()<a class="headerlink" href="#delete" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="audbackend.backend.Base.delete">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Base.</span></span><span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repository</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">authentication</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/backend/base.html#Base.delete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.backend.Base.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete repository.</p>
+<p>Deletes <code class="docutils literal notranslate"><span class="pre">repository</span></code>
+located at <code class="docutils literal notranslate"><span class="pre">host</span></code>
+on the backend.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>host</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – host address</p></li>
+<li><p><strong>repository</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – repository name</p></li>
+<li><p><strong>authentication</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]) – access token
+for possible authentication,
+e.g. username, password tuple</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="audbackend.BackendError.html#audbackend.BackendError" title="audbackend.BackendError"><strong>BackendError</strong></a> – if an error is raised on the backend,
+    e.g. repository does not exist</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="exists">
+<h2>exists()<a class="headerlink" href="#exists" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="audbackend.backend.Base.exists">
+<span class="sig-prename descclassname"><span class="pre">Base.</span></span><span class="sig-name descname"><span class="pre">exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suppress_backend_errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/backend/base.html#Base.exists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.backend.Base.exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if file exists on backend.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – path to file on backend</p></li>
+<li><p><strong>suppress_backend_errors</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – if set to <code class="docutils literal notranslate"><span class="pre">True</span></code>,
+silently catch errors raised on the backend
+and return <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if file exists</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="audbackend.BackendError.html#audbackend.BackendError" title="audbackend.BackendError"><strong>BackendError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">suppress_backend_errors</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code>
+    and an error is raised on the backend,
+    e.g. due to a connection timeout</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">path</span></code> does not start with <code class="docutils literal notranslate"><span class="pre">'/'</span></code>,
+    ends on <code class="docutils literal notranslate"><span class="pre">'/'</span></code>,
+    or does not match <code class="docutils literal notranslate"><span class="pre">'[A-Za-z0-9/._-]+'</span></code></p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">version</span></code> is empty or
+    does not match <code class="docutils literal notranslate"><span class="pre">'[A-Za-z0-9._-]+'</span></code></p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if backend was not opened</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="get-archive">
+<h2>get_archive()<a class="headerlink" href="#get-archive" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="audbackend.backend.Base.get_archive">
+<span class="sig-prename descclassname"><span class="pre">Base.</span></span><span class="sig-name descname"><span class="pre">get_archive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_root</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmp_root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/backend/base.html#Base.get_archive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.backend.Base.get_archive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get archive from backend and extract.</p>
+<p>The archive type is derived from the extension of <code class="docutils literal notranslate"><span class="pre">src_path</span></code>.
+See <a class="reference external" href="https://audeering.github.io/audeer/api/audeer.extract_archive.html#audeer.extract_archive" title="(in audeer vv2.0.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">audeer.extract_archive()</span></code></a> for supported extensions.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">dst_root</span></code> does not exist,
+it is created.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">validate</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>,
+a final check is performed to assert that
+<code class="docutils literal notranslate"><span class="pre">src_path</span></code> and the retrieved archive
+have the same checksum.
+If it fails,
+the retrieved archive is removed and
+an <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#InterruptedError" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">InterruptedError</span></code></a> is raised.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>src_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – path to archive on backend</p></li>
+<li><p><strong>dst_root</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – local destination directory</p></li>
+<li><p><strong>tmp_root</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – directory under which archive is temporarily extracted.
+Defaults to temporary directory of system</p></li>
+<li><p><strong>validate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – verify archive was successfully
+retrieved from the backend</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – show debug messages</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>extracted files</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="audbackend.BackendError.html#audbackend.BackendError" title="audbackend.BackendError"><strong>BackendError</strong></a> – if an error is raised on the backend,
+    e.g. <code class="docutils literal notranslate"><span class="pre">src_path</span></code> does not exist</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#FileNotFoundError" title="(in Python v3.12)"><strong>FileNotFoundError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">tmp_root</span></code> does not exist</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#InterruptedError" title="(in Python v3.12)"><strong>InterruptedError</strong></a> – if validation fails</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotADirectoryError" title="(in Python v3.12)"><strong>NotADirectoryError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">dst_root</span></code> is not a directory</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#PermissionError" title="(in Python v3.12)"><strong>PermissionError</strong></a> – if the user lacks write permissions
+    for <code class="docutils literal notranslate"><span class="pre">dst_path</span></code></p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if extension of <code class="docutils literal notranslate"><span class="pre">src_path</span></code> is not supported
+    or <code class="docutils literal notranslate"><span class="pre">src_path</span></code> is a malformed archive</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">src_path</span></code> does not start with <code class="docutils literal notranslate"><span class="pre">'/'</span></code>,
+    ends on <code class="docutils literal notranslate"><span class="pre">'/'</span></code>,
+    or does not match <code class="docutils literal notranslate"><span class="pre">'[A-Za-z0-9/._-]+'</span></code></p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if backend was not opened</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="get-file">
+<h2>get_file()<a class="headerlink" href="#get-file" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="audbackend.backend.Base.get_file">
+<span class="sig-prename descclassname"><span class="pre">Base.</span></span><span class="sig-name descname"><span class="pre">get_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/backend/base.html#Base.get_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.backend.Base.get_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get file from backend.</p>
+<p>If the folder of
+<code class="docutils literal notranslate"><span class="pre">dst_path</span></code> does not exist,
+it is created.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">dst_path</span></code> exists
+with a different checksum,
+it is overwritten,
+Otherwise,
+the operation is silently skipped.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">validate</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>,
+a final check is performed to assert that
+<code class="docutils literal notranslate"><span class="pre">src_path</span></code> and <code class="docutils literal notranslate"><span class="pre">dst_path</span></code>
+have the same checksum.
+If it fails,
+<code class="docutils literal notranslate"><span class="pre">dst_path</span></code> is removed and
+an <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#InterruptedError" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">InterruptedError</span></code></a> is raised.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>src_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – path to file on backend</p></li>
+<li><p><strong>dst_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – destination path to local file</p></li>
+<li><p><strong>validate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – verify file was successfully
+retrieved from the backend</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – show debug messages</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>full path to local file</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="audbackend.BackendError.html#audbackend.BackendError" title="audbackend.BackendError"><strong>BackendError</strong></a> – if an error is raised on the backend,
+    e.g. <code class="docutils literal notranslate"><span class="pre">src_path</span></code> does not exist</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#InterruptedError" title="(in Python v3.12)"><strong>InterruptedError</strong></a> – if validation fails</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IsADirectoryError" title="(in Python v3.12)"><strong>IsADirectoryError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">dst_path</span></code> points to an existing folder</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#PermissionError" title="(in Python v3.12)"><strong>PermissionError</strong></a> – if the user lacks write permissions
+    for <code class="docutils literal notranslate"><span class="pre">dst_path</span></code></p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">src_path</span></code> does not start with <code class="docutils literal notranslate"><span class="pre">'/'</span></code>,
+    ends on <code class="docutils literal notranslate"><span class="pre">'/'</span></code>,
+    or does not match <code class="docutils literal notranslate"><span class="pre">'[A-Za-z0-9/._-]+'</span></code></p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if backend was not opened</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="host">
+<h2>host<a class="headerlink" href="#host" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="audbackend.backend.Base.host">
+<span class="sig-prename descclassname"><span class="pre">Base.</span></span><span class="sig-name descname"><span class="pre">host</span></span><a class="headerlink" href="#audbackend.backend.Base.host" title="Permalink to this definition">¶</a></dt>
+<dd><p>Host path.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="join">
+<h2>join()<a class="headerlink" href="#join" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="audbackend.backend.Base.join">
+<span class="sig-prename descclassname"><span class="pre">Base.</span></span><span class="sig-name descname"><span class="pre">join</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">paths</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/backend/base.html#Base.join"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.backend.Base.join" title="Permalink to this definition">¶</a></dt>
+<dd><p>Join to (sub-)path on backend.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – first part of path</p></li>
+<li><p><strong>*paths</strong> – additional parts of path</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>path joined by <code class="xref py py-attr docutils literal notranslate"><span class="pre">Backend.sep</span></code></p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">path</span></code> contains invalid character
+    or does not start with <code class="docutils literal notranslate"><span class="pre">'/'</span></code>,
+    or if joined path contains invalid character</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="ls">
+<h2>ls()<a class="headerlink" href="#ls" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="audbackend.backend.Base.ls">
+<span class="sig-prename descclassname"><span class="pre">Base.</span></span><span class="sig-name descname"><span class="pre">ls</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suppress_backend_errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/backend/base.html#Base.ls"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.backend.Base.ls" title="Permalink to this definition">¶</a></dt>
+<dd><p>List files on backend.</p>
+<p>Returns a sorted list of tuples
+with path and version.
+If a full path
+(e.g. <code class="docutils literal notranslate"><span class="pre">/sub/file.ext</span></code>)
+is provided,
+all versions of the path are returned.
+If a sub-path
+(e.g. <code class="docutils literal notranslate"><span class="pre">/sub/</span></code>)
+is provided,
+all files that start with
+the sub-path are returned.
+When <code class="docutils literal notranslate"><span class="pre">path</span></code> is set to <code class="docutils literal notranslate"><span class="pre">'/'</span></code>
+a (possibly empty) list with
+all files on the backend is returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – path or sub-path
+(if it ends with <code class="docutils literal notranslate"><span class="pre">'/'</span></code>)
+on backend</p></li>
+<li><p><strong>pattern</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – if not <code class="docutils literal notranslate"><span class="pre">None</span></code>,
+return only files matching the pattern string,
+see <a class="reference external" href="https://docs.python.org/3/library/fnmatch.html#fnmatch.fnmatch" title="(in Python v3.12)"><code class="xref py py-func docutils literal notranslate"><span class="pre">fnmatch.fnmatch()</span></code></a></p></li>
+<li><p><strong>suppress_backend_errors</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – if set to <code class="docutils literal notranslate"><span class="pre">True</span></code>,
+silently catch errors raised on the backend
+and return an empty list</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list of tuples (path, version)</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="audbackend.BackendError.html#audbackend.BackendError" title="audbackend.BackendError"><strong>BackendError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">suppress_backend_errors</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code>
+    and an error is raised on the backend,
+    e.g. <code class="docutils literal notranslate"><span class="pre">path</span></code> does not exist</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">path</span></code> does not start with <code class="docutils literal notranslate"><span class="pre">'/'</span></code> or
+    does not match <code class="docutils literal notranslate"><span class="pre">'[A-Za-z0-9/._-]+'</span></code></p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if backend was not opened</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="move-file">
+<h2>move_file()<a class="headerlink" href="#move-file" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="audbackend.backend.Base.move_file">
+<span class="sig-prename descclassname"><span class="pre">Base.</span></span><span class="sig-name descname"><span class="pre">move_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/backend/base.html#Base.move_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.backend.Base.move_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Move file on backend.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">dst_path</span></code> exists
+and has a different checksum,
+it is overwritten.
+Otherwise,
+<code class="docutils literal notranslate"><span class="pre">src_path</span></code>
+is removed and the operation silently skipped.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">validate</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>,
+a final check is performed to assert that
+<code class="docutils literal notranslate"><span class="pre">src_path</span></code> and <code class="docutils literal notranslate"><span class="pre">dst_path</span></code>
+have the same checksum.
+If it fails,
+<code class="docutils literal notranslate"><span class="pre">dst_path</span></code> is removed and
+an <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#InterruptedError" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">InterruptedError</span></code></a> is raised.
+To ensure <code class="docutils literal notranslate"><span class="pre">src_path</span></code> still exists in this case
+it is first copied and only removed
+when the check has successfully passed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>src_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – source path to file on backend</p></li>
+<li><p><strong>dst_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – destination path to file on backend</p></li>
+<li><p><strong>validate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – verify file was successfully moved</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – show debug messages</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="audbackend.BackendError.html#audbackend.BackendError" title="audbackend.BackendError"><strong>BackendError</strong></a> – if an error is raised on the backend</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#InterruptedError" title="(in Python v3.12)"><strong>InterruptedError</strong></a> – if validation fails</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">src_path</span></code> or <code class="docutils literal notranslate"><span class="pre">dst_path</span></code>
+    does not start with <code class="docutils literal notranslate"><span class="pre">'/'</span></code>,
+    ends on <code class="docutils literal notranslate"><span class="pre">'/'</span></code>,
+    or does not match <code class="docutils literal notranslate"><span class="pre">'[A-Za-z0-9/._-]+'</span></code></p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if backend was not opened</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="open">
+<h2>open()<a class="headerlink" href="#open" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="audbackend.backend.Base.open">
+<span class="sig-prename descclassname"><span class="pre">Base.</span></span><span class="sig-name descname"><span class="pre">open</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/backend/base.html#Base.open"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.backend.Base.open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open connection to backend.</p>
+<p>Repository must exist,
+use
+<a class="reference internal" href="#audbackend.backend.Base.create" title="audbackend.backend.Base.create"><code class="xref py py-func docutils literal notranslate"><span class="pre">audbackend.backend.Base.create()</span></code></a>
+to create it.
+Finally,
+use
+<a class="reference internal" href="#audbackend.backend.Base.close" title="audbackend.backend.Base.close"><code class="xref py py-func docutils literal notranslate"><span class="pre">audbackend.backend.Base.close()</span></code></a>
+to close the connection.
+Instead of explicitly calling
+<a class="reference internal" href="#audbackend.backend.Base.open" title="audbackend.backend.Base.open"><code class="xref py py-func docutils literal notranslate"><span class="pre">audbackend.backend.Base.open()</span></code></a>
+and
+<a class="reference internal" href="#audbackend.backend.Base.close" title="audbackend.backend.Base.close"><code class="xref py py-func docutils literal notranslate"><span class="pre">audbackend.backend.Base.close()</span></code></a>
+it is good practice to use a <a class="reference external" href="https://docs.python.org/3/reference/compound_stmts.html#with">with</a> statement.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference internal" href="audbackend.BackendError.html#audbackend.BackendError" title="audbackend.BackendError"><strong>BackendError</strong></a> – if an error is raised on the backend,
+    e.g. <code class="docutils literal notranslate"><span class="pre">repository</span></code> does not exist</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="opened">
+<h2>opened<a class="headerlink" href="#opened" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="audbackend.backend.Base.opened">
+<span class="sig-prename descclassname"><span class="pre">Base.</span></span><span class="sig-name descname"><span class="pre">opened</span></span><a class="headerlink" href="#audbackend.backend.Base.opened" title="Permalink to this definition">¶</a></dt>
+<dd><p>If a connection to the repository has been established.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="owner">
+<h2>owner()<a class="headerlink" href="#owner" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="audbackend.backend.Base.owner">
+<span class="sig-prename descclassname"><span class="pre">Base.</span></span><span class="sig-name descname"><span class="pre">owner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/backend/base.html#Base.owner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.backend.Base.owner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Owner of file on backend.</p>
+<p>If the owner of the file
+cannot be determined,
+an empty string is returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – path to file on backend</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>owner</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="audbackend.BackendError.html#audbackend.BackendError" title="audbackend.BackendError"><strong>BackendError</strong></a> – if an error is raised on the backend,
+    e.g. <code class="docutils literal notranslate"><span class="pre">path</span></code> does not exist</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">path</span></code> does not start with <code class="docutils literal notranslate"><span class="pre">'/'</span></code>,
+    ends on <code class="docutils literal notranslate"><span class="pre">'/'</span></code>,
+    or does not match <code class="docutils literal notranslate"><span class="pre">'[A-Za-z0-9/._-]+'</span></code></p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if backend was not opened</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="put-archive">
+<h2>put_archive()<a class="headerlink" href="#put-archive" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="audbackend.backend.Base.put_archive">
+<span class="sig-prename descclassname"><span class="pre">Base.</span></span><span class="sig-name descname"><span class="pre">put_archive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmp_root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/backend/base.html#Base.put_archive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.backend.Base.put_archive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create archive and put on backend.</p>
+<p>The archive type is derived from the extension of <code class="docutils literal notranslate"><span class="pre">dst_path</span></code>.
+See <a class="reference external" href="https://audeering.github.io/audeer/api/audeer.create_archive.html#audeer.create_archive" title="(in audeer vv2.0.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">audeer.create_archive()</span></code></a> for supported extensions.</p>
+<p>The operation is silently skipped,
+if an archive with the same checksum
+already exists on the backend.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">validate</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>,
+a final check is performed to assert that
+the local archive and <code class="docutils literal notranslate"><span class="pre">dst_path</span></code>
+have the same checksum.
+If it fails,
+<code class="docutils literal notranslate"><span class="pre">dst_path</span></code> is removed and
+an <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#InterruptedError" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">InterruptedError</span></code></a> is raised.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>src_root</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – local root directory where files are located.
+By default,
+all files below <code class="docutils literal notranslate"><span class="pre">src_root</span></code>
+will be included into the archive.
+Use <code class="docutils literal notranslate"><span class="pre">files</span></code> to select specific files</p></li>
+<li><p><strong>dst_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – path to archive on backend</p></li>
+<li><p><strong>files</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]) – file(s) to include into the archive.
+Must exist within <code class="docutils literal notranslate"><span class="pre">src_root</span></code></p></li>
+<li><p><strong>tmp_root</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]) – directory under which archive is temporarily created.
+Defaults to temporary directory of system</p></li>
+<li><p><strong>validate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – verify archive was successfully
+put on the backend</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – show debug messages</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="audbackend.BackendError.html#audbackend.BackendError" title="audbackend.BackendError"><strong>BackendError</strong></a> – if an error is raised on the backend</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#FileNotFoundError" title="(in Python v3.12)"><strong>FileNotFoundError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">src_root</span></code>,
+    <code class="docutils literal notranslate"><span class="pre">tmp_root</span></code>,
+    or one or more <code class="docutils literal notranslate"><span class="pre">files</span></code> do not exist</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#InterruptedError" title="(in Python v3.12)"><strong>InterruptedError</strong></a> – if validation fails</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotADirectoryError" title="(in Python v3.12)"><strong>NotADirectoryError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">src_root</span></code> is not a folder</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">dst_path</span></code> does not end with
+    <code class="docutils literal notranslate"><span class="pre">zip</span></code> or <code class="docutils literal notranslate"><span class="pre">tar.gz</span></code>
+    or a file in <code class="docutils literal notranslate"><span class="pre">files</span></code> is not below <code class="docutils literal notranslate"><span class="pre">root</span></code></p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">dst_path</span></code> does not start with <code class="docutils literal notranslate"><span class="pre">'/'</span></code>,
+    ends on <code class="docutils literal notranslate"><span class="pre">'/'</span></code>,
+    or does not match <code class="docutils literal notranslate"><span class="pre">'[A-Za-z0-9/._-]+'</span></code></p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if backend was not opened</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="put-file">
+<h2>put_file()<a class="headerlink" href="#put-file" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="audbackend.backend.Base.put_file">
+<span class="sig-prename descclassname"><span class="pre">Base.</span></span><span class="sig-name descname"><span class="pre">put_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_path</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/backend/base.html#Base.put_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.backend.Base.put_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Put file on backend.</p>
+<p>The operation is silently skipped,
+if a file with the same checksum
+already exists on the backend.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">validate</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>,
+a final check is performed to assert that
+<code class="docutils literal notranslate"><span class="pre">src_path</span></code> and <code class="docutils literal notranslate"><span class="pre">dst_path</span></code>
+have the same checksum.
+If it fails,
+<code class="docutils literal notranslate"><span class="pre">dst_path</span></code> is removed and
+an <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#InterruptedError" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">InterruptedError</span></code></a> is raised.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>src_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – path to local file</p></li>
+<li><p><strong>dst_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – path to file on backend</p></li>
+<li><p><strong>validate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – verify file was successfully
+put on the backend</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – show debug messages</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="audbackend.BackendError.html#audbackend.BackendError" title="audbackend.BackendError"><strong>BackendError</strong></a> – if an error is raised on the backend</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#FileNotFoundError" title="(in Python v3.12)"><strong>FileNotFoundError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">src_path</span></code> does not exist</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#InterruptedError" title="(in Python v3.12)"><strong>InterruptedError</strong></a> – if validation fails</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IsADirectoryError" title="(in Python v3.12)"><strong>IsADirectoryError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">src_path</span></code> is a folder</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">dst_path</span></code> does not start with <code class="docutils literal notranslate"><span class="pre">'/'</span></code>,
+    ends on <code class="docutils literal notranslate"><span class="pre">'/'</span></code>,
+    or does not match <code class="docutils literal notranslate"><span class="pre">'[A-Za-z0-9/._-]+'</span></code></p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if backend was not opened</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="remove-file">
+<h2>remove_file()<a class="headerlink" href="#remove-file" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="audbackend.backend.Base.remove_file">
+<span class="sig-prename descclassname"><span class="pre">Base.</span></span><span class="sig-name descname"><span class="pre">remove_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/backend/base.html#Base.remove_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.backend.Base.remove_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove file from backend.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – path to file on backend</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference internal" href="audbackend.BackendError.html#audbackend.BackendError" title="audbackend.BackendError"><strong>BackendError</strong></a> – if an error is raised on the backend,
+    e.g. <code class="docutils literal notranslate"><span class="pre">path</span></code> does not exist</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">path</span></code> does not start with <code class="docutils literal notranslate"><span class="pre">'/'</span></code>,
+    ends on <code class="docutils literal notranslate"><span class="pre">'/'</span></code>,
+    or does not match <code class="docutils literal notranslate"><span class="pre">'[A-Za-z0-9/._-]+'</span></code></p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.12)"><strong>RuntimeError</strong></a> – if backend was not opened</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="repository">
+<h2>repository<a class="headerlink" href="#repository" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="audbackend.backend.Base.repository">
+<span class="sig-prename descclassname"><span class="pre">Base.</span></span><span class="sig-name descname"><span class="pre">repository</span></span><a class="headerlink" href="#audbackend.backend.Base.repository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Repository name.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="sep">
+<h2>sep<a class="headerlink" href="#sep" title="Permalink to this heading">¶</a></h2>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="audbackend.backend.Base.sep">
+<span class="sig-prename descclassname"><span class="pre">Base.</span></span><span class="sig-name descname"><span class="pre">sep</span></span><a class="headerlink" href="#audbackend.backend.Base.sep" title="Permalink to this definition">¶</a></dt>
+<dd><p>File separator on backend.</p>
+<p>Returns: file separator</p>
+</dd></dl>
+
+</div>
+<div class="section" id="split">
+<h2>split()<a class="headerlink" href="#split" title="Permalink to this heading">¶</a></h2>
+<dl class="py method">
+<dt class="sig sig-object py" id="audbackend.backend.Base.split">
+<span class="sig-prename descclassname"><span class="pre">Base.</span></span><span class="sig-name descname"><span class="pre">split</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/backend/base.html#Base.split"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.backend.Base.split" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split path on backend into sub-path and basename.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – path containing <code class="xref py py-attr docutils literal notranslate"><span class="pre">Backend.sep</span></code> as separator</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>tuple containing (root, basename)</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.12)"><strong>ValueError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">path</span></code> does not start with <code class="docutils literal notranslate"><span class="pre">'/'</span></code> or
+    does not match <code class="docutils literal notranslate"><span class="pre">'[A-Za-z0-9/._-]+'</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="audbackend.interface.html" class="btn btn-neutral float-right" title="audbackend.interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="audbackend.backend.FileSystem.html" class="btn btn-neutral float-left" title="FileSystem" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div>
+    <p>
+        
+        
+        
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/05/10 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+        
+    </p>
+  </div>
+
+  <div role="contentinfo">
+    <p>
+        
+      &copy; 2021-2024 audEERING GmbH
+    </p>
+  </div> 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/thebelab-helper.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

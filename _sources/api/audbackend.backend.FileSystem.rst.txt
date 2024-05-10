@@ -1,18 +1,38 @@
 ﻿FileSystem
 ==========
 
-.. currentmodule:: audbackend
+.. currentmodule:: audbackend.backend
 
 .. autoclass:: FileSystem
 
 
+authentication
+--------------
+.. autoattribute:: FileSystem.authentication
+    
 checksum\(\)
 ------------
 .. automethod:: FileSystem.checksum
     
+close\(\)
+---------
+.. automethod:: FileSystem.close
+    
+copy\_file\(\)
+--------------
+.. automethod:: FileSystem.copy_file
+    
+create\(\)
+----------
+.. automethod:: FileSystem.create
+    
 date\(\)
 --------
 .. automethod:: FileSystem.date
+    
+delete\(\)
+----------
+.. automethod:: FileSystem.delete
     
 exists\(\)
 ----------
@@ -34,13 +54,21 @@ join\(\)
 --------
 .. automethod:: FileSystem.join
     
-latest\_version\(\)
--------------------
-.. automethod:: FileSystem.latest_version
-    
 ls\(\)
 ------
 .. automethod:: FileSystem.ls
+    
+move\_file\(\)
+--------------
+.. automethod:: FileSystem.move_file
+    
+open\(\)
+--------
+.. automethod:: FileSystem.open
+    
+opened
+------
+.. autoattribute:: FileSystem.opened
     
 owner\(\)
 ---------
@@ -69,8 +97,4 @@ sep
 split\(\)
 ---------
 .. automethod:: FileSystem.split
-    
-versions\(\)
-------------
-.. automethod:: FileSystem.versions
     

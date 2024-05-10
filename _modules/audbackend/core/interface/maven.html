@@ -1,0 +1,507 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>audbackend.core.interface.maven &mdash; Documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.png"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/audeering.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/jupyter-sphinx.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/thebelab.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    
+  
+
+  
+  <script src="../../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          <a href="../../../../index.html">
+          
+            <img src="../../../../_static/images/audeering.png" class="logo" alt="audEERING"/>
+          
+          
+            <span> audbackend</span>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../developer-guide.html">Developer guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../legacy.html">Legacy backends</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/audbackend.html">audbackend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/audbackend.backend.html">audbackend.backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/audbackend.interface.html">audbackend.interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../genindex.html">Index</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../changelog.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">audbackend</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>audbackend.core.interface.maven</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for audbackend.core.interface.maven</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">fnmatch</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">typing</span>
+
+<span class="kn">import</span> <span class="nn">audeer</span>
+
+<span class="kn">from</span> <span class="nn">audbackend.core</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">audbackend.core.backend.base</span> <span class="kn">import</span> <span class="n">Base</span> <span class="k">as</span> <span class="n">Backend</span>
+<span class="kn">from</span> <span class="nn">audbackend.core.errors</span> <span class="kn">import</span> <span class="n">BackendError</span>
+<span class="kn">from</span> <span class="nn">audbackend.core.interface.versioned</span> <span class="kn">import</span> <span class="n">Versioned</span>
+
+
+<div class="viewcode-block" id="Maven"><a class="viewcode-back" href="../../../../api/audbackend.interface.Maven.html#audbackend.interface.Maven">[docs]</a><span class="k">class</span> <span class="nc">Maven</span><span class="p">(</span><span class="n">Versioned</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Interface for Maven style versioned file access.</span>
+
+<span class="sd">    Use this interface,</span>
+<span class="sd">    if you want to version files</span>
+<span class="sd">    similar to how it is handled by Maven.</span>
+<span class="sd">    For each file on the backend path</span>
+<span class="sd">    one or more versions may exist.</span>
+
+<span class="sd">    Files are stored under</span>
+<span class="sd">    ``&quot;.../&lt;name-wo-ext&gt;/&lt;version&gt;/&lt;name-wo-ext&gt;-&lt;version&gt;.&lt;ext&gt;&quot;``.</span>
+<span class="sd">    By default,</span>
+<span class="sd">    the extension</span>
+<span class="sd">    ``&lt;ext&gt;``</span>
+<span class="sd">    is set to the string after the last dot.</span>
+<span class="sd">    I.e.,</span>
+<span class="sd">    the backend path</span>
+<span class="sd">    ``&quot;.../file.tar.gz&quot;``</span>
+<span class="sd">    will translate into</span>
+<span class="sd">    ``&quot;.../file.tar/1.0.0/file.tar-1.0.0.gz&quot;``.</span>
+<span class="sd">    However,</span>
+<span class="sd">    by passing a list with custom extensions</span>
+<span class="sd">    it is possible to overwrite</span>
+<span class="sd">    the default behavior</span>
+<span class="sd">    for certain extensions.</span>
+<span class="sd">    E.g.,</span>
+<span class="sd">    with ``extensions=[&quot;tar.gz&quot;]``</span>
+<span class="sd">    it is ensured that</span>
+<span class="sd">    ``&quot;tar.gz&quot;``</span>
+<span class="sd">    will be recognized as an extension</span>
+<span class="sd">    and the backend path</span>
+<span class="sd">    ``&quot;.../file.tar.gz&quot;``</span>
+<span class="sd">    will then translate into</span>
+<span class="sd">    ``&quot;.../file/1.0.0/file-1.0.0.tar.gz&quot;``.</span>
+<span class="sd">    If ``regex`` is set to ``True``,</span>
+<span class="sd">    the extensions are treated as regular expressions.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        backend: file storage backend</span>
+<span class="sd">        extensions: list of file extensions to support</span>
+<span class="sd">            including a ``&quot;.&quot;``.</span>
+<span class="sd">            Per default only the part after the last ``&quot;.&quot;``,</span>
+<span class="sd">            is considered as a file extension</span>
+<span class="sd">        regex: if ``True``,</span>
+<span class="sd">            ``extensions`` entries</span>
+<span class="sd">            are treated as regular expressions.</span>
+<span class="sd">            E.g. ``&quot;\d+.tar.gz&quot;`` will match</span>
+<span class="sd">            ``&quot;1.tar.gz&quot;``,</span>
+<span class="sd">            ``&quot;2.tar.gz&quot;``,</span>
+<span class="sd">            ...</span>
+<span class="sd">            as extensions</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
+<span class="sd">        &gt;&gt;&gt; backend = audbackend.backend.FileSystem(&quot;host&quot;, &quot;repo&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; backend.open()</span>
+<span class="sd">        &gt;&gt;&gt; interface = Maven(backend)</span>
+<span class="sd">        &gt;&gt;&gt; interface.put_archive(&quot;.&quot;, &quot;/sub/archive.zip&quot;, &quot;1.0.0&quot;, files=[file])</span>
+<span class="sd">        &gt;&gt;&gt; for version in [&quot;1.0.0&quot;, &quot;2.0.0&quot;]:</span>
+<span class="sd">        ...     interface.put_file(file, &quot;/file.txt&quot;, version)</span>
+<span class="sd">        &gt;&gt;&gt; interface.ls()</span>
+<span class="sd">        [(&#39;/file.txt&#39;, &#39;1.0.0&#39;), (&#39;/file.txt&#39;, &#39;2.0.0&#39;), (&#39;/sub/archive.zip&#39;, &#39;1.0.0&#39;)]</span>
+<span class="sd">        &gt;&gt;&gt; interface.get_file(&quot;/file.txt&quot;, &quot;dst.txt&quot;, &quot;2.0.0&quot;)</span>
+<span class="sd">        &#39;...dst.txt&#39;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">backend</span><span class="p">:</span> <span class="n">Backend</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">extensions</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">regex</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extensions</span> <span class="o">=</span> <span class="n">extensions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">regex</span> <span class="o">=</span> <span class="n">regex</span>
+
+<div class="viewcode-block" id="Maven.ls"><a class="viewcode-back" href="../../../../api/audbackend.interface.Maven.html#audbackend.interface.Maven.ls">[docs]</a>    <span class="k">def</span> <span class="nf">ls</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">latest_version</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">suppress_backend_errors</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;List files on backend.</span>
+
+<span class="sd">        Returns a sorted list of tuples</span>
+<span class="sd">        with path and version.</span>
+<span class="sd">        If a full path</span>
+<span class="sd">        (e.g. ``/sub/file.ext``)</span>
+<span class="sd">        is provided,</span>
+<span class="sd">        all versions of the path are returned.</span>
+<span class="sd">        If a sub-path</span>
+<span class="sd">        (e.g. ``/sub/``)</span>
+<span class="sd">        is provided,</span>
+<span class="sd">        all files that start with</span>
+<span class="sd">        the sub-path are returned.</span>
+<span class="sd">        When ``path`` is set to ``&#39;/&#39;``</span>
+<span class="sd">        a (possibly empty) list with</span>
+<span class="sd">        all files on the backend is returned.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: path or sub-path</span>
+<span class="sd">                (if it ends with ``&#39;/&#39;``)</span>
+<span class="sd">                on backend</span>
+<span class="sd">            latest_version: if multiple versions of a file exist,</span>
+<span class="sd">                only include the latest</span>
+<span class="sd">            pattern: if not ``None``,</span>
+<span class="sd">                return only files matching the pattern string,</span>
+<span class="sd">                see :func:`fnmatch.fnmatch`</span>
+<span class="sd">            suppress_backend_errors: if set to ``True``,</span>
+<span class="sd">                silently catch errors raised on the backend</span>
+<span class="sd">                and return an empty list</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list of tuples (path, version)</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            BackendError: if ``suppress_backend_errors`` is ``False``</span>
+<span class="sd">                and an error is raised on the backend,</span>
+<span class="sd">                e.g. ``path`` does not exist</span>
+<span class="sd">            ValueError: if ``path`` does not start with ``&#39;/&#39;`` or</span>
+<span class="sd">                does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            RuntimeError: if backend was not opened</span>
+
+<span class="sd">        ..</span>
+<span class="sd">            &gt;&gt;&gt; backend = audbackend.backend.FileSystem(&quot;host&quot;, &quot;repo&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; backend.open()</span>
+<span class="sd">            &gt;&gt;&gt; interface = Maven(backend)</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_archive(&quot;.&quot;, &quot;/sub/archive.zip&quot;, &quot;1.0.0&quot;, files=[file])</span>
+<span class="sd">            &gt;&gt;&gt; for version in [&quot;1.0.0&quot;, &quot;2.0.0&quot;]:</span>
+<span class="sd">            ...     interface.put_file(file, &quot;/file.txt&quot;, version)</span>
+<span class="sd">            &gt;&gt;&gt; interface.ls()</span>
+<span class="sd">            [(&#39;/file.txt&#39;, &#39;1.0.0&#39;), (&#39;/file.txt&#39;, &#39;2.0.0&#39;), (&#39;/sub/archive.zip&#39;, &#39;1.0.0&#39;)]</span>
+<span class="sd">            &gt;&gt;&gt; interface.ls(latest_version=True)</span>
+<span class="sd">            [(&#39;/file.txt&#39;, &#39;2.0.0&#39;), (&#39;/sub/archive.zip&#39;, &#39;1.0.0&#39;)]</span>
+<span class="sd">            &gt;&gt;&gt; interface.ls(&quot;/file.txt&quot;)</span>
+<span class="sd">            [(&#39;/file.txt&#39;, &#39;1.0.0&#39;), (&#39;/file.txt&#39;, &#39;2.0.0&#39;)]</span>
+<span class="sd">            &gt;&gt;&gt; interface.ls(pattern=&quot;*.txt&quot;)</span>
+<span class="sd">            [(&#39;/file.txt&#39;, &#39;1.0.0&#39;), (&#39;/file.txt&#39;, &#39;2.0.0&#39;)]</span>
+<span class="sd">            &gt;&gt;&gt; interface.ls(pattern=&quot;archive.*&quot;)</span>
+<span class="sd">            [(&#39;/sub/archive.zip&#39;, &#39;1.0.0&#39;)]</span>
+<span class="sd">            &gt;&gt;&gt; interface.ls(&quot;/sub/&quot;)</span>
+<span class="sd">            [(&#39;/sub/archive.zip&#39;, &#39;1.0.0&#39;)]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+        <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>  <span class="c1"># find files under sub-path</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span>
+                <span class="n">path</span><span class="p">,</span>
+                <span class="n">suppress_backend_errors</span><span class="o">=</span><span class="n">suppress_backend_errors</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># Files are also stored as sub-folder,</span>
+            <span class="c1"># e.g. `/file/version/file-version.ext`,</span>
+            <span class="c1"># so we need to skip those</span>
+            <span class="n">sub_paths</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">))</span> <span class="o">-</span> <span class="mi">2</span>
+            <span class="k">if</span> <span class="n">sub_paths</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">path</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="o">+</span> <span class="n">sub_paths</span>
+                <span class="p">]</span>
+
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># find versions of path</span>
+            <span class="n">root</span><span class="p">,</span> <span class="n">file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+            <span class="n">paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span>
+                <span class="n">root</span><span class="p">,</span>
+                <span class="n">suppress_backend_errors</span><span class="o">=</span><span class="n">suppress_backend_errors</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># filter for &#39;/root/version/file&#39;</span>
+            <span class="n">depth</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span>
+            <span class="n">name</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_ext</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">rf</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">-\d+\.\d+.\d+</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">p</span>
+                <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">depth</span> <span class="ow">and</span> <span class="n">match</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">p</span><span class="p">)))</span>
+            <span class="p">]</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">paths</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">suppress_backend_errors</span><span class="p">:</span>
+                <span class="c1"># since the backend does no longer raise an error</span>
+                <span class="c1"># if the path does not exist</span>
+                <span class="c1"># we have to do it</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">utils</span><span class="o">.</span><span class="n">raise_file_not_found_error</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">FileNotFoundError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">BackendError</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">paths</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">paths_and_versions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+            <span class="n">tokens</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+
+            <span class="n">name</span> <span class="o">=</span> <span class="n">tokens</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">version</span> <span class="o">=</span> <span class="n">tokens</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">version</span><span class="p">:</span>
+                <span class="n">base</span> <span class="o">=</span> <span class="n">tokens</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+                <span class="n">ext</span> <span class="o">=</span> <span class="n">name</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">base</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">version</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base</span><span class="si">}{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tokens</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">])</span>
+
+                <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="n">path</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">pattern</span> <span class="ow">or</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">fnmatch</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">pattern</span><span class="p">):</span>
+                    <span class="n">paths_and_versions</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">path</span><span class="p">,</span> <span class="n">version</span><span class="p">))</span>
+
+        <span class="n">paths_and_versions</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">paths_and_versions</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">latest_version</span><span class="p">:</span>
+            <span class="c1"># d[path] = [&#39;1.0.0&#39;, &#39;2.0.0&#39;]</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">paths_and_versions</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">p</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+                    <span class="n">d</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">d</span><span class="p">[</span><span class="n">p</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="c1"># d[path] = &#39;2.0.0&#39;</span>
+            <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">vs</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">d</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">sort_versions</span><span class="p">(</span><span class="n">vs</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="c1"># [(path, &#39;2.0.0&#39;)]</span>
+            <span class="n">paths_and_versions</span> <span class="o">=</span> <span class="p">[(</span><span class="n">p</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+
+        <span class="k">return</span> <span class="n">paths_and_versions</span></div>
+
+    <span class="k">def</span> <span class="nf">_split_ext</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Split name into basename and extension.&quot;&quot;&quot;</span>
+        <span class="n">ext</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">custom_ext</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">extensions</span><span class="p">:</span>
+            <span class="c1"># check for custom extension</span>
+            <span class="c1"># ensure basename is not empty</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">regex</span><span class="p">:</span>
+                <span class="n">pattern</span> <span class="o">=</span> <span class="sa">rf</span><span class="s2">&quot;\.(</span><span class="si">{</span><span class="n">custom_ext</span><span class="si">}</span><span class="s2">)$&quot;</span>
+                <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">name</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+                <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+                    <span class="n">ext</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">name</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;.</span><span class="si">{</span><span class="n">custom_ext</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">):</span>
+                <span class="n">ext</span> <span class="o">=</span> <span class="n">custom_ext</span>
+        <span class="k">if</span> <span class="n">ext</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># if no custom extension is found</span>
+            <span class="c1"># use last string after dot</span>
+            <span class="n">ext</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">file_extension</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="n">base</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">replace_file_extension</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="n">ext</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ext</span><span class="p">:</span>
+            <span class="n">ext</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;.</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span>
+
+        <span class="k">return</span> <span class="n">base</span><span class="p">,</span> <span class="n">ext</span>
+
+    <span class="k">def</span> <span class="nf">_path_with_version</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Convert to versioned path.</span>
+
+<span class="sd">        &lt;root&gt;/&lt;base&gt;&lt;ext&gt;</span>
+<span class="sd">        -&gt;</span>
+<span class="sd">        &lt;root&gt;/&lt;base&gt;/&lt;version&gt;/&lt;base&gt;-&lt;version&gt;&lt;ext&gt;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_version</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
+        <span class="n">root</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">base</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_ext</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">base</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">version</span><span class="si">}{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">path</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div>
+    <p>
+        
+        
+        
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/05/10 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+        
+    </p>
+  </div>
+
+  <div role="contentinfo">
+    <p>
+        
+      &copy; 2021-2024 audEERING GmbH
+    </p>
+  </div> 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+        <script src="../../../../_static/thebelab-helper.js"></script>
+        <script src="../../../../_static/clipboard.min.js"></script>
+        <script src="../../../../_static/copybutton.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

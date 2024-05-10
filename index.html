@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                1.0.2
+                2.0.0
               </div>
             
           
@@ -94,11 +94,14 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developer-guide.html">Developer guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="legacy.html">Legacy backends</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api/audbackend.html">audbackend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/audbackend.backend.html">audbackend.backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/audbackend.interface.html">audbackend.interface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Development</span></p>
@@ -144,13 +147,21 @@
   <div class="section" id="audbackend">
 <h1>audbackend<a class="headerlink" href="#audbackend" title="Permalink to this heading">¶</a></h1>
 <p><a class="reference external" href="https://github.com/audeering/audbackend/actions?query=workflow%3ATest"><img alt="Test status" src="https://github.com/audeering/audbackend/workflows/Test/badge.svg" /></a> <a class="reference external" href="https://codecov.io/gh/audeering/audbackend/"><img alt="code coverage" src="https://codecov.io/gh/audeering/audbackend/branch/main/graph/badge.svg?token=pCTgGG7Sd1" /></a> <a class="reference external" href="https://audeering.github.io/audbackend/"><img alt="audbackend's documentation" src="https://img.shields.io/pypi/v/audbackend?label=docs" /></a> <a class="reference external" href="https://pypi.org/project/audbackend/"><img alt="audbackends's supported Python versions" src="https://img.shields.io/pypi/pyversions/audbackend.svg" /></a> <a class="reference external" href="https://github.com/audeering/audbackend/blob/main/LICENSE"><img alt="audbackend's MIT license" src="https://img.shields.io/badge/license-MIT-green.svg" /></a></p>
-<p>Manage file storage on different backends.
-At the moment we support:</p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://jfrog.com/artifactory/">Artifactory</a> with <code class="docutils literal notranslate"><span class="pre">audbackend.Artifactory</span></code></p></li>
-<li><p>local file system with <code class="docutils literal notranslate"><span class="pre">audbackend.FileSystem</span></code></p></li>
-</ul>
-<p>Have a look at the <a class="reference external" href="https://audeering.github.io/audbackend/install.html">installation</a> instructions.</p>
+<p><strong>audbackend</strong> provides <a class="reference external" href="https://audeering.github.io/audbackend/api/audbackend.interface.html">interfaces</a>
+for file storage on different <a class="reference external" href="https://audeering.github.io/audbackend/api/audbackend.backend.html">backends</a>.</p>
+<p>An interface enables user interactions
+with a backend,
+and influences how the data is structured,
+e.g. <a class="reference external" href="https://audeering.github.io/audbackend/api/audbackend.interface.Versioned.html">versioned</a>
+or <a class="reference external" href="https://audeering.github.io/audbackend/api/audbackend.interface.Unversioned.html">unversioned</a>.
+A backend is responsible
+for managing
+the requested data structure
+in a repository
+on a storage system,
+such as a file system
+or <a class="reference external" href="https://jfrog.com/artifactory/">Artifactory</a>.</p>
+<p>Have a look at the <a class="reference external" href="https://audeering.github.io/audbackend/install.html">installation</a> and <a class="reference external" href="https://audeering.github.io/audbackend/usage.html">usage</a> instructions.</p>
 <div class="toctree-wrapper compound">
 </div>
 <div class="toctree-wrapper compound">
@@ -180,7 +191,7 @@ At the moment we support:</p>
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/02/13 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/05/10 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>

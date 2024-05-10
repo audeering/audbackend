@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                1.0.2
+                2.0.0
               </div>
             
           
@@ -94,17 +94,21 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developer-guide.html">Developer guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="legacy.html">Legacy backends</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api/audbackend.html">audbackend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/audbackend.backend.html">audbackend.backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/audbackend.interface.html">audbackend.interface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Development</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#version-2-0-0-2024-05-10">Version 2.0.0 (2024-05-10)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-1-0-2-2024-02-13">Version 1.0.2 (2024-02-13)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-1-0-1-2023-10-18">Version 1.0.1 (2023-10-18)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-1-0-0-2023-10-16">Version 1.0.0 (2023-10-16)</a></li>
@@ -173,6 +177,90 @@
 <p>All notable changes to this project will be documented in this file.</p>
 <p>The format is based on <a class="reference external" href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,
 and this project adheres to <a class="reference external" href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<div class="section" id="version-2-0-0-2024-05-10">
+<h2>Version 2.0.0 (2024-05-10)<a class="headerlink" href="#version-2-0-0-2024-05-10" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">audbackend.interface</span></code> sub-module
+including an backend interface base class
+<code class="docutils literal notranslate"><span class="pre">audbackend.interface.Base</span></code>,
+and the three interfaces
+<code class="docutils literal notranslate"><span class="pre">audbackend.interface.Maven</span></code>,
+<code class="docutils literal notranslate"><span class="pre">audbackend.interface.Unversioned</span></code>,
+<code class="docutils literal notranslate"><span class="pre">audbackend.interface.Versioned</span></code></p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">audbackend.backend</span></code> sub-module
+including the backend base class
+<code class="docutils literal notranslate"><span class="pre">audbackend.backend.Base</span></code>,
+and the two backends
+<code class="docutils literal notranslate"><span class="pre">audbackend.backend.Artifactory</span></code>,
+<code class="docutils literal notranslate"><span class="pre">audbackend.backend.FileSystem</span></code></p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">audbackend.backend.*.copy_file()</span></code>
+and <code class="docutils literal notranslate"><span class="pre">audbackend.interface.*.copy_file()</span></code>
+methods
+to copy a file on the backend</p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">audbackend.backend.*.move_file()</span></code>
+and <code class="docutils literal notranslate"><span class="pre">audbackend.interface.*.move_file()</span></code>
+methods
+to move a file on the backend</p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">validate=False</span></code> argument to the
+<code class="docutils literal notranslate"><span class="pre">copy_file()</span></code>,
+<code class="docutils literal notranslate"><span class="pre">get_archive()</span></code>,
+<code class="docutils literal notranslate"><span class="pre">get_file()</span></code>,
+<code class="docutils literal notranslate"><span class="pre">move_file()</span></code>,
+<code class="docutils literal notranslate"><span class="pre">put_archive()</span></code>,
+<code class="docutils literal notranslate"><span class="pre">put_file()</span></code>
+methods in <code class="docutils literal notranslate"><span class="pre">audbackend.backend.*</span></code>
+and <code class="docutils literal notranslate"><span class="pre">audbackend.interface.*</span></code>.
+If <code class="docutils literal notranslate"><span class="pre">True</span></code>
+the checksum of the resulting file is checked</p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">audbackend.backend.*.create()</span></code>
+and <code class="docutils literal notranslate"><span class="pre">audbackend.backend.*.delete()</span></code>
+class methods
+to create or delete a repository
+on a backend</p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">audbackend.backend.*.open()</span></code>
+and <code class="docutils literal notranslate"><span class="pre">audbackend.backend.*.close()</span></code>
+methods
+to connect to a backend,
+or disconnect from a backend</p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">audbackend.backend.Artifactory.get_authentication()</span></code>
+to get the current Artifactory username, password
+from the configuration file/environment variable</p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">authentication</span></code> argument
+to <code class="docutils literal notranslate"><span class="pre">audbackend.backend.Artifactory</span></code>
+and <code class="docutils literal notranslate"><span class="pre">audbackend.backend.Base</span></code></p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">audbackend.backend.Artifactory.path()</span></code>
+returning an <code class="docutils literal notranslate"><span class="pre">artifactory.ArtifactoryPath</span></code> object</p></li>
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">audbackend.backend.Artifactory.authentication</span></code>
+attribute,
+holding the current authentication object,
+e.g. user, password tuple</p></li>
+<li><p>Fixed: all backend methods now raise a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>,
+if a backend path ends on <code class="docutils literal notranslate"><span class="pre">&quot;/&quot;</span></code>
+with the exception of <code class="docutils literal notranslate"><span class="pre">ls()</span></code>,
+<code class="docutils literal notranslate"><span class="pre">split()</span></code>
+and <code class="docutils literal notranslate"><span class="pre">join()</span></code>,
+as those methods support sub-paths as argument</p></li>
+<li><p>Deprecated: <code class="docutils literal notranslate"><span class="pre">audbackend.create()</span></code>,
+use <code class="docutils literal notranslate"><span class="pre">audbackend.backend.*.create()</span></code> instead</p></li>
+<li><p>Deprecated: <code class="docutils literal notranslate"><span class="pre">audbackend.delete()</span></code>,
+use <code class="docutils literal notranslate"><span class="pre">audbackend.backend.*.delete()</span></code> instead</p></li>
+<li><p>Deprecated: <code class="docutils literal notranslate"><span class="pre">audbackend.register()</span></code>,
+as we no longer use alias names
+for backends</p></li>
+<li><p>Deprecated: <code class="docutils literal notranslate"><span class="pre">audbackend.access()</span></code>,
+instantiate and open a backend instead</p></li>
+<li><p>Deprecated: <code class="docutils literal notranslate"><span class="pre">audbackend.Repository</span></code>,
+as we no longer use alias names
+for backends</p></li>
+<li><p>Removed: <code class="docutils literal notranslate"><span class="pre">audbackend.Artifactory</span></code>
+and <code class="docutils literal notranslate"><span class="pre">audbackend.FileSystem</span></code>,
+use
+<code class="docutils literal notranslate"><span class="pre">audbackend.backend.Artifactory</span></code>
+and <code class="docutils literal notranslate"><span class="pre">audbackend.backend.FileSystem</span></code>
+instead</p></li>
+<li><p>Removed: <code class="docutils literal notranslate"><span class="pre">audbackend.available()</span></code></p></li>
+</ul>
+</div>
 <div class="section" id="version-1-0-2-2024-02-13">
 <h2>Version 1.0.2 (2024-02-13)<a class="headerlink" href="#version-1-0-2-2024-02-13" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
@@ -239,7 +327,7 @@ and <code class="docutils literal notranslate"><span class="pre">audbackend.Arti
 to
 <code class="docutils literal notranslate"><span class="pre">/sub/1.0.0/file.txt</span></code></p></li>
 <li><p>Changed: remove <code class="docutils literal notranslate"><span class="pre">ext</span></code> argument</p></li>
-<li><p>Changed: path on backend must start with <code class="docutils literal notranslate"><span class="pre">'/'</span></code></p></li>
+<li><p>Changed: path on backend must start with <code class="docutils literal notranslate"><span class="pre">&quot;/&quot;</span></code></p></li>
 <li><p>Changed: version must be non-empty and may not contain invalid characters</p></li>
 <li><p>Changed: option to install only specific backends
 and their dependencies</p></li>
@@ -427,7 +515,7 @@ and explains Artifactory server access for running tests</p></li>
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/02/13 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/05/10 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>

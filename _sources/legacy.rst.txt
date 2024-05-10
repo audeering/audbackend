@@ -6,7 +6,7 @@
     import audeer
 
     _cwd_root = os.getcwd()
-    _tmp_root = audeer.mkdir(os.path.join('docs', 'tmp'))
+    _tmp_root = audeer.mkdir(os.path.join("docs", "tmp"))
     os.chdir(_tmp_root)
 
 
@@ -15,12 +15,8 @@
 Legacy backends
 ===============
 
-The file structure on the backend
-has changed for
-:class:`audbackend.FileSystem`
-and :class:`audbackend.Artifactory`
-in version 1.0.0
-of :mod:`audbackend`.
+The default file structure on the backend
+has changed with version 1.0.0.
 
 Before,
 a file ``/sub/file.txt``
@@ -38,9 +34,7 @@ Now it is stored under
     /sub/1.0.0/file.txt
 
 To force the old file structure
-call the hidden method
-``_use_legacy_file_structure()``
-after instantiating the backend.
+use the :class:`audbackend.interface.Maven` interface.
 We recommend this 
 for existing repositories
 that store files
@@ -54,9 +48,10 @@ you have to list those extensions explicitly.
 
     import audbackend
 
-    backend = audbackend.create('file-system', './host', 'repo')
-    extensions = ['tar.gz']
-    backend._use_legacy_file_structure(extensions=extensions)
+    audbackend.backend.FileSystem.create("./host", "repo")
+    backend = audbackend.backend.FileSystem("./host", "repo")
+    backend.open()
+    interface = audbackend.interface.Maven(backend, extensions=["tar.gz"])
 
 Afterwards we upload an TAR.GZ archive
 and check that it is stored as expected.
@@ -67,10 +62,10 @@ and check that it is stored as expected.
     import tempfile
 
     with tempfile.TemporaryDirectory() as tmp:
-        audeer.touch(audeer.path(tmp, 'file.txt'))
-        backend.put_archive(tmp, '/file.tar.gz', '1.0.0')
+        audeer.touch(audeer.path(tmp, "file.txt"))
+        interface.put_archive(tmp, "/file.tar.gz", "1.0.0")
 
-    audeer.list_file_names('./host', recursive=True, basenames=True)
+    audeer.list_file_names("./host", recursive=True, basenames=True)
 
 
 .. reset working directory and clean up

@@ -1,0 +1,387 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>audbackend.core.interface.base &mdash; Documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../../../_static/favicon.png"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/audeering.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/jupyter-sphinx.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/thebelab.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    
+  
+
+  
+  <script src="../../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          <a href="../../../../index.html">
+          
+            <img src="../../../../_static/images/audeering.png" class="logo" alt="audEERING"/>
+          
+          
+            <span> audbackend</span>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../developer-guide.html">Developer guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../legacy.html">Legacy backends</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/audbackend.html">audbackend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/audbackend.backend.html">audbackend.backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/audbackend.interface.html">audbackend.interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../genindex.html">Index</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../changelog.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">audbackend</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>audbackend.core.interface.base</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for audbackend.core.interface.base</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">typing</span>
+
+<span class="kn">from</span> <span class="nn">audbackend.core.backend.base</span> <span class="kn">import</span> <span class="n">Base</span> <span class="k">as</span> <span class="n">Backend</span>
+
+
+<div class="viewcode-block" id="Base"><a class="viewcode-back" href="../../../../api/audbackend.interface.Base.html#audbackend.interface.Base">[docs]</a><span class="k">class</span> <span class="nc">Base</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Interface base class.</span>
+
+<span class="sd">    Provides an interface to a backend,</span>
+<span class="sd">    see e.g.</span>
+<span class="sd">    :class:`audbackend.Unversioned`</span>
+<span class="sd">    and</span>
+<span class="sd">    :class:`audbackend.Versioned`.</span>
+
+<span class="sd">    Derive from this class to</span>
+<span class="sd">    create a new interface.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        backend: backend object</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">backend</span><span class="p">:</span> <span class="n">Backend</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="o">=</span> <span class="n">backend</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>  <span class="c1"># noqa: D105</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;audbackend.interface.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_backend</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">backend</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Backend</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Backend object.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            backend object</span>
+
+<span class="sd">        ..</span>
+<span class="sd">            &gt;&gt;&gt; backend = audbackend.backend.FileSystem(&quot;host&quot;, &quot;repo&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; interface = Base(backend)</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; interface.backend</span>
+<span class="sd">            audbackend.backend.FileSystem(&#39;host&#39;, &#39;repo&#39;)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">host</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Host path.</span>
+
+<span class="sd">        Returns: host path</span>
+
+<span class="sd">        ..</span>
+<span class="sd">            &gt;&gt;&gt; backend = audbackend.backend.FileSystem(&quot;host&quot;, &quot;repo&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; interface = Base(backend)</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; interface.host</span>
+<span class="sd">            &#39;host&#39;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">host</span>
+
+<div class="viewcode-block" id="Base.join"><a class="viewcode-back" href="../../../../api/audbackend.interface.Base.html#audbackend.interface.Base.join">[docs]</a>    <span class="k">def</span> <span class="nf">join</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">paths</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Join to path on backend.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: first part of path</span>
+<span class="sd">            *paths: additional parts of path</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            path joined by :attr:`Backend.sep`</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: if ``path`` contains invalid character</span>
+<span class="sd">                or does not start with ``&#39;/&#39;``,</span>
+<span class="sd">                or if joined path contains invalid character</span>
+
+<span class="sd">        ..</span>
+<span class="sd">            &gt;&gt;&gt; backend = audbackend.backend.FileSystem(&quot;host&quot;, &quot;repo&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; interface = Base(backend)</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; interface.join(&quot;/&quot;, &quot;file.txt&quot;)</span>
+<span class="sd">            &#39;/file.txt&#39;</span>
+<span class="sd">            &gt;&gt;&gt; interface.join(&quot;/sub&quot;, &quot;file.txt&quot;)</span>
+<span class="sd">            &#39;/sub/file.txt&#39;</span>
+<span class="sd">            &gt;&gt;&gt; interface.join(&quot;//sub//&quot;, &quot;/&quot;, &quot;&quot;, None, &quot;/file.txt&quot;)</span>
+<span class="sd">            &#39;/sub/file.txt&#39;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="o">*</span><span class="n">paths</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">repository</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Repository name.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            repository name</span>
+
+<span class="sd">        ..</span>
+<span class="sd">            &gt;&gt;&gt; backend = audbackend.backend.FileSystem(&quot;host&quot;, &quot;repo&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; interface = Base(backend)</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; interface.repository</span>
+<span class="sd">            &#39;repo&#39;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">repository</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">sep</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;File separator on backend.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            file separator</span>
+
+<span class="sd">        ..</span>
+<span class="sd">            &gt;&gt;&gt; backend = audbackend.backend.FileSystem(&quot;host&quot;, &quot;repo&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; interface = Base(backend)</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; interface.sep</span>
+<span class="sd">            &#39;/&#39;</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">sep</span>
+
+<div class="viewcode-block" id="Base.split"><a class="viewcode-back" href="../../../../api/audbackend.interface.Base.html#audbackend.interface.Base.split">[docs]</a>    <span class="k">def</span> <span class="nf">split</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Split path on backend into sub-path and basename.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: path containing :attr:`Backend.sep` as separator</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple containing (root, basename)</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: if ``path`` does not start with ``&#39;/&#39;`` or</span>
+<span class="sd">                does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+
+<span class="sd">        ..</span>
+<span class="sd">            &gt;&gt;&gt; backend = audbackend.backend.FileSystem(&quot;host&quot;, &quot;repo&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; interface = Base(backend)</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; interface.split(&quot;/&quot;)</span>
+<span class="sd">            (&#39;/&#39;, &#39;&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; interface.split(&quot;/file.txt&quot;)</span>
+<span class="sd">            (&#39;/&#39;, &#39;file.txt&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; interface.split(&quot;/sub/&quot;)</span>
+<span class="sd">            (&#39;/sub/&#39;, &#39;&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; interface.split(&quot;/sub//file.txt&quot;)</span>
+<span class="sd">            (&#39;/sub/&#39;, &#39;file.txt&#39;)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div>
+    <p>
+        
+        
+        
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/05/10 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+        
+    </p>
+  </div>
+
+  <div role="contentinfo">
+    <p>
+        
+      &copy; 2021-2024 audEERING GmbH
+    </p>
+  </div> 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+        <script src="../../../../_static/thebelab-helper.js"></script>
+        <script src="../../../../_static/clipboard.min.js"></script>
+        <script src="../../../../_static/copybutton.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,32 @@
+﻿Base
+====
+
+.. currentmodule:: audbackend.interface
+
+.. autoclass:: Base
+
+
+backend
+-------
+.. autoattribute:: Base.backend
+    
+host
+----
+.. autoattribute:: Base.host
+    
+join\(\)
+--------
+.. automethod:: Base.join
+    
+repository
+----------
+.. autoattribute:: Base.repository
+    
+sep
+---
+.. autoattribute:: Base.sep
+    
+split\(\)
+---------
+.. automethod:: Base.split
+    

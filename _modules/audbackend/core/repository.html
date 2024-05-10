@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                1.0.2
+                2.0.0
               </div>
             
           
@@ -93,11 +93,14 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer-guide.html">Developer guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../legacy.html">Legacy backends</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/audbackend.html">audbackend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/audbackend.backend.html">audbackend.backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/audbackend.interface.html">audbackend.interface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../genindex.html">Index</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Development</span></p>
@@ -141,7 +144,10 @@
            <div itemprop="articleBody">
             
   <h1>Source code for audbackend.core.repository</h1><div class="highlight"><pre>
-<div class="viewcode-block" id="Repository"><a class="viewcode-back" href="../../../api/audbackend.Repository.html#audbackend.Repository">[docs]</a><span></span><span class="k">class</span> <span class="nc">Repository</span><span class="p">:</span>
+<span></span><span class="kn">import</span> <span class="nn">warnings</span>
+
+
+<div class="viewcode-block" id="Repository"><a class="viewcode-back" href="../../../api/audbackend.Repository.html#audbackend.Repository">[docs]</a><span class="k">class</span> <span class="nc">Repository</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Repository object.</span>
 
 <span class="sd">    It stores all information</span>
@@ -150,21 +156,27 @@
 <span class="sd">    host,</span>
 <span class="sd">    and backend.</span>
 
+<span class="sd">    .. Warning::</span>
+
+<span class="sd">        ``audbackend.Repository`` is deprecated</span>
+<span class="sd">        and will be removed in version 2.2.0.</span>
+<span class="sd">        If an application requires</span>
+<span class="sd">        repository objects,</span>
+<span class="sd">        that assign string names to backends,</span>
+<span class="sd">        they should be provided by the application.</span>
+
 <span class="sd">    Args:</span>
 <span class="sd">        name: repository name</span>
 <span class="sd">        host: repository host</span>
 <span class="sd">        backend: repository backend</span>
 
-<span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; Repository(&#39;data-local&#39;, &#39;/data&#39;, &#39;file-system&#39;)</span>
-<span class="sd">        Repository(&#39;data-local&#39;, &#39;/data&#39;, &#39;file-system&#39;)</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-            <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-            <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Repository name.&quot;&quot;&quot;</span>
@@ -172,6 +184,9 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Repository host.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">backend</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Repository backend.&quot;&quot;&quot;</span>
+
+        <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Repository is deprecated and will be removed with version 2.2.0.&quot;</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">UserWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># noqa: D105</span>
         <span class="k">return</span> <span class="p">(</span>
@@ -196,7 +211,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/02/13 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/05/10 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>

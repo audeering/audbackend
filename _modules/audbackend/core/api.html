@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                1.0.2
+                2.0.0
               </div>
             
           
@@ -93,11 +93,14 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer-guide.html">Developer guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../legacy.html">Legacy backends</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/audbackend.html">audbackend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/audbackend.backend.html">audbackend.backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/audbackend.interface.html">audbackend.interface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../genindex.html">Index</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Development</span></p>
@@ -142,10 +145,15 @@
             
   <h1>Source code for audbackend.core.api</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">typing</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">audeer</span>
 
 <span class="kn">from</span> <span class="nn">audbackend.core</span> <span class="kn">import</span> <span class="n">utils</span>
-<span class="kn">from</span> <span class="nn">audbackend.core.backend</span> <span class="kn">import</span> <span class="n">Backend</span>
-<span class="kn">from</span> <span class="nn">audbackend.core.filesystem</span> <span class="kn">import</span> <span class="n">FileSystem</span>
+<span class="kn">from</span> <span class="nn">audbackend.core.backend.base</span> <span class="kn">import</span> <span class="n">Base</span>
+<span class="kn">from</span> <span class="nn">audbackend.core.backend.filesystem</span> <span class="kn">import</span> <span class="n">FileSystem</span>
+<span class="kn">from</span> <span class="nn">audbackend.core.interface.base</span> <span class="kn">import</span> <span class="n">Base</span> <span class="k">as</span> <span class="n">Interface</span>
+<span class="kn">from</span> <span class="nn">audbackend.core.interface.versioned</span> <span class="kn">import</span> <span class="n">Versioned</span>
 
 
 <span class="n">backends</span> <span class="o">=</span> <span class="p">{}</span>
@@ -156,10 +164,10 @@
 
 
 <span class="k">def</span> <span class="nf">_backend</span><span class="p">(</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">repository</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Backend</span><span class="p">:</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">repository</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Base</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get backend instance.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">backend_registry</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -174,46 +182,57 @@
     <span class="k">if</span> <span class="n">host</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">backends</span><span class="p">[</span><span class="n">name</span><span class="p">]:</span>
         <span class="n">backends</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">host</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">if</span> <span class="n">repository</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">backends</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">host</span><span class="p">]:</span>
-        <span class="n">backends</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">host</span><span class="p">][</span><span class="n">repository</span><span class="p">]</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">call_function_on_backend</span><span class="p">(</span>
-            <span class="n">backend_registry</span><span class="p">[</span><span class="n">name</span><span class="p">],</span>
-            <span class="n">host</span><span class="p">,</span>
-            <span class="n">repository</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="n">backend_cls</span> <span class="o">=</span> <span class="n">backend_registry</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="n">backend</span> <span class="o">=</span> <span class="n">backend_cls</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">repository</span><span class="p">)</span>
+        <span class="n">backends</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">host</span><span class="p">][</span><span class="n">repository</span><span class="p">]</span> <span class="o">=</span> <span class="n">backend</span>
 
-    <span class="k">return</span> <span class="n">backends</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">host</span><span class="p">][</span><span class="n">repository</span><span class="p">]</span>
+    <span class="n">backend</span> <span class="o">=</span> <span class="n">backends</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">host</span><span class="p">][</span><span class="n">repository</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">backend</span>
 
 
-<div class="viewcode-block" id="access"><a class="viewcode-back" href="../../../api/audbackend.access.html#audbackend.access">[docs]</a><span class="k">def</span> <span class="nf">access</span><span class="p">(</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">repository</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Backend</span><span class="p">:</span>
+<div class="viewcode-block" id="access"><a class="viewcode-back" href="../../../api/audbackend.access.html#audbackend.access">[docs]</a><span class="nd">@audeer</span><span class="o">.</span><span class="n">deprecated</span><span class="p">(</span>
+    <span class="n">removal_version</span><span class="o">=</span><span class="s2">&quot;2.2.0&quot;</span><span class="p">,</span>
+    <span class="n">alternative</span><span class="o">=</span><span class="s2">&quot;Backend.__init__() of corresponding backend&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="k">def</span> <span class="nf">access</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">repository</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">interface</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Type</span><span class="p">[</span><span class="n">Interface</span><span class="p">]</span> <span class="o">=</span> <span class="n">Versioned</span><span class="p">,</span>
+    <span class="n">interface_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Interface</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Access repository.</span>
 
-<span class="sd">    Returns a backend instance</span>
-<span class="sd">    for the ``repository``</span>
-<span class="sd">    on the ``host``.</span>
-<span class="sd">    The instance is an object of the class</span>
-<span class="sd">    registered under the alias ``name``</span>
-<span class="sd">    with :func:`audbackend.register`.</span>
+<span class="sd">    Returns an ``interface`` instance</span>
+<span class="sd">    to access the ``repository``</span>
+<span class="sd">    located at ``host``</span>
+<span class="sd">    on the backend with alias ``name``</span>
+<span class="sd">    (see :func:`audbackend.register`).</span>
 
-<span class="sd">    If the repository does not exist</span>
-<span class="sd">    or cannot be accessed for other reasons</span>
-<span class="sd">    (e.g. user lacks permission)</span>
-<span class="sd">    an error of type</span>
-<span class="sd">    :class:`audbackend.BackendError`</span>
-<span class="sd">    is raised.</span>
+<span class="sd">    .. Warning::</span>
 
-<span class="sd">    Use :func:`audbackend.available`</span>
-<span class="sd">    to list available backend instances.</span>
+<span class="sd">        ``audbackend.access()`` is deprecated</span>
+<span class="sd">        and will be removed in version 2.2.0.</span>
+<span class="sd">        Repositories on backends are instead accessed</span>
+<span class="sd">        by instantiating the corresponding backend class,</span>
+<span class="sd">        and connecting to it using the ``open()`` method,</span>
+<span class="sd">        e.g.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            backend = audbackend.backend.FileSystem(host, repo)</span>
+<span class="sd">            backend.open()</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        name: alias under which backend class is registered</span>
+<span class="sd">        name: backend alias</span>
 <span class="sd">        host: host address</span>
 <span class="sd">        repository: repository name</span>
+<span class="sd">        interface: interface class</span>
+<span class="sd">        interface_kwargs: keyword arguments for interface class</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        backend object</span>
+<span class="sd">        interface object</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        BackendError: if an error is raised on the backend,</span>
@@ -221,78 +240,48 @@
 <span class="sd">        ValueError: if no backend class with alias ``name``</span>
 <span class="sd">            has been registered</span>
 
-<span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; access(&#39;file-system&#39;, &#39;host&#39;, &#39;doctest&#39;)</span>
-<span class="sd">        (&#39;audbackend.core.filesystem.FileSystem&#39;, &#39;host&#39;, &#39;doctest&#39;)</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">backend</span> <span class="o">=</span> <span class="n">_backend</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">repository</span><span class="p">)</span>
-    <span class="n">utils</span><span class="o">.</span><span class="n">call_function_on_backend</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">_access</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">backend</span></div>
-
-
-<div class="viewcode-block" id="available"><a class="viewcode-back" href="../../../api/audbackend.available.html#audbackend.available">[docs]</a><span class="k">def</span> <span class="nf">available</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">typing</span><span class="o">.</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">Backend</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;List available backend instances.</span>
-
-<span class="sd">    Returns a dictionary with</span>
-<span class="sd">    registered backend aliases as keys</span>
-<span class="sd">    (see :func:`audbackend.register`)</span>
-<span class="sd">    and a list with backend instances as values</span>
-<span class="sd">    (see :func:`audbackend.create`).</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        dictionary with backend instances</span>
-
-<span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; list(available())</span>
-<span class="sd">        [&#39;artifactory&#39;, &#39;file-system&#39;]</span>
-<span class="sd">        &gt;&gt;&gt; available()[&#39;file-system&#39;]</span>
-<span class="sd">        [(&#39;audbackend.core.filesystem.FileSystem&#39;, &#39;host&#39;, &#39;doctest&#39;)]</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
-
-    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">backend_registry</span><span class="p">):</span>
-        <span class="n">result</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">backends</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">repository</span> <span class="ow">in</span> <span class="n">backends</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-                <span class="k">for</span> <span class="n">backend</span> <span class="ow">in</span> <span class="n">repository</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-                    <span class="n">result</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">result</span></div>
+    <span class="n">backend</span> <span class="o">=</span> <span class="n">_backend</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">repository</span><span class="p">)</span>
+    <span class="n">utils</span><span class="o">.</span><span class="n">call_function_on_backend</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">_open</span><span class="p">)</span>
+    <span class="n">interface_kwargs</span> <span class="o">=</span> <span class="n">interface_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
+    <span class="k">return</span> <span class="n">interface</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="o">**</span><span class="n">interface_kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="create"><a class="viewcode-back" href="../../../api/audbackend.create.html#audbackend.create">[docs]</a><span class="k">def</span> <span class="nf">create</span><span class="p">(</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">repository</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Backend</span><span class="p">:</span>
+<div class="viewcode-block" id="create"><a class="viewcode-back" href="../../../api/audbackend.create.html#audbackend.create">[docs]</a><span class="nd">@audeer</span><span class="o">.</span><span class="n">deprecated</span><span class="p">(</span>
+    <span class="n">removal_version</span><span class="o">=</span><span class="s2">&quot;2.2.0&quot;</span><span class="p">,</span>
+    <span class="n">alternative</span><span class="o">=</span><span class="s2">&quot;class method Backend.create() of corresponding backend&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="k">def</span> <span class="nf">create</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">repository</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Create repository.</span>
 
-<span class="sd">    Creates the ``repository``</span>
-<span class="sd">    on the ``host``</span>
-<span class="sd">    and returns a backend instance for it.</span>
-<span class="sd">    The instance is an object of the class</span>
-<span class="sd">    registered under the alias ``name``</span>
-<span class="sd">    with :func:`audbackend.register`.</span>
+<span class="sd">    Creates ``repository``</span>
+<span class="sd">    located at ``host``</span>
+<span class="sd">    on the backend with alias ``name``</span>
+<span class="sd">    (see :func:`audbackend.register`).</span>
 
-<span class="sd">    If the repository cannot be created</span>
-<span class="sd">    (e.g. user lacks permission)</span>
-<span class="sd">    or if it exists already,</span>
-<span class="sd">    an error of type</span>
-<span class="sd">    :class:`audbackend.BackendError`</span>
-<span class="sd">    is raised.</span>
+<span class="sd">    .. note:: For legacy reasons the method</span>
+<span class="sd">        returns an (undocumented) instance of</span>
+<span class="sd">        :class:`audbackend.interface.Versioned`.</span>
+<span class="sd">        Since the return value might be removed in</span>
+<span class="sd">        a future version it is not recommended to use it.</span>
 
-<span class="sd">    Use :func:`audbackend.available`</span>
-<span class="sd">    to list available backend instances.</span>
+<span class="sd">    .. Warning::</span>
+
+<span class="sd">        ``audbackend.create()`` is deprecated</span>
+<span class="sd">        and will be removed in version 2.2.0.</span>
+<span class="sd">        Repositories on backends are instead created</span>
+<span class="sd">        by the class method ``create()``</span>
+<span class="sd">        for the desired backend,</span>
+<span class="sd">        e.g. :meth:`audbackend.backend.FileSystem.create`.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        name: alias under which backend class is registered</span>
+<span class="sd">        name: backend alias</span>
 <span class="sd">        host: host address</span>
 <span class="sd">        repository: repository name</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        backend object</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        BackendError: if an error is raised on the backend,</span>
@@ -301,31 +290,40 @@
 <span class="sd">        ValueError: if no backend class with alias ``name``</span>
 <span class="sd">            has been registered</span>
 
-<span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; create(&#39;file-system&#39;, &#39;host&#39;, &#39;repository&#39;)</span>
-<span class="sd">        (&#39;audbackend.core.filesystem.FileSystem&#39;, &#39;host&#39;, &#39;repository&#39;)</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
     <span class="n">backend</span> <span class="o">=</span> <span class="n">_backend</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">repository</span><span class="p">)</span>
     <span class="n">utils</span><span class="o">.</span><span class="n">call_function_on_backend</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">_create</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">backend</span></div>
+    <span class="c1"># for legacy reasons we return a versioned interface</span>
+    <span class="k">return</span> <span class="n">Versioned</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="delete"><a class="viewcode-back" href="../../../api/audbackend.delete.html#audbackend.delete">[docs]</a><span class="k">def</span> <span class="nf">delete</span><span class="p">(</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">repository</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<div class="viewcode-block" id="delete"><a class="viewcode-back" href="../../../api/audbackend.delete.html#audbackend.delete">[docs]</a><span class="nd">@audeer</span><span class="o">.</span><span class="n">deprecated</span><span class="p">(</span>
+    <span class="n">removal_version</span><span class="o">=</span><span class="s2">&quot;2.2.0&quot;</span><span class="p">,</span>
+    <span class="n">alternative</span><span class="o">=</span><span class="s2">&quot;class method Backend.delete() of corresponding backend&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="k">def</span> <span class="nf">delete</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">repository</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Delete repository.</span>
 
-<span class="sd">    .. warning:: Deletes the repository and all its content.</span>
+<span class="sd">    Deletes the repository</span>
+<span class="sd">    with name ``repository``</span>
+<span class="sd">    located at ``host``</span>
+<span class="sd">    on the backend with alias ``name``.</span>
 
-<span class="sd">    If an instance of the backend exists,</span>
-<span class="sd">    it will be removed from the available instances.</span>
-<span class="sd">    See also :func:`audbackend.available`.</span>
+<span class="sd">    .. Warning::</span>
+
+<span class="sd">        ``audbackend.delete()`` is deprecated</span>
+<span class="sd">        and will be removed in version 2.2.0.</span>
+<span class="sd">        Repositories on backends are instead deleted</span>
+<span class="sd">        by the class method ``delete()``</span>
+<span class="sd">        for the desired backend,</span>
+<span class="sd">        e.g. :meth:`audbackend.backend.FileSystem.delete`.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        name: alias under which backend class is registered</span>
+<span class="sd">        name: backend alias</span>
 <span class="sd">        host: host address</span>
 <span class="sd">        repository: repository name</span>
 
@@ -335,22 +333,18 @@
 <span class="sd">        ValueError: if no backend class with alias ``name``</span>
 <span class="sd">            has been registered</span>
 
-<span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; access(&#39;file-system&#39;, &#39;host&#39;, &#39;doctest&#39;).ls()</span>
-<span class="sd">        [(&#39;/a.zip&#39;, &#39;1.0.0&#39;), (&#39;/a/b.ext&#39;, &#39;1.0.0&#39;), (&#39;/f.ext&#39;, &#39;1.0.0&#39;), (&#39;/f.ext&#39;, &#39;2.0.0&#39;)]</span>
-<span class="sd">        &gt;&gt;&gt; delete(&#39;file-system&#39;, &#39;host&#39;, &#39;doctest&#39;)</span>
-<span class="sd">        &gt;&gt;&gt; create(&#39;file-system&#39;, &#39;host&#39;, &#39;doctest&#39;).ls()</span>
-<span class="sd">        []</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
-    <span class="n">backend</span> <span class="o">=</span> <span class="n">access</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">repository</span><span class="p">)</span>
-    <span class="n">utils</span><span class="o">.</span><span class="n">call_function_on_backend</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">_delete</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+        <span class="n">interface</span> <span class="o">=</span> <span class="n">access</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">repository</span><span class="p">)</span>
+    <span class="n">utils</span><span class="o">.</span><span class="n">call_function_on_backend</span><span class="p">(</span><span class="n">interface</span><span class="o">.</span><span class="n">_backend</span><span class="o">.</span><span class="n">_delete</span><span class="p">)</span>
     <span class="n">backends</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">host</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">repository</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="register"><a class="viewcode-back" href="../../../api/audbackend.register.html#audbackend.register">[docs]</a><span class="k">def</span> <span class="nf">register</span><span class="p">(</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="bp">cls</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Type</span><span class="p">[</span><span class="n">Backend</span><span class="p">],</span>
+<div class="viewcode-block" id="register"><a class="viewcode-back" href="../../../api/audbackend.register.html#audbackend.register">[docs]</a><span class="nd">@audeer</span><span class="o">.</span><span class="n">deprecated</span><span class="p">(</span><span class="n">removal_version</span><span class="o">=</span><span class="s2">&quot;2.2.0&quot;</span><span class="p">,</span> <span class="n">alternative</span><span class="o">=</span><span class="s2">&quot;backend classes directly&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">register</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="bp">cls</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Type</span><span class="p">[</span><span class="n">Base</span><span class="p">],</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Register backend class.</span>
 
@@ -358,25 +352,33 @@
 <span class="sd">    registered under the alias ``name``</span>
 <span class="sd">    it will be overwritten.</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        name: alias under which backend class is registered</span>
-<span class="sd">        cls: backend class</span>
+<span class="sd">    .. Warning::</span>
 
-<span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; register(&#39;file-system&#39;, FileSystem)</span>
+<span class="sd">        ``audbackend.register()`` is deprecated</span>
+<span class="sd">        and will be removed in version 2.2.0.</span>
+<span class="sd">        Instead of backend names</span>
+<span class="sd">        we now use backend classes,</span>
+<span class="sd">        such as :class:`audbackend.backend.FileSystem`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name: backend alias</span>
+<span class="sd">        cls: backend class</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">backend_registry</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span></div>
 
 
-<span class="n">register</span><span class="p">(</span><span class="s1">&#39;file-system&#39;</span><span class="p">,</span> <span class="n">FileSystem</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+    <span class="n">register</span><span class="p">(</span><span class="s2">&quot;file-system&quot;</span><span class="p">,</span> <span class="n">FileSystem</span><span class="p">)</span>
 
-<span class="c1"># Register optional backends</span>
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">audbackend.core.artifactory</span> <span class="kn">import</span> <span class="n">Artifactory</span>
-    <span class="n">register</span><span class="p">(</span><span class="s1">&#39;artifactory&#39;</span><span class="p">,</span> <span class="n">Artifactory</span><span class="p">)</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
-    <span class="k">pass</span>
+    <span class="c1"># Register optional backends</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">audbackend.core.backend.artifactory</span> <span class="kn">import</span> <span class="n">Artifactory</span>
+
+        <span class="n">register</span><span class="p">(</span><span class="s2">&quot;artifactory&quot;</span><span class="p">,</span> <span class="n">Artifactory</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+        <span class="k">pass</span>
 </pre></div>
 
            </div>
@@ -392,7 +394,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/02/13 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/05/10 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>

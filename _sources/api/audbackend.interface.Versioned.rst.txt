@@ -1,0 +1,88 @@
+﻿Versioned
+=========
+
+.. currentmodule:: audbackend.interface
+
+.. autoclass:: Versioned
+
+
+backend
+-------
+.. autoattribute:: Versioned.backend
+    
+checksum\(\)
+------------
+.. automethod:: Versioned.checksum
+    
+copy\_file\(\)
+--------------
+.. automethod:: Versioned.copy_file
+    
+date\(\)
+--------
+.. automethod:: Versioned.date
+    
+exists\(\)
+----------
+.. automethod:: Versioned.exists
+    
+get\_archive\(\)
+----------------
+.. automethod:: Versioned.get_archive
+    
+get\_file\(\)
+-------------
+.. automethod:: Versioned.get_file
+    
+host
+----
+.. autoattribute:: Versioned.host
+    
+join\(\)
+--------
+.. automethod:: Versioned.join
+    
+latest\_version\(\)
+-------------------
+.. automethod:: Versioned.latest_version
+    
+ls\(\)
+------
+.. automethod:: Versioned.ls
+    
+move\_file\(\)
+--------------
+.. automethod:: Versioned.move_file
+    
+owner\(\)
+---------
+.. automethod:: Versioned.owner
+    
+put\_archive\(\)
+----------------
+.. automethod:: Versioned.put_archive
+    
+put\_file\(\)
+-------------
+.. automethod:: Versioned.put_file
+    
+remove\_file\(\)
+----------------
+.. automethod:: Versioned.remove_file
+    
+repository
+----------
+.. autoattribute:: Versioned.repository
+    
+sep
+---
+.. autoattribute:: Versioned.sep
+    
+split\(\)
+---------
+.. automethod:: Versioned.split
+    
+versions\(\)
+------------
+.. automethod:: Versioned.versions
+    

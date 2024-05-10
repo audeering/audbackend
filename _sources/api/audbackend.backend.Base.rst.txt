@@ -1,0 +1,100 @@
+﻿Base
+====
+
+.. currentmodule:: audbackend.backend
+
+.. autoclass:: Base
+
+
+authentication
+--------------
+.. autoattribute:: Base.authentication
+    
+checksum\(\)
+------------
+.. automethod:: Base.checksum
+    
+close\(\)
+---------
+.. automethod:: Base.close
+    
+copy\_file\(\)
+--------------
+.. automethod:: Base.copy_file
+    
+create\(\)
+----------
+.. automethod:: Base.create
+    
+date\(\)
+--------
+.. automethod:: Base.date
+    
+delete\(\)
+----------
+.. automethod:: Base.delete
+    
+exists\(\)
+----------
+.. automethod:: Base.exists
+    
+get\_archive\(\)
+----------------
+.. automethod:: Base.get_archive
+    
+get\_file\(\)
+-------------
+.. automethod:: Base.get_file
+    
+host
+----
+.. autoattribute:: Base.host
+    
+join\(\)
+--------
+.. automethod:: Base.join
+    
+ls\(\)
+------
+.. automethod:: Base.ls
+    
+move\_file\(\)
+--------------
+.. automethod:: Base.move_file
+    
+open\(\)
+--------
+.. automethod:: Base.open
+    
+opened
+------
+.. autoattribute:: Base.opened
+    
+owner\(\)
+---------
+.. automethod:: Base.owner
+    
+put\_archive\(\)
+----------------
+.. automethod:: Base.put_archive
+    
+put\_file\(\)
+-------------
+.. automethod:: Base.put_file
+    
+remove\_file\(\)
+----------------
+.. automethod:: Base.remove_file
+    
+repository
+----------
+.. autoattribute:: Base.repository
+    
+sep
+---
+.. autoattribute:: Base.sep
+    
+split\(\)
+---------
+.. automethod:: Base.split
+    

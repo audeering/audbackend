@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                1.0.2
+                2.0.0
               </div>
             
           
@@ -93,11 +93,14 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer-guide.html">Developer guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../legacy.html">Legacy backends</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/audbackend.html">audbackend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/audbackend.backend.html">audbackend.backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/audbackend.interface.html">audbackend.interface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../genindex.html">Index</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Development</span></p>
@@ -147,24 +150,40 @@
 <span class="sd">    Args:</span>
 <span class="sd">        exception: exception raised by backend</span>
 
+<span class="sd">    .. Prepare backend and interface for docstring examples</span>
+
+<span class="sd">        &gt;&gt;&gt; import audeer</span>
+<span class="sd">        &gt;&gt;&gt; audeer.rmdir(&quot;host&quot;, &quot;repo&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; _ = audeer.mkdir(&quot;host&quot;, &quot;repo&quot;)</span>
+
 <span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; backend = audbackend.backend.FileSystem(&quot;host&quot;, &quot;repo&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; backend.open()</span>
 <span class="sd">        &gt;&gt;&gt; try:</span>
-<span class="sd">        ...     backend.checksum(&#39;/does/not/exist&#39;, &#39;1.0.0&#39;)</span>
+<span class="sd">        ...     interface = audbackend.interface.Unversioned(backend)</span>
+<span class="sd">        ...     interface.checksum(&quot;/does/not/exist&quot;)</span>
+<span class="sd">        ... except BackendError as ex:</span>
+<span class="sd">        ...     ex.exception</span>
+<span class="sd">        FileNotFoundError(2, &#39;No such file or directory&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; try:</span>
+<span class="sd">        ...     interface = audbackend.interface.Versioned(backend)</span>
+<span class="sd">        ...     interface.checksum(&quot;/does/not/exist&quot;, &quot;1.0.0&quot;)</span>
 <span class="sd">        ... except BackendError as ex:</span>
 <span class="sd">        ...     ex.exception</span>
 <span class="sd">        FileNotFoundError(2, &#39;No such file or directory&#39;)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span>
-            <span class="n">exception</span><span class="p">:</span> <span class="ne">Exception</span><span class="p">,</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">exception</span><span class="p">:</span> <span class="ne">Exception</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">exception</span> <span class="o">=</span> <span class="n">exception</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Exception raised by backend.&quot;&quot;&quot;</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="s1">&#39;An exception was raised by the backend, &#39;</span>
-            <span class="s1">&#39;please see stack trace for further information.&#39;</span>
+            <span class="s2">&quot;An exception was raised by the backend, &quot;</span>
+            <span class="s2">&quot;please see stack trace for further information.&quot;</span>
         <span class="p">)</span></div>
 </pre></div>
 
@@ -181,7 +200,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/02/13 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/05/10 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>

@@ -1,0 +1,88 @@
+﻿Maven
+=====
+
+.. currentmodule:: audbackend.interface
+
+.. autoclass:: Maven
+
+
+backend
+-------
+.. autoattribute:: Maven.backend
+    
+checksum\(\)
+------------
+.. automethod:: Maven.checksum
+    
+copy\_file\(\)
+--------------
+.. automethod:: Maven.copy_file
+    
+date\(\)
+--------
+.. automethod:: Maven.date
+    
+exists\(\)
+----------
+.. automethod:: Maven.exists
+    
+get\_archive\(\)
+----------------
+.. automethod:: Maven.get_archive
+    
+get\_file\(\)
+-------------
+.. automethod:: Maven.get_file
+    
+host
+----
+.. autoattribute:: Maven.host
+    
+join\(\)
+--------
+.. automethod:: Maven.join
+    
+latest\_version\(\)
+-------------------
+.. automethod:: Maven.latest_version
+    
+ls\(\)
+------
+.. automethod:: Maven.ls
+    
+move\_file\(\)
+--------------
+.. automethod:: Maven.move_file
+    
+owner\(\)
+---------
+.. automethod:: Maven.owner
+    
+put\_archive\(\)
+----------------
+.. automethod:: Maven.put_archive
+    
+put\_file\(\)
+-------------
+.. automethod:: Maven.put_file
+    
+remove\_file\(\)
+----------------
+.. automethod:: Maven.remove_file
+    
+repository
+----------
+.. autoattribute:: Maven.repository
+    
+sep
+---
+.. autoattribute:: Maven.sep
+    
+split\(\)
+---------
+.. automethod:: Maven.split
+    
+versions\(\)
+------------
+.. automethod:: Maven.versions
+    
