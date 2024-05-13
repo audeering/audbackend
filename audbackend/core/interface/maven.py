@@ -168,7 +168,7 @@ class Maven(Versioned):
                 suppress_backend_errors=suppress_backend_errors,
             )
             # Files are also stored as sub-folder,
-            # e.g. `/file/version/file-version.ext`,
+            # e.g. `.../<name>/<version>/<name>-<version><ext>`,
             # so we need to skip those
             sub_paths = len(path.split("/")) - 2
             if sub_paths > 0:
@@ -178,15 +178,19 @@ class Maven(Versioned):
 
         else:  # find versions of path
             root, file = self.split(path)
+            name, ext = self._split_ext(file)
 
+            # Look inside `<root>/<name>/`
+            # for available versions.
+            # It will return entries in the form
+            # `<root>/<name>/<version>/<name>-<version><ext>`
             paths = self.backend.ls(
-                root,
+                self.backend.join(root, name, self.sep),
                 suppress_backend_errors=suppress_backend_errors,
             )
 
-            # filter for '/root/version/file'
+            # filter for '<root>/<name>/<version>/<name>-x.x.x<ext>'
             depth = root.count("/") + 2
-            name, ext = self._split_ext(file)
             match = re.compile(rf"{name}-\d+\.\d+.\d+{ext}")
             paths = [
                 p
@@ -208,19 +212,20 @@ class Maven(Versioned):
 
         paths_and_versions = []
         for p in paths:
+            # Split into
+            # ["", ..., <name>, <version>, <name>-<version><ext>]
             tokens = p.split(self.sep)
-
-            name = tokens[-1]
             version = tokens[-2]
 
             if version:
-                base = tokens[-3]
-                ext = name[len(base) + len(version) + 1 :]
-                name = f"{base}{ext}"
-                path = self.sep.join(tokens[:-3])
+                root = self.sep.join(tokens[:-3])
+                name = tokens[-3]
+                name_version_ext = tokens[-1]
 
-                path = self.sep + path
-                path = self.join(path, name)
+                ext = name_version_ext[len(name) + len(version) + 1 :]
+                file = f"{name}{ext}"
+
+                path = self.join(self.sep, root, file)
 
                 if not pattern or fnmatch.fnmatch(os.path.basename(path), pattern):
                     paths_and_versions.append((path, version))
