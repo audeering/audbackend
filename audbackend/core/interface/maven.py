@@ -170,7 +170,7 @@ class Maven(Versioned):
                 suppress_backend_errors=suppress_backend_errors,
             )
             # Files are also stored as sub-folder,
-            # e.g. `/<name>/<version>/<name>-<version><ext>`,
+            # e.g. `.../<name>/<version>/<name>-<version><ext>`,
             # so we need to skip those
             sub_paths = len(path.split("/")) - 2
             if sub_paths > 0:
@@ -183,15 +183,15 @@ class Maven(Versioned):
             name, ext = self._split_ext(file)
 
             # Use unversioned backend interface
-            # to limit search to the single folder `/<root>/<name>/`.
+            # to limit search to the single folder `<root>/<name>/`.
             # It will return entries in the form
-            # `/<root>/<name>/<version>/<name>-<version><ext>`
+            # `<root>/<name>/<version>/<name>-<version><ext>`
             paths = self._unversioned.ls(
                 self._unversioned.join(root, name, self.sep),
                 suppress_backend_errors=suppress_backend_errors,
             )
 
-            # filter for '/<root>/<name>/<version>/<name>-x.x.x<ext>'
+            # filter for '<root>/<name>/<version>/<name>-x.x.x<ext>'
             depth = root.count("/") + 2
             match = re.compile(rf"{name}-\d+\.\d+.\d+{ext}")
             paths = [
