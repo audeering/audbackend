@@ -8,7 +8,6 @@ import audeer
 from audbackend.core import utils
 from audbackend.core.backend.base import Base as Backend
 from audbackend.core.errors import BackendError
-from audbackend.core.interface.unversioned import Unversioned
 from audbackend.core.interface.versioned import Versioned
 
 
@@ -89,7 +88,6 @@ class Maven(Versioned):
         super().__init__(backend)
         self.extensions = extensions
         self.regex = regex
-        self._unversioned = Unversioned(backend)
 
     def ls(
         self,
@@ -182,12 +180,12 @@ class Maven(Versioned):
             root, file = self.split(path)
             name, ext = self._split_ext(file)
 
-            # Use unversioned backend interface
-            # to limit search to the single folder `<root>/<name>/`.
+            # Look inside `<root>/<name>/`
+            # for available versions.
             # It will return entries in the form
             # `<root>/<name>/<version>/<name>-<version><ext>`
-            paths = self._unversioned.ls(
-                self._unversioned.join(root, name, self.sep),
+            paths = self.backend.ls(
+                self.backend.join(root, name, self.sep),
                 suppress_backend_errors=suppress_backend_errors,
             )
 
