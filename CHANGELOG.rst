@@ -7,6 +7,16 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 2.0.1 (2024-05-14)
+--------------------------
+
+* Added: support for Python 3.11
+* Fixed: ensure execution time of
+  ``audbackend.interface.Maven.ls()``
+  is independent of repository size
+  on all backends
+
+
 Version 2.0.0 (2024-05-10)
 --------------------------
 
