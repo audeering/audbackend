@@ -39,8 +39,12 @@ dynamic = ['version']
 artifactory = [
     'dohq-artifactory >=0.10.0',
 ]
+minio = [
+    'minio',
+]
 all = [
     'dohq-artifactory >=0.10.0',
+    'minio',
 ]
 
 
