@@ -20,6 +20,17 @@ class Minio(Base):
         authentication: username, password / access key, secret key token tuple.
             If ``None``,
             it requests it by calling :meth:`get_authentication`
+        secure: if ``None``,
+            it looks in the config file for it,
+            compare :meth:`get_config`.
+            If it cannot find a matching entry,
+            it defaults to ``True``.
+            Needs to be ``True``
+            when using TLS for the connection,
+            and ``False`` otherwise,
+            e.g. when using a `local MinIO server`_.
+
+    .. _local MinIO server: https://min.io/docs/minio/container/index.html
 
     Examples:
         >>> host = "play.min.io"  # playground provided by https://min.io
@@ -44,20 +55,23 @@ class Minio(Base):
         repository: str,
         *,
         authentication: typing.Tuple[str, str] = None,
+        secure: bool = None,
     ):
         super().__init__(host, repository, authentication=authentication)
 
         if authentication is None:
             self.authentication = self.get_authentication(host)
 
-        config = self.get_config(host)
+        if secure is None:
+            config = self.get_config(host)
+            secure = config.get("secure", True)
 
         # Open MinIO client
         self._client = minio.Minio(
             host,
             access_key=self.authentication[0],
             secret_key=self.authentication[1],
-            secure=config.get("secure", True),
+            secure=secure,
         )
 
     @classmethod
