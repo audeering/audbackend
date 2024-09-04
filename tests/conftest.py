@@ -15,6 +15,12 @@ from singlefolder import SingleFolder
 # unittest-<session-uid>-<repository-uid>
 pytest.UID = audeer.uid()[:8]
 
+# Define static hosts
+pytest.HOSTS = {
+    "artifactory": "https://audeering.jfrog.io/artifactory",
+    "minio": "localhost:9000",
+}
+
 
 @pytest.fixture(scope="package", autouse=True)
 def register_single_folder():
@@ -31,9 +37,9 @@ def hosts(tmpdir_factory):
     return {
         # For tests based on backend names (deprecated),
         # like audbackend.access()
-        "artifactory": "https://audeering.jfrog.io/artifactory",
+        "artifactory": pytest.HOSTS["artifactory"],
         "file-system": str(tmpdir_factory.mktemp("host")),
-        "minio": "localhost:9000",
+        "minio": pytest.HOSTS["minio"],
         "single-folder": str(tmpdir_factory.mktemp("host")),
     }
 
@@ -46,7 +52,8 @@ def owner(request):
         hasattr(audbackend.backend, "Artifactory")
         and backend_cls == audbackend.backend.Artifactory
     ):
-        owner = backend_cls.get_authentication("audeering.jfrog.io/artifactory")[0]
+        host_wo_https = pytest.HOSTS["artifactory"][8:]
+        owner = backend_cls.get_authentication(host_wo_https)[0]
     elif (
         hasattr(audbackend.backend, "Minio") and backend_cls == audbackend.backend.Minio
     ):
@@ -88,11 +95,11 @@ def interface(tmpdir_factory, request):
         and backend_cls == audbackend.backend.Artifactory
     ):
         artifactory = True
-        host = "https://audeering.jfrog.io/artifactory"
+        host = pytest.HOSTS["artifactory"]
     elif (
         hasattr(audbackend.backend, "Minio") and backend_cls == audbackend.backend.Minio
     ):
-        host = "localhost:9000"
+        host = pytest.HOSTS["minio"]
     else:
         host = str(tmpdir_factory.mktemp("host"))
     repository = f"unittest-{pytest.UID}-{audeer.uid()[:8]}"

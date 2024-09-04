@@ -108,14 +108,14 @@ def test_copy_large_file(tmpdir, interface, src_path, dst_path):
     assert interface.exists(dst_path)
 
 
-@pytest.mark.parametrize("host", ["localhost:9000"])
+@pytest.mark.parametrize("host", [pytest.HOSTS["minio"]])
 @pytest.mark.parametrize("repository", [f"unittest-{pytest.UID}-{audeer.uid()[:8]}"])
 def test_create_delete_repositories(host, repository):
     audbackend.backend.Minio.create(host, repository)
     audbackend.backend.Minio.delete(host, repository)
 
 
-@pytest.mark.parametrize("host", ["localhost:9000"])
+@pytest.mark.parametrize("host", [pytest.HOSTS["minio"]])
 @pytest.mark.parametrize("repository", [f"unittest-{pytest.UID}-{audeer.uid()[:8]}"])
 @pytest.mark.parametrize("authentication", [("bad-access", "bad-secret")])
 def test_errors(host, repository, authentication):
