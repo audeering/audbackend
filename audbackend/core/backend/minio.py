@@ -40,7 +40,10 @@ class Minio(Base):
             host,
             access_key=self.authentication[0],
             secret_key=self.authentication[1],
-            secure=False,  # change later
+            # If you test on a local machine,
+            # `secure` needs to be set to `False`.
+            # We might want to read this from a config file?
+            # secure=False,
         )
 
     @classmethod

@@ -18,8 +18,31 @@ pytest.UID = audeer.uid()[:8]
 # Define static hosts
 pytest.HOSTS = {
     "artifactory": "https://audeering.jfrog.io/artifactory",
-    "minio": "localhost:9000",
+    "minio": "play.min.io",
 }
+
+
+@pytest.fixture(scope="package", autouse=True)
+def authentication():
+    """Provide authentication tokens for supported backends."""
+    if pytest.HOSTS["minio"] == "play.min.io":
+        defaults = {}
+        for key in [
+            "MINIO_ACCESS_KEY",
+            "MINIO_SECRET_KEY",
+        ]:
+            defaults[key] = os.environ.get(key, None)
+
+        os.environ["MINIO_ACCESS_KEY"] = "Q3AM3UQ867SPQQA43P2F"
+        os.environ["MINIO_SECRET_KEY"] = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
+
+        yield
+
+        for key, value in defaults.items():
+            if value is not None:
+                os.environ[key] = value
+            elif key in os.environ:
+                del os.environ[key]
 
 
 @pytest.fixture(scope="package", autouse=True)
