@@ -7,6 +7,6 @@ try:
 except ImportError:  # pragma: no cover
     pass
 try:
-    from audbackend.core.backend.minio import MinIO
+    from audbackend.core.backend.minio import Minio
 except ImportError:  # pragma: no cover
     pass

@@ -10,7 +10,7 @@ from audbackend.core import utils
 from audbackend.core.backend.base import Base
 
 
-class MinIO(Base):
+class Minio(Base):
     r"""Backend for MinIO.
 
     Args:
@@ -35,7 +35,7 @@ class MinIO(Base):
             self.authentication = self.get_authentication(host)
 
         # Open MinIO client
-        self._client = minio.MinIO(
+        self._client = minio.Minio(
             host,
             access_key=self.authentication[0],
             secret_key=self.authentication[1],
@@ -62,10 +62,9 @@ class MinIO(Base):
         can be overwritten with the environment variable
         ``MINIO_CONFIG_FILE``.
         If no config file exists
-        or if it does not contain an
-        entry for ``access_key``,
-        the access key is set to ``"anonymous"``
-        and the secret key to an empty string.
+        or if it has missing entries,
+        ``None`` is returned
+        for the missing entries.
 
         Args:
             host: hostname
@@ -83,9 +82,9 @@ class MinIO(Base):
             config = configparser.ConfigParser(allow_no_value=True)
             config.read(config_file)
             if access_key is None:
-                access_key = config.get("minio", "access_key")
+                access_key = config.get(host, "access_key", fallback=None)
             if secret_key is None:
-                secret_key = config.get("minio", "secret_key")
+                secret_key = config.get(host, "secret_key", fallback=None)
 
         return access_key, secret_key
 
@@ -252,7 +251,7 @@ class MinIO(Base):
         r"""Open connection to backend."""
         # At the moment, session management is handled automatically.
         # If we want to manage this ourselves,
-        # we need to use the `http_client` argument of `minio.MinIO`
+        # we need to use the `http_client` argument of `minio.Minio`
         if not self._client.bucket_exists(self.repository):
             utils.raise_file_not_found_error(self.repository)
 
