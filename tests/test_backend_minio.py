@@ -70,6 +70,44 @@ def test_authentication(tmpdir, hosts, hide_credentials):
         backend.open()
 
 
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.Minio, audbackend.interface.Unversioned)],
+    indirect=True,
+)
+@pytest.mark.parametrize(
+    "src_path, dst_path,",
+    [
+        (
+            "/big.1.txt",
+            "/big.2.txt",
+        ),
+    ],
+)
+def test_copy_large_file(tmpdir, interface, src_path, dst_path):
+    r"""Test copying of large files.
+
+    ``minio.Minio.copy_object()`` has a limit of 5 GB.
+    We mock the ``audbackend.backend.Minio._size()`` method
+    to return a value of ``5.01``
+    to trigger the fall back copy mechanism for large files,
+    without having to create a large file.
+
+    Args:
+        tmpdir: tmpdir fixture
+        interface: interface fixture
+        src_path: source path of file on backend
+        dst_path: destination of copy operation on backend
+
+    """
+    tmp_path = audeer.touch(audeer.path(tmpdir, "big.1.txt"))
+    interface.put_file(tmp_path, src_path)
+    interface._backend._size = lambda x: 5.01 * 1024 * 1024 * 1024
+    interface.copy_file(src_path, dst_path)
+    assert interface.exists(src_path)
+    assert interface.exists(dst_path)
+
+
 @pytest.mark.parametrize("host", ["localhost:9000"])
 @pytest.mark.parametrize("repository", [f"unittest-{pytest.UID}-{audeer.uid()[:8]}"])
 def test_create_delete_repositories(host, repository):

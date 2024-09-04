@@ -47,6 +47,11 @@ def owner(request):
         and backend_cls == audbackend.backend.Artifactory
     ):
         owner = backend_cls.get_authentication("audeering.jfrog.io/artifactory")[0]
+    elif (
+        hasattr(audbackend.backend, "Minio") and backend_cls == audbackend.backend.Minio
+    ):
+        # There seems to be a MinIO bug here
+        owner = None
     else:
         if os.name == "nt":
             owner = "Administrators"

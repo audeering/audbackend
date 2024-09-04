@@ -20,6 +20,12 @@ import audbackend
             f"unittest-{audeer.uid()[:8]}",
             audbackend.backend.Artifactory,
         ),
+        (
+            "minio",
+            "minio",
+            f"unittest-{audeer.uid()[:8]}",
+            audbackend.backend.Minio,
+        ),
         pytest.param(  # backend does not exist
             "bad-backend",
             None,
