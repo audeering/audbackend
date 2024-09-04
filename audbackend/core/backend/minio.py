@@ -17,7 +17,7 @@ class Minio(Base):
     Args:
         host: host address
         repository: repository name
-        authentication: username, password / API key / access token tuple.
+        authentication: username, password / access key, secret key token tuple.
             If ``None``,
             it requests it by calling :meth:`get_authentication`
 
@@ -45,7 +45,7 @@ class Minio(Base):
 
     @classmethod
     def get_authentication(cls, host: str) -> typing.Tuple[str, str]:
-        """Username and password/access token for given host.
+        """Access and secret tokens for given host.
 
         Returns a authentication for MinIO server
         as tuple.
@@ -274,15 +274,11 @@ class Minio(Base):
     ) -> str:
         r"""Convert to backend path.
 
-        This extends the relative ``path`` on the backend
-        by :attr:`host` and :attr:`repository`,
-        and returns an :class:`artifactory.ArtifactoryPath` object.
-
         Args:
             path: path on backend
 
         Returns:
-            Artifactory path object
+            path
 
         """
         path = path.replace(self.sep, "/")
