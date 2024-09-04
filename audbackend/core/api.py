@@ -233,3 +233,11 @@ with warnings.catch_warnings():
         register("artifactory", Artifactory)
     except ImportError:  # pragma: no cover
         pass
+
+    # Register optional backends
+    try:
+        from audbackend.core.backend.minio import Minio
+
+        register("minio", Minio)
+    except ImportError:  # pragma: no cover
+        pass

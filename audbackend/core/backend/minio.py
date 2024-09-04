@@ -1,5 +1,6 @@
 import configparser
 import os
+import tempfile
 import typing
 
 import minio
@@ -133,16 +134,18 @@ class Minio(Base):
         r"""Copy file on backend."""
         src_path = self.path(src_path)
         dst_path = self.path(dst_path)
-        # This has a maximum size limit of 5GB.
-        stats = self._client.stat_object(self.repository, src_path)
-        if stats.size / 1024 / 1024 / 1024 > 5:
-            # TODO: implement copying with temporary file
-            pass
+        # `copy_object()` has a maximum size limit of 5GB.
+        if self._size(src_path) / 1024 / 1024 / 1024 > 5:
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                tmp_path = audeer.path(tmp_dir, os.path.basename(src_path))
+                self._get_file(src_path, tmp_path, verbose)
+                checksum = self._checksum(src_path)
+                self._put_file(tmp_path, dst_path, checksum, verbose)
         else:
             self._client.copy_object(
                 self.repository,
-                src_path,
-                minio.commonconfig.CopySource(self.repository, dst_path),
+                dst_path,
+                minio.commonconfig.CopySource(self.repository, src_path),
             )
 
     def _create(
@@ -159,7 +162,7 @@ class Minio(Base):
     ) -> str:
         r"""Get last modification date of file on backend."""
         path = self.path(path)
-        date = self.client.stat_object(self.repository, path).last_modified
+        date = self._client.stat_object(self.repository, path).last_modified
         date = utils.date_format(date)
         return date
 
@@ -180,9 +183,6 @@ class Minio(Base):
     ) -> bool:
         r"""Check if file exists on backend."""
         path = self.path(path)
-        if path == "":
-            # Return True for root
-            return True
         try:
             self._client.stat_object(self.repository, path)
         except minio.error.S3Error:
@@ -198,7 +198,7 @@ class Minio(Base):
         r"""Get file from backend."""
         src_path = self.path(src_path)
         src_size = self._client.stat_object(self.repository, src_path).size
-        chunk = (4 * 1024,)
+        chunk = 4 * 1024
         with audeer.progress_bar(total=src_size, disable=not verbose) as pbar:
             desc = audeer.format_display_message(
                 "Download {}".format(os.path.basename(str(src_path))),
@@ -209,7 +209,7 @@ class Minio(Base):
 
             dst_size = 0
             try:
-                response = self.client.get_object(self.repository, src_path)
+                response = self._client.get_object(self.repository, src_path)
                 with open(dst_path, "wb") as dst_fp:
                     while src_size > dst_size:
                         data = response.read(chunk)
@@ -244,11 +244,8 @@ class Minio(Base):
         verbose: bool,
     ):
         r"""Move file on backend."""
-        src_path = self.path(src_path)
-        dst_path = self.path(dst_path)
-        if not dst_path.parent.exists():
-            dst_path.parent.mkdir()
-        src_path.move(dst_path)
+        self._copy_file(src_path, dst_path, verbose)
+        self._remove_file(src_path)
 
     def _open(
         self,
@@ -323,3 +320,12 @@ class Minio(Base):
         r"""Remove file from backend."""
         path = self.path(path)
         self._client.remove_object(self.repository, path)
+
+    def _size(
+        self,
+        path: str,
+    ) -> str:
+        r"""Get size of file on backend."""
+        path = self.path(path)
+        size = self._client.stat_object(self.repository, path).size
+        return size
