@@ -227,9 +227,6 @@ class Minio(Base):
         path: str,
     ) -> typing.List[str]:
         r"""List all files under sub-path."""
-        if not self._exists(path):
-            return []
-
         path = self.path(path)
         objects = self._client.list_objects(
             self.repository,
