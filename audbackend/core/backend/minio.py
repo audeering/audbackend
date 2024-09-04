@@ -35,15 +35,14 @@ class Minio(Base):
         if authentication is None:
             self.authentication = self.get_authentication(host)
 
+        config = self.get_config(host)
+
         # Open MinIO client
         self._client = minio.Minio(
             host,
             access_key=self.authentication[0],
             secret_key=self.authentication[1],
-            # If you test on a local machine,
-            # `secure` needs to be set to `False`.
-            # We might want to read this from a config file?
-            # secure=False,
+            secure=config.get("secure", True),
         )
 
     @classmethod
@@ -60,11 +59,8 @@ class Minio(Base):
         ``MINIO_SECRET_KEY``.
         Otherwise,
         it tries to extract missing values
-        from a config file.
-        The default path of the config file
-        (:file:`~/.config/audbackend/minio.cfg`)
-        can be overwritten with the environment variable
-        ``MINIO_CONFIG_FILE``.
+        from a config file,
+        see :meth:`get_config`.
         If no config file exists
         or if it has missing entries,
         ``None`` is returned
@@ -77,20 +73,56 @@ class Minio(Base):
             access token tuple
 
         """
-        access_key = os.getenv("MINIO_ACCESS_KEY", None)
-        secret_key = os.getenv("MINIO_SECRET_KEY", None)
+        config = cls.get_config(host)
+        access_key = os.getenv("MINIO_ACCESS_KEY", config.get("access_key", None))
+        secret_key = os.getenv("MINIO_SECRET_KEY", config.get("secret_key", None))
+
+        return access_key, secret_key
+
+    @classmethod
+    def get_config(cls, host: str) -> typing.Dict:
+        """Configuration of MinIO server.
+
+        The default path of the config file is
+        :file:`~/.config/audbackend/minio.cfg`.
+        It can be overwritten with the environment variable
+        ``MINIO_CONFIG_FILE``.
+
+        If no config file can be found,
+        or no entry for the requested host,
+        an empty dictionary is returned.
+
+        The config file
+        expects one section per host,
+        e.g.
+
+        .. code-block:: config
+
+            ["play.min.io"]
+            access_key = "Q3AM3UQ867SPQQA43P2F"
+            secret_key = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
+
+        Args:
+            host: hostname
+
+        Returns:
+            config entries as dictionary
+
+        """
         config_file = os.getenv("MINIO_CONFIG_FILE", "~/.config/audbackend/minio.cfg")
         config_file = audeer.path(config_file)
 
-        if os.path.exists(config_file) and (access_key is None or secret_key is None):
+        if os.path.exists(config_file):
             config = configparser.ConfigParser(allow_no_value=True)
             config.read(config_file)
-            if access_key is None:
-                access_key = config.get(host, "access_key", fallback=None)
-            if secret_key is None:
-                secret_key = config.get(host, "secret_key", fallback=None)
+            try:
+                config = dict(config.items(host))
+            except configparser.NoSectionError:
+                config = {}
+        else:
+            config = {}
 
-        return access_key, secret_key
+        return config
 
     def _checksum(
         self,

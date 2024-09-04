@@ -124,6 +124,47 @@ def test_errors(host, repository, authentication):
         backend.open()
 
 
+def test_get_config(tmpdir, hosts, hide_credentials):
+    host = hosts["minio"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["MINIO_CONFIG_FILE"] = config_path
+
+    # config file does not exist
+    config = audbackend.backend.Minio.get_config(host)
+    assert config == {}
+
+    # config file is empty
+    audeer.touch(config_path)
+    config = audbackend.backend.Minio.get_config(host)
+    assert config == {}
+
+    # config file has different host
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}.abc]\n")
+    config = audbackend.backend.Minio.get_config(host)
+    assert config == {}
+
+    # config file entry without variables
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+    config = audbackend.backend.Minio.get_config(host)
+    assert config == {}
+
+    # config file entry with variables
+    access_key = "user"
+    secret_key = "pass"
+    secure = True
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write(f"access_key = {access_key}\n")
+        fp.write(f"secret_key = {secret_key}\n")
+        fp.write(f"secure = {secure}\n")
+    config = audbackend.backend.Minio.get_config(host)
+    assert config["access_key"] == access_key
+    assert config["secret_key"] == secret_key
+    assert config["secure"]
+
+
 @pytest.mark.parametrize(
     "interface",
     [(audbackend.backend.Minio, audbackend.interface.Maven)],
