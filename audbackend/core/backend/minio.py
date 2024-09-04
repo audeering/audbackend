@@ -21,6 +21,21 @@ class Minio(Base):
             If ``None``,
             it requests it by calling :meth:`get_authentication`
 
+    Examples:
+        >>> host = "play.min.io"  # playground provided by https://min.io
+        >>> auth = ("Q3AM3UQ867SPQQA43P2F", "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+        >>> repository = "my-data" + audeer.uid()
+        >>> Minio.create(host, repository, authentication=auth)
+        >>> file = audeer.touch("file.txt")
+        >>> backend = Minio(host, repository, authentication=auth)
+        >>> try:
+        ...     with backend:
+        ...         backend.put_file(file, "/sub/file.txt")
+        ...         backend.ls()
+        ... finally:
+        ...     Minio.delete(host, repository, authentication=auth)
+        ['/sub/file.txt']
+
     """  # noqa: E501
 
     def __init__(
