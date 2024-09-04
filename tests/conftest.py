@@ -33,6 +33,7 @@ def hosts(tmpdir_factory):
         # like audbackend.access()
         "artifactory": "https://audeering.jfrog.io/artifactory",
         "file-system": str(tmpdir_factory.mktemp("host")),
+        "minio": "localhost:9000",
         "single-folder": str(tmpdir_factory.mktemp("host")),
     }
 
@@ -76,14 +77,18 @@ def interface(tmpdir_factory, request):
 
     """
     backend_cls, interface_cls = request.param
+    artifactory = False
     if (
         hasattr(audbackend.backend, "Artifactory")
         and backend_cls == audbackend.backend.Artifactory
     ):
         artifactory = True
         host = "https://audeering.jfrog.io/artifactory"
+    elif (
+        hasattr(audbackend.backend, "Minio") and backend_cls == audbackend.backend.Minio
+    ):
+        host = "localhost:9000"
     else:
-        artifactory = False
         host = str(tmpdir_factory.mktemp("host"))
     repository = f"unittest-{pytest.UID}-{audeer.uid()[:8]}"
 
