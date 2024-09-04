@@ -167,6 +167,11 @@ class Minio(Base):
         self,
     ):
         r"""Delete repository and all its content."""
+        # Delete all objects in bucket
+        objects = self._client.list_objects(self.repository, recursive=True)
+        for obj in objects:
+            self._client.remove_object(self.repository, obj.object_name)
+        # Delete bucket
         self._client.remove_bucket(self.repository)
 
     def _exists(
