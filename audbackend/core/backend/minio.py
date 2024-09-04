@@ -111,9 +111,9 @@ class Minio(Base):
         expects one section per host,
         e.g.
 
-        .. code-block:: config
+        .. code-block:: ini
 
-            ["play.min.io"]
+            [play.min.io]
             access_key = "Q3AM3UQ867SPQQA43P2F"
             secret_key = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
 
