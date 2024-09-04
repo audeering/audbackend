@@ -89,7 +89,7 @@ def test_copy_large_file(tmpdir, interface, src_path, dst_path):
 
     ``minio.Minio.copy_object()`` has a limit of 5 GB.
     We mock the ``audbackend.backend.Minio._size()`` method
-    to return a value of ``5.01``
+    to return a value equivalent to 5 GB.
     to trigger the fall back copy mechanism for large files,
     without having to create a large file.
 
@@ -102,7 +102,7 @@ def test_copy_large_file(tmpdir, interface, src_path, dst_path):
     """
     tmp_path = audeer.touch(audeer.path(tmpdir, "big.1.txt"))
     interface.put_file(tmp_path, src_path)
-    interface._backend._size = lambda x: 5.01 * 1024 * 1024 * 1024
+    interface._backend._size = lambda x: 5 * 1024 * 1024 * 1024
     interface.copy_file(src_path, dst_path)
     assert interface.exists(src_path)
     assert interface.exists(dst_path)
