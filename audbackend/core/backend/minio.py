@@ -180,6 +180,9 @@ class Minio(Base):
     ) -> bool:
         r"""Check if file exists on backend."""
         path = self.path(path)
+        if path == "":
+            # Return True for root
+            return True
         try:
             self._client.stat_object(self.repository, path)
         except minio.error.S3Error:
