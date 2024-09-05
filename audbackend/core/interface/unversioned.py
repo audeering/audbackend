@@ -1,5 +1,11 @@
-import os  # noqa: F401
+import os
+import tempfile
 import typing
+
+import fsspec
+import tqdm
+
+import audeer
 
 from audbackend.core.interface.base import Base
 
@@ -118,11 +124,11 @@ class Unversioned(Base):
             True
 
         """
-        self.backend.copy_file(
+        self.backend.makedirs(os.path.dirname(dst_path), exist_ok=True)
+        self.backend.copy(
             src_path,
             dst_path,
-            validate=validate,
-            verbose=verbose,
+            callback=_progress_bar("Copy file", verbose),
         )
 
     def date(
@@ -160,7 +166,7 @@ class Unversioned(Base):
             '1991-02-20'
 
         """
-        return self.backend.date(path)
+        return self.backend.created(path)
 
     def exists(
         self,
@@ -204,10 +210,13 @@ class Unversioned(Base):
             True
 
         """
-        return self.backend.exists(
-            path,
-            suppress_backend_errors=suppress_backend_errors,
-        )
+        try:
+            return self.backend.exists(path)
+        except Exception as ex:
+            if suppress_backend_errors:
+                return False
+            else:
+                raise (ex)
 
     def get_archive(
         self,
@@ -274,13 +283,22 @@ class Unversioned(Base):
             ['src.txt']
 
         """
-        return self.backend.get_archive(
-            src_path,
-            dst_root,
-            tmp_root=tmp_root,
-            validate=validate,
-            verbose=verbose,
-        )
+        with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
+            local_archive = os.path.join(
+                audeer.path(tmp, os.path.basename(dst_root)),
+                os.path.basename(src_path),
+            )
+            self.get_file(
+                src_path,
+                local_archive,
+                validate=validate,
+                verbose=verbose,
+            )
+            return audeer.extract_archive(
+                local_archive,
+                dst_root,
+                verbose=verbose,
+            )
 
     def get_file(
         self,
@@ -350,8 +368,7 @@ class Unversioned(Base):
         return self.backend.get_file(
             src_path,
             dst_path,
-            validate=validate,
-            verbose=verbose,
+            callback=_progress_bar("Get file", verbose),
         )
 
     def ls(
@@ -704,3 +721,13 @@ class Unversioned(Base):
 
         """
         self.backend.remove_file(path)
+
+
+def _progress_bar(desc: str, verbose: bool) -> tqdm.tqdm:
+    return fsspec.callbacks.TqdmCallback(
+        tqdm_kwargs={
+            "desc": desc,
+            "disable": not verbose,
+        },
+        tqdm_cls=audeer.progress_bar,
+    )
