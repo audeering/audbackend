@@ -1,4 +1,7 @@
+import os
 import typing
+
+import fsspec
 
 from audbackend.core.backend.base import Base as Backend
 
@@ -22,11 +25,24 @@ class Base:
 
     def __init__(
         self,
-        backend: Backend,
+        backend: fsspec.AbstractFileSystem,
     ):
+        self.host = None
+        self.repository = None
         self._backend = backend
 
-    def __repr__(self) -> str:  # noqa: D105
+    def __repr__(self) -> str:
+        r"""String representation.
+
+        ..
+            >>> fs = fsspec.filesystem("dir", path="./host/repo")
+            >>> interface = Base(fs)
+
+        Examples:
+            >>> interface
+            'audbackend.interface.Base(DirFileSystem)'
+
+        """
         name = self.__class__.__name__
         return f"audbackend.interface.{name}({self._backend})"
 
@@ -38,15 +54,15 @@ class Base:
             backend object
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> interface = Base(backend)
+            >>> fs = fsspec.filesystem("dir", path="./host/repo")
+            >>> interface = Base(fs)
 
         Examples:
             >>> interface.backend
-            audbackend.backend.FileSystem('host', 'repo')
+            'DirFileSystem'
 
         """
-        return self._backend
+        return self._backend.__class__.__name__
 
     @property
     def host(self) -> str:
@@ -55,15 +71,15 @@ class Base:
         Returns: host path
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> interface = Base(backend)
+            >>> fs = fsspec.filesystem("dir", path="./host/repo")
+            >>> interface = Base(fs)
 
         Examples:
             >>> interface.host
             'host'
 
         """
-        return self.backend.host
+        return self.host
 
     def join(
         self,
@@ -85,8 +101,8 @@ class Base:
                 or if joined path contains invalid character
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> interface = Base(backend)
+            >>> fs = fsspec.filesystem("dir", path="./host/repo")
+            >>> interface = Base(fs)
 
         Examples:
             >>> interface.join("/", "file.txt")
@@ -97,7 +113,7 @@ class Base:
             '/sub/file.txt'
 
         """
-        return self.backend.join(path, *paths)
+        return os.path.join(path, *paths)
 
     @property
     def repository(self) -> str:
@@ -107,15 +123,15 @@ class Base:
             repository name
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> interface = Base(backend)
+            >>> fs = fsspec.filesystem("dir", path="./host/repo")
+            >>> interface = Base(fs)
 
         Examples:
             >>> interface.repository
             'repo'
 
         """
-        return self.backend.repository
+        return self.repository
 
     @property
     def sep(self) -> str:
@@ -125,15 +141,15 @@ class Base:
             file separator
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> interface = Base(backend)
+            >>> fs = fsspec.filesystem("dir", path="./host/repo")
+            >>> interface = Base(fs)
 
         Examples:
             >>> interface.sep
             '/'
 
         """
-        return self.backend.sep
+        return "/"
 
     def split(
         self,
@@ -152,8 +168,8 @@ class Base:
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> interface = Base(backend)
+            >>> fs = fsspec.filesystem("dir", path="./host/repo")
+            >>> interface = Base(fs)
 
         Examples:
             >>> interface.split("/")
@@ -166,4 +182,7 @@ class Base:
             ('/sub/', 'file.txt')
 
         """
-        return self.backend.split(path)
+        root = self.sep.join(path.split(self.sep)[:-1]) + self.sep
+        basename = path.split(self.sep)[-1]
+
+        return root, basename

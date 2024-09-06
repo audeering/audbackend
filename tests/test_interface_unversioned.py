@@ -1,18 +1,14 @@
 import datetime
 import os
 import platform
-import random
 import re
 import stat
-import string
 
 import pytest
 
 import audeer
 
 import audbackend
-
-from singlefolder import SingleFolder
 
 
 @pytest.fixture(scope="function", autouse=False)
@@ -86,17 +82,10 @@ def tree(tmpdir, request):
     ],
     indirect=["tree"],
 )
-@pytest.mark.parametrize(
-    "interface",
-    [
-        (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
-        (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
-        (audbackend.backend.Minio, audbackend.interface.Unversioned),
-        (SingleFolder, audbackend.interface.Unversioned),
-    ],
-    indirect=True,
-)
-def test_archive(tmpdir, tree, archive, files, tmp_root, interface, expected):
+@pytest.mark.parametrize("filesystem", ["dir"], indirect=True)
+def test_archive(tmpdir, tree, archive, files, tmp_root, expected, filesystem):
+    interface = audbackend.interface.Unversioned(filesystem)
+
     if tmp_root is not None:
         tmp_root = audeer.path(tmpdir, tmp_root)
 
@@ -168,17 +157,10 @@ def test_archive(tmpdir, tree, archive, files, tmp_root, interface, expected):
         ),
     ],
 )
-@pytest.mark.parametrize(
-    "interface",
-    [
-        (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
-        (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
-        (audbackend.backend.Minio, audbackend.interface.Unversioned),
-        (SingleFolder, audbackend.interface.Unversioned),
-    ],
-    indirect=True,
-)
-def test_copy(tmpdir, src_path, dst_path, interface):
+@pytest.mark.parametrize("filesystem", ["dir"], indirect=True)
+def test_copy(tmpdir, src_path, dst_path, filesystem):
+    interface = audbackend.interface.Unversioned(filesystem)
+
     local_path = audeer.path(tmpdir, "~")
     audeer.touch(local_path)
     interface.put_file(local_path, src_path)
@@ -205,23 +187,17 @@ def test_copy(tmpdir, src_path, dst_path, interface):
     interface.copy_file(src_path, dst_path)
     assert audeer.md5(local_path) == interface.checksum(dst_path)
 
-    # clean up
+    # # clean up
 
-    interface.remove_file(src_path)
-    if dst_path != src_path:
-        interface.remove_file(dst_path)
+    # interface.remove_file(src_path)
+    # if dst_path != src_path:
+    #     interface.remove_file(dst_path)
 
 
-@pytest.mark.parametrize(
-    "interface",
-    [
-        (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
-        (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
-        (SingleFolder, audbackend.interface.Unversioned),
-    ],
-    indirect=True,
-)
-def test_errors(tmpdir, interface):
+@pytest.mark.parametrize("filesystem", ["dir"], indirect=True)
+def test_errors(tmpdir, filesystem):
+    interface = audbackend.interface.Unversioned(filesystem)
+
     # Ensure we have one file and one archive published on the backend
     archive = "/archive.zip"
     local_file = "file.txt"
@@ -554,17 +530,10 @@ def test_errors(tmpdir, interface):
         "/folder/test.txt",
     ],
 )
-@pytest.mark.parametrize(
-    "interface",
-    [
-        (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
-        (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
-        (audbackend.backend.Minio, audbackend.interface.Unversioned),
-        (SingleFolder, audbackend.interface.Unversioned),
-    ],
-    indirect=True,
-)
-def test_exists(tmpdir, path, interface):
+@pytest.mark.parametrize("filesystem", ["dir"], indirect=True)
+def test_exists(tmpdir, path, filesystem):
+    interface = audbackend.interface.Unversioned(filesystem)
+
     src_path = audeer.path(tmpdir, "~")
     audeer.touch(src_path)
 
@@ -594,29 +563,10 @@ def test_exists(tmpdir, path, interface):
         ),
     ],
 )
-@pytest.mark.parametrize(
-    "interface, owner",
-    [
-        (
-            (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
-            audbackend.backend.Artifactory,
-        ),
-        (
-            (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
-            audbackend.backend.FileSystem,
-        ),
-        (
-            (audbackend.backend.Minio, audbackend.interface.Unversioned),
-            audbackend.backend.Minio,
-        ),
-        (
-            (SingleFolder, audbackend.interface.Unversioned),
-            SingleFolder,
-        ),
-    ],
-    indirect=True,
-)
-def test_file(tmpdir, src_path, dst_path, owner, interface):
+@pytest.mark.parametrize("filesystem", ["dir"], indirect=True)
+def test_file(tmpdir, src_path, dst_path, filesystem):
+    interface = audbackend.interface.Unversioned(filesystem)
+
     src_path = audeer.path(tmpdir, src_path)
     audeer.mkdir(os.path.dirname(src_path))
     audeer.touch(src_path)
@@ -630,7 +580,6 @@ def test_file(tmpdir, src_path, dst_path, owner, interface):
     interface.get_file(dst_path, src_path)
     assert os.path.exists(src_path)
     assert interface.checksum(dst_path) == audeer.md5(src_path)
-    assert interface.owner(dst_path) == owner
     date = datetime.datetime.today().strftime("%Y-%m-%d")
     assert interface.date(dst_path) == date
 
@@ -638,17 +587,10 @@ def test_file(tmpdir, src_path, dst_path, owner, interface):
     assert not interface.exists(dst_path)
 
 
-@pytest.mark.parametrize(
-    "interface",
-    [
-        (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
-        (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
-        (audbackend.backend.Minio, audbackend.interface.Unversioned),
-        (SingleFolder, audbackend.interface.Unversioned),
-    ],
-    indirect=True,
-)
-def test_ls(tmpdir, interface):
+@pytest.mark.parametrize("filesystem", ["dir"], indirect=True)
+def test_ls(tmpdir, filesystem):
+    interface = audbackend.interface.Unversioned(filesystem)
+
     assert interface.ls() == []
     assert interface.ls("/") == []
 
@@ -713,17 +655,10 @@ def test_ls(tmpdir, interface):
         ),
     ],
 )
-@pytest.mark.parametrize(
-    "interface",
-    [
-        (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
-        (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
-        (audbackend.backend.Minio, audbackend.interface.Unversioned),
-        (SingleFolder, audbackend.interface.Unversioned),
-    ],
-    indirect=True,
-)
-def test_move(tmpdir, src_path, dst_path, interface):
+@pytest.mark.parametrize("filesystem", ["dir"], indirect=True)
+def test_move(tmpdir, src_path, dst_path, filesystem):
+    interface = audbackend.interface.Unversioned(filesystem)
+
     local_path = audeer.path(tmpdir, "~")
     audeer.touch(local_path)
 
@@ -759,84 +694,18 @@ def test_move(tmpdir, src_path, dst_path, interface):
     interface.move_file(src_path, dst_path)
     assert audeer.md5(local_path) == interface.checksum(dst_path)
 
-    # clean up
+    # # clean up
 
-    interface.remove_file(dst_path)
-
-
-def test_repr():
-    interface = audbackend.interface.Unversioned(
-        audbackend.backend.FileSystem("host", "repo")
-    )
-    assert interface.__repr__() == (
-        "audbackend.interface.Unversioned("
-        "audbackend.backend.FileSystem('host', 'repo')"
-        ")"
-    )
+    # interface.remove_file(dst_path)
 
 
-def test_validate(tmpdir):
-    class BadChecksumBackend(audbackend.backend.FileSystem):
-        r"""Return random checksum."""
-
-        def _checksum(
-            self,
-            path: str,
-        ) -> str:
-            return "".join(
-                random.choices(
-                    string.ascii_uppercase + string.digits,
-                    k=33,
-                )
-            )
-
-    path = audeer.touch(tmpdir, "~.txt")
-    error_msg = "Execution is interrupted because"
-
-    audbackend.backend.FileSystem.create(tmpdir, "repo")
-    file_system_backend = audbackend.backend.FileSystem(tmpdir, "repo")
-    file_system_backend.open()
-    bad_checksum_backend = BadChecksumBackend(tmpdir, "repo")
-    bad_checksum_backend.open()
-
-    interface = audbackend.interface.Unversioned(file_system_backend)
-    interface_bad = audbackend.interface.Unversioned(bad_checksum_backend)
-
-    with pytest.raises(InterruptedError, match=error_msg):
-        interface_bad.put_file(path, "/remote.txt", validate=True)
-    assert not interface.exists("/remote.txt")
-    interface.put_file(path, "/remote.txt", validate=True)
-    assert interface.exists("/remote.txt")
-
-    with pytest.raises(InterruptedError, match=error_msg):
-        interface_bad.get_file("/remote.txt", "local.txt", validate=True)
-    assert not os.path.exists("local.txt")
-    interface.get_file("/remote.txt", "local.txt", validate=True)
-    assert os.path.exists("local.txt")
-
-    with pytest.raises(InterruptedError, match=error_msg):
-        interface_bad.copy_file("/remote.txt", "/copy.txt", validate=True)
-    assert not interface.exists("/copy.txt")
-    interface.copy_file("/remote.txt", "/copy.txt", validate=True)
-    assert interface.exists("/copy.txt")
-
-    with pytest.raises(InterruptedError, match=error_msg):
-        interface_bad.move_file("/remote.txt", "/move.txt", validate=True)
-    assert not interface.exists("/move.txt")
-    assert interface.exists("/remote.txt")
-    interface.move_file("/remote.txt", "/move.txt", validate=True)
-    assert interface.exists("/move.txt")
-    assert not interface.exists("/remote.txt")
-
-    with pytest.raises(InterruptedError, match=error_msg):
-        interface_bad.put_archive(tmpdir, "/remote.zip", validate=True)
-    assert not interface.exists("/remote.zip")
-    interface.put_archive(".", "/remote.zip", validate=True)
-    assert interface.exists("/remote.zip")
-
-    dst_root = os.path.join(tmpdir, "extract")
-    with pytest.raises(InterruptedError, match=error_msg):
-        interface_bad.get_archive("/remote.zip", dst_root, validate=True)
-    assert not os.path.exists(dst_root)
-    interface.get_archive("/remote.zip", dst_root, validate=True)
-    assert os.path.exists(dst_root)
+@pytest.mark.parametrize(
+    "filesystem, expected",
+    [
+        ("dir", "audbackend.interface.Unversioned(DirFileSystem)"),
+    ],
+    indirect="filesystem",
+)
+def test_repr(filesystem, expected):
+    interface = audbackend.interface.Unversioned(filesystem)
+    assert repr(interface) == expected

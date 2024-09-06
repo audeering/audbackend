@@ -1,3 +1,4 @@
+import fnmatch
 import os
 import tempfile
 import typing
@@ -7,6 +8,7 @@ import tqdm
 
 import audeer
 
+from audbackend.core import utils
 from audbackend.core.interface.base import Base
 
 
@@ -21,9 +23,8 @@ class Unversioned(Base):
 
     Examples:
         >>> file = "src.txt"
-        >>> backend = audbackend.backend.FileSystem("host", "repo")
-        >>> backend.open()
-        >>> interface = Unversioned(backend)
+        >>> fs = fsspec.filesystem("dir", path="./host/repo")
+        >>> interface = Unversioned(fs)
         >>> interface.put_file(file, "/file.txt")
         >>> interface.put_archive(".", "/sub/archive.zip", files=[file])
         >>> interface.ls()
@@ -54,9 +55,8 @@ class Unversioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Unversioned(backend)
+            >>> fs = fsspec.filesystem("dir", path="./host/repo")
+            >>> interface = Unversioned(fs)
 
         Examples:
             >>> file = "src.txt"
@@ -110,9 +110,8 @@ class Unversioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Unversioned(backend)
+            >>> fs = fsspec.filesystem("dir", path="./host/repo")
+            >>> interface = Unversioned(fs)
 
         Examples:
             >>> file = "src.txt"
@@ -155,9 +154,8 @@ class Unversioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = DoctestFileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Unversioned(backend)
+            >>> fs = fsspec.filesystem("dir", path="./host/repo")
+            >>> interface = Unversioned(fs)
 
         Examples:
             >>> file = "src.txt"
@@ -166,7 +164,7 @@ class Unversioned(Base):
             '1991-02-20'
 
         """
-        return self.backend.created(path)
+        return self.backend.modified(path)
 
     def exists(
         self,
@@ -197,9 +195,8 @@ class Unversioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Unversioned(backend)
+            >>> fs = fsspec.filesystem("dir", path="./host/repo")
+            >>> interface = Unversioned(fs)
 
         Examples:
             >>> file = "src.txt"
@@ -210,13 +207,12 @@ class Unversioned(Base):
             True
 
         """
-        try:
-            return self.backend.exists(path)
-        except Exception as ex:
-            if suppress_backend_errors:
-                return False
-            else:
-                raise (ex)
+        utils.call_function_on_backend(
+            self.backend.exists,
+            path,
+            suppress_backend_errors=suppress_backend_errors,
+            fallback_return_value=False,
+        )
 
     def get_archive(
         self,
@@ -271,9 +267,8 @@ class Unversioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Unversioned(backend)
+            >>> fs = fsspec.filesystem("dir", path="./host/repo")
+            >>> interface = Unversioned(fs)
 
         Examples:
             >>> file = "src.txt"
@@ -351,9 +346,8 @@ class Unversioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Unversioned(backend)
+            >>> fs = fsspec.filesystem("dir", path="./host/repo")
+            >>> interface = Unversioned(fs)
 
         Examples:
             >>> file = "src.txt"
@@ -380,12 +374,6 @@ class Unversioned(Base):
     ) -> typing.List[str]:
         r"""List files on backend.
 
-        Returns a sorted list of tuples
-        with path and version.
-        If a full path
-        (e.g. ``/sub/file.ext``)
-        is provided,
-        all versions of the path are returned.
         If a sub-path
         (e.g. ``/sub/``)
         is provided,
@@ -407,7 +395,7 @@ class Unversioned(Base):
                 and return an empty list
 
         Returns:
-            list of tuples (path, version)
+            list of files
 
         Raises:
             BackendError: if ``suppress_backend_errors`` is ``False``
@@ -418,9 +406,8 @@ class Unversioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Unversioned(backend)
+            >>> fs = fsspec.filesystem("dir", path="./host/repo")
+            >>> interface = Unversioned(fs)
 
         Examples:
             >>> file = "src.txt"
@@ -438,11 +425,29 @@ class Unversioned(Base):
             ['/sub/archive.zip']
 
         """  # noqa: E501
-        return self.backend.ls(
+        paths = utils.call_function_on_backend(
+            self.backend.find,
             path,
-            pattern=pattern,
             suppress_backend_errors=suppress_backend_errors,
+            fallback_return_value=[],
         )
+        paths = sorted([self.sep + path for path in paths])
+
+        # if not paths:
+        #     if path != "/" and not suppress_backend_errors:
+        #         # if the path does not exist
+        #         # we raise an error
+        #         try:
+        #             raise utils.raise_file_not_found_error(path)
+        #         except FileNotFoundError as ex:
+        #             raise BackendError(ex)
+
+        #     return []
+
+        if pattern:
+            paths = [p for p in paths if fnmatch.fnmatch(os.path.basename(p), pattern)]
+
+        return paths
 
     def move_file(
         self,
@@ -488,9 +493,8 @@ class Unversioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Unversioned(backend)
+            >>> fs = fsspec.filesystem("dir", path="./host/repo")
+            >>> interface = Unversioned(fs)
 
         Examples:
             >>> file = "src.txt"
@@ -504,11 +508,10 @@ class Unversioned(Base):
             False
 
         """
-        self.backend.move_file(
+        self.backend.move(
             src_path,
             dst_path,
-            validate=validate,
-            verbose=verbose,
+            callback=_progress_bar("Move file", verbose),
         )
 
     def owner(
@@ -536,9 +539,8 @@ class Unversioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = DoctestFileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Unversioned(backend)
+            >>> fs = fsspec.filesystem("dir", path="./host/repo")
+            >>> interface = Unversioned(fs)
 
         Examples:
             >>> file = "src.txt"
@@ -547,7 +549,7 @@ class Unversioned(Base):
             'doctest'
 
         """
-        return self.backend.owner(path)
+        return None  # there exists no equivalent in fsspec
 
     def put_archive(
         self,
@@ -607,9 +609,8 @@ class Unversioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Unversioned(backend)
+            >>> fs = fsspec.filesystem("dir", path="./host/repo")
+            >>> interface = Unversioned(fs)
 
         Examples:
             >>> file = "src.txt"
@@ -620,14 +621,28 @@ class Unversioned(Base):
             True
 
         """
-        self.backend.put_archive(
-            src_root,
-            dst_path,
-            files=files,
-            tmp_root=tmp_root,
-            validate=validate,
-            verbose=verbose,
-        )
+        src_root = audeer.path(src_root)
+
+        if tmp_root is not None:
+            tmp_root = audeer.path(tmp_root)
+            if not os.path.exists(tmp_root):
+                utils.raise_file_not_found_error(tmp_root)
+
+        with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
+            archive = audeer.path(tmp, os.path.basename(dst_path))
+            audeer.create_archive(
+                src_root,
+                files,
+                archive,
+                verbose=verbose,
+            )
+
+            self.put_file(
+                archive,
+                dst_path,
+                validate=validate,
+                verbose=verbose,
+            )
 
     def put_file(
         self,
@@ -669,9 +684,8 @@ class Unversioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Unversioned(backend)
+            >>> fs = fsspec.filesystem("dir", path="./host/repo")
+            >>> interface = Unversioned(fs)
 
         Examples:
             >>> file = "src.txt"
@@ -685,8 +699,7 @@ class Unversioned(Base):
         self.backend.put_file(
             src_path,
             dst_path,
-            validate=validate,
-            verbose=verbose,
+            callback=_progress_bar("Put file", verbose),
         )
 
     def remove_file(
@@ -706,9 +719,8 @@ class Unversioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Unversioned(backend)
+            >>> fs = fsspec.filesystem("dir", path="./host/repo")
+            >>> interface = Unversioned(fs)
 
         Examples:
             >>> file = "src.txt"
@@ -720,7 +732,7 @@ class Unversioned(Base):
             False
 
         """
-        self.backend.remove_file(path)
+        self.backend.rm_file(path)
 
 
 def _progress_bar(desc: str, verbose: bool) -> tqdm.tqdm:

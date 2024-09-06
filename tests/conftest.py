@@ -1,13 +1,13 @@
 import getpass
 import os
 
+import fsspec
+import minio
 import pytest
 
 import audeer
 
 import audbackend
-
-from singlefolder import SingleFolder
 
 
 # UID for test session
@@ -20,6 +20,46 @@ pytest.HOSTS = {
     "artifactory": "https://audeering.jfrog.io/artifactory",
     "minio": "play.min.io",
 }
+
+
+@pytest.fixture(scope="function")
+def filesystem(tmpdir, request):
+    protocol = request.param
+
+    repository = f"unittest-{pytest.UID}-{audeer.uid()[:8]}"
+
+    if protocol == "dir":
+        fs = fsspec.filesystem("dir", path=tmpdir)
+        audeer.mkdir(tmpdir, repository)
+        fs.repository = repository
+
+        yield fs
+
+        # Clean up is handled by tmpdir fixture
+
+    elif protocol == "s3":
+        # Use MinIO playground, compare
+        # https://min.io/docs/minio/linux/developers/python/API.html
+        url = "play.minio.io:9000"
+        access = "Q3AM3UQ867SPQQA43P2F"
+        secret = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
+
+        # Create bucket
+        client = minio.Minio(url, access_key=access, secret_key=secret)
+        client.make_bucket(repository)
+
+        fs = fsspec.filesystem("s3", endpoint_url=url, key=access, secret=secret)
+        fs.repository = repository
+
+        yield fs
+
+        # Delete all objects in bucket
+        objects = client.list_objects(repository, recursive=True)
+        for obj in objects:
+            client.remove_object(repository, obj.object_name)
+
+        # Delete bucket
+        client.remove_bucket(repository)
 
 
 @pytest.fixture(scope="package", autouse=True)
@@ -43,16 +83,6 @@ def authentication():
                 os.environ[key] = value
             elif key in os.environ:
                 del os.environ[key]
-
-
-@pytest.fixture(scope="package", autouse=True)
-def register_single_folder():
-    warning = (
-        "register is deprecated and will be removed with version 2.2.0. "
-        "Use backend classes directly instead."
-    )
-    with pytest.warns(UserWarning, match=warning):
-        audbackend.register("single-folder", SingleFolder)
 
 
 @pytest.fixture(scope="package", autouse=False)
@@ -89,67 +119,6 @@ def owner(request):
             owner = getpass.getuser()
 
     yield owner
-
-
-@pytest.fixture(scope="function", autouse=False)
-def interface(tmpdir_factory, request):
-    r"""Create a backend with interface.
-
-    This fixture should be called indirectly
-    providing a list of ``(backend, interface)`` tuples.
-    For example, to create a file-system backend
-    and access it with a versioned interface:
-
-    .. code-block:: python
-
-        @pytest.mark.parametrize(
-            "interface",
-            [(audbackend.backend.FileSystem, audbackend.interface.Versioned)],
-            indirect=True,
-        )
-
-    At the end of the test the backend is deleted.
-
-    """
-    backend_cls, interface_cls = request.param
-    artifactory = False
-    if (
-        hasattr(audbackend.backend, "Artifactory")
-        and backend_cls == audbackend.backend.Artifactory
-    ):
-        artifactory = True
-        host = pytest.HOSTS["artifactory"]
-    elif (
-        hasattr(audbackend.backend, "Minio") and backend_cls == audbackend.backend.Minio
-    ):
-        host = pytest.HOSTS["minio"]
-    else:
-        host = str(tmpdir_factory.mktemp("host"))
-    repository = f"unittest-{pytest.UID}-{audeer.uid()[:8]}"
-
-    backend_cls.create(host, repository)
-    with backend_cls(host, repository) as backend:
-        interface = interface_cls(backend)
-
-        yield interface
-
-        if artifactory:
-            import dohq_artifactory
-
-            try:
-                backend._repo.delete()
-            except dohq_artifactory.exception.ArtifactoryException:
-                # It might happen from time to time,
-                # that a repository cannot be deleted.
-                # In those cases,
-                # we don't raise an error here,
-                # but rely on the user calling the clean up script
-                # from time to time:
-                # $ python tests/misc/cleanup_artifactory.py
-                pass
-
-    if not artifactory:
-        backend_cls.delete(host, repository)
 
 
 @pytest.fixture(scope="package", autouse=True)
