@@ -1,9 +1,8 @@
-import os
 import typing
 
 import fsspec
 
-from audbackend.core.backend.base import Base as Backend
+from audbackend.core import utils
 
 
 class Base:
@@ -19,17 +18,19 @@ class Base:
     create a new interface.
 
     Args:
-        backend: backend object
+        fs: filesystem object
+            following :mod:`fsspec` specifications
 
     """
 
     def __init__(
         self,
-        backend: fsspec.AbstractFileSystem,
+        fs: fsspec.AbstractFileSystem,
+        *,
+        repository: str = None,
     ):
-        self.host = None
-        self.repository = None
-        self._backend = backend
+        self.fs = fs
+        """Filesystem object."""
 
     def __repr__(self) -> str:
         r"""String representation.
@@ -44,42 +45,7 @@ class Base:
 
         """
         name = self.__class__.__name__
-        return f"audbackend.interface.{name}({self._backend})"
-
-    @property
-    def backend(self) -> Backend:
-        r"""Backend object.
-
-        Returns:
-            backend object
-
-        ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Base(fs)
-
-        Examples:
-            >>> interface.backend
-            'DirFileSystem'
-
-        """
-        return self._backend.__class__.__name__
-
-    @property
-    def host(self) -> str:
-        r"""Host path.
-
-        Returns: host path
-
-        ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Base(fs)
-
-        Examples:
-            >>> interface.host
-            'host'
-
-        """
-        return self.host
+        return f"audbackend.interface.{name}({self.fs.__class__.__name__})"
 
     def join(
         self,
@@ -113,25 +79,15 @@ class Base:
             '/sub/file.txt'
 
         """
-        return os.path.join(path, *paths)
+        path = utils.check_path(path, allow_sub_path=True)
 
-    @property
-    def repository(self) -> str:
-        r"""Repository name.
+        paths = [path] + [p for p in paths]
+        paths = [path for path in paths if path]  # remove empty or None
+        path = self.sep.join(paths)
 
-        Returns:
-            repository name
+        path = utils.check_path(path, allow_sub_path=True)
 
-        ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Base(fs)
-
-        Examples:
-            >>> interface.repository
-            'repo'
-
-        """
-        return self.repository
+        return path
 
     @property
     def sep(self) -> str:
@@ -182,6 +138,7 @@ class Base:
             ('/sub/', 'file.txt')
 
         """
+        path = utils.check_path(path)
         root = self.sep.join(path.split(self.sep)[:-1]) + self.sep
         basename = path.split(self.sep)[-1]
 
