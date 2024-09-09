@@ -1,4 +1,5 @@
 import fnmatch
+import hashlib
 import os
 import tempfile
 import typing
@@ -9,6 +10,7 @@ import tqdm
 import audeer
 
 from audbackend.core import utils
+from audbackend.core.errors import BackendError
 from audbackend.core.interface.base import Base
 
 
@@ -68,7 +70,46 @@ class Unversioned(Base):
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
-        return self.backend.checksum(path)
+        path = utils.check_path(path)
+
+        # Most filesystem object do not implement MD5 checksum,
+        # but use the standard implementation based on the info dict
+        # (https://github.com/fsspec/filesystem_spec/blob/76ca4a68885d572880ac6800f079738df562f02c/fsspec/spec.py#L692C16-L692C50):
+        # int(tokenize(self.info(path)), 16)
+        #
+        # We rely on the MD5 checksum
+        # to decide if a local file is identical to one on the backend.
+        # This information is then used to decide if `put_file()`
+        # has to overwrite a file on the backend or not.
+
+        # Implementation compatible with audeer.md5()
+        def md5sum(path: str) -> str:
+            """Implementation compatible with audeer.md5().
+
+            Args:
+                path: path on backend
+
+            Returns:
+                MD5 sum
+
+            """
+            hasher = hashlib.md5()
+            chunk_size = 8192
+            with self.fs.open(path) as fp:
+                while True:
+                    data = fp.read(chunk_size)
+                    if not data:
+                        break
+                    hasher.update(data)
+            return hasher.hexdigest()
+
+        info = utils.call_function_on_backend(self.fs.info, path)
+        if "ETag" in info:
+            md5 = ["ETag"][1:-1]
+        else:
+            md5 = utils.call_function_on_backend(md5sum, path)
+
+        return md5
 
     def copy_file(
         self,
@@ -123,12 +164,25 @@ class Unversioned(Base):
             True
 
         """
-        self.backend.makedirs(os.path.dirname(dst_path), exist_ok=True)
-        self.backend.copy(
-            src_path,
-            dst_path,
-            callback=_progress_bar("Copy file", verbose),
-        )
+        src_path = utils.check_path(src_path)
+        dst_path = utils.check_path(dst_path)
+
+        def copy(src_path, dst_path):
+            if not self.exists(dst_path) or self.checksum(src_path) != self.checksum(
+                dst_path
+            ):
+                if self.exists(dst_path):
+                    self.remove_file(dst_path)
+                # Ensure sub-paths exist
+                self.fs.makedirs(os.path.dirname(dst_path), exist_ok=True)
+            self.fs.copy(
+                src_path,
+                dst_path,
+                callback=_progress_bar("Copy file", verbose),
+            )
+
+        if src_path != dst_path:
+            utils.call_function_on_backend(copy, src_path, dst_path)
 
     def date(
         self,
@@ -164,7 +218,10 @@ class Unversioned(Base):
             '1991-02-20'
 
         """
-        return self.backend.modified(path)
+        path = utils.check_path(path)
+        date = utils.call_function_on_backend(self.fs.modified, path)
+        date = utils.date_format(date)
+        return date
 
     def exists(
         self,
@@ -207,9 +264,9 @@ class Unversioned(Base):
             True
 
         """
-        utils.call_function_on_backend(
-            self.backend.exists,
-            path,
+        return utils.call_function_on_backend(
+            self.fs.exists,
+            utils.check_path(path),
             suppress_backend_errors=suppress_backend_errors,
             fallback_return_value=False,
         )
@@ -280,7 +337,8 @@ class Unversioned(Base):
         """
         with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
             local_archive = os.path.join(
-                audeer.path(tmp, os.path.basename(dst_root)),
+                # audeer.path(tmp, os.path.basename(dst_root)),
+                tmp,
                 os.path.basename(src_path),
             )
             self.get_file(
@@ -359,11 +417,36 @@ class Unversioned(Base):
             True
 
         """
-        return self.backend.get_file(
-            src_path,
-            dst_path,
-            callback=_progress_bar("Get file", verbose),
-        )
+        src_path = utils.check_path(src_path)
+        dst_path = audeer.path(dst_path)
+        if os.path.isdir(dst_path):
+            raise utils.raise_is_a_directory(dst_path)
+
+        dst_root = os.path.dirname(dst_path)
+        audeer.mkdir(dst_root)
+
+        if not os.access(dst_root, os.W_OK) or (
+            os.path.exists(dst_path) and not os.access(dst_path, os.W_OK)
+        ):  # pragma: no Windows cover
+            msg = f"Permission denied: '{dst_path}'"
+            raise PermissionError(msg)
+
+        if not os.path.exists(dst_path) or audeer.md5(dst_path) != self.checksum(
+            src_path
+        ):
+            # get file to a temporary directory first,
+            # only on success move to final destination
+            with tempfile.TemporaryDirectory(dir=dst_root) as tmp:
+                tmp_path = audeer.path(tmp, "~")
+                utils.call_function_on_backend(
+                    self.fs.get_file,
+                    src_path,
+                    tmp_path,
+                    callback=_progress_bar("Get file", verbose),
+                )
+                audeer.move_file(tmp_path, dst_path)
+
+        return dst_path
 
     def ls(
         self,
@@ -425,27 +508,34 @@ class Unversioned(Base):
             ['/sub/archive.zip']
 
         """  # noqa: E501
+        path = utils.check_path(path, allow_sub_path=True)
         paths = utils.call_function_on_backend(
-            self.backend.find,
+            self.fs.find,
             path,
             suppress_backend_errors=suppress_backend_errors,
             fallback_return_value=[],
         )
-        paths = sorted([self.sep + path for path in paths])
+        paths = sorted(
+            [path if path.startswith(self.sep) else self.sep + path for path in paths]
+        )
 
-        # if not paths:
-        #     if path != "/" and not suppress_backend_errors:
-        #         # if the path does not exist
-        #         # we raise an error
-        #         try:
-        #             raise utils.raise_file_not_found_error(path)
-        #         except FileNotFoundError as ex:
-        #             raise BackendError(ex)
+        if not paths:
+            if path != self.sep and not suppress_backend_errors:
+                # if the path does not exist
+                # we raise an error
+                try:
+                    raise utils.raise_file_not_found_error(path)
+                except FileNotFoundError as ex:
+                    raise BackendError(ex)
 
-        #     return []
+            return []
 
         if pattern:
-            paths = [p for p in paths if fnmatch.fnmatch(os.path.basename(p), pattern)]
+            paths = [
+                path
+                for path in paths
+                if fnmatch.fnmatch(os.path.basename(path), pattern)
+            ]
 
         return paths
 
@@ -508,48 +598,27 @@ class Unversioned(Base):
             False
 
         """
-        self.backend.move(
-            src_path,
-            dst_path,
-            callback=_progress_bar("Move file", verbose),
-        )
+        src_path = utils.check_path(src_path)
+        dst_path = utils.check_path(dst_path)
 
-    def owner(
-        self,
-        path: str,
-    ) -> str:
-        r"""Owner of file on backend.
+        if src_path == dst_path:
+            return
 
-        If the owner of the file
-        cannot be determined,
-        an empty string is returned.
+        def move(src_path, dst_path):
+            if not self.exists(dst_path) or self.checksum(src_path) != self.checksum(
+                dst_path
+            ):
+                if self.exists(dst_path):
+                    self.remove_file(dst_path)
+                # Ensure sub-paths exist
+                self.fs.makedirs(os.path.dirname(dst_path), exist_ok=True)
+            self.fs.move(
+                src_path,
+                dst_path,
+                callback=_progress_bar("Move file", verbose),
+            )
 
-        Args:
-            path: path to file on backend
-
-        Returns:
-            owner
-
-        Raises:
-            BackendError: if an error is raised on the backend,
-                e.g. ``path`` does not exist
-            ValueError: if ``path`` does not start with ``'/'``,
-                ends on ``'/'``,
-                or does not match ``'[A-Za-z0-9/._-]+'``
-            RuntimeError: if backend was not opened
-
-        ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Unversioned(fs)
-
-        Examples:
-            >>> file = "src.txt"
-            >>> interface.put_file(file, "/file.txt")
-            >>> interface.owner("/file.txt")
-            'doctest'
-
-        """
-        return None  # there exists no equivalent in fsspec
+        utils.call_function_on_backend(move, src_path, dst_path)
 
     def put_archive(
         self,
@@ -622,6 +691,7 @@ class Unversioned(Base):
 
         """
         src_root = audeer.path(src_root)
+        dst_path = utils.check_path(dst_path)
 
         if tmp_root is not None:
             tmp_root = audeer.path(tmp_root)
@@ -636,7 +706,6 @@ class Unversioned(Base):
                 archive,
                 verbose=verbose,
             )
-
             self.put_file(
                 archive,
                 dst_path,
@@ -696,11 +765,27 @@ class Unversioned(Base):
             True
 
         """
-        self.backend.put_file(
-            src_path,
-            dst_path,
-            callback=_progress_bar("Put file", verbose),
-        )
+        if not os.path.exists(src_path):
+            utils.raise_file_not_found_error(src_path)
+        elif os.path.isdir(src_path):
+            raise utils.raise_is_a_directory(src_path)
+        dst_path = utils.check_path(dst_path)
+
+        def put(src_path, dst_path):
+            # skip if file with same checksum already exists
+            src_checksum = audeer.md5(src_path)
+            if not self.exists(dst_path) or src_checksum != self.checksum(dst_path):
+                if self.exists(dst_path):
+                    self.remove_file(dst_path)
+                # Ensure sub-paths exist
+                self.fs.makedirs(os.path.dirname(dst_path), exist_ok=True)
+                self.fs.put_file(
+                    src_path,
+                    dst_path,
+                    callback=_progress_bar("Put file", verbose),
+                )
+
+        utils.call_function_on_backend(put, src_path, dst_path)
 
     def remove_file(
         self,
@@ -732,7 +817,8 @@ class Unversioned(Base):
             False
 
         """
-        self.backend.rm_file(path)
+        path = utils.check_path(path)
+        utils.call_function_on_backend(self.fs.rm_file, path)
 
 
 def _progress_bar(desc: str, verbose: bool) -> tqdm.tqdm:

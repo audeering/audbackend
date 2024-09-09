@@ -3,6 +3,7 @@ import os
 import platform
 import re
 import stat
+import typing
 
 import pytest
 
@@ -11,27 +12,25 @@ import audeer
 import audbackend
 
 
-@pytest.fixture(scope="function", autouse=False)
-def tree(tmpdir, request):
-    r"""Create file tree."""
-    files = request.param
-    paths = []
+def create_file_tree(root: str, files: typing.Sequence):
+    r"""Create file tree.
 
+    Args:
+        root: folder under which files should be created
+        files: relative file path
+            to create inside ``folder``,
+            e.g. ``/sub-path/file.txt``
+
+    """
     for path in files:
         if os.name == "nt":
             path = path.replace("/", os.path.sep)
         if path.endswith(os.path.sep):
-            path = audeer.path(tmpdir, path)
-            path = audeer.mkdir(path)
-            path = path + os.path.sep
-            paths.append(path)
+            path = audeer.mkdir(root, path)
         else:
-            path = audeer.path(tmpdir, path)
+            path = audeer.path(root, path)
             audeer.mkdir(os.path.dirname(path))
-            path = audeer.touch(path)
-            paths.append(path)
-
-    yield paths
+            audeer.touch(path)
 
 
 @pytest.mark.parametrize(
@@ -80,11 +79,28 @@ def tree(tmpdir, request):
             ["dir/to/file.ext", "file.ext"],
         ),
     ],
-    indirect=["tree"],
 )
-@pytest.mark.parametrize("filesystem", ["dir"], indirect=True)
-def test_archive(tmpdir, tree, archive, files, tmp_root, expected, filesystem):
+def test_archive(tmpdir, filesystem, tree, archive, files, tmp_root, expected):
+    r"""Test handling of archives.
+
+    Args:
+        tmpdir: tmpdir fixture
+        filesystem: filesystem fixture
+        tree: file tree in the source folder
+        archive: name of archive on backend
+        files: files to include from ``tree`` in archive
+        tmp_root: temporary directory
+            to be used by ``put_archive()`` and ``get_archive()``
+        expected: expected files in destination folder
+            after extracting the archive
+
+    """
     interface = audbackend.interface.Unversioned(filesystem)
+
+    src_dir = audeer.mkdir(tmpdir, "src")
+    dst_dir = audeer.mkdir(tmpdir, "dst")
+
+    create_file_tree(src_dir, tree)
 
     if tmp_root is not None:
         tmp_root = audeer.path(tmpdir, tmp_root)
@@ -92,56 +108,31 @@ def test_archive(tmpdir, tree, archive, files, tmp_root, expected, filesystem):
     if os.name == "nt":
         expected = [file.replace("/", os.sep) for file in expected]
 
-    # if a tmp_root is given but does not exist,
+    # If a tmp_root is given but does not exist,
     # put_archive() should fail
     if tmp_root is not None:
-        if os.path.exists(tmp_root):
-            os.removedirs(tmp_root)
+        audeer.rmdir(tmp_root)
         with pytest.raises(FileNotFoundError):
-            interface.put_archive(
-                tmpdir,
-                archive,
-                files=files,
-                tmp_root=tmp_root,
-            )
+            interface.put_archive(src_dir, archive, files=files, tmp_root=tmp_root)
         audeer.mkdir(tmp_root)
 
-    interface.put_archive(
-        tmpdir,
-        archive,
-        files=files,
-        tmp_root=tmp_root,
-    )
-    # operation will be skipped
-    interface.put_archive(
-        tmpdir,
-        archive,
-        files=files,
-        tmp_root=tmp_root,
-    )
+    # Upload archive
+    interface.put_archive(src_dir, archive, files=files, tmp_root=tmp_root)
+    assert interface.exists(archive)
+    # Repeated upload
+    interface.put_archive(src_dir, archive, files=files, tmp_root=tmp_root)
     assert interface.exists(archive)
 
-    # if a tmp_root is given but does not exist,
+    # If a tmp_root is given but does not exist,
     # get_archive() should fail
     if tmp_root is not None:
-        if os.path.exists(tmp_root):
-            os.removedirs(tmp_root)
+        audeer.rmdir(tmp_root)
         with pytest.raises(FileNotFoundError):
-            interface.get_archive(
-                archive,
-                tmpdir,
-                tmp_root=tmp_root,
-            )
+            interface.get_archive(archive, dst_dir, tmp_root=tmp_root)
         audeer.mkdir(tmp_root)
 
-    assert (
-        interface.get_archive(
-            archive,
-            tmpdir,
-            tmp_root=tmp_root,
-        )
-        == expected
-    )
+    files_in_archive = interface.get_archive(archive, dst_dir, tmp_root=tmp_root)
+    assert files_in_archive == expected
 
 
 @pytest.mark.parametrize(
@@ -157,11 +148,10 @@ def test_archive(tmpdir, tree, archive, files, tmp_root, expected, filesystem):
         ),
     ],
 )
-@pytest.mark.parametrize("filesystem", ["dir"], indirect=True)
-def test_copy(tmpdir, src_path, dst_path, filesystem):
+def test_copy(tmpdir, filesystem, src_path, dst_path):
     interface = audbackend.interface.Unversioned(filesystem)
 
-    local_path = audeer.path(tmpdir, "~")
+    local_path = audeer.path(tmpdir, "file.ext")
     audeer.touch(local_path)
     interface.put_file(local_path, src_path)
 
@@ -187,14 +177,7 @@ def test_copy(tmpdir, src_path, dst_path, filesystem):
     interface.copy_file(src_path, dst_path)
     assert audeer.md5(local_path) == interface.checksum(dst_path)
 
-    # # clean up
 
-    # interface.remove_file(src_path)
-    # if dst_path != src_path:
-    #     interface.remove_file(dst_path)
-
-
-@pytest.mark.parametrize("filesystem", ["dir"], indirect=True)
 def test_errors(tmpdir, filesystem):
     interface = audbackend.interface.Unversioned(filesystem)
 
@@ -426,17 +409,6 @@ def test_errors(tmpdir, filesystem):
     with pytest.raises(ValueError, match=error_invalid_char):
         interface.move_file("/file.txt", file_invalid_char)
 
-    # --- owner ---
-    # `path` without leading '/'
-    with pytest.raises(ValueError, match=error_invalid_path):
-        interface.owner(file_invalid_path)
-    # `path` without trailing '/'
-    with pytest.raises(ValueError, match=error_sub_path):
-        interface.owner(file_sub_path)
-    # `path` contains invalid character
-    with pytest.raises(ValueError, match=error_invalid_char):
-        interface.owner(file_invalid_char)
-
     # --- put_archive ---
     # `src_root` missing
     error_msg = "No such file or directory: ..."
@@ -530,8 +502,7 @@ def test_errors(tmpdir, filesystem):
         "/folder/test.txt",
     ],
 )
-@pytest.mark.parametrize("filesystem", ["dir"], indirect=True)
-def test_exists(tmpdir, path, filesystem):
+def test_exists(tmpdir, filesystem, path):
     interface = audbackend.interface.Unversioned(filesystem)
 
     src_path = audeer.path(tmpdir, "~")
@@ -563,8 +534,7 @@ def test_exists(tmpdir, path, filesystem):
         ),
     ],
 )
-@pytest.mark.parametrize("filesystem", ["dir"], indirect=True)
-def test_file(tmpdir, src_path, dst_path, filesystem):
+def test_file(tmpdir, filesystem, src_path, dst_path):
     interface = audbackend.interface.Unversioned(filesystem)
 
     src_path = audeer.path(tmpdir, src_path)
@@ -587,7 +557,6 @@ def test_file(tmpdir, src_path, dst_path, filesystem):
     assert not interface.exists(dst_path)
 
 
-@pytest.mark.parametrize("filesystem", ["dir"], indirect=True)
 def test_ls(tmpdir, filesystem):
     interface = audbackend.interface.Unversioned(filesystem)
 
@@ -655,8 +624,7 @@ def test_ls(tmpdir, filesystem):
         ),
     ],
 )
-@pytest.mark.parametrize("filesystem", ["dir"], indirect=True)
-def test_move(tmpdir, src_path, dst_path, filesystem):
+def test_move(tmpdir, filesystem, src_path, dst_path):
     interface = audbackend.interface.Unversioned(filesystem)
 
     local_path = audeer.path(tmpdir, "~")
@@ -700,11 +668,8 @@ def test_move(tmpdir, src_path, dst_path, filesystem):
 
 
 @pytest.mark.parametrize(
-    "filesystem, expected",
-    [
-        ("dir", "audbackend.interface.Unversioned(DirFileSystem)"),
-    ],
-    indirect="filesystem",
+    "expected",
+    ["audbackend.interface.Unversioned(DirFileSystem)"],
 )
 def test_repr(filesystem, expected):
     interface = audbackend.interface.Unversioned(filesystem)
