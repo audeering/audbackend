@@ -325,7 +325,7 @@ class Unversioned(AbstractBackend):
 
         """  # noqa: E501
         path = self.path(path, allow_sub_path=True)
-        return self._ls(path, pattern, suppress_backend_errors)
+        return self._ls(path, suppress_backend_errors, pattern)
 
     def move_file(
         self,

@@ -496,12 +496,12 @@ class Versioned(AbstractBackend):
 
         """  # noqa: E501
         if path.endswith("/"):  # find files under sub-path
-            paths = self._ls(path, None, suppress_backend_errors)
+            paths = self._ls(path, suppress_backend_errors)
 
         else:  # find versions of path
             root, file = self.split(path)
 
-            paths = self._ls(root, None, suppress_backend_errors)
+            paths = self._ls(root, suppress_backend_errors)
 
             # filter for '/root/version/file'
             depth = root.count("/") + 1

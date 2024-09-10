@@ -580,8 +580,8 @@ class AbstractBackend(metaclass=abc.ABCMeta):
     def _ls(
         self,
         path: str,
-        pattern: str,
         suppress_backend_errors: bool,
+        pattern: str = None,
     ) -> typing.List[str]:
         # Find all files under path
         paths = utils.call_function_on_backend(

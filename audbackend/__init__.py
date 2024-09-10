@@ -1,5 +1,6 @@
 from audbackend.core.base import AbstractBackend
 from audbackend.core.errors import BackendError
+from audbackend.core.maven import Maven
 from audbackend.core.unversioned import Unversioned
 from audbackend.core.versioned import Versioned
 

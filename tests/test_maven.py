@@ -8,26 +8,18 @@ import audeer
 
 import audbackend
 
-from singlefolder import SingleFolder
 
+def test_errors(tmpdir, filesystem):
+    backend = audbackend.Maven(filesystem)
 
-@pytest.mark.parametrize(
-    "interface",
-    [
-        (audbackend.backend.FileSystem, audbackend.interface.Maven),
-        (SingleFolder, audbackend.interface.Maven),
-    ],
-    indirect=True,
-)
-def test_errors(tmpdir, interface):
     # Ensure we have one file and one archive published on the backend
     archive = "/archive.zip"
     local_file = "file.txt"
     local_path = audeer.touch(audeer.path(tmpdir, local_file))
     remote_file = f"/{local_file}"
     version = "1.0.0"
-    interface.put_file(local_path, remote_file, version)
-    interface.put_archive(tmpdir, archive, version, files=[local_file])
+    backend.put_file(local_path, remote_file, version)
+    backend.put_archive(tmpdir, archive, version, files=[local_file])
 
     # Create local read-only file and folder
     file_read_only = audeer.touch(audeer.path(tmpdir, "read-only-file.txt"))
@@ -53,34 +45,26 @@ def test_errors(tmpdir, interface):
     # --- ls ---
     # `path` does not exist
     with pytest.raises(audbackend.BackendError, match=error_backend):
-        interface.ls("/missing/")
-    interface.ls("/missing/", suppress_backend_errors=True)
+        backend.ls("/missing/")
+    backend.ls("/missing/", suppress_backend_errors=True)
     with pytest.raises(audbackend.BackendError, match=error_backend):
-        interface.ls("/missing.txt")
-    interface.ls("/missing.txt", suppress_backend_errors=True)
+        backend.ls("/missing.txt")
+    backend.ls("/missing.txt", suppress_backend_errors=True)
     remote_file_with_wrong_ext = audeer.replace_file_extension(
         remote_file,
         "missing",
     )
     with pytest.raises(audbackend.BackendError, match=error_backend):
-        interface.ls(remote_file_with_wrong_ext)
-    interface.ls(remote_file_with_wrong_ext, suppress_backend_errors=True)
+        backend.ls(remote_file_with_wrong_ext)
+    backend.ls(remote_file_with_wrong_ext, suppress_backend_errors=True)
     # joined path without leading '/'
     with pytest.raises(ValueError, match=error_invalid_path):
-        interface.ls(file_invalid_path)
+        backend.ls(file_invalid_path)
     # `path` contains invalid character
     with pytest.raises(ValueError, match=error_invalid_char):
-        interface.ls(file_invalid_char)
+        backend.ls(file_invalid_char)
 
 
-@pytest.mark.parametrize(
-    "interface",
-    [
-        (audbackend.backend.FileSystem, audbackend.interface.Maven),
-        (SingleFolder, audbackend.interface.Maven),
-    ],
-    indirect=True,
-)
 @pytest.mark.parametrize(
     "files",
     [
@@ -316,27 +300,29 @@ def test_errors(tmpdir, interface):
         ),
     ],
 )
-def test_ls(tmpdir, interface, files, path, latest, pattern, expected):
-    assert interface.ls() == []
-    assert interface.ls("/") == []
+def test_ls(tmpdir, filesystem, files, path, latest, pattern, expected):
+    backend = audbackend.Maven(filesystem)
+
+    assert backend.ls() == []
+    assert backend.ls("/") == []
 
     # create content
     tmp_file = audeer.touch(tmpdir, "~")
     for file_path, file_version in files:
-        interface.put_file(tmp_file, file_path, file_version)
+        backend.put_file(tmp_file, file_path, file_version)
 
     # test
-    assert interface.ls(
+    assert backend.ls(
         path,
         latest_version=latest,
         pattern=pattern,
     ) == sorted(expected)
 
 
-def test_repr():
-    interface = audbackend.interface.Maven(
-        audbackend.backend.FileSystem("host", "repo")
-    )
-    assert interface.__repr__() == (
-        "audbackend.interface.Maven(audbackend.backend.FileSystem('host', 'repo'))"
-    )
+@pytest.mark.parametrize(
+    "expected",
+    ["audbackend.Maven(DirFileSystem)"],
+)
+def test_repr(filesystem, expected):
+    backend = audbackend.Maven(filesystem)
+    assert repr(backend) == expected
