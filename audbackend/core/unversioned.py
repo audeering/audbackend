@@ -390,6 +390,33 @@ class Unversioned(AbstractBackend):
         dst_path = self.path(dst_path)
         self._move_file(src_path, dst_path, validate, verbose)
 
+    def path(
+        self,
+        path: str,
+        *,
+        allow_sub_path: bool = False,
+    ) -> str:
+        r"""Resolved backend path.
+
+        Resolved path as handed to the filesystem object.
+
+        Args:
+            path: path on backend
+            allow_sub_path: if ``path`` is allowed
+                to point to a sub-path
+                instead of a file
+
+        Returns:
+            path as handed to the filesystem object
+
+        Raises:
+            ValueError: if ``path`` does not start with ``'/'``,
+                ends on ``'/'`` when ``allow_sub_path`` is ``False``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
+
+        """
+        return self._path(path, allow_sub_path)
+
     def put_file(
         self,
         src_path: str,

@@ -51,7 +51,7 @@ class AbstractBackend(metaclass=abc.ABCMeta):
 
         """
         name = self.__class__.__name__
-        return f"audbackend.interface.{name}({self.fs.__class__.__name__})"
+        return f"audbackend.{name}({self.fs.__class__.__name__})"
 
     def _assert_equal_checksum(
         self,
@@ -310,7 +310,7 @@ class AbstractBackend(metaclass=abc.ABCMeta):
         """
         raise NotImplementedError
 
-    def _exists(self, path: str, suppress_backend_errors: bool) -> bool:
+    def _exists(self, path: str, suppress_backend_errors: bool = False) -> bool:
         return utils.call_function_on_backend(
             self.fs.exists,
             path,
@@ -454,6 +454,7 @@ class AbstractBackend(metaclass=abc.ABCMeta):
         # Get file only if it does not exist or has different checksum
         src_checksum = self._checksum(src_path)
         if not os.path.exists(dst_path) or src_checksum != audeer.md5(dst_path):
+            print("Checksums are different")
             # Ensure sub-paths of dst_path exists
             dst_root = os.path.dirname(dst_path)
             audeer.mkdir(dst_root)
@@ -484,6 +485,9 @@ class AbstractBackend(metaclass=abc.ABCMeta):
                     path_is_local=True,
                     expected_checksum=src_checksum,
                 )
+
+        else:
+            print("Checksums are not different")
 
         return dst_path
 
@@ -724,7 +728,7 @@ class AbstractBackend(metaclass=abc.ABCMeta):
         """
         raise NotImplementedError
 
-    def _path(self, path: str, allow_sub_path: bool) -> str:
+    def _path(self, path: str, allow_sub_path: bool = False) -> str:
         # Assert path starts with sep, but not ends on it
         if not path.startswith(self.sep):
             raise ValueError(
@@ -814,6 +818,7 @@ class AbstractBackend(metaclass=abc.ABCMeta):
 
         """
         src_root = audeer.path(src_root)
+        dst_path = self._path(dst_path)
 
         if tmp_root is not None:
             tmp_root = audeer.path(tmp_root)
@@ -993,6 +998,7 @@ class AbstractBackend(metaclass=abc.ABCMeta):
             ('/sub/', 'file.txt')
 
         """
+        path = self._path(path)
         root = self.sep.join(path.split(self.sep)[:-1]) + self.sep
         basename = path.split(self.sep)[-1]
 
