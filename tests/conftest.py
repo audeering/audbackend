@@ -1,4 +1,5 @@
 import os
+import typing
 
 import fsspec
 import minio
@@ -11,6 +12,27 @@ import audeer
 # Repositories on the host will be named
 # unittest-<session-uid>-<repository-uid>
 pytest.UID = audeer.uid()[:8]
+
+
+def create_file_tree(root: str, files: typing.Sequence):
+    r"""Create file tree.
+
+    Args:
+        root: folder under which files should be created
+        files: relative file path
+            to create inside ``folder``,
+            e.g. ``/sub-path/file.txt``
+
+    """
+    for path in files:
+        if os.name == "nt":
+            path = path.replace("/", os.path.sep)
+        if path.endswith(os.path.sep):
+            path = audeer.mkdir(root, path)
+        else:
+            path = audeer.path(root, path)
+            audeer.mkdir(os.path.dirname(path))
+            audeer.touch(path)
 
 
 @pytest.fixture(scope="function")

@@ -3,34 +3,13 @@ import os
 import platform
 import re
 import stat
-import typing
 
+from conftest import create_file_tree
 import pytest
 
 import audeer
 
 import audbackend
-
-
-def create_file_tree(root: str, files: typing.Sequence):
-    r"""Create file tree.
-
-    Args:
-        root: folder under which files should be created
-        files: relative file path
-            to create inside ``folder``,
-            e.g. ``/sub-path/file.txt``
-
-    """
-    for path in files:
-        if os.name == "nt":
-            path = path.replace("/", os.path.sep)
-        if path.endswith(os.path.sep):
-            path = audeer.mkdir(root, path)
-        else:
-            path = audeer.path(root, path)
-            audeer.mkdir(os.path.dirname(path))
-            audeer.touch(path)
 
 
 @pytest.mark.parametrize(

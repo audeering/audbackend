@@ -146,9 +146,12 @@ class Versioned(AbstractBackend):
             versions = [version]
 
         for version in versions:
-            src_path = self.path(src_path, version)
-            dst_path = self.path(dst_path, version)
-            self._copy_file(src_path, dst_path, validate, verbose)
+            self._copy_file(
+                self.path(src_path, version),
+                self.path(dst_path, version),
+                validate,
+                verbose,
+            )
 
     def date(
         self,
@@ -309,13 +312,7 @@ class Versioned(AbstractBackend):
 
         """
         src_path = self.path(src_path, version)
-        return super().get_archive(
-            src_path,
-            dst_root,
-            tmp_root=tmp_root,
-            validate=validate,
-            verbose=verbose,
-        )
+        return self._get_archive(src_path, dst_root, tmp_root, validate, verbose)
 
     def get_file(
         self,
@@ -633,9 +630,12 @@ class Versioned(AbstractBackend):
             versions = [version]
 
         for version in versions:
-            src_path = self.path(src_path, version)
-            dst_path = self.path(dst_path, version)
-            self._move_file(src_path, dst_path, validate, verbose)
+            self._move_file(
+                self.path(src_path, version),
+                self.path(dst_path, version),
+                validate,
+                verbose,
+            )
 
     def path(
         self,
@@ -760,14 +760,7 @@ class Versioned(AbstractBackend):
 
         """
         dst_path = self.path(dst_path, version)
-        super().put_archive(
-            src_root,
-            dst_path,
-            files=files,
-            tmp_root=tmp_root,
-            validate=validate,
-            verbose=verbose,
-        )
+        self._put_archive(src_root, dst_path, files, tmp_root, validate, verbose)
 
     def put_file(
         self,
@@ -910,6 +903,7 @@ class Versioned(AbstractBackend):
             ['1.0.0', '2.0.0']
 
         """
+        path = self._path(path)
         paths = self.ls(path, suppress_backend_errors=suppress_backend_errors)
         vs = [v for _, v in paths]
         return vs
