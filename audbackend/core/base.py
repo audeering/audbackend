@@ -372,21 +372,21 @@ class AbstractBackend(metaclass=abc.ABCMeta):
             RuntimeError: if backend was not opened
 
         """
+        src_path = self._path(src_path)
+        return self._get_archive(src_path, dst_root, tmp_root, validate, verbose)
+
+    def _get_archive(
+        self,
+        src_path: str,
+        dst_root: str,
+        tmp_root: str,
+        validate: bool,
+        verbose: bool,
+    ) -> str:
         with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
             local_archive = os.path.join(tmp, os.path.basename(src_path))
-            self.get_file(
-                src_path,
-                local_archive,
-                *args,
-                validate=validate,
-                verbose=verbose,
-                **kwargs,
-            )
-            return audeer.extract_archive(
-                local_archive,
-                dst_root,
-                verbose=verbose,
-            )
+            self._get_file(src_path, local_archive, validate, verbose)
+            return audeer.extract_archive(local_archive, dst_root, verbose=verbose)
 
     def get_file(
         self,
@@ -817,8 +817,19 @@ class AbstractBackend(metaclass=abc.ABCMeta):
             RuntimeError: if backend was not opened
 
         """
-        src_root = audeer.path(src_root)
         dst_path = self._path(dst_path)
+        self._put_archive(src_root, dst_path, files, tmp_root, validate, verbose)
+
+    def _put_archive(
+        self,
+        src_root: str,
+        dst_path: str,
+        files: typing.Union[str, typing.Sequence[str]],
+        tmp_root: str,
+        validate: bool,
+        verbose: bool,
+    ):
+        src_root = audeer.path(src_root)
 
         if tmp_root is not None:
             tmp_root = audeer.path(tmp_root)
@@ -833,14 +844,7 @@ class AbstractBackend(metaclass=abc.ABCMeta):
                 archive,
                 verbose=verbose,
             )
-            self.put_file(
-                archive,
-                dst_path,
-                *args,
-                validate=validate,
-                verbose=verbose,
-                **kwargs,
-            )
+            self._put_file(archive, dst_path, validate, verbose)
 
     def put_file(
         self,
