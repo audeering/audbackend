@@ -675,10 +675,6 @@ def test_move(tmpdir, filesystem, src_path, dst_path):
     backend.move_file(src_path, dst_path)
     assert audeer.md5(local_path) == backend.checksum(dst_path)
 
-    # # clean up
-
-    # backend.remove_file(dst_path)
-
 
 @pytest.mark.parametrize(
     "expected",
