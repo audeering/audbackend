@@ -1,4 +1,3 @@
-import getpass
 import os
 
 import fsspec
@@ -6,8 +5,6 @@ import minio
 import pytest
 
 import audeer
-
-import audbackend
 
 
 # UID for test session
@@ -59,65 +56,6 @@ def minio_filesystem():
 
     # Delete bucket
     client.remove_bucket(bucket)
-
-
-# @pytest.fixture(scope="package", autouse=True)
-# def authentication():
-#     """Provide authentication tokens for supported backends."""
-#     if pytest.HOSTS["minio"] == "play.min.io":
-#         defaults = {}
-#         for key in [
-#             "MINIO_ACCESS_KEY",
-#             "MINIO_SECRET_KEY",
-#         ]:
-#             defaults[key] = os.environ.get(key, None)
-#
-#         os.environ["MINIO_ACCESS_KEY"] = "Q3AM3UQ867SPQQA43P2F"
-#         os.environ["MINIO_SECRET_KEY"] = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
-#
-#         yield
-#
-#         for key, value in defaults.items():
-#             if value is not None:
-#                 os.environ[key] = value
-#             elif key in os.environ:
-#                 del os.environ[key]
-
-
-# @pytest.fixture(scope="package", autouse=False)
-# def hosts(tmpdir_factory):
-#     return {
-#         # For tests based on backend names (deprecated),
-#         # like audbackend.access()
-#         "artifactory": pytest.HOSTS["artifactory"],
-#         "file-system": str(tmpdir_factory.mktemp("host")),
-#         "minio": pytest.HOSTS["minio"],
-#         "single-folder": str(tmpdir_factory.mktemp("host")),
-#     }
-
-
-@pytest.fixture(scope="function", autouse=False)
-def owner(request):
-    r"""Return expected owner value."""
-    backend_cls = request.param
-    if (
-        hasattr(audbackend.backend, "Artifactory")
-        and backend_cls == audbackend.backend.Artifactory
-    ):
-        host_wo_https = pytest.HOSTS["artifactory"][8:]
-        owner = backend_cls.get_authentication(host_wo_https)[0]
-    elif (
-        hasattr(audbackend.backend, "Minio") and backend_cls == audbackend.backend.Minio
-    ):
-        # There seems to be a MinIO bug here
-        owner = None
-    else:
-        if os.name == "nt":
-            owner = "Administrators"
-        else:
-            owner = getpass.getuser()
-
-    yield owner
 
 
 @pytest.fixture(scope="package", autouse=True)

@@ -1,6 +1,8 @@
+import abc
 import fnmatch
 import hashlib
 import os
+import re
 import tempfile
 import typing
 
@@ -11,36 +13,104 @@ import audeer
 
 from audbackend.core import utils
 from audbackend.core.errors import BackendError
-from audbackend.core.interface.base import Base
 
 
-class Unversioned(Base):
-    r"""Interface for unversioned file access.
+class AbstractBackend(metaclass=abc.ABCMeta):
+    r"""Abstract superclass for backends.
 
-    Use this interface if you don't care about versioning.
-    For every backend path exactly one file exists on the backend.
+    Backend implementations are expected to be compatible with or,
+    better,
+    subclass from here.
 
     Args:
-        backend: backend object
-
-    Examples:
-        >>> file = "src.txt"
-        >>> fs = fsspec.filesystem("dir", path="./host/repo")
-        >>> interface = Unversioned(fs)
-        >>> interface.put_file(file, "/file.txt")
-        >>> interface.put_archive(".", "/sub/archive.zip", files=[file])
-        >>> interface.ls()
-        ['/file.txt', '/sub/archive.zip']
-        >>> interface.get_file("/file.txt", "dst.txt")
-        '...dst.txt'
+        fs: filesystem object
+            following :mod:`fsspec` specifications
 
     """
+
+    def __init__(
+        self,
+        fs: fsspec.AbstractFileSystem,
+        **kwargs,
+    ):
+        self.fs = fs
+        """Filesystem object."""
+
+    def __repr__(
+        self,
+    ) -> str:
+        r"""String representation.
+
+        ..
+            >>> fs = fsspec.filesystem("dir", path="./host/repo")
+            >>> interface = Base(fs)
+
+        Examples:
+            >>> interface
+            'audbackend.interface.Base(DirFileSystem)'
+
+        """
+        name = self.__class__.__name__
+        return f"audbackend.interface.{name}({self.fs.__class__.__name__})"
+
+    def _assert_equal_checksum(
+        self,
+        *,
+        path: str,
+        path_is_local: bool,
+        expected_checksum: str,
+    ):
+        r"""Assert checksums are equal.
+
+        If check fails,
+        ``path`` is removed
+        and an error is raised.
+
+        Args:
+            path: path to file to check
+            path_is_local: if ``True``
+                ``path`` is expected to be on the local disk
+            expected_checksum: expected checksum of ``path``
+
+        """
+        if path_is_local:
+            checksum = audeer.md5(path)
+        else:
+            checksum = self._checksum(path)
+
+        if checksum != expected_checksum:
+            if path_is_local:
+                os.remove(path)
+                location = "local file system"
+            else:
+                self._remove_file(path)
+                location = "backend"
+
+            raise InterruptedError(
+                f"Execution is interrupted because "
+                f"{path} "
+                f"has checksum "
+                f"'{checksum}' "
+                "when the expected checksum is "
+                f"'{expected_checksum}'. "
+                f"The file has been removed from the "
+                f"{location}."
+            )
 
     def checksum(
         self,
         path: str,
+        *args,
+        **kwargs,
     ) -> str:
         r"""MD5 checksum for file on backend.
+
+        Requires MD5 checksum
+        for comparison of the checksum across
+        different backends,
+        which is not guaranteed
+        by simply relying on
+        :meth:`fsspech.AbstractFileSystem.checksum`.
 
         Args:
             path: path to file on backend
@@ -56,22 +126,13 @@ class Unversioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             RuntimeError: if backend was not opened
 
-        ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Unversioned(fs)
-
-        Examples:
-            >>> file = "src.txt"
-            >>> import audeer
-            >>> audeer.md5(file)
-            'd41d8cd98f00b204e9800998ecf8427e'
-            >>> interface.put_file(file, "/file.txt")
-            >>> interface.checksum("/file.txt")
-            'd41d8cd98f00b204e9800998ecf8427e'
-
         """
-        path = utils.check_path(path)
+        raise NotImplementedError
 
+    def _checksum(
+        self,
+        path: str,
+    ) -> str:
         # Most filesystem object do not implement MD5 checksum,
         # but use the standard implementation based on the info dict
         # (https://github.com/fsspec/filesystem_spec/blob/76ca4a68885d572880ac6800f079738df562f02c/fsspec/spec.py#L692C16-L692C50):
@@ -118,6 +179,7 @@ class Unversioned(Base):
         *,
         validate: bool = False,
         verbose: bool = False,
+        **kwargs,
     ):
         r"""Copy file on backend.
 
@@ -150,43 +212,44 @@ class Unversioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             RuntimeError: if backend was not opened
 
-        ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Unversioned(fs)
-
-        Examples:
-            >>> file = "src.txt"
-            >>> interface.put_file(file, "/file.txt")
-            >>> interface.exists("/copy.txt")
-            False
-            >>> interface.copy_file("/file.txt", "/copy.txt")
-            >>> interface.exists("/copy.txt")
-            True
-
         """
-        src_path = utils.check_path(src_path)
-        dst_path = utils.check_path(dst_path)
+        raise NotImplementedError
+
+    def _copy_file(
+        self,
+        src_path: str,
+        dst_path: str,
+        validate: bool,
+        verbose: bool,
+    ):
+        src_checksum = self._checksum(src_path)
+        dst_exists = self._exists(dst_path)
 
         def copy(src_path, dst_path):
-            if not self.exists(dst_path) or self.checksum(src_path) != self.checksum(
-                dst_path
-            ):
-                if self.exists(dst_path):
-                    self.remove_file(dst_path)
+            # Copy only if dst_path does not exist or has a different checksum
+            if not dst_exists or src_checksum != self._checksum(dst_path):
+                # Remove dst_path if existent
+                if dst_exists:
+                    self._remove_file(dst_path)
                 # Ensure sub-paths exist
                 self.fs.makedirs(os.path.dirname(dst_path), exist_ok=True)
-            self.fs.copy(
-                src_path,
-                dst_path,
-                callback=_progress_bar("Copy file", verbose),
-            )
+            self.fs.copy(src_path, dst_path, callback=pbar("Copy file", verbose))
 
         if src_path != dst_path:
             utils.call_function_on_backend(copy, src_path, dst_path)
 
+            if validate:
+                self._assert_equal_checksum(
+                    path=dst_path,
+                    path_is_local=False,
+                    expected_checksum=src_checksum,
+                )
+
     def date(
         self,
         path: str,
+        *args,
+        **kwargs,
     ) -> str:
         r"""Last modification date of file on backend.
 
@@ -207,18 +270,10 @@ class Unversioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             RuntimeError: if backend was not opened
 
-        ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Unversioned(fs)
-
-        Examples:
-            >>> file = "src.txt"
-            >>> interface.put_file(file, "/file.txt")
-            >>> interface.date("/file.txt")
-            '1991-02-20'
-
         """
-        path = utils.check_path(path)
+        raise NotImplementedError
+
+    def _date(self, path: str) -> str:
         date = utils.call_function_on_backend(self.fs.modified, path)
         date = utils.date_format(date)
         return date
@@ -226,8 +281,9 @@ class Unversioned(Base):
     def exists(
         self,
         path: str,
-        *,
+        *args,
         suppress_backend_errors: bool = False,
+        **kwargs,
     ) -> bool:
         r"""Check if file exists on backend.
 
@@ -251,22 +307,13 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9._-]+'``
             RuntimeError: if backend was not opened
 
-        ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Unversioned(fs)
-
-        Examples:
-            >>> file = "src.txt"
-            >>> interface.exists("/file.txt")
-            False
-            >>> interface.put_file(file, "/file.txt")
-            >>> interface.exists("/file.txt")
-            True
-
         """
+        raise NotImplementedError
+
+    def _exists(self, path: str, suppress_backend_errors: bool) -> bool:
         return utils.call_function_on_backend(
             self.fs.exists,
-            utils.check_path(path),
+            path,
             suppress_backend_errors=suppress_backend_errors,
             fallback_return_value=False,
         )
@@ -275,10 +322,11 @@ class Unversioned(Base):
         self,
         src_path: str,
         dst_root: str,
-        *,
+        *args,
         tmp_root: str = None,
         validate: bool = False,
         verbose: bool = False,
+        **kwargs,
     ) -> typing.List[str]:
         r"""Get archive from backend and extract.
 
@@ -323,29 +371,16 @@ class Unversioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             RuntimeError: if backend was not opened
 
-        ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Unversioned(fs)
-
-        Examples:
-            >>> file = "src.txt"
-            >>> interface.put_archive(".", "/sub/archive.zip", files=[file])
-            >>> os.remove(file)
-            >>> interface.get_archive("/sub/archive.zip", ".")
-            ['src.txt']
-
         """
         with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
-            local_archive = os.path.join(
-                # audeer.path(tmp, os.path.basename(dst_root)),
-                tmp,
-                os.path.basename(src_path),
-            )
+            local_archive = os.path.join(tmp, os.path.basename(src_path))
             self.get_file(
                 src_path,
                 local_archive,
+                *args,
                 validate=validate,
                 verbose=verbose,
+                **kwargs,
             )
             return audeer.extract_archive(
                 local_archive,
@@ -357,9 +392,10 @@ class Unversioned(Base):
         self,
         src_path: str,
         dst_path: str,
-        *,
+        *args,
         validate: bool = False,
         verbose: bool = False,
+        **kwargs,
     ) -> str:
         r"""Get file from backend.
 
@@ -403,57 +439,103 @@ class Unversioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             RuntimeError: if backend was not opened
 
-        ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Unversioned(fs)
-
-        Examples:
-            >>> file = "src.txt"
-            >>> interface.put_file(file, "/file.txt")
-            >>> os.path.exists("dst.txt")
-            False
-            >>> _ = interface.get_file("/file.txt", "dst.txt")
-            >>> os.path.exists("dst.txt")
-            True
-
         """
-        src_path = utils.check_path(src_path)
+        raise NotImplementedError
+
+    def _get_file(
+        self, src_path: str, dst_path: str, validate: bool, verbose: bool
+    ) -> str:
         dst_path = audeer.path(dst_path)
+
+        # Raise error if dst_path is a folder
         if os.path.isdir(dst_path):
             raise utils.raise_is_a_directory(dst_path)
 
-        dst_root = os.path.dirname(dst_path)
-        audeer.mkdir(dst_root)
+        # Get file only if it does not exist or has different checksum
+        src_checksum = self._checksum(src_path)
+        if not os.path.exists(dst_path) or src_checksum != audeer.md5(dst_path):
+            # Ensure sub-paths of dst_path exists
+            dst_root = os.path.dirname(dst_path)
+            audeer.mkdir(dst_root)
 
-        if not os.access(dst_root, os.W_OK) or (
-            os.path.exists(dst_path) and not os.access(dst_path, os.W_OK)
-        ):  # pragma: no Windows cover
-            msg = f"Permission denied: '{dst_path}'"
-            raise PermissionError(msg)
+            # Raise error if we don't have write permissions to dst_root
+            if not os.access(dst_root, os.W_OK) or (
+                os.path.exists(dst_path) and not os.access(dst_path, os.W_OK)
+            ):  # pragma: no Windows cover
+                msg = f"Permission denied: '{dst_path}'"
+                raise PermissionError(msg)
 
-        if not os.path.exists(dst_path) or audeer.md5(dst_path) != self.checksum(
-            src_path
-        ):
-            # get file to a temporary directory first,
-            # only on success move to final destination
+            # Get file to a temporary directory first,
+            # only on success move to final destination.
+            # This also overwrites a potential existing dst_path
             with tempfile.TemporaryDirectory(dir=dst_root) as tmp:
                 tmp_path = audeer.path(tmp, "~")
                 utils.call_function_on_backend(
                     self.fs.get_file,
                     src_path,
                     tmp_path,
-                    callback=_progress_bar("Get file", verbose),
+                    callback=pbar("Get file", verbose),
                 )
                 audeer.move_file(tmp_path, dst_path)
 
+            if validate:
+                self._assert_equal_checksum(
+                    path=dst_path,
+                    path_is_local=True,
+                    expected_checksum=src_checksum,
+                )
+
         return dst_path
+
+    def join(
+        self,
+        path: str,
+        *paths,
+    ) -> str:
+        r"""Join to path on backend.
+
+        Args:
+            path: first part of path
+            *paths: additional parts of path
+
+        Returns:
+            path joined by :attr:`Backend.sep`
+
+        Raises:
+            ValueError: if ``path`` contains invalid character
+                or does not start with ``'/'``,
+                or if joined path contains invalid character
+
+        ..
+            >>> fs = fsspec.filesystem("dir", path="./host/repo")
+            >>> interface = Base(fs)
+
+        Examples:
+            >>> interface.join("/", "file.txt")
+            '/file.txt'
+            >>> interface.join("/sub", "file.txt")
+            '/sub/file.txt'
+            >>> interface.join("//sub//", "/", "", None, "/file.txt")
+            '/sub/file.txt'
+
+        """
+        path = self._path(path, allow_sub_path=True)
+
+        paths = [path] + [p for p in paths]
+        paths = [path for path in paths if path]  # remove empty or None
+        path = self.sep.join(paths)
+
+        path = self._path(path, allow_sub_path=True)
+
+        return path
 
     def ls(
         self,
         path: str = "/",
-        *,
+        *args,
         pattern: str = None,
         suppress_backend_errors: bool = False,
+        **kwargs,
     ) -> typing.List[str]:
         r"""List files on backend.
 
@@ -488,33 +570,23 @@ class Unversioned(Base):
                 does not match ``'[A-Za-z0-9/._-]+'``
             RuntimeError: if backend was not opened
 
-        ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Unversioned(fs)
-
-        Examples:
-            >>> file = "src.txt"
-            >>> interface.put_file(file, "/file.txt")
-            >>> interface.put_archive(".", "/sub/archive.zip", files=[file])
-            >>> interface.ls()
-            ['/file.txt', '/sub/archive.zip']
-            >>> interface.ls("/file.txt")
-            ['/file.txt']
-            >>> interface.ls(pattern="*.txt")
-            ['/file.txt']
-            >>> interface.ls(pattern="archive.*")
-            ['/sub/archive.zip']
-            >>> interface.ls("/sub/")
-            ['/sub/archive.zip']
-
         """  # noqa: E501
-        path = utils.check_path(path, allow_sub_path=True)
+        raise NotImplementedError
+
+    def _ls(
+        self,
+        path: str,
+        pattern: str,
+        suppress_backend_errors: bool,
+    ) -> typing.List[str]:
+        # Find all files under path
         paths = utils.call_function_on_backend(
             self.fs.find,
             path,
             suppress_backend_errors=suppress_backend_errors,
             fallback_return_value=[],
         )
+        # Sort and ensure each path starts with a sep
         paths = sorted(
             [path if path.startswith(self.sep) else self.sep + path for path in paths]
         )
@@ -530,6 +602,7 @@ class Unversioned(Base):
 
             return []
 
+        # Filter for matching pattern
         if pattern:
             paths = [
                 path
@@ -543,9 +616,10 @@ class Unversioned(Base):
         self,
         src_path: str,
         dst_path: str,
-        *,
+        *args,
         validate: bool = False,
         verbose: bool = False,
+        **kwargs,
     ):
         r"""Move file on backend.
 
@@ -598,37 +672,98 @@ class Unversioned(Base):
             False
 
         """
-        src_path = utils.check_path(src_path)
-        dst_path = utils.check_path(dst_path)
+        raise NotImplementedError
 
-        if src_path == dst_path:
-            return
+    def _move_file(self, src_path: str, dst_path: str, validate: bool, verbose: bool):
+        src_checksum = self._checksum(src_path)
+        dst_exists = self._exists(dst_path)
 
         def move(src_path, dst_path):
-            if not self.exists(dst_path) or self.checksum(src_path) != self.checksum(
-                dst_path
-            ):
-                if self.exists(dst_path):
-                    self.remove_file(dst_path)
+            if not dst_exists or src_checksum != self._checksum(dst_path):
+                if dst_exists:
+                    self._remove_file(dst_path)
                 # Ensure sub-paths exist
                 self.fs.makedirs(os.path.dirname(dst_path), exist_ok=True)
-            self.fs.move(
-                src_path,
-                dst_path,
-                callback=_progress_bar("Move file", verbose),
+            self.fs.move(src_path, dst_path, callback=pbar("Move file", verbose))
+
+        if src_path != dst_path:
+            utils.call_function_on_backend(move, src_path, dst_path)
+
+            if validate:
+                self._assert_equal_checksum(
+                    path=dst_path,
+                    path_is_local=False,
+                    expected_checksum=src_checksum,
+                )
+
+    def path(
+        self,
+        path: str,
+        *args,
+        allow_sub_path: bool = False,
+        **kwargs,
+    ) -> str:
+        r"""Resolved backend path.
+
+        Resolved path as handed to the filesystem object.
+
+        Args:
+            path: path on backend
+            allow_sub_path: if ``path`` is allowed
+                to point to a sub-path
+                instead of a file
+
+        Returns:
+            path as handed to the filesystem object
+
+        Raises:
+            ValueError: if ``path`` does not start with ``'/'``,
+                ends on ``'/'`` when ``allow_sub_path`` is ``False``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
+
+        """
+        raise NotImplementedError
+
+    def _path(self, path: str, allow_sub_path: bool) -> str:
+        # Assert path starts with sep, but not ends on it
+        if not path.startswith(self.sep):
+            raise ValueError(
+                f"Invalid backend path '{path}', " f"must start with '{self.sep}'."
+            )
+        if not allow_sub_path and path.endswith(self.sep):
+            raise ValueError(
+                f"Invalid backend path '{path}', " f"must not end on '{self.sep}'."
             )
 
-        utils.call_function_on_backend(move, src_path, dst_path)
+        # Check for allowed characters.
+        # This is mainly motivated by the Artifactory filesystem,
+        # which allows only a very limited amount of characters
+        allowed_chars = "[A-Za-z0-9/._-]+"
+        if path and re.compile(allowed_chars).fullmatch(path) is None:
+            raise ValueError(
+                f"Invalid backend path '{path}', " f"does not match '{allowed_chars}'."
+            )
+
+        # Remove immediately consecutive seps
+        is_sub_path = path.endswith(self.sep)
+        paths = path.split(self.sep)
+        paths = [path for path in paths if path]
+        path = self.sep + self.sep.join(paths)
+        if is_sub_path and not path.endswith(self.sep):
+            path += self.sep
+
+        return path
 
     def put_archive(
         self,
         src_root: str,
         dst_path: str,
-        *,
+        *args,
         files: typing.Union[str, typing.Sequence[str]] = None,
         tmp_root: str = None,
         validate: bool = False,
         verbose: bool = False,
+        **kwargs,
     ):
         r"""Create archive and put on backend.
 
@@ -677,21 +812,8 @@ class Unversioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             RuntimeError: if backend was not opened
 
-        ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Unversioned(fs)
-
-        Examples:
-            >>> file = "src.txt"
-            >>> interface.exists("/sub/archive.tar.gz")
-            False
-            >>> interface.put_archive(".", "/sub/archive.tar.gz")
-            >>> interface.exists("/sub/archive.tar.gz")
-            True
-
         """
         src_root = audeer.path(src_root)
-        dst_path = utils.check_path(dst_path)
 
         if tmp_root is not None:
             tmp_root = audeer.path(tmp_root)
@@ -709,17 +831,20 @@ class Unversioned(Base):
             self.put_file(
                 archive,
                 dst_path,
+                *args,
                 validate=validate,
                 verbose=verbose,
+                **kwargs,
             )
 
     def put_file(
         self,
         src_path: str,
         dst_path: str,
-        *,
+        *args,
         validate: bool = False,
         verbose: bool = False,
+        **kwargs,
     ):
         r"""Put file on backend.
 
@@ -765,31 +890,39 @@ class Unversioned(Base):
             True
 
         """
+        raise NotImplementedError
+
+    def _put_file(self, src_path: str, dst_path: str, validate: bool, verbose: bool):
         if not os.path.exists(src_path):
             utils.raise_file_not_found_error(src_path)
         elif os.path.isdir(src_path):
             raise utils.raise_is_a_directory(src_path)
-        dst_path = utils.check_path(dst_path)
+
+        src_checksum = audeer.md5(src_path)
+        dst_exists = self._exists(dst_path)
 
         def put(src_path, dst_path):
             # skip if file with same checksum already exists
-            src_checksum = audeer.md5(src_path)
-            if not self.exists(dst_path) or src_checksum != self.checksum(dst_path):
-                if self.exists(dst_path):
-                    self.remove_file(dst_path)
+            if not dst_exists or src_checksum != self._checksum(dst_path):
+                if dst_exists:
+                    self._remove_file(dst_path)
                 # Ensure sub-paths exist
                 self.fs.makedirs(os.path.dirname(dst_path), exist_ok=True)
-                self.fs.put_file(
-                    src_path,
-                    dst_path,
-                    callback=_progress_bar("Put file", verbose),
-                )
+                self.fs.put_file(src_path, dst_path, callback=pbar("Put file", verbose))
 
         utils.call_function_on_backend(put, src_path, dst_path)
+        if validate:
+            self._assert_equal_checksum(
+                path=dst_path,
+                path_is_local=False,
+                expected_checksum=src_checksum,
+            )
 
     def remove_file(
         self,
         path: str,
+        *args,
+        **kwargs,
     ):
         r"""Remove file from backend.
 
@@ -803,25 +936,77 @@ class Unversioned(Base):
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
-        ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Unversioned(fs)
-
-        Examples:
-            >>> file = "src.txt"
-            >>> interface.put_file(file, "/file.txt")
-            >>> interface.exists("/file.txt")
-            True
-            >>> interface.remove_file("/file.txt")
-            >>> interface.exists("/file.txt")
-            False
-
         """
-        path = utils.check_path(path)
+        raise NotImplementedError
+
+    def _remove_file(self, path: str):
         utils.call_function_on_backend(self.fs.rm_file, path)
 
+    @property
+    def sep(
+        self,
+    ) -> str:
+        r"""File separator on backend.
 
-def _progress_bar(desc: str, verbose: bool) -> tqdm.tqdm:
+        Returns:
+            file separator
+
+        ..
+            >>> fs = fsspec.filesystem("dir", path="./host/repo")
+            >>> interface = Base(fs)
+
+        Examples:
+            >>> interface.sep
+            '/'
+
+        """
+        return "/"
+
+    def split(
+        self,
+        path: str,
+    ) -> typing.Tuple[str, str]:
+        r"""Split path on backend into sub-path and basename.
+
+        Args:
+            path: path containing :attr:`Backend.sep` as separator
+
+        Returns:
+            tuple containing (root, basename)
+
+        Raises:
+            ValueError: if ``path`` does not start with ``'/'`` or
+                does not match ``'[A-Za-z0-9/._-]+'``
+
+        ..
+            >>> fs = fsspec.filesystem("dir", path="./host/repo")
+            >>> interface = Base(fs)
+
+        Examples:
+            >>> interface.split("/")
+            ('/', '')
+            >>> interface.split("/file.txt")
+            ('/', 'file.txt')
+            >>> interface.split("/sub/")
+            ('/sub/', '')
+            >>> interface.split("/sub//file.txt")
+            ('/sub/', 'file.txt')
+
+        """
+        root = self.sep.join(path.split(self.sep)[:-1]) + self.sep
+        basename = path.split(self.sep)[-1]
+
+        return root, basename
+
+
+def pbar(desc: str, verbose: bool) -> tqdm.tqdm:
+    r"""Progress bar for fsspec callbacks.
+
+    Args:
+        desc: description of progress bar
+        verbose: if ``False`` don't show progress bar
+
+    """
     return fsspec.callbacks.TqdmCallback(
         tqdm_kwargs={
             "desc": desc,

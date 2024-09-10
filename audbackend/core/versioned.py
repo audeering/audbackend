@@ -1,16 +1,16 @@
 import fnmatch
 import os
+import re
 import typing
 
 import audeer
 
 from audbackend.core import utils
-from audbackend.core.backend.base import Base as Backend
+from audbackend.core.base import AbstractBackend
 from audbackend.core.errors import BackendError
-from audbackend.core.interface.base import Base
 
 
-class Versioned(Base):
+class Versioned(AbstractBackend):
     r"""Interface for versioned file access.
 
     Use this interface if you care about versioning.
@@ -23,9 +23,9 @@ class Versioned(Base):
 
     Examples:
         >>> file = "src.txt"
-        >>> backend = audbackend.backend.FileSystem("host", "repo")
-        >>> backend.open()
-        >>> interface = Versioned(backend)
+        >>> import fsspec
+        >>> fs = fsspec.filesystem("dir", path="./host/repo")
+        >>> interface = Versioned(fs)
         >>> interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
         >>> for version in ["1.0.0", "2.0.0"]:
         ...     interface.put_file(file, "/file.txt", version)
@@ -34,14 +34,7 @@ class Versioned(Base):
         >>> interface.get_file("/file.txt", "dst.txt", "2.0.0")
         '...dst.txt'
 
-
     """
-
-    def __init__(
-        self,
-        backend: Backend,
-    ):
-        super().__init__(backend)
 
     def checksum(
         self,
@@ -82,8 +75,8 @@ class Versioned(Base):
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
-        path_with_version = self._path_with_version(path, version)
-        return self.backend.checksum(path_with_version)
+        path = self.path(path, version)
+        return self._checksum(path)
 
     def copy_file(
         self,
@@ -153,14 +146,9 @@ class Versioned(Base):
             versions = [version]
 
         for version in versions:
-            src_path_with_version = self._path_with_version(src_path, version)
-            dst_path_with_version = self._path_with_version(dst_path, version)
-            self.backend.copy_file(
-                src_path_with_version,
-                dst_path_with_version,
-                validate=validate,
-                verbose=verbose,
-            )
+            src_path = self.path(src_path, version)
+            dst_path = self.path(dst_path, version)
+            self._copy_file(src_path, dst_path, validate, verbose)
 
     def date(
         self,
@@ -201,8 +189,8 @@ class Versioned(Base):
             '1991-02-20'
 
         """
-        path_with_version = self._path_with_version(path, version)
-        return self.backend.date(path_with_version)
+        path = self.path(path, version)
+        return self._date(path)
 
     def exists(
         self,
@@ -248,11 +236,8 @@ class Versioned(Base):
             True
 
         """
-        path_with_version = self._path_with_version(path, version)
-        return self.backend.exists(
-            path_with_version,
-            suppress_backend_errors=suppress_backend_errors,
-        )
+        path = self.path(path, version)
+        return self._exists(path, suppress_backend_errors)
 
     def get_archive(
         self,
@@ -323,9 +308,9 @@ class Versioned(Base):
             ['src.txt']
 
         """
-        src_path_with_version = self._path_with_version(src_path, version)
-        return self.backend.get_archive(
-            src_path_with_version,
+        src_path = self.path(src_path, version)
+        return super().get_archive(
+            src_path,
             dst_root,
             tmp_root=tmp_root,
             validate=validate,
@@ -401,13 +386,8 @@ class Versioned(Base):
             True
 
         """
-        src_path_with_version = self._path_with_version(src_path, version)
-        return self.backend.get_file(
-            src_path_with_version,
-            dst_path,
-            validate=validate,
-            verbose=verbose,
-        )
+        src_path = self.path(src_path, version)
+        return self._get_file(src_path, dst_path, validate, verbose)
 
     def latest_version(
         self,
@@ -519,18 +499,12 @@ class Versioned(Base):
 
         """  # noqa: E501
         if path.endswith("/"):  # find files under sub-path
-            paths = self.backend.ls(
-                path,
-                suppress_backend_errors=suppress_backend_errors,
-            )
+            paths = self._ls(path, None, suppress_backend_errors)
 
         else:  # find versions of path
             root, file = self.split(path)
 
-            paths = self.backend.ls(
-                root,
-                suppress_backend_errors=suppress_backend_errors,
-            )
+            paths = self._ls(root, None, suppress_backend_errors)
 
             # filter for '/root/version/file'
             depth = root.count("/") + 1
@@ -659,57 +633,56 @@ class Versioned(Base):
             versions = [version]
 
         for version in versions:
-            src_path_with_version = self._path_with_version(src_path, version)
-            dst_path_with_version = self._path_with_version(dst_path, version)
-            self.backend.move_file(
-                src_path_with_version,
-                dst_path_with_version,
-                validate=validate,
-                verbose=verbose,
-            )
+            src_path = self.path(src_path, version)
+            dst_path = self.path(dst_path, version)
+            self._move_file(src_path, dst_path, validate, verbose)
 
-    def owner(
+    def path(
         self,
         path: str,
         version: str,
+        *,
+        allow_sub_path: bool = False,
     ) -> str:
-        r"""Owner of file on backend.
+        r"""Resolved backend path.
 
-        If the owner of the file
-        cannot be determined,
-        an empty string is returned.
+        Resolved path as handed to the filesystem object.
+
+        <root>/<base><ext>
+        ->
+        <root>/<version>/<base><ext>
 
         Args:
-            path: path to file on backend
+            path: path on backend
             version: version string
+            allow_sub_path: if ``path`` is allowed
+                to point to a sub-path
+                instead of a file
 
         Returns:
-            owner
+            path as handed to the filesystem object
 
         Raises:
-            BackendError: if an error is raised on the backend,
-                e.g. ``path`` does not exist
             ValueError: if ``path`` does not start with ``'/'``,
-                ends on ``'/'``,
+                ends on ``'/'`` when ``allow_sub_path`` is ``False``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
-            ValueError: if ``version`` is empty or
-                does not match ``'[A-Za-z0-9._-]+'``
-            RuntimeError: if backend was not opened
-
-        ..
-            >>> backend = DoctestFileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
-
-        Examples:
-            >>> file = "src.txt"
-            >>> interface.put_file(file, "/file.txt", "1.0.0")
-            >>> interface.owner("/file.txt", "1.0.0")
-            'doctest'
 
         """
-        path_with_version = self._path_with_version(path, version)
-        return self.backend.owner(path_with_version)
+        path = self._path(path, allow_sub_path)
+
+        # Assert version is not empty and does not contain invalid characters.
+        version_allowed_chars = "[A-Za-z0-9._-]+"
+        if not version:
+            raise ValueError("Version must not be empty.")
+        if re.compile(version_allowed_chars).fullmatch(version) is None:
+            raise ValueError(
+                f"Invalid version '{version}', "
+                f"does not match '{version_allowed_chars}'."
+            )
+
+        root, name = self.split(path)
+        path = self.join(root, version, name)
+        return path
 
     def put_archive(
         self,
@@ -786,10 +759,10 @@ class Versioned(Base):
             True
 
         """
-        dst_path_with_version = self._path_with_version(dst_path, version)
-        self.backend.put_archive(
+        dst_path = self.path(dst_path, version)
+        super().put_archive(
             src_root,
-            dst_path_with_version,
+            dst_path,
             files=files,
             tmp_root=tmp_root,
             validate=validate,
@@ -856,13 +829,8 @@ class Versioned(Base):
             True
 
         """
-        dst_path_with_version = self._path_with_version(dst_path, version)
-        return self.backend.put_file(
-            src_path,
-            dst_path_with_version,
-            validate=validate,
-            verbose=verbose,
-        )
+        dst_path = self.path(dst_path, version)
+        return self._put_file(src_path, dst_path, validate, verbose)
 
     def remove_file(
         self,
@@ -900,8 +868,8 @@ class Versioned(Base):
             False
 
         """
-        path_with_version = self._path_with_version(path, version)
-        self.backend.remove_file(path_with_version)
+        path = self.path(path, version)
+        self._remove_file(path)
 
     def versions(
         self,
@@ -942,27 +910,6 @@ class Versioned(Base):
             ['1.0.0', '2.0.0']
 
         """
-        utils.check_path(path)
-
         paths = self.ls(path, suppress_backend_errors=suppress_backend_errors)
         vs = [v for _, v in paths]
-
         return vs
-
-    def _path_with_version(
-        self,
-        path: str,
-        version: str,
-    ) -> str:
-        r"""Convert to versioned path.
-
-        <root>/<base><ext>
-        ->
-        <root>/<version>/<base><ext>
-
-        """
-        path = utils.check_path(path)
-        version = utils.check_version(version)
-        root, name = self.split(path)
-        path = self.join(root, version, name)
-        return path

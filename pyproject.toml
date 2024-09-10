@@ -117,6 +117,9 @@ extend-ignore = [
     'F401',  # * imported but unused
     'I001',  # Import block is un-sorted or un-formatted
 ]
+'audbackend/core/base.py' = [
+    'D417',  # Missing argument descriptions in the docstring for `remove_file`: `**kwargs`, `*args`
+]
 'audbackend/core/conftest.py' = [
     'D101',  # Missing docstring in public class
     'D105',  # Missing docstring in magic method
