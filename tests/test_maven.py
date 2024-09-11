@@ -41,6 +41,19 @@ def test_errors(tmpdir, filesystem):
         "An exception was raised by the backend, "
         "please see stack trace for further information."
     )
+    empty_version = ""
+    error_empty_version = "Version must not be empty."
+    invalid_version = "1.0.?"
+    error_invalid_version = re.escape(
+        f"Invalid version '{invalid_version}', " f"does not match '[A-Za-z0-9._-]+'."
+    )
+
+    # --- exists ---
+    # invalid version
+    with pytest.raises(ValueError, match=error_empty_version):
+        backend.exists(remote_file, empty_version)
+    with pytest.raises(ValueError, match=error_invalid_version):
+        backend.exists(remote_file, invalid_version)
 
     # --- ls ---
     # `path` does not exist
@@ -317,6 +330,28 @@ def test_ls(tmpdir, filesystem, files, path, latest, pattern, expected):
         latest_version=latest,
         pattern=pattern,
     ) == sorted(expected)
+
+
+@pytest.mark.parametrize(
+    "path, version, extensions, regex, expected",
+    [
+        ("/file.tar.gz", "1.0.0", [], False, "/file.tar/1.0.0/file.tar-1.0.0.gz"),
+        ("/file.tar.gz", "1.0.0", [], True, "/file.tar/1.0.0/file.tar-1.0.0.gz"),
+        ("/file.tar.gz", "1.0.0", ["tar.gz"], False, "/file/1.0.0/file-1.0.0.tar.gz"),
+        ("/file.tar.gz", "1.0.0", ["tar.gz"], True, "/file/1.0.0/file-1.0.0.tar.gz"),
+        ("/file.tar.0", "1.0", [r"tar.\d+"], True, "/file/1.0/file-1.0.tar.0"),
+        (
+            "/file.zip.0",
+            "1.0",
+            [r"tar.\d+"],
+            True,
+            "/file.zip/1.0/file.zip-1.0.0",
+        ),
+    ],
+)
+def test_path(tmpdir, filesystem, path, version, extensions, regex, expected):
+    backend = audbackend.Maven(filesystem, extensions=extensions, regex=regex)
+    assert backend.path(path, version) == expected
 
 
 @pytest.mark.parametrize(
