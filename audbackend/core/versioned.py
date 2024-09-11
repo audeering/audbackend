@@ -76,6 +76,7 @@ class Versioned(AbstractBackend):
 
         """
         path = self.path(path, version)
+        print("Use original checksum")
         return self._checksum(path)
 
     def copy_file(

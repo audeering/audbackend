@@ -222,6 +222,9 @@ class AbstractBackend(metaclass=abc.ABCMeta):
         validate: bool,
         verbose: bool,
     ):
+        if src_path == dst_path:
+            return
+
         src_checksum = self._checksum(src_path)
         dst_exists = self._exists(dst_path)
 
@@ -235,15 +238,14 @@ class AbstractBackend(metaclass=abc.ABCMeta):
                 self.fs.makedirs(os.path.dirname(dst_path), exist_ok=True)
             self.fs.copy(src_path, dst_path, callback=pbar("Copy file", verbose))
 
-        if src_path != dst_path:
-            utils.call_function_on_backend(copy, src_path, dst_path)
+        utils.call_function_on_backend(copy, src_path, dst_path)
 
-            if validate:
-                self._assert_equal_checksum(
-                    path=dst_path,
-                    path_is_local=False,
-                    expected_checksum=src_checksum,
-                )
+        if validate:
+            self._assert_equal_checksum(
+                path=dst_path,
+                path_is_local=False,
+                expected_checksum=src_checksum,
+            )
 
     def date(
         self,
@@ -273,7 +275,10 @@ class AbstractBackend(metaclass=abc.ABCMeta):
         """
         raise NotImplementedError
 
-    def _date(self, path: str) -> str:
+    def _date(
+        self,
+        path: str,
+    ) -> str:
         date = utils.call_function_on_backend(self.fs.modified, path)
         date = utils.date_format(date)
         return date
@@ -310,7 +315,11 @@ class AbstractBackend(metaclass=abc.ABCMeta):
         """
         raise NotImplementedError
 
-    def _exists(self, path: str, suppress_backend_errors: bool = False) -> bool:
+    def _exists(
+        self,
+        path: str,
+        suppress_backend_errors: bool = False,
+    ) -> bool:
         return utils.call_function_on_backend(
             self.fs.exists,
             path,
@@ -443,7 +452,11 @@ class AbstractBackend(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     def _get_file(
-        self, src_path: str, dst_path: str, validate: bool, verbose: bool
+        self,
+        src_path: str,
+        dst_path: str,
+        validate: bool,
+        verbose: bool,
     ) -> str:
         dst_path = audeer.path(dst_path)
 
@@ -454,7 +467,6 @@ class AbstractBackend(metaclass=abc.ABCMeta):
         # Get file only if it does not exist or has different checksum
         src_checksum = self._checksum(src_path)
         if not os.path.exists(dst_path) or src_checksum != audeer.md5(dst_path):
-            print("Checksums are different")
             # Ensure sub-paths of dst_path exists
             dst_root = os.path.dirname(dst_path)
             audeer.mkdir(dst_root)
@@ -485,9 +497,6 @@ class AbstractBackend(metaclass=abc.ABCMeta):
                     path_is_local=True,
                     expected_checksum=src_checksum,
                 )
-
-        else:
-            print("Checksums are not different")
 
         return dst_path
 
@@ -678,27 +687,19 @@ class AbstractBackend(metaclass=abc.ABCMeta):
         """
         raise NotImplementedError
 
-    def _move_file(self, src_path: str, dst_path: str, validate: bool, verbose: bool):
-        src_checksum = self._checksum(src_path)
-        dst_exists = self._exists(dst_path)
+    def _move_file(
+        self,
+        src_path: str,
+        dst_path: str,
+        validate: bool,
+        verbose: bool,
+    ):
+        if src_path == dst_path:
+            return
 
-        def move(src_path, dst_path):
-            if not dst_exists or src_checksum != self._checksum(dst_path):
-                if dst_exists:
-                    self._remove_file(dst_path)
-                # Ensure sub-paths exist
-                self.fs.makedirs(os.path.dirname(dst_path), exist_ok=True)
-            self.fs.move(src_path, dst_path, callback=pbar("Move file", verbose))
-
-        if src_path != dst_path:
-            utils.call_function_on_backend(move, src_path, dst_path)
-
-            if validate:
-                self._assert_equal_checksum(
-                    path=dst_path,
-                    path_is_local=False,
-                    expected_checksum=src_checksum,
-                )
+        # To support validation, we first copy the file
+        self._copy_file(src_path, dst_path, validate, verbose)
+        self._remove_file(src_path)
 
     def path(
         self,
@@ -901,7 +902,13 @@ class AbstractBackend(metaclass=abc.ABCMeta):
         """
         raise NotImplementedError
 
-    def _put_file(self, src_path: str, dst_path: str, validate: bool, verbose: bool):
+    def _put_file(
+        self,
+        src_path: str,
+        dst_path: str,
+        validate: bool,
+        verbose: bool,
+    ):
         if not os.path.exists(src_path):
             utils.raise_file_not_found_error(src_path)
         elif os.path.isdir(src_path):
@@ -948,7 +955,10 @@ class AbstractBackend(metaclass=abc.ABCMeta):
         """
         raise NotImplementedError
 
-    def _remove_file(self, path: str):
+    def _remove_file(
+        self,
+        path: str,
+    ):
         utils.call_function_on_backend(self.fs.rm_file, path)
 
     @property
@@ -1009,7 +1019,10 @@ class AbstractBackend(metaclass=abc.ABCMeta):
         return root, basename
 
 
-def pbar(desc: str, verbose: bool) -> tqdm.tqdm:
+def pbar(
+    desc: str,
+    verbose: bool,
+) -> tqdm.tqdm:
     r"""Progress bar for fsspec callbacks.
 
     Args:

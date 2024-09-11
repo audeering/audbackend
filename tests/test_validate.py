@@ -10,9 +10,21 @@ import audbackend
 
 
 def test_validate(tmpdir, filesystem):
+    """Test methods that provide validation.
+
+    We inject a broken `checksum()` method
+    into one backend
+    to force the validation to go always wrong
+    on that backend.
+
+    Args:
+        tmpdir: tmpdir fixture
+        filesystem: filesystemn fixture
+
+    """
     backend = audbackend.Versioned(filesystem)
 
-    def random_checksum(self, path: str) -> str:
+    def random_checksum(path: str) -> str:
         r"""Return random checksum."""
         return "".join(
             random.choices(
@@ -22,17 +34,19 @@ def test_validate(tmpdir, filesystem):
         )
 
     broken_backend = audbackend.Versioned(filesystem)
-    broken_backend.checksum = random_checksum
+    broken_backend._checksum = random_checksum
 
     path = audeer.touch(tmpdir, "~.txt")
     error_msg = "Execution is interrupted because"
 
+    # put_file()
     with pytest.raises(InterruptedError, match=error_msg):
         broken_backend.put_file(path, "/remote.txt", "1.0.0", validate=True)
     assert not backend.exists("/remote.txt", "1.0.0")
     backend.put_file(path, "/remote.txt", "1.0.0", validate=True)
     assert backend.exists("/remote.txt", "1.0.0")
 
+    # get_file()
     with pytest.raises(InterruptedError, match=error_msg):
         broken_backend.get_file(
             "/remote.txt",
@@ -49,6 +63,7 @@ def test_validate(tmpdir, filesystem):
     )
     assert os.path.exists("local.txt")
 
+    # copy_file()
     with pytest.raises(InterruptedError, match=error_msg):
         broken_backend.copy_file(
             "/remote.txt",
@@ -64,6 +79,7 @@ def test_validate(tmpdir, filesystem):
     )
     assert backend.exists("/copy.txt", "1.0.0")
 
+    # move_file()
     with pytest.raises(InterruptedError, match=error_msg):
         broken_backend.move_file(
             "/remote.txt",
@@ -82,6 +98,7 @@ def test_validate(tmpdir, filesystem):
     assert backend.exists("/move.txt", "1.0.0")
     assert not backend.exists("/remote.txt", "1.0.0")
 
+    # put_archive()
     with pytest.raises(InterruptedError, match=error_msg):
         broken_backend.put_archive(
             tmpdir,
@@ -98,6 +115,7 @@ def test_validate(tmpdir, filesystem):
     )
     assert backend.exists("/remote.zip", "1.0.0")
 
+    # get_archive()
     dst_root = os.path.join(tmpdir, "extract")
     with pytest.raises(InterruptedError, match=error_msg):
         broken_backend.get_archive(
