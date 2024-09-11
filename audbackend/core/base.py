@@ -42,10 +42,10 @@ class AbstractBackend(metaclass=abc.ABCMeta):
         r"""String representation.
 
         ..
-            >>> interface = AbstractBackend(fs)
+            >>> backend = AbstractBackend(filesystem)
 
         Examples:
-            >>> interface
+            >>> backend
             audbackend.AbstractBackend(DirFileSystem)
 
         """
@@ -519,14 +519,14 @@ class AbstractBackend(metaclass=abc.ABCMeta):
                 or if joined path contains invalid character
 
         ..
-            >>> interface = AbstractBackend(fs)
+            >>> backend = AbstractBackend(filesystem)
 
         Examples:
-            >>> interface.join("/", "file.txt")
+            >>> backend.join("/", "file.txt")
             '/file.txt'
-            >>> interface.join("/sub", "file.txt")
+            >>> backend.join("/sub", "file.txt")
             '/sub/file.txt'
-            >>> interface.join("//sub//", "/", "", None, "/file.txt")
+            >>> backend.join("//sub//", "/", "", None, "/file.txt")
             '/sub/file.txt'
 
         """
@@ -942,10 +942,10 @@ class AbstractBackend(metaclass=abc.ABCMeta):
             file separator
 
         ..
-            >>> interface = AbstractBackend(fs)
+            >>> backend = AbstractBackend(filesystem)
 
         Examples:
-            >>> interface.sep
+            >>> backend.sep
             '/'
 
         """
@@ -968,16 +968,16 @@ class AbstractBackend(metaclass=abc.ABCMeta):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         ..
-            >>> interface = AbstractBackend(fs)
+            >>> backend = AbstractBackend(filesystem)
 
         Examples:
-            >>> interface.split("/")
+            >>> backend.split("/")
             ('/', '')
-            >>> interface.split("/file.txt")
+            >>> backend.split("/file.txt")
             ('/', 'file.txt')
-            >>> interface.split("/sub/")
+            >>> backend.split("/sub/")
             ('/sub/', '')
-            >>> interface.split("/sub//file.txt")
+            >>> backend.split("/sub//file.txt")
             ('/sub/', 'file.txt')
 
         """

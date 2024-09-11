@@ -66,9 +66,7 @@ class Maven(Versioned):
 
     Examples:
         >>> file = "src.txt"
-        >>> # import fsspec
-        >>> # fs = fsspec.filesystem("dir", path="./host/repo")
-        >>> backend = Versioned(fs)
+        >>> backend = Versioned(filesystem)
         >>> backend.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
         >>> for version in ["1.0.0", "2.0.0"]:
         ...     backend.put_file(file, "/file.txt", version)
@@ -140,7 +138,7 @@ class Maven(Versioned):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = Maven(fs)
+            >>> backend = Maven(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -271,7 +269,7 @@ class Maven(Versioned):
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
         ..
-            >>> backend = Maven(fs)
+            >>> backend = Maven(filesystem)
 
         Examples:
             >>> backend.path("/file.txt", "1.0.0")

@@ -1,39 +1,41 @@
 import datetime
-import os
-import tempfile
+from doctest import ELLIPSIS
 
-import fsspec
 import pytest
+from sybil import Sybil
+from sybil.parsers.doctest import DocTestParser
 
 import audeer
 
 import audbackend
 
 
-def date(path: str) -> str:
-    date = datetime.datetime(1991, 2, 20)
-    date = audbackend.core.utils.date_format(date)
-    return date
+@pytest.fixture(scope="function")
+def mock_date():
+    r"""Custom date method to return a fixed date."""
+
+    def date(path: str) -> str:
+        date = datetime.datetime(1991, 2, 20)
+        date = audbackend.core.utils.date_format(date)
+        return date
+
+    yield date
 
 
 @pytest.fixture(scope="function", autouse=True)
-def prepare_docstring_tests(doctest_namespace):
-    with tempfile.TemporaryDirectory() as tmp:
-        # Change to tmp dir
-        current_dir = os.getcwd()
-        os.chdir(tmp)
-        # Prepare backend
-        audeer.mkdir("host/repo")
-        # Provide example file `src.txt`
-        audeer.touch("src.txt")
-        fs = fsspec.filesystem("dir", path="./host/repo")
-        fs.date = date
+def prepare_docstring_tests(tmpdir, monkeypatch):
+    r"""Code to be run before each doctest."""
+    # Change to tmp dir
+    monkeypatch.chdir(tmpdir)
 
-        doctest_namespace["audbackend"] = audbackend
-        doctest_namespace["fs"] = fs
+    # Provide example file `src.txt`
+    audeer.touch("src.txt")
 
-        yield
+    yield
 
-        audeer.rmdir("host")
-        # Change back to current dir
-        os.chdir(current_dir)
+
+pytest_collect_file = Sybil(
+    parsers=[DocTestParser(optionflags=ELLIPSIS)],
+    pattern="*.py",
+    fixtures=["filesystem", "mock_date", "prepare_docstring_tests"],
+).pytest()

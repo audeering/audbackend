@@ -5,8 +5,9 @@ class BackendError(Exception):
         exception: exception raised by backend
 
     Examples:
+        >>> import audbackend
         >>> try:
-        ...     backend = audbackend.Unversioned(fs)
+        ...     backend = audbackend.Unversioned(filesystem)
         ...     backend.checksum("/does/not/exist")
         ... except BackendError as ex:
         ...     ex.exception

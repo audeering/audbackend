@@ -14,8 +14,7 @@ class Unversioned(AbstractBackend):
 
     Examples:
         >>> file = "src.txt"
-        >>> # fs = fsspec.filesystem("dir", path="./host/repo")
-        >>> backend = Unversioned(fs)
+        >>> backend = Unversioned(filesystem)
         >>> backend.put_file(file, "/file.txt")
         >>> backend.put_archive(".", "/sub/archive.zip", files=[file])
         >>> backend.ls()
@@ -46,7 +45,7 @@ class Unversioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = Unversioned(fs)
+            >>> backend = Unversioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -101,7 +100,7 @@ class Unversioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = Unversioned(fs)
+            >>> backend = Unversioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -138,7 +137,8 @@ class Unversioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = Unversioned(fs)
+            >>> backend = Unversioned(filesystem)
+            >>> backend._date = mock_date
 
         Examples:
             >>> file = "src.txt"
@@ -179,7 +179,7 @@ class Unversioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = Unversioned(fs)
+            >>> backend = Unversioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -244,16 +244,16 @@ class Unversioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = Unversioned(fs)
+            >>> import os
+            >>> backend = Unversioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
             >>> backend.put_file(file, "/file.txt")
             >>> os.path.exists("dst.txt")
             False
-            >>> _ = backend.get_file("/file.txt", "dst.txt")
-            >>> os.path.exists("dst.txt")
-            True
+            >>> backend.get_file("/file.txt", "dst.txt")
+            '...dst.txt'
 
         """
         src_path = self.path(src_path)
@@ -300,7 +300,7 @@ class Unversioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = Unversioned(fs)
+            >>> backend = Unversioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -365,7 +365,7 @@ class Unversioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = Unversioned(fs)
+            >>> backend = Unversioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -450,7 +450,7 @@ class Unversioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = Unversioned(fs)
+            >>> backend = Unversioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -478,7 +478,7 @@ class Unversioned(AbstractBackend):
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
         ..
-            >>> backend = Unversioned(fs)
+            >>> backend = Unversioned(filesystem)
 
         Examples:
             >>> file = "src.txt"

@@ -23,9 +23,7 @@ class Versioned(AbstractBackend):
 
     Examples:
         >>> file = "src.txt"
-        >>> # import fsspec
-        >>> # fs = fsspec.filesystem("dir", path="./host/repo")
-        >>> backend = Versioned(fs)
+        >>> backend = Versioned(filesystem)
         >>> backend.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
         >>> for version in ["1.0.0", "2.0.0"]:
         ...     backend.put_file(file, "/file.txt", version)
@@ -61,7 +59,7 @@ class Versioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = Versioned(fs)
+            >>> backend = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -74,7 +72,6 @@ class Versioned(AbstractBackend):
 
         """
         path = self.path(path, version)
-        print("Use original checksum")
         return self._checksum(path)
 
     def copy_file(
@@ -125,7 +122,7 @@ class Versioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = Versioned(fs)
+            >>> backend = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -178,7 +175,8 @@ class Versioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = Versioned(fs)
+            >>> backend = Versioned(filesystem)
+            >>> backend._date = mock_date
 
         Examples:
             >>> file = "src.txt"
@@ -221,7 +219,7 @@ class Versioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = Versioned(fs)
+            >>> backend = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -292,7 +290,7 @@ class Versioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = Versioned(fs)
+            >>> backend = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -360,16 +358,15 @@ class Versioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = Versioned(fs)
+            >>> backend = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
             >>> backend.put_file(file, "/file.txt", "1.0.0")
             >>> os.path.exists("dst.txt")
             False
-            >>> _ = backend.get_file("/file.txt", "dst.txt", "1.0.0")
-            >>> os.path.exists("dst.txt")
-            True
+            >>> backend.get_file("/file.txt", "dst.txt", "1.0.0")
+            '...dst.txt'
 
         """
         src_path = self.path(src_path, version)
@@ -396,7 +393,7 @@ class Versioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
          ..
-            >>> backend = Versioned(fs)
+            >>> backend = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -459,7 +456,7 @@ class Versioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = Versioned(fs)
+            >>> backend = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -593,7 +590,7 @@ class Versioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = Versioned(fs)
+            >>> backend = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -729,7 +726,7 @@ class Versioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = Versioned(fs)
+            >>> backend = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -790,7 +787,7 @@ class Versioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = Versioned(fs)
+            >>> backend = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -826,7 +823,7 @@ class Versioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = Versioned(fs)
+            >>> backend = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -868,7 +865,7 @@ class Versioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = Versioned(fs)
+            >>> backend = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
