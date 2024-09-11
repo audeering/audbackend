@@ -166,7 +166,7 @@ class AbstractBackend(metaclass=abc.ABCMeta):
 
         info = utils.call_function_on_backend(self.fs.info, path)
         if "ETag" in info:
-            md5 = ["ETag"][1:-1]
+            md5 = ["ETag"][1:-1]  # pragma: nocover (only tested in CI)
         else:
             md5 = utils.call_function_on_backend(md5sum, path)
 
