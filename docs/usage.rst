@@ -35,72 +35,50 @@ so called :ref:`backends <backends>`.
 Unversioned data on a file system
 ---------------------------------
 
-To store data on a backend
-we need to create a repository first.
-We select the :class:`audbackend.backend.FileSystem` backend.
+To access data on a backend
+we need a file system
+to store the data.
+We select the :class:`fsspec.LocalFileSystem`.
 
-.. jupyter-execute::
-    :hide-output:
+.. skip: next
 
-    import audbackend
+>>> import fsspec
+>>> import audeer
+>>> path = audeer.mkdir("./repo")
+>>> filesystem = fsspec.filesystem("local", path=path)
 
-    audbackend.backend.FileSystem.create("./host", "repo")
-
-Once we have an existing repository,
-we can access it by instantiating the backend class.
-For some backends we have to establish a connection first.
-This can be achieved using a ``with`` statement,
-or by calling ``backend.open()`` at the beginning,
-and ``backend.close()`` at the end.
-If you are unsure
-whether your backend requires this step,
-just do it always.
-
-.. jupyter-execute::
-
-    backend = audbackend.backend.FileSystem("./host", "repo")
-    backend.open()
-
-After establishing a connection
-we could directly execute read and write operations
-on the backend object.
-However,
-we recommend to always use
-:mod:`interfaces <audbackend.interface>`
-to communicate with a backend.
-Here, we use :class:`audbackend.interface.Unversioned`.
+Now we can wrap around a backend,
+which manages how the data is stored.
+Here, we use :class:`audbackend.Unversioned`.
 It does not support versioning,
 i.e. exactly one file exists for a backend path.
 
 .. jupyter-execute::
 
-    interface = audbackend.interface.Unversioned(backend)
+>>> backend = audbackend.Unversioned(filesystem)
 
-Now we can upload our first file to the repository.
+Now we can upload our first file to the backend.
 Note,
 it is important to provide an absolute path
-from the root of the repository
+from the root of the backend
 by starting it with ``/``.
 
-.. jupyter-execute::
+.. invisible-code-block: python
 
     import audeer
 
-    file = audeer.touch("file.txt")
-    interface.put_file(file, "/file.txt")
+>>> file = audeer.touch("file.txt")
+>>> backend.put_file(file, "/file.txt")
 
-We check if the file exists in the repository.
+We check if the file exists on the backend.
 
-.. jupyter-execute::
-
-    interface.exists("/file.txt")
+>>> backend.exists("/file.txt")
+True
 
 And access its meta information,
 like its checksum.
 
-.. jupyter-execute::
-
-    interface.checksum("/file.txt")
+>>> backend.checksum("/file.txt")
 
 Its creation date.
 
