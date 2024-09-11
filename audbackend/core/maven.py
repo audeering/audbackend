@@ -15,7 +15,7 @@ from audbackend.core.versioned import Versioned
 class Maven(Versioned):
     r"""Interface for Maven style versioned file access.
 
-    Use this interface,
+    Use this backend,
     if you want to version files
     similar to how it is handled by Maven.
     For each file on the backend path
@@ -66,15 +66,15 @@ class Maven(Versioned):
 
     Examples:
         >>> file = "src.txt"
-        >>> backend = audbackend.backend.FileSystem("host", "repo")
-        >>> backend.open()
-        >>> interface = Maven(backend)
-        >>> interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
+        >>> # import fsspec
+        >>> # fs = fsspec.filesystem("dir", path="./host/repo")
+        >>> backend = Versioned(fs)
+        >>> backend.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
         >>> for version in ["1.0.0", "2.0.0"]:
-        ...     interface.put_file(file, "/file.txt", version)
-        >>> interface.ls()
+        ...     backend.put_file(file, "/file.txt", version)
+        >>> backend.ls()
         [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
-        >>> interface.get_file("/file.txt", "dst.txt", "2.0.0")
+        >>> backend.get_file("/file.txt", "dst.txt", "2.0.0")
         '...dst.txt'
 
     """  # noqa: E501
@@ -140,26 +140,24 @@ class Maven(Versioned):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Maven(backend)
+            >>> backend = Maven(fs)
 
         Examples:
             >>> file = "src.txt"
-            >>> interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
+            >>> backend.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
             >>> for version in ["1.0.0", "2.0.0"]:
-            ...     interface.put_file(file, "/file.txt", version)
-            >>> interface.ls()
+            ...     backend.put_file(file, "/file.txt", version)
+            >>> backend.ls()
             [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
-            >>> interface.ls(latest_version=True)
+            >>> backend.ls(latest_version=True)
             [('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
-            >>> interface.ls("/file.txt")
+            >>> backend.ls("/file.txt")
             [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0')]
-            >>> interface.ls(pattern="*.txt")
+            >>> backend.ls(pattern="*.txt")
             [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0')]
-            >>> interface.ls(pattern="archive.*")
+            >>> backend.ls(pattern="archive.*")
             [('/sub/archive.zip', '1.0.0')]
-            >>> interface.ls("/sub/")
+            >>> backend.ls("/sub/")
             [('/sub/archive.zip', '1.0.0')]
 
         """  # noqa: E501
@@ -271,6 +269,13 @@ class Maven(Versioned):
             ValueError: if ``path`` does not start with ``'/'``,
                 ends on ``'/'`` when ``allow_sub_path`` is ``False``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
+
+        ..
+            >>> backend = Maven(fs)
+
+        Examples:
+            >>> backend.path("/file.txt", "1.0.0")
+            '/file/1.0.0/file-1.0.0.txt'
 
         """
         path = self._path(path, allow_sub_path)

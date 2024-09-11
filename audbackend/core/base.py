@@ -42,12 +42,11 @@ class AbstractBackend(metaclass=abc.ABCMeta):
         r"""String representation.
 
         ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Base(fs)
+            >>> interface = AbstractBackend(fs)
 
         Examples:
             >>> interface
-            'audbackend.interface.Base(DirFileSystem)'
+            audbackend.AbstractBackend(DirFileSystem)
 
         """
         name = self.__class__.__name__
@@ -520,8 +519,7 @@ class AbstractBackend(metaclass=abc.ABCMeta):
                 or if joined path contains invalid character
 
         ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Base(fs)
+            >>> interface = AbstractBackend(fs)
 
         Examples:
             >>> interface.join("/", "file.txt")
@@ -668,21 +666,6 @@ class AbstractBackend(metaclass=abc.ABCMeta):
                 ends on ``'/'``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
             RuntimeError: if backend was not opened
-
-        ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Unversioned(fs)
-
-        Examples:
-            >>> file = "src.txt"
-            >>> interface.put_file(file, "/file.txt")
-            >>> interface.exists("/move.txt")
-            False
-            >>> interface.move_file("/file.txt", "/move.txt")
-            >>> interface.exists("/move.txt")
-            True
-            >>> interface.exists("/file.txt")
-            False
 
         """
         raise NotImplementedError
@@ -887,18 +870,6 @@ class AbstractBackend(metaclass=abc.ABCMeta):
                 or does not match ``'[A-Za-z0-9/._-]+'``
             RuntimeError: if backend was not opened
 
-        ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Unversioned(fs)
-
-        Examples:
-            >>> file = "src.txt"
-            >>> interface.exists("/file.txt")
-            False
-            >>> interface.put_file(file, "/file.txt")
-            >>> interface.exists("/file.txt")
-            True
-
         """
         raise NotImplementedError
 
@@ -971,8 +942,7 @@ class AbstractBackend(metaclass=abc.ABCMeta):
             file separator
 
         ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Base(fs)
+            >>> interface = AbstractBackend(fs)
 
         Examples:
             >>> interface.sep
@@ -998,8 +968,7 @@ class AbstractBackend(metaclass=abc.ABCMeta):
                 does not match ``'[A-Za-z0-9/._-]+'``
 
         ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Base(fs)
+            >>> interface = AbstractBackend(fs)
 
         Examples:
             >>> interface.split("/")
@@ -1012,7 +981,7 @@ class AbstractBackend(metaclass=abc.ABCMeta):
             ('/sub/', 'file.txt')
 
         """
-        path = self._path(path)
+        path = self._path(path, allow_sub_path=True)
         root = self.sep.join(path.split(self.sep)[:-1]) + self.sep
         basename = path.split(self.sep)[-1]
 

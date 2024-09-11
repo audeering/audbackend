@@ -6,7 +6,7 @@ from audbackend.core.base import AbstractBackend
 class Unversioned(AbstractBackend):
     r"""Interface for unversioned file access.
 
-    Use this interface if you don't care about versioning.
+    Use this backend if you don't care about versioning.
     For every backend path exactly one file exists on the backend.
 
     Args:
@@ -14,13 +14,13 @@ class Unversioned(AbstractBackend):
 
     Examples:
         >>> file = "src.txt"
-        >>> fs = fsspec.filesystem("dir", path="./host/repo")
-        >>> interface = Unversioned(fs)
-        >>> interface.put_file(file, "/file.txt")
-        >>> interface.put_archive(".", "/sub/archive.zip", files=[file])
-        >>> interface.ls()
+        >>> # fs = fsspec.filesystem("dir", path="./host/repo")
+        >>> backend = Unversioned(fs)
+        >>> backend.put_file(file, "/file.txt")
+        >>> backend.put_archive(".", "/sub/archive.zip", files=[file])
+        >>> backend.ls()
         ['/file.txt', '/sub/archive.zip']
-        >>> interface.get_file("/file.txt", "dst.txt")
+        >>> backend.get_file("/file.txt", "dst.txt")
         '...dst.txt'
 
     """
@@ -46,16 +46,15 @@ class Unversioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Unversioned(fs)
+            >>> backend = Unversioned(fs)
 
         Examples:
             >>> file = "src.txt"
             >>> import audeer
             >>> audeer.md5(file)
             'd41d8cd98f00b204e9800998ecf8427e'
-            >>> interface.put_file(file, "/file.txt")
-            >>> interface.checksum("/file.txt")
+            >>> backend.put_file(file, "/file.txt")
+            >>> backend.checksum("/file.txt")
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
@@ -102,16 +101,15 @@ class Unversioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Unversioned(fs)
+            >>> backend = Unversioned(fs)
 
         Examples:
             >>> file = "src.txt"
-            >>> interface.put_file(file, "/file.txt")
-            >>> interface.exists("/copy.txt")
+            >>> backend.put_file(file, "/file.txt")
+            >>> backend.exists("/copy.txt")
             False
-            >>> interface.copy_file("/file.txt", "/copy.txt")
-            >>> interface.exists("/copy.txt")
+            >>> backend.copy_file("/file.txt", "/copy.txt")
+            >>> backend.exists("/copy.txt")
             True
 
         """
@@ -140,13 +138,12 @@ class Unversioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Unversioned(fs)
+            >>> backend = Unversioned(fs)
 
         Examples:
             >>> file = "src.txt"
-            >>> interface.put_file(file, "/file.txt")
-            >>> interface.date("/file.txt")
+            >>> backend.put_file(file, "/file.txt")
+            >>> backend.date("/file.txt")
             '1991-02-20'
 
         """
@@ -182,15 +179,14 @@ class Unversioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Unversioned(fs)
+            >>> backend = Unversioned(fs)
 
         Examples:
             >>> file = "src.txt"
-            >>> interface.exists("/file.txt")
+            >>> backend.exists("/file.txt")
             False
-            >>> interface.put_file(file, "/file.txt")
-            >>> interface.exists("/file.txt")
+            >>> backend.put_file(file, "/file.txt")
+            >>> backend.exists("/file.txt")
             True
 
         """
@@ -248,15 +244,14 @@ class Unversioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Unversioned(fs)
+            >>> backend = Unversioned(fs)
 
         Examples:
             >>> file = "src.txt"
-            >>> interface.put_file(file, "/file.txt")
+            >>> backend.put_file(file, "/file.txt")
             >>> os.path.exists("dst.txt")
             False
-            >>> _ = interface.get_file("/file.txt", "dst.txt")
+            >>> _ = backend.get_file("/file.txt", "dst.txt")
             >>> os.path.exists("dst.txt")
             True
 
@@ -305,22 +300,21 @@ class Unversioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Unversioned(fs)
+            >>> backend = Unversioned(fs)
 
         Examples:
             >>> file = "src.txt"
-            >>> interface.put_file(file, "/file.txt")
-            >>> interface.put_archive(".", "/sub/archive.zip", files=[file])
-            >>> interface.ls()
+            >>> backend.put_file(file, "/file.txt")
+            >>> backend.put_archive(".", "/sub/archive.zip", files=[file])
+            >>> backend.ls()
             ['/file.txt', '/sub/archive.zip']
-            >>> interface.ls("/file.txt")
+            >>> backend.ls("/file.txt")
             ['/file.txt']
-            >>> interface.ls(pattern="*.txt")
+            >>> backend.ls(pattern="*.txt")
             ['/file.txt']
-            >>> interface.ls(pattern="archive.*")
+            >>> backend.ls(pattern="archive.*")
             ['/sub/archive.zip']
-            >>> interface.ls("/sub/")
+            >>> backend.ls("/sub/")
             ['/sub/archive.zip']
 
         """  # noqa: E501
@@ -371,18 +365,17 @@ class Unversioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Unversioned(fs)
+            >>> backend = Unversioned(fs)
 
         Examples:
             >>> file = "src.txt"
-            >>> interface.put_file(file, "/file.txt")
-            >>> interface.exists("/move.txt")
+            >>> backend.put_file(file, "/file.txt")
+            >>> backend.exists("/move.txt")
             False
-            >>> interface.move_file("/file.txt", "/move.txt")
-            >>> interface.exists("/move.txt")
+            >>> backend.move_file("/file.txt", "/move.txt")
+            >>> backend.exists("/move.txt")
             True
-            >>> interface.exists("/file.txt")
+            >>> backend.exists("/file.txt")
             False
 
         """
@@ -457,15 +450,14 @@ class Unversioned(AbstractBackend):
             RuntimeError: if backend was not opened
 
         ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Unversioned(fs)
+            >>> backend = Unversioned(fs)
 
         Examples:
             >>> file = "src.txt"
-            >>> interface.exists("/file.txt")
+            >>> backend.exists("/file.txt")
             False
-            >>> interface.put_file(file, "/file.txt")
-            >>> interface.exists("/file.txt")
+            >>> backend.put_file(file, "/file.txt")
+            >>> backend.exists("/file.txt")
             True
 
         """
@@ -486,16 +478,15 @@ class Unversioned(AbstractBackend):
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
         ..
-            >>> fs = fsspec.filesystem("dir", path="./host/repo")
-            >>> interface = Unversioned(fs)
+            >>> backend = Unversioned(fs)
 
         Examples:
             >>> file = "src.txt"
-            >>> interface.put_file(file, "/file.txt")
-            >>> interface.exists("/file.txt")
+            >>> backend.put_file(file, "/file.txt")
+            >>> backend.exists("/file.txt")
             True
-            >>> interface.remove_file("/file.txt")
-            >>> interface.exists("/file.txt")
+            >>> backend.remove_file("/file.txt")
+            >>> backend.exists("/file.txt")
             False
 
         """
