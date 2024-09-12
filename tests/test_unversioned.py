@@ -4,12 +4,12 @@ import platform
 import re
 import stat
 
-from conftest import create_file_tree
 import pytest
 
 import audeer
 
 import audbackend
+from tests.conftest import create_file_tree
 
 
 @pytest.mark.parametrize(
