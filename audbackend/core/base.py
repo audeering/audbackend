@@ -714,10 +714,10 @@ class AbstractBackend(metaclass=abc.ABCMeta):
 
     def _path(self, path: str, allow_sub_path: bool = False) -> str:
         # Assert path starts with sep, but not ends on it
-        if not path.startswith(self.sep):
-            raise ValueError(
-                f"Invalid backend path '{path}', " f"must start with '{self.sep}'."
-            )
+        # if not path.startswith(self.sep):
+        #     raise ValueError(
+        #         f"Invalid backend path '{path}', " f"must start with '{self.sep}'."
+        #     )
         if not allow_sub_path and path.endswith(self.sep):
             raise ValueError(
                 f"Invalid backend path '{path}', " f"must not end on '{self.sep}'."
@@ -733,10 +733,13 @@ class AbstractBackend(metaclass=abc.ABCMeta):
             )
 
         # Remove immediately consecutive seps
+        is_abs_path = path.startswith(self.sep)
         is_sub_path = path.endswith(self.sep)
         paths = path.split(self.sep)
         paths = [path for path in paths if path]
-        path = self.sep + self.sep.join(paths)
+        path = self.sep.join(paths)
+        if is_abs_path:
+            path = self.sep + path
         if is_sub_path and not path.endswith(self.sep):
             path += self.sep
 
