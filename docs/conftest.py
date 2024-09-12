@@ -5,7 +5,7 @@ import os
 import pytest
 from sybil import Sybil
 from sybil.parsers.rest import DocTestParser
-from sybil.parsers.rest import SkipParser
+from sybil.parsers.rest import PythonCodeBlockParser
 
 import audbackend
 
@@ -37,7 +37,7 @@ def prepare_docstring_tests(tmpdir_factory):
 
 
 pytest_collect_file = Sybil(
-    parsers=[DocTestParser(optionflags=ELLIPSIS), SkipParser()],
+    parsers=[DocTestParser(optionflags=ELLIPSIS), PythonCodeBlockParser()],
     pattern="*.rst",
     fixtures=["mock_date", "prepare_docstring_tests"],
 ).pytest()
