@@ -56,11 +56,16 @@ helper class.
 
 .. code-block:: python
 
+    import dbm
     import os
     import shelve
 
     import audbackend
     import fsspec
+
+
+    # Enforce ndbm database to make filename platform independent
+    dbm._defaultmod = dbm.ndbm
 
 
     class UserDB:
