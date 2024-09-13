@@ -4,7 +4,7 @@ from audbackend.core.base import AbstractBackend
 
 
 class Unversioned(AbstractBackend):
-    r"""Interface for unversioned file access.
+    r"""Backend for unversioned file access.
 
     Use this backend if you don't care about versioning.
     For every backend path exactly one file exists on the backend.

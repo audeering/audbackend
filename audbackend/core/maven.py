@@ -13,7 +13,7 @@ from audbackend.core.versioned import Versioned
 
 
 class Maven(Versioned):
-    r"""Interface for Maven style versioned file access.
+    r"""Backend for Maven style versioned file access.
 
     Use this backend,
     if you want to version files

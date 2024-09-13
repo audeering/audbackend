@@ -11,7 +11,7 @@ from audbackend.core.errors import BackendError
 
 
 class Versioned(AbstractBackend):
-    r"""Interface for versioned file access.
+    r"""Backend for versioned file access.
 
     Use this backend if you care about versioning.
     For each file on the backend path one or more versions may exist.
