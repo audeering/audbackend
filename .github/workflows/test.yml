@@ -58,7 +58,8 @@ jobs:
         ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
         ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
       run: |
-        export AUDBACKEND_TEST_FS=${{ env.AUDBACKEND_TEST_FS }}
+        # export AUDBACKEND_TEST_FS=${{ env.AUDBACKEND_TEST_FS }}
+        echo $AUDBACKEND_TEST_FS
         python -m pytest --cov-config=.coveragerc.${{ runner.os }}
       if: ${{ env.AUDBACKEND_TEST_FS != 'none' }}
 
