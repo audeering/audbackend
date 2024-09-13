@@ -164,8 +164,8 @@ class AbstractBackend(metaclass=abc.ABCMeta):
             return hasher.hexdigest()
 
         info = utils.call_function_on_backend(self.fs.info, path)
-        if "ETag" in info:
-            md5 = ["ETag"][1:-1]  # pragma: nocover (only tested in CI)
+        if "ETag" in info:  # pragma: nocover
+            md5 = ["ETag"][1:-1]
         else:
             md5 = utils.call_function_on_backend(md5sum, path)
 
