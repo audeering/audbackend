@@ -45,7 +45,7 @@ jobs:
 
     - name: Default file system
       run: |
-        echo "AUDBACKEND_TEST_FS='dir'" >> $GITHUB_ENV
+        echo "AUDBACKEND_TEST_FS=dir" >> $GITHUB_ENV
 
     - name: Use minio file system
       run: |
