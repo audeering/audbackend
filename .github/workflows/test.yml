@@ -49,7 +49,8 @@ jobs:
 
     - name: Use minio file system
       run: |
-        ping -c1 -W1 play.minio.io 2>/dev/null && echo "AUDBACKEND_TEST_FS='minio'" >> $GITHUB_ENV || echo "AUDBACKEND_TEST_FS='none'" >> $GITHUB_ENV
+        ping -c1 -W1 play.minio.io >/dev/null && FS="minio" || FS="none"
+        echo "AUDBACKEND_TEST_FS=${FS}" >> $GITHUB_ENV
       if: matrix.fs == 'minio'
 
     - name: Test with pytest
@@ -59,7 +60,7 @@ jobs:
       run: |
         export AUDBACKEND_TEST_FS=${{ env.AUDBACKEND_TEST_FS }}
         python -m pytest --cov-config=.coveragerc.${{ runner.os }}
-      if: env.AUDBACKEND_TEST_FS != 'none'
+      if: ${{ env.AUDBACKEND_TEST_FS != 'none' }}
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
