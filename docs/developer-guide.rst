@@ -56,16 +56,11 @@ helper class.
 
 .. code-block:: python
 
-    import dbm
     import os
-    import shelve
+    import pickle
 
     import audbackend
     import fsspec
-
-
-    # Enforce ndbm database to make filename platform independent
-    dbm._defaultmod = dbm.ndbm
 
 
     class UserDB:
@@ -77,19 +72,22 @@ helper class.
         """
         def __init__(self, fs: fsspec.AbstractFileSystem):
             self.backend = audbackend.Unversioned(fs)
-            self.remote_file = "/.user.db"
-            self.local_file = audeer.path(".db")
+            self.remote_file = "/.db.pkl"
+            self.local_file = audeer.path(".db.pkl")
 
-        def __enter__(self) -> shelve.Shelf:
+        def __enter__(self) -> dict:
             if self.backend.exists(self.remote_file):
                 self.backend.get_file(self.remote_file, self.local_file)
-                self._map = shelve.open(self.local_file, flag="w", writeback=True)
+            if os.path.exists(self.local_file):
+                with open(self.local_file, "rb") as file:
+                    self._map = pickle.load(file)
             else:
-                self._map = shelve.open(self.local_file, writeback=True)
+                self._map = {}
             return self._map
 
         def __exit__(self, exc_type, exc_val, exc_tb):
-            self._map.close()
+            with open(self.local_file, "wb") as file:
+                pickle.dump(self._map, file, protocol=pickle.HIGHEST_PROTOCOL)
             self.backend.put_file(self.local_file, self.remote_file)
             os.remove(self.local_file)
 
