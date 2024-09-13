@@ -11,7 +11,7 @@ class BackendError(Exception):
         ...     backend.checksum("/does/not/exist")
         ... except BackendError as ex:
         ...     ex.exception
-        FileNotFoundError(2, 'No such file or directory')
+        FileNotFoundError(2, '...')
 
     """
 
