@@ -80,6 +80,7 @@ def minio_filesystem():
 
 
 protocol = os.getenv("AUDBACKEND_TEST_FS", "dir")
+print(f"{protocol=}")
 if protocol == "dir":
     filesystem = dir_filesystem
 elif protocol == "minio":
