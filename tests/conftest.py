@@ -36,7 +36,7 @@ def create_file_tree(root: str, files: typing.Sequence):
 
 
 @pytest.fixture(scope="function")
-def filesystem(tmpdir):
+def dir_filesystem(tmpdir):
     root = audeer.mkdir(tmpdir, f"unittest-{pytest.UID}-{audeer.uid()[:8]}")
     # Wrap "local" filesystem in "dir" filesystem
     # to return paths relatiove to root
@@ -61,15 +61,14 @@ def minio_filesystem():
     client = minio.Minio(url, access_key=access, secret_key=secret)
     client.make_bucket(bucket)
 
-    fs = fsspec.filesystem(
+    fs_s3 = fsspec.filesystem(
         "s3",
         endpoint_url=f"https://{url}",
         key=access,
         secret=secret,
     )
-    fs.bucket = bucket
 
-    yield fs
+    yield fsspec.filesystem("dir", path=bucket, fs=fs_s3)
 
     # Delete all objects in bucket
     objects = client.list_objects(bucket, recursive=True)
@@ -78,6 +77,13 @@ def minio_filesystem():
 
     # Delete bucket
     client.remove_bucket(bucket)
+
+
+protocol = os.getenv("AUDBACKEND_TEST_FS", "dir")
+if protocol == "dir":
+    filesystem = dir_filesystem
+elif protocol == "minio":
+    filesystem = minio_filesystem
 
 
 @pytest.fixture(scope="package", autouse=True)
