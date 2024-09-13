@@ -73,7 +73,7 @@ helper class.
         def __init__(self, fs: fsspec.AbstractFileSystem):
             self.backend = audbackend.Unversioned(fs)
             self.remote_file = "/.user.db"
-            self.local_file = ".db"
+            self.local_file = audeer.path(".db")
 
         def __enter__(self) -> shelve.Shelf:
             if self.backend.exists(self.remote_file):
