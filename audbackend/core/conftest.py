@@ -8,6 +8,7 @@ from sybil.parsers.doctest import DocTestParser
 import audeer
 
 import audbackend
+from tests.conftest import filesystem  # noqa: F401
 
 
 @pytest.fixture(scope="function")
