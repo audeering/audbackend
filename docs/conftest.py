@@ -1,14 +1,13 @@
 import datetime
 from doctest import ELLIPSIS
+import os
 
 import pytest
 from sybil import Sybil
-from sybil.parsers.doctest import DocTestParser
-
-import audeer
+from sybil.parsers.rest import DocTestParser
+from sybil.parsers.rest import PythonCodeBlockParser
 
 import audbackend
-from tests.conftest import filesystem  # noqa: F401
 
 
 @pytest.fixture(scope="function")
@@ -23,20 +22,22 @@ def mock_date():
     yield date
 
 
-@pytest.fixture(scope="function", autouse=True)
-def prepare_docstring_tests(tmpdir, monkeypatch):
+@pytest.fixture(scope="module", autouse=True)
+def prepare_docstring_tests(tmpdir_factory):
     r"""Code to be run before each doctest."""
+    tmp = tmpdir_factory.mktemp("tmp")
     # Change to tmp dir
-    monkeypatch.chdir(tmpdir)
-
-    # Provide example file `src.txt`
-    audeer.touch("src.txt")
+    current_dir = os.getcwd()
+    os.chdir(tmp)
 
     yield
 
+    # Change back to current dir
+    os.chdir(current_dir)
+
 
 pytest_collect_file = Sybil(
-    parsers=[DocTestParser(optionflags=ELLIPSIS)],
-    pattern="*.py",
-    fixtures=["filesystem", "mock_date", "prepare_docstring_tests"],
+    parsers=[DocTestParser(optionflags=ELLIPSIS), PythonCodeBlockParser()],
+    pattern="*.rst",
+    fixtures=["mock_date", "prepare_docstring_tests"],
 ).pytest()

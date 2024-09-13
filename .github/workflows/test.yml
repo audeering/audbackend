@@ -21,6 +21,9 @@ jobs:
             python-version: '3.9'
           - os: ubuntu-latest
             python-version: '3.11'
+          - os: ubuntu-latest
+            python-version: '3.11'
+            fs: minio
 
     steps:
     - uses: actions/checkout@v4
@@ -35,29 +38,34 @@ jobs:
         python -V
         python -m pip install --upgrade pip
 
-    - name: Install packages with file-system backend
-      run: |
-        pip install -e .
-        pip install -r tests/requirements.txt
-
-    - name: Test file-system only package
-      run: |
-        python -m pytest --cov-fail-under=0 tests/test_backend_filesystem_only.py tests/test_backend_filesystem.py
-
-    - name: Install package with all dependencies
+    - name: Install dependencies
       run: |
         pip install -r requirements.txt
+        pip install -r tests/requirements.txt
+
+    - name: Default file system
+      run: |
+        echo "AUDBACKEND_TEST_FS=dir" >> $GITHUB_ENV
+
+    - name: Use minio file system
+      run: |
+        ping -c1 -W1 play.minio.io >/dev/null && FS="minio" || FS="none"
+        echo "AUDBACKEND_TEST_FS=${FS}" >> $GITHUB_ENV
+      if: matrix.fs == 'minio'
 
     - name: Test with pytest
       env:
         ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
         ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
       run: |
+        # export AUDBACKEND_TEST_FS=${{ env.AUDBACKEND_TEST_FS }}
+        echo $AUDBACKEND_TEST_FS
         python -m pytest --cov-config=.coveragerc.${{ runner.os }}
+      if: ${{ env.AUDBACKEND_TEST_FS != 'none' }}
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: ./coverage.xml
-      if: matrix.os == 'ubuntu-latest'
+      if: ${{ (matrix.os == 'ubuntu-latest') && (env.AUDBACKEND_TEST_FS != 'none') }}

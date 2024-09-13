@@ -1,47 +1,38 @@
 import fnmatch
 import os
+import re
 import typing
 
 import audeer
 
 from audbackend.core import utils
-from audbackend.core.backend.base import Base as Backend
+from audbackend.core.base import AbstractBackend
 from audbackend.core.errors import BackendError
-from audbackend.core.interface.base import Base
 
 
-class Versioned(Base):
-    r"""Interface for versioned file access.
+class Versioned(AbstractBackend):
+    r"""Backend for versioned file access.
 
-    Use this interface if you care about versioning.
+    Use this backend if you care about versioning.
     For each file on the backend path one or more versions may exist.
 
     Args:
         backend: backend object
 
-    .. Prepare backend and interface for docstring examples
+    .. Prepare backend for docstring examples
 
     Examples:
         >>> file = "src.txt"
-        >>> backend = audbackend.backend.FileSystem("host", "repo")
-        >>> backend.open()
-        >>> interface = Versioned(backend)
-        >>> interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
+        >>> backend = Versioned(filesystem)
+        >>> backend.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
         >>> for version in ["1.0.0", "2.0.0"]:
-        ...     interface.put_file(file, "/file.txt", version)
-        >>> interface.ls()
+        ...     backend.put_file(file, "/file.txt", version)
+        >>> backend.ls()
         [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
-        >>> interface.get_file("/file.txt", "dst.txt", "2.0.0")
+        >>> backend.get_file("/file.txt", "dst.txt", "2.0.0")
         '...dst.txt'
 
-
     """
-
-    def __init__(
-        self,
-        backend: Backend,
-    ):
-        super().__init__(backend)
 
     def checksum(
         self,
@@ -68,22 +59,20 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> backend = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
             >>> import audeer
             >>> audeer.md5(file)
             'd41d8cd98f00b204e9800998ecf8427e'
-            >>> interface.put_file(file, "/file.txt", "1.0.0")
-            >>> interface.checksum("/file.txt", "1.0.0")
+            >>> backend.put_file(file, "/file.txt", "1.0.0")
+            >>> backend.checksum("/file.txt", "1.0.0")
             'd41d8cd98f00b204e9800998ecf8427e'
 
         """
-        path_with_version = self._path_with_version(path, version)
-        return self.backend.checksum(path_with_version)
+        path = self.path(path, version)
+        return self._checksum(path)
 
     def copy_file(
         self,
@@ -133,17 +122,15 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> backend = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
-            >>> interface.put_file(file, "/file.txt", "1.0.0")
-            >>> interface.exists("/copy.txt", "1.0.0")
+            >>> backend.put_file(file, "/file.txt", "1.0.0")
+            >>> backend.exists("/copy.txt", "1.0.0")
             False
-            >>> interface.copy_file("/file.txt", "/copy.txt", version="1.0.0")
-            >>> interface.exists("/copy.txt", "1.0.0")
+            >>> backend.copy_file("/file.txt", "/copy.txt", version="1.0.0")
+            >>> backend.exists("/copy.txt", "1.0.0")
             True
 
         """
@@ -153,13 +140,11 @@ class Versioned(Base):
             versions = [version]
 
         for version in versions:
-            src_path_with_version = self._path_with_version(src_path, version)
-            dst_path_with_version = self._path_with_version(dst_path, version)
-            self.backend.copy_file(
-                src_path_with_version,
-                dst_path_with_version,
-                validate=validate,
-                verbose=verbose,
+            self._copy_file(
+                self.path(src_path, version),
+                self.path(dst_path, version),
+                validate,
+                verbose,
             )
 
     def date(
@@ -190,19 +175,18 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = DoctestFileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> backend = Versioned(filesystem)
+            >>> backend._date = mock_date
 
         Examples:
             >>> file = "src.txt"
-            >>> interface.put_file(file, "/file.txt", "1.0.0")
-            >>> interface.date("/file.txt", "1.0.0")
+            >>> backend.put_file(file, "/file.txt", "1.0.0")
+            >>> backend.date("/file.txt", "1.0.0")
             '1991-02-20'
 
         """
-        path_with_version = self._path_with_version(path, version)
-        return self.backend.date(path_with_version)
+        path = self.path(path, version)
+        return self._date(path)
 
     def exists(
         self,
@@ -235,24 +219,19 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> backend = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
-            >>> interface.exists("/file.txt", "1.0.0")
+            >>> backend.exists("/file.txt", "1.0.0")
             False
-            >>> interface.put_file(file, "/file.txt", "1.0.0")
-            >>> interface.exists("/file.txt", "1.0.0")
+            >>> backend.put_file(file, "/file.txt", "1.0.0")
+            >>> backend.exists("/file.txt", "1.0.0")
             True
 
         """
-        path_with_version = self._path_with_version(path, version)
-        return self.backend.exists(
-            path_with_version,
-            suppress_backend_errors=suppress_backend_errors,
-        )
+        path = self.path(path, version)
+        return self._exists(path, suppress_backend_errors)
 
     def get_archive(
         self,
@@ -311,26 +290,18 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> backend = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
-            >>> interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
+            >>> backend.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
             >>> os.remove(file)
-            >>> interface.get_archive("/sub/archive.zip", ".", "1.0.0")
+            >>> backend.get_archive("/sub/archive.zip", ".", "1.0.0")
             ['src.txt']
 
         """
-        src_path_with_version = self._path_with_version(src_path, version)
-        return self.backend.get_archive(
-            src_path_with_version,
-            dst_root,
-            tmp_root=tmp_root,
-            validate=validate,
-            verbose=verbose,
-        )
+        src_path = self.path(src_path, version)
+        return self._get_archive(src_path, dst_root, tmp_root, validate, verbose)
 
     def get_file(
         self,
@@ -387,27 +358,19 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> backend = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
-            >>> interface.put_file(file, "/file.txt", "1.0.0")
+            >>> backend.put_file(file, "/file.txt", "1.0.0")
             >>> os.path.exists("dst.txt")
             False
-            >>> _ = interface.get_file("/file.txt", "dst.txt", "1.0.0")
-            >>> os.path.exists("dst.txt")
-            True
+            >>> backend.get_file("/file.txt", "dst.txt", "1.0.0")
+            '...dst.txt'
 
         """
-        src_path_with_version = self._path_with_version(src_path, version)
-        return self.backend.get_file(
-            src_path_with_version,
-            dst_path,
-            validate=validate,
-            verbose=verbose,
-        )
+        src_path = self.path(src_path, version)
+        return self._get_file(src_path, dst_path, validate, verbose)
 
     def latest_version(
         self,
@@ -430,15 +393,13 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
          ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> backend = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
-            >>> interface.put_file(file, "/file.txt", "1.0.0")
-            >>> interface.put_file(file, "/file.txt", "2.0.0")
-            >>> interface.latest_version("/file.txt")
+            >>> backend.put_file(file, "/file.txt", "1.0.0")
+            >>> backend.put_file(file, "/file.txt", "2.0.0")
+            >>> backend.latest_version("/file.txt")
             '2.0.0'
 
         """
@@ -495,42 +456,34 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> backend = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
-            >>> interface.put_file(file, "/file.txt", "1.0.0")
-            >>> interface.put_file(file, "/file.txt", "2.0.0")
-            >>> interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
-            >>> interface.ls()
+            >>> backend.put_file(file, "/file.txt", "1.0.0")
+            >>> backend.put_file(file, "/file.txt", "2.0.0")
+            >>> backend.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
+            >>> backend.ls()
             [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
-            >>> interface.ls(latest_version=True)
+            >>> backend.ls(latest_version=True)
             [('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
-            >>> interface.ls("/file.txt")
+            >>> backend.ls("/file.txt")
             [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0')]
-            >>> interface.ls(pattern="*.txt")
+            >>> backend.ls(pattern="*.txt")
             [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0')]
-            >>> interface.ls(pattern="archive.*")
+            >>> backend.ls(pattern="archive.*")
             [('/sub/archive.zip', '1.0.0')]
-            >>> interface.ls("/sub/")
+            >>> backend.ls("/sub/")
             [('/sub/archive.zip', '1.0.0')]
 
         """  # noqa: E501
         if path.endswith("/"):  # find files under sub-path
-            paths = self.backend.ls(
-                path,
-                suppress_backend_errors=suppress_backend_errors,
-            )
+            paths = self._ls(path, suppress_backend_errors)
 
         else:  # find versions of path
             root, file = self.split(path)
 
-            paths = self.backend.ls(
-                root,
-                suppress_backend_errors=suppress_backend_errors,
-            )
+            paths = self._ls(root, suppress_backend_errors)
 
             # filter for '/root/version/file'
             depth = root.count("/") + 1
@@ -637,19 +590,17 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> backend = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
-            >>> interface.put_file(file, "/file.txt", "1.0.0")
-            >>> interface.exists("/move.txt", "1.0.0")
+            >>> backend.put_file(file, "/file.txt", "1.0.0")
+            >>> backend.exists("/move.txt", "1.0.0")
             False
-            >>> interface.move_file("/file.txt", "/move.txt", version="1.0.0")
-            >>> interface.exists("/move.txt", "1.0.0")
+            >>> backend.move_file("/file.txt", "/move.txt", version="1.0.0")
+            >>> backend.exists("/move.txt", "1.0.0")
             True
-            >>> interface.exists("/file.txt", "1.0.0")
+            >>> backend.exists("/file.txt", "1.0.0")
             False
 
         """
@@ -659,57 +610,59 @@ class Versioned(Base):
             versions = [version]
 
         for version in versions:
-            src_path_with_version = self._path_with_version(src_path, version)
-            dst_path_with_version = self._path_with_version(dst_path, version)
-            self.backend.move_file(
-                src_path_with_version,
-                dst_path_with_version,
-                validate=validate,
-                verbose=verbose,
+            self._move_file(
+                self.path(src_path, version),
+                self.path(dst_path, version),
+                validate,
+                verbose,
             )
 
-    def owner(
+    def path(
         self,
         path: str,
         version: str,
+        *,
+        allow_sub_path: bool = False,
     ) -> str:
-        r"""Owner of file on backend.
+        r"""Resolved backend path.
 
-        If the owner of the file
-        cannot be determined,
-        an empty string is returned.
+        Resolved path as handed to the filesystem object.
+
+        <root>/<base><ext>
+        ->
+        <root>/<version>/<base><ext>
 
         Args:
-            path: path to file on backend
+            path: path on backend
             version: version string
+            allow_sub_path: if ``path`` is allowed
+                to point to a sub-path
+                instead of a file
 
         Returns:
-            owner
+            path as handed to the filesystem object
 
         Raises:
-            BackendError: if an error is raised on the backend,
-                e.g. ``path`` does not exist
             ValueError: if ``path`` does not start with ``'/'``,
-                ends on ``'/'``,
+                ends on ``'/'`` when ``allow_sub_path`` is ``False``,
                 or does not match ``'[A-Za-z0-9/._-]+'``
-            ValueError: if ``version`` is empty or
-                does not match ``'[A-Za-z0-9._-]+'``
-            RuntimeError: if backend was not opened
-
-        ..
-            >>> backend = DoctestFileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
-
-        Examples:
-            >>> file = "src.txt"
-            >>> interface.put_file(file, "/file.txt", "1.0.0")
-            >>> interface.owner("/file.txt", "1.0.0")
-            'doctest'
 
         """
-        path_with_version = self._path_with_version(path, version)
-        return self.backend.owner(path_with_version)
+        path = self._path(path, allow_sub_path)
+
+        # Assert version is not empty and does not contain invalid characters.
+        version_allowed_chars = "[A-Za-z0-9._-]+"
+        if not version:
+            raise ValueError("Version must not be empty.")
+        if re.compile(version_allowed_chars).fullmatch(version) is None:
+            raise ValueError(
+                f"Invalid version '{version}', "
+                f"does not match '{version_allowed_chars}'."
+            )
+
+        root, name = self.split(path)
+        path = self.join(root, version, name)
+        return path
 
     def put_archive(
         self,
@@ -773,28 +726,19 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> backend = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
-            >>> interface.exists("/sub/archive.tar.gz", "1.0.0")
+            >>> backend.exists("/sub/archive.tar.gz", "1.0.0")
             False
-            >>> interface.put_archive(".", "/sub/archive.tar.gz", "1.0.0")
-            >>> interface.exists("/sub/archive.tar.gz", "1.0.0")
+            >>> backend.put_archive(".", "/sub/archive.tar.gz", "1.0.0")
+            >>> backend.exists("/sub/archive.tar.gz", "1.0.0")
             True
 
         """
-        dst_path_with_version = self._path_with_version(dst_path, version)
-        self.backend.put_archive(
-            src_root,
-            dst_path_with_version,
-            files=files,
-            tmp_root=tmp_root,
-            validate=validate,
-            verbose=verbose,
-        )
+        dst_path = self.path(dst_path, version)
+        self._put_archive(src_root, dst_path, files, tmp_root, validate, verbose)
 
     def put_file(
         self,
@@ -843,26 +787,19 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> backend = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
-            >>> interface.exists("/file.txt", "3.0.0")
+            >>> backend.exists("/file.txt", "3.0.0")
             False
-            >>> interface.put_file(file, "/file.txt", "3.0.0")
-            >>> interface.exists("/file.txt", "3.0.0")
+            >>> backend.put_file(file, "/file.txt", "3.0.0")
+            >>> backend.exists("/file.txt", "3.0.0")
             True
 
         """
-        dst_path_with_version = self._path_with_version(dst_path, version)
-        return self.backend.put_file(
-            src_path,
-            dst_path_with_version,
-            validate=validate,
-            verbose=verbose,
-        )
+        dst_path = self.path(dst_path, version)
+        return self._put_file(src_path, dst_path, validate, verbose)
 
     def remove_file(
         self,
@@ -886,22 +823,20 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> backend = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
-            >>> interface.put_file(file, "/file.txt", "1.0.0")
-            >>> interface.exists("/file.txt", "1.0.0")
+            >>> backend.put_file(file, "/file.txt", "1.0.0")
+            >>> backend.exists("/file.txt", "1.0.0")
             True
-            >>> interface.remove_file("/file.txt", "1.0.0")
-            >>> interface.exists("/file.txt", "1.0.0")
+            >>> backend.remove_file("/file.txt", "1.0.0")
+            >>> backend.exists("/file.txt", "1.0.0")
             False
 
         """
-        path_with_version = self._path_with_version(path, version)
-        self.backend.remove_file(path_with_version)
+        path = self.path(path, version)
+        self._remove_file(path)
 
     def versions(
         self,
@@ -930,39 +865,17 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> backend = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
-            >>> interface.put_file(file, "/file.txt", "1.0.0")
-            >>> interface.put_file(file, "/file.txt", "2.0.0")
-            >>> interface.versions("/file.txt")
+            >>> backend.put_file(file, "/file.txt", "1.0.0")
+            >>> backend.put_file(file, "/file.txt", "2.0.0")
+            >>> backend.versions("/file.txt")
             ['1.0.0', '2.0.0']
 
         """
-        utils.check_path(path)
-
+        path = self._path(path)
         paths = self.ls(path, suppress_backend_errors=suppress_backend_errors)
         vs = [v for _, v in paths]
-
         return vs
-
-    def _path_with_version(
-        self,
-        path: str,
-        version: str,
-    ) -> str:
-        r"""Convert to versioned path.
-
-        <root>/<base><ext>
-        ->
-        <root>/<version>/<base><ext>
-
-        """
-        path = utils.check_path(path)
-        version = utils.check_version(version)
-        root, name = self.split(path)
-        path = self.join(root, version, name)
-        return path

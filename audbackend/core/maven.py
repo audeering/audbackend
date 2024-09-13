@@ -3,18 +3,19 @@ import os
 import re
 import typing
 
+import fsspec
+
 import audeer
 
 from audbackend.core import utils
-from audbackend.core.backend.base import Base as Backend
 from audbackend.core.errors import BackendError
-from audbackend.core.interface.versioned import Versioned
+from audbackend.core.versioned import Versioned
 
 
 class Maven(Versioned):
-    r"""Interface for Maven style versioned file access.
+    r"""Backend for Maven style versioned file access.
 
-    Use this interface,
+    Use this backend,
     if you want to version files
     similar to how it is handled by Maven.
     For each file on the backend path
@@ -65,27 +66,25 @@ class Maven(Versioned):
 
     Examples:
         >>> file = "src.txt"
-        >>> backend = audbackend.backend.FileSystem("host", "repo")
-        >>> backend.open()
-        >>> interface = Maven(backend)
-        >>> interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
+        >>> backend = Versioned(filesystem)
+        >>> backend.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
         >>> for version in ["1.0.0", "2.0.0"]:
-        ...     interface.put_file(file, "/file.txt", version)
-        >>> interface.ls()
+        ...     backend.put_file(file, "/file.txt", version)
+        >>> backend.ls()
         [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
-        >>> interface.get_file("/file.txt", "dst.txt", "2.0.0")
+        >>> backend.get_file("/file.txt", "dst.txt", "2.0.0")
         '...dst.txt'
 
     """  # noqa: E501
 
     def __init__(
         self,
-        backend: Backend,
+        fs: fsspec.AbstractFileSystem,
         *,
         extensions: typing.Sequence[str] = [],
         regex: bool = False,
     ):
-        super().__init__(backend)
+        super().__init__(fs)
         self.extensions = extensions
         self.regex = regex
 
@@ -139,34 +138,29 @@ class Maven(Versioned):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Maven(backend)
+            >>> backend = Maven(filesystem)
 
         Examples:
             >>> file = "src.txt"
-            >>> interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
+            >>> backend.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
             >>> for version in ["1.0.0", "2.0.0"]:
-            ...     interface.put_file(file, "/file.txt", version)
-            >>> interface.ls()
+            ...     backend.put_file(file, "/file.txt", version)
+            >>> backend.ls()
             [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
-            >>> interface.ls(latest_version=True)
+            >>> backend.ls(latest_version=True)
             [('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
-            >>> interface.ls("/file.txt")
+            >>> backend.ls("/file.txt")
             [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0')]
-            >>> interface.ls(pattern="*.txt")
+            >>> backend.ls(pattern="*.txt")
             [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0')]
-            >>> interface.ls(pattern="archive.*")
+            >>> backend.ls(pattern="archive.*")
             [('/sub/archive.zip', '1.0.0')]
-            >>> interface.ls("/sub/")
+            >>> backend.ls("/sub/")
             [('/sub/archive.zip', '1.0.0')]
 
         """  # noqa: E501
         if path.endswith("/"):  # find files under sub-path
-            paths = self.backend.ls(
-                path,
-                suppress_backend_errors=suppress_backend_errors,
-            )
+            paths = self._ls(path, suppress_backend_errors)
             # Files are also stored as sub-folder,
             # e.g. `.../<name>/<version>/<name>-<version><ext>`,
             # so we need to skip those
@@ -184,10 +178,7 @@ class Maven(Versioned):
             # for available versions.
             # It will return entries in the form
             # `<root>/<name>/<version>/<name>-<version><ext>`
-            paths = self.backend.ls(
-                self.backend.join(root, name, self.sep),
-                suppress_backend_errors=suppress_backend_errors,
-            )
+            paths = self._ls(self.join(root, name, self.sep), suppress_backend_errors)
 
             # filter for '<root>/<name>/<version>/<name>-x.x.x<ext>'
             depth = root.count("/") + 2
@@ -247,6 +238,61 @@ class Maven(Versioned):
 
         return paths_and_versions
 
+    def path(
+        self,
+        path: str,
+        version: str,
+        *,
+        allow_sub_path: bool = False,
+    ) -> str:
+        r"""Resolved backend path.
+
+        Resolved path as handed to the filesystem object.
+
+        <root>/<base><ext>
+        ->
+        <root>/<base>/<version>/<base>-<version><ext>
+
+        Args:
+            path: path on backend
+            version: version string
+            allow_sub_path: if ``path`` is allowed
+                to point to a sub-path
+                instead of a file
+
+        Returns:
+            path as handed to the filesystem object
+
+        Raises:
+            ValueError: if ``path`` does not start with ``'/'``,
+                ends on ``'/'`` when ``allow_sub_path`` is ``False``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
+
+        ..
+            >>> backend = Maven(filesystem)
+
+        Examples:
+            >>> backend.path("/file.txt", "1.0.0")
+            '/file/1.0.0/file-1.0.0.txt'
+
+        """
+        path = self._path(path, allow_sub_path)
+
+        # Assert version is not empty and does not contain invalid characters.
+        version_allowed_chars = "[A-Za-z0-9._-]+"
+        if not version:
+            raise ValueError("Version must not be empty.")
+        if re.compile(version_allowed_chars).fullmatch(version) is None:
+            raise ValueError(
+                f"Invalid version '{version}', "
+                f"does not match '{version_allowed_chars}'."
+            )
+
+        root, name = self.split(path)
+        base, ext = self._split_ext(name)
+        path = self.join(root, base, version, f"{base}-{version}{ext}")
+        return path
+
     def _split_ext(
         self,
         name: str,
@@ -274,21 +320,3 @@ class Maven(Versioned):
             ext = f".{ext}"
 
         return base, ext
-
-    def _path_with_version(
-        self,
-        path: str,
-        version: str,
-    ) -> str:
-        r"""Convert to versioned path.
-
-        <root>/<base><ext>
-        ->
-        <root>/<base>/<version>/<base>-<version><ext>
-
-        """
-        version = utils.check_version(version)
-        root, name = self.split(path)
-        base, ext = self._split_ext(name)
-        path = self.join(root, base, version, f"{base}-{version}{ext}")
-        return path
