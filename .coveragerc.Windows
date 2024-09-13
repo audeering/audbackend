@@ -1,4 +1,4 @@
 [report]
-exclude_lines =
+exclude_also =
     pragma: no cover
     pragma: no Windows cover
