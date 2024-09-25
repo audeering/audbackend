@@ -56,6 +56,7 @@ class Minio(Base):
         *,
         authentication: typing.Tuple[str, str] = None,
         secure: bool = None,
+        **kwargs,
     ):
         super().__init__(host, repository, authentication=authentication)
 
@@ -72,6 +73,7 @@ class Minio(Base):
             access_key=self.authentication[0],
             secret_key=self.authentication[1],
             secure=secure,
+            **kwargs,
         )
 
     @classmethod
