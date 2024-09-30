@@ -76,6 +76,33 @@ def test_authentication(tmpdir, hosts, hide_credentials):
     indirect=True,
 )
 @pytest.mark.parametrize(
+    "path, expected,",
+    [
+        ("/text.txt", "text/plain"),
+    ],
+)
+def test_content_type(tmpdir, interface, path, expected):
+    r"""Test setting of content type.
+
+    Args:
+        tmpdir: tmpdir fixture
+        interface: interface fixture
+        path: path of file on backend
+        expected: expected content type
+
+    """
+    tmp_path = audeer.touch(audeer.path(tmpdir, path[1:]))
+    interface.put_file(tmp_path, path)
+    stats = interface._backend._client.stat_object(interface.repository, path)
+    assert stats.content_type == expected
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.Minio, audbackend.interface.Unversioned)],
+    indirect=True,
+)
+@pytest.mark.parametrize(
     "src_path, dst_path,",
     [
         (

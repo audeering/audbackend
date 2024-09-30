@@ -1,4 +1,5 @@
 import configparser
+import mimetypes
 import os
 import tempfile
 import typing
@@ -369,7 +370,13 @@ class Minio(Base):
             )
             print(desc, end="\r")
 
-        self._client.fput_object(self.repository, dst_path, src_path)
+        content_type = mimetypes.guess_type(src_path)[0] or "application/octet-stream"
+        self._client.fput_object(
+            self.repository,
+            dst_path,
+            src_path,
+            content_type=content_type,
+        )
 
         if verbose:  # pragma: no cover
             # Clear progress line
