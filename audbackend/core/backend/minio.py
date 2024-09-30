@@ -1,4 +1,5 @@
 import configparser
+import getpass
 import mimetypes
 import os
 import tempfile
@@ -213,6 +214,7 @@ class Minio(Base):
                 self.repository,
                 dst_path,
                 minio.commonconfig.CopySource(self.repository, src_path),
+                metadata=_metadata(),
             )
 
     def _create(
@@ -330,9 +332,11 @@ class Minio(Base):
     ) -> str:
         r"""Get owner of file on backend."""
         path = self.path(path)
-        # TODO: owner seems to be empty,
-        # need to check if we have to manage this ourselves?
-        owner = self._client.stat_object(self.repository, path).owner_name
+        # NOTE:
+        # we use a custom metadata entry to track the owner
+        # as stats.owner_name is always empty.
+        stats = self._client.stat_object(self.repository, path)
+        owner = stats.metadata["x-amz-meta-owner"]
         return owner
 
     def path(
@@ -376,6 +380,7 @@ class Minio(Base):
             dst_path,
             src_path,
             content_type=content_type,
+            metadata=_metadata(),
         )
 
         if verbose:  # pragma: no cover
@@ -398,3 +403,13 @@ class Minio(Base):
         path = self.path(path)
         size = self._client.stat_object(self.repository, path).size
         return size
+
+
+def _metadata():
+    """Dictionary with owner entry.
+
+    When uploaded as metadata to MinIO,
+    it can be accessed under ``stat_object(...).metadata["x-amz-meta-owner"]``.
+
+    """
+    return {"owner": getpass.getuser()}
