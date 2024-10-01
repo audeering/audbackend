@@ -205,14 +205,12 @@ class Minio(Base):
         dst_path = self.path(dst_path)
         # `copy_object()` has a maximum size limit of 5GB.
         if self._size(src_path) / 1024 / 1024 / 1024 >= 5:
-            print("Big file")
             with tempfile.TemporaryDirectory() as tmp_dir:
                 tmp_path = audeer.path(tmp_dir, os.path.basename(src_path))
                 self._get_file(src_path, tmp_path, verbose)
                 checksum = self._checksum(src_path)
                 self._put_file(tmp_path, dst_path, checksum, verbose)
         else:
-            print("Copy on backend")
             self._client.copy_object(
                 self.repository,
                 dst_path,
