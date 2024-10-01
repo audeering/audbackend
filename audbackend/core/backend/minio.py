@@ -30,8 +30,10 @@ class Minio(Base):
             when using TLS for the connection,
             and ``False`` otherwise,
             e.g. when using a `local MinIO server`_.
+        **kwargs: keyword arguments passed on to `minio.Minio`_
 
     .. _local MinIO server: https://min.io/docs/minio/container/index.html
+    .. _minio.Minio: https://min.io/docs/minio/linux/developers/python/API.html
 
     Examples:
         >>> host = "play.min.io"  # playground provided by https://min.io
