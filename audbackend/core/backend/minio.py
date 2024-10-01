@@ -266,30 +266,31 @@ class Minio(Base):
     ):
         r"""Get file from backend."""
         src_path = self.path(src_path)
-        src_size = self._client.stat_object(self.repository, src_path).size
-        chunk = 4 * 1024
-        with audeer.progress_bar(total=src_size, disable=not verbose) as pbar:
-            desc = audeer.format_display_message(
-                "Download {}".format(os.path.basename(str(src_path))),
-                pbar=True,
-            )
-            pbar.set_description_str(desc)
-            pbar.refresh()
+        self._client.fget_object(self.repository, src_path, dst_path)
+        # src_size = self._client.stat_object(self.repository, src_path).size
+        # chunk = 4 * 1024
+        # with audeer.progress_bar(total=src_size, disable=not verbose) as pbar:
+        #     desc = audeer.format_display_message(
+        #         "Download {}".format(os.path.basename(str(src_path))),
+        #         pbar=True,
+        #     )
+        #     pbar.set_description_str(desc)
+        #     pbar.refresh()
 
-            dst_size = 0
-            try:
-                response = self._client.get_object(self.repository, src_path)
-                with open(dst_path, "wb") as dst_fp:
-                    while src_size > dst_size:
-                        data = response.read(chunk)
-                        n_data = len(data)
-                        if n_data > 0:
-                            dst_fp.write(data)
-                            dst_size += n_data
-                            pbar.update(n_data)
-            finally:
-                response.close()
-                response.release_conn()
+        #     dst_size = 0
+        #     try:
+        #         response = self._client.get_object(self.repository, src_path)
+        #         with open(dst_path, "wb") as dst_fp:
+        #             while src_size > dst_size:
+        #                 data = response.read(chunk)
+        #                 n_data = len(data)
+        #                 if n_data > 0:
+        #                     dst_fp.write(data)
+        #                     dst_size += n_data
+        #                     pbar.update(n_data)
+        #     finally:
+        #         response.close()
+        #         response.release_conn()
 
     def _ls(
         self,
