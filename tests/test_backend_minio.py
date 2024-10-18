@@ -12,9 +12,9 @@ def hide_credentials():
     defaults = {}
 
     for key in [
-        "ARTIFACTORY_USERNAME",
-        "ARTIFACTORY_API_KEY",
-        "ARTIFACTORY_CONFIG_FILE",
+        "MINIO_ACCESS_KEY",
+        "MINIO_SECRET_KEY",
+        "MINIO_CONFIG_FILE",
     ]:
         defaults[key] = os.environ.get(key, None)
 
@@ -32,65 +32,169 @@ def hide_credentials():
 
 
 def test_authentication(tmpdir, hosts, hide_credentials):
-    host = hosts["artifactory"]
+    host = hosts["minio"]
     config_path = audeer.path(tmpdir, "config.cfg")
-    os.environ["ARTIFACTORY_CONFIG_FILE"] = config_path
+    os.environ["MINIO_CONFIG_FILE"] = config_path
 
     # config file does not exist
 
-    backend = audbackend.backend.Artifactory(host, "repository")
-    assert backend.authentication == ("anonymous", "")
+    backend = audbackend.backend.Minio(host, "repository")
+    assert backend.authentication == (None, None)
 
     # config file is empty
 
     audeer.touch(config_path)
-    backend = audbackend.backend.Artifactory(host, "repository")
-    assert backend.authentication == ("anonymous", "")
+    backend = audbackend.backend.Minio(host, "repository")
+    assert backend.authentication == (None, None)
 
     # config file entry without username and password
 
     with open(config_path, "w") as fp:
         fp.write(f"[{host}]\n")
 
-    backend = audbackend.backend.Artifactory(host, "repository")
-    assert backend.authentication == ("anonymous", "")
+    backend = audbackend.backend.Minio(host, "repository")
+    assert backend.authentication == (None, None)
 
     # config file entry with username and password
 
-    username = "bad"
-    api_key = "bad"
+    access_key = "bad"
+    secret_key = "bad"
     with open(config_path, "w") as fp:
         fp.write(f"[{host}]\n")
-        fp.write(f"username = {username}\n")
-        fp.write(f"password = {api_key}\n")
+        fp.write(f"access_key = {access_key}\n")
+        fp.write(f"secret_key = {secret_key}\n")
 
-    backend = audbackend.backend.Artifactory(host, "repository")
+    backend = audbackend.backend.Minio(host, "repository")
     assert backend.authentication == ("bad", "bad")
-    with pytest.raises(audbackend.BackendError):
-        backend.open()
-
-
-@pytest.mark.parametrize("host", [pytest.HOSTS["artifactory"]])
-@pytest.mark.parametrize("repository", [f"unittest-{pytest.UID}-{audeer.uid()[:8]}"])
-def test_create_delete_repositories(host, repository):
-    audbackend.backend.Artifactory.create(host, repository)
-    audbackend.backend.Artifactory.delete(host, repository)
-
-
-@pytest.mark.parametrize("host", [pytest.HOSTS["artifactory"]])
-@pytest.mark.parametrize("repository", [f"unittest-{pytest.UID}-{audeer.uid()[:8]}"])
-@pytest.mark.parametrize("authentication", [("non-existing", "non-existing")])
-def test_errors(host, repository, authentication):
-    backend = audbackend.backend.Artifactory(
-        host, repository, authentication=authentication
-    )
     with pytest.raises(audbackend.BackendError):
         backend.open()
 
 
 @pytest.mark.parametrize(
     "interface",
-    [(audbackend.backend.Artifactory, audbackend.interface.Maven)],
+    [(audbackend.backend.Minio, audbackend.interface.Unversioned)],
+    indirect=True,
+)
+@pytest.mark.parametrize(
+    "path, expected,",
+    [
+        ("/text.txt", "text/plain"),
+    ],
+)
+def test_content_type(tmpdir, interface, path, expected):
+    r"""Test setting of content type.
+
+    Args:
+        tmpdir: tmpdir fixture
+        interface: interface fixture
+        path: path of file on backend
+        expected: expected content type
+
+    """
+    tmp_path = audeer.touch(audeer.path(tmpdir, path[1:]))
+    interface.put_file(tmp_path, path)
+    stats = interface._backend._client.stat_object(interface.repository, path)
+    assert stats.content_type == expected
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.Minio, audbackend.interface.Unversioned)],
+    indirect=True,
+)
+@pytest.mark.parametrize(
+    "src_path, dst_path,",
+    [
+        (
+            "/big.1.txt",
+            "/big.2.txt",
+        ),
+    ],
+)
+def test_copy_large_file(tmpdir, interface, src_path, dst_path):
+    r"""Test copying of large files.
+
+    ``minio.Minio.copy_object()`` has a limit of 5 GB.
+    We mock the ``audbackend.backend.Minio._size()`` method
+    to return a value equivalent to 5 GB.
+    to trigger the fall back copy mechanism for large files,
+    without having to create a large file.
+
+    Args:
+        tmpdir: tmpdir fixture
+        interface: interface fixture
+        src_path: source path of file on backend
+        dst_path: destination of copy operation on backend
+
+    """
+    tmp_path = audeer.touch(audeer.path(tmpdir, "big.1.txt"))
+    interface.put_file(tmp_path, src_path)
+    interface._backend._size = lambda x: 5 * 1024 * 1024 * 1024
+    interface.copy_file(src_path, dst_path)
+    assert interface.exists(src_path)
+    assert interface.exists(dst_path)
+
+
+@pytest.mark.parametrize("host", [pytest.HOSTS["minio"]])
+@pytest.mark.parametrize("repository", [f"unittest-{pytest.UID}-{audeer.uid()[:8]}"])
+def test_create_delete_repositories(host, repository):
+    audbackend.backend.Minio.create(host, repository)
+    audbackend.backend.Minio.delete(host, repository)
+
+
+@pytest.mark.parametrize("host", [pytest.HOSTS["minio"]])
+@pytest.mark.parametrize("repository", [f"unittest-{pytest.UID}-{audeer.uid()[:8]}"])
+@pytest.mark.parametrize("authentication", [("bad-access", "bad-secret")])
+def test_errors(host, repository, authentication):
+    backend = audbackend.backend.Minio(host, repository, authentication=authentication)
+    with pytest.raises(audbackend.BackendError):
+        backend.open()
+
+
+def test_get_config(tmpdir, hosts, hide_credentials):
+    host = hosts["minio"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["MINIO_CONFIG_FILE"] = config_path
+
+    # config file does not exist
+    config = audbackend.backend.Minio.get_config(host)
+    assert config == {}
+
+    # config file is empty
+    audeer.touch(config_path)
+    config = audbackend.backend.Minio.get_config(host)
+    assert config == {}
+
+    # config file has different host
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}.abc]\n")
+    config = audbackend.backend.Minio.get_config(host)
+    assert config == {}
+
+    # config file entry without variables
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+    config = audbackend.backend.Minio.get_config(host)
+    assert config == {}
+
+    # config file entry with variables
+    access_key = "user"
+    secret_key = "pass"
+    secure = True
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write(f"access_key = {access_key}\n")
+        fp.write(f"secret_key = {secret_key}\n")
+        fp.write(f"secure = {secure}\n")
+    config = audbackend.backend.Minio.get_config(host)
+    assert config["access_key"] == access_key
+    assert config["secret_key"] == secret_key
+    assert config["secure"]
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.Minio, audbackend.interface.Maven)],
     indirect=True,
 )
 @pytest.mark.parametrize(

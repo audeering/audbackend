@@ -91,6 +91,7 @@ def tree(tmpdir, request):
     [
         (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
         (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
+        (audbackend.backend.Minio, audbackend.interface.Unversioned),
         (SingleFolder, audbackend.interface.Unversioned),
     ],
     indirect=True,
@@ -172,6 +173,7 @@ def test_archive(tmpdir, tree, archive, files, tmp_root, interface, expected):
     [
         (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
         (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
+        (audbackend.backend.Minio, audbackend.interface.Unversioned),
         (SingleFolder, audbackend.interface.Unversioned),
     ],
     indirect=True,
@@ -557,6 +559,7 @@ def test_errors(tmpdir, interface):
     [
         (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
         (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
+        (audbackend.backend.Minio, audbackend.interface.Unversioned),
         (SingleFolder, audbackend.interface.Unversioned),
     ],
     indirect=True,
@@ -603,6 +606,10 @@ def test_exists(tmpdir, path, interface):
             audbackend.backend.FileSystem,
         ),
         (
+            (audbackend.backend.Minio, audbackend.interface.Unversioned),
+            audbackend.backend.Minio,
+        ),
+        (
             (SingleFolder, audbackend.interface.Unversioned),
             SingleFolder,
         ),
@@ -636,6 +643,7 @@ def test_file(tmpdir, src_path, dst_path, owner, interface):
     [
         (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
         (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
+        (audbackend.backend.Minio, audbackend.interface.Unversioned),
         (SingleFolder, audbackend.interface.Unversioned),
     ],
     indirect=True,
@@ -710,6 +718,7 @@ def test_ls(tmpdir, interface):
     [
         (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
         (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
+        (audbackend.backend.Minio, audbackend.interface.Unversioned),
         (SingleFolder, audbackend.interface.Unversioned),
     ],
     indirect=True,
