@@ -79,7 +79,7 @@ def owner(request):
         owner = backend_cls.get_authentication(host_wo_https)[0]
     else:
         if os.name == "nt":
-            owner = "runneradmin"
+            owner = "Administrators"
         else:
             owner = getpass.getuser()
 
