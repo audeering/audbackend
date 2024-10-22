@@ -109,8 +109,8 @@ class Minio(Base):
 
         """
         config = cls.get_config(host)
-        access_key = os.getenv("MINIO_ACCESS_KEY", config.get("access_key", None))
-        secret_key = os.getenv("MINIO_SECRET_KEY", config.get("secret_key", None))
+        access_key = os.getenv("MINIO_ACCESS_KEY", config.get("access_key"))
+        secret_key = os.getenv("MINIO_SECRET_KEY", config.get("secret_key"))
 
         return access_key, secret_key
 
