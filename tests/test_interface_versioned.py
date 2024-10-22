@@ -17,8 +17,8 @@ from singlefolder import SingleFolder
 
 # Backend-interface combinations to use in all tests
 backend_interface_combinations = [
-    (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
-    (SingleFolder, audbackend.interface.Unversioned),
+    (audbackend.backend.FileSystem, audbackend.interface.Versioned),
+    (SingleFolder, audbackend.interface.Versioned),
 ]
 
 
