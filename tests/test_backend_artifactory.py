@@ -70,14 +70,14 @@ def test_authentication(tmpdir, hosts, hide_credentials):
         backend.open()
 
 
-@pytest.mark.parametrize("host", ["https://audeering.jfrog.io/artifactory"])
+@pytest.mark.parametrize("host", [pytest.HOSTS["artifactory"]])
 @pytest.mark.parametrize("repository", [f"unittest-{pytest.UID}-{audeer.uid()[:8]}"])
 def test_create_delete_repositories(host, repository):
     audbackend.backend.Artifactory.create(host, repository)
     audbackend.backend.Artifactory.delete(host, repository)
 
 
-@pytest.mark.parametrize("host", ["https://audeering.jfrog.io/artifactory"])
+@pytest.mark.parametrize("host", [pytest.HOSTS["artifactory"]])
 @pytest.mark.parametrize("repository", [f"unittest-{pytest.UID}-{audeer.uid()[:8]}"])
 @pytest.mark.parametrize("authentication", [("non-existing", "non-existing")])
 def test_errors(host, repository, authentication):
