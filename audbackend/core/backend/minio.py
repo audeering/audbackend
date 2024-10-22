@@ -178,8 +178,7 @@ class Minio(Base):
     ) -> str:
         r"""MD5 checksum of file on backend."""
         path = self.path(path)
-        checksum = self._client.stat_object(self.repository, path).etag
-        return checksum
+        return self._client.stat_object(self.repository, path).etag
 
     def _collapse(
         self,
@@ -192,9 +191,8 @@ class Minio(Base):
         /<path>
 
         """
-        path = "/" + path
-        path = path.replace("/", self.sep)
-        return path
+        path = f"/{path}"
+        return path.replace("/", self.sep)
 
     def _copy_file(
         self,
@@ -274,8 +272,7 @@ class Minio(Base):
         chunk = 4 * 1024
         with audeer.progress_bar(total=src_size, disable=not verbose) as pbar:
             desc = audeer.format_display_message(
-                "Download {}".format(os.path.basename(str(src_path))),
-                pbar=True,
+                f"Download {os.path.basename(str(src_path))}", pbar=True
             )
             pbar.set_description_str(desc)
             pbar.refresh()
@@ -306,9 +303,7 @@ class Minio(Base):
             prefix=path,
             recursive=True,
         )
-        paths = [self._collapse(obj.object_name) for obj in objects]
-
-        return paths
+        return [self._collapse(obj.object_name) for obj in objects]
 
     def _move_file(
         self,

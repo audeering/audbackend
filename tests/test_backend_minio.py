@@ -9,15 +9,14 @@ import audbackend
 
 @pytest.fixture(scope="function", autouse=False)
 def hide_credentials():
-    defaults = {}
-
-    for key in [
-        "MINIO_ACCESS_KEY",
-        "MINIO_SECRET_KEY",
-        "MINIO_CONFIG_FILE",
-    ]:
-        defaults[key] = os.environ.get(key, None)
-
+    defaults = {
+        key: os.environ.get(key, None)
+        for key in [
+            "MINIO_ACCESS_KEY",
+            "MINIO_SECRET_KEY",
+            "MINIO_CONFIG_FILE",
+        ]
+    }
     for key, value in defaults.items():
         if value is not None:
             del os.environ[key]
