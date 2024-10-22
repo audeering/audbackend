@@ -217,6 +217,7 @@ def test_copy(tmpdir, src_path, dst_path, interface):
     [
         (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
         (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
+        (audbackend.backend.Minio, audbackend.interface.Unversioned),
         (SingleFolder, audbackend.interface.Unversioned),
     ],
     indirect=True,

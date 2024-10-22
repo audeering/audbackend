@@ -399,6 +399,8 @@ class Minio(Base):
     ):
         r"""Remove file from backend."""
         path = self.path(path)
+        # Enforce error if path does not exist
+        self._client.stat_object(self.repository, path)
         self._client.remove_object(self.repository, path)
 
     def _size(
