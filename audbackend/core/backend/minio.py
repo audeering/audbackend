@@ -288,6 +288,8 @@ class Minio(Base):
                             dst_fp.write(data)
                             dst_size += n_data
                             pbar.update(n_data)
+            except Exception as e:
+                raise RuntimeError(f"Error downloading file: {e}")
             finally:
                 response.close()
                 response.release_conn()
