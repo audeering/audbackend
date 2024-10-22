@@ -152,6 +152,17 @@ def test_errors(host, repository, authentication):
 
 
 def test_get_config(tmpdir, hosts, hide_credentials):
+    r"""Test parsing of configuration.
+
+    The `get_config()` class method is responsible
+    for parsing a Minio backend config file.
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture
+
+    """
     host = hosts["minio"]
     config_path = audeer.path(tmpdir, "config.cfg")
     os.environ["MINIO_CONFIG_FILE"] = config_path
