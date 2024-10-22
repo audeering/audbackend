@@ -15,6 +15,15 @@ import audbackend
 from singlefolder import SingleFolder
 
 
+# Backend-interface combinations to use in all tests
+backend_interface_combinations = [
+    (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
+    (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
+    (audbackend.backend.Minio, audbackend.interface.Unversioned),
+    (SingleFolder, audbackend.interface.Unversioned),
+]
+
+
 @pytest.fixture(scope="function", autouse=False)
 def tree(tmpdir, request):
     r"""Create file tree."""
@@ -88,12 +97,7 @@ def tree(tmpdir, request):
 )
 @pytest.mark.parametrize(
     "interface",
-    [
-        (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
-        (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
-        (audbackend.backend.Minio, audbackend.interface.Unversioned),
-        (SingleFolder, audbackend.interface.Unversioned),
-    ],
+    backend_interface_combinations,
     indirect=True,
 )
 def test_archive(tmpdir, tree, archive, files, tmp_root, interface, expected):
@@ -170,12 +174,7 @@ def test_archive(tmpdir, tree, archive, files, tmp_root, interface, expected):
 )
 @pytest.mark.parametrize(
     "interface",
-    [
-        (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
-        (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
-        (audbackend.backend.Minio, audbackend.interface.Unversioned),
-        (SingleFolder, audbackend.interface.Unversioned),
-    ],
+    backend_interface_combinations,
     indirect=True,
 )
 def test_copy(tmpdir, src_path, dst_path, interface):
@@ -214,12 +213,7 @@ def test_copy(tmpdir, src_path, dst_path, interface):
 
 @pytest.mark.parametrize(
     "interface",
-    [
-        (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
-        (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
-        (audbackend.backend.Minio, audbackend.interface.Unversioned),
-        (SingleFolder, audbackend.interface.Unversioned),
-    ],
+    backend_interface_combinations,
     indirect=True,
 )
 def test_errors(tmpdir, interface):
@@ -557,12 +551,7 @@ def test_errors(tmpdir, interface):
 )
 @pytest.mark.parametrize(
     "interface",
-    [
-        (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
-        (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
-        (audbackend.backend.Minio, audbackend.interface.Unversioned),
-        (SingleFolder, audbackend.interface.Unversioned),
-    ],
+    backend_interface_combinations,
     indirect=True,
 )
 def test_exists(tmpdir, path, interface):
@@ -598,22 +587,8 @@ def test_exists(tmpdir, path, interface):
 @pytest.mark.parametrize(
     "interface, owner",
     [
-        (
-            (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
-            audbackend.backend.Artifactory,
-        ),
-        (
-            (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
-            audbackend.backend.FileSystem,
-        ),
-        (
-            (audbackend.backend.Minio, audbackend.interface.Unversioned),
-            audbackend.backend.Minio,
-        ),
-        (
-            (SingleFolder, audbackend.interface.Unversioned),
-            SingleFolder,
-        ),
+        ((backend, interface), backend)
+        for backend, interface in backend_interface_combinations
     ],
     indirect=True,
 )
@@ -641,12 +616,7 @@ def test_file(tmpdir, src_path, dst_path, owner, interface):
 
 @pytest.mark.parametrize(
     "interface",
-    [
-        (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
-        (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
-        (audbackend.backend.Minio, audbackend.interface.Unversioned),
-        (SingleFolder, audbackend.interface.Unversioned),
-    ],
+    backend_interface_combinations,
     indirect=True,
 )
 def test_ls(tmpdir, interface):
@@ -716,12 +686,7 @@ def test_ls(tmpdir, interface):
 )
 @pytest.mark.parametrize(
     "interface",
-    [
-        (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
-        (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
-        (audbackend.backend.Minio, audbackend.interface.Unversioned),
-        (SingleFolder, audbackend.interface.Unversioned),
-    ],
+    backend_interface_combinations,
     indirect=True,
 )
 def test_move(tmpdir, src_path, dst_path, interface):
