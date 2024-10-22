@@ -77,6 +77,13 @@ def owner(request):
     ):
         host_wo_https = pytest.HOSTS["artifactory"][8:]
         owner = backend_cls.get_authentication(host_wo_https)[0]
+    elif (
+        hasattr(audbackend.backend, "Minio") and backend_cls == audbackend.backend.Minio
+    ):
+        if os.name == "nt":
+            owner = "runneradmin"
+        else:
+            owner = getpass.getuser()
     else:
         if os.name == "nt":
             owner = "Administrators"
