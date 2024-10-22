@@ -159,6 +159,19 @@ class Minio(Base):
 
         return config
 
+    def close(
+        self,
+    ):
+        r"""Close connection to backend.
+
+        This will only change the status of
+        :attr:`audbackend.backend.Minio.opened`
+        as Minio handles closing the session itself.
+
+        """
+        if self.opened:
+            self.opened = False
+
     def _checksum(
         self,
         path: str,
@@ -167,18 +180,6 @@ class Minio(Base):
         path = self.path(path)
         checksum = self._client.stat_object(self.repository, path).etag
         return checksum
-
-    def _close(
-        self,
-    ):
-        r"""Close connection to repository.
-
-        An error should be raised,
-        if the connection to the backend
-        cannot be closed.
-
-        """
-        # At the moment, this is automatically handled.
 
     def _collapse(
         self,
