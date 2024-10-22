@@ -26,26 +26,25 @@ pytest.HOSTS = {
 def authentication():
     """Provide authentication tokens for supported backends."""
     if pytest.HOSTS["minio"] == "play.min.io":
-        defaults = {}
-        for key in [
-            "MINIO_ACCESS_KEY",
-            "MINIO_SECRET_KEY",
-        ]:
-            defaults[key] = os.environ.get(key, None)
-
+        defaults = {
+            key: os.environ.get(key, None)
+            for key in ["MINIO_ACCESS_KEY", "MINIO_SECRET_KEY"]
+        }
         # MinIO credentials for the public read/write server
         # at play.min.io, see
         # https://min.io/docs/minio/linux/developers/python/minio-py.html
         os.environ["MINIO_ACCESS_KEY"] = "Q3AM3UQ867SPQQA43P2F"
         os.environ["MINIO_SECRET_KEY"] = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
+    else:
+        defaults = {}
 
-        yield
+    yield
 
-        for key, value in defaults.items():
-            if value is not None:
-                os.environ[key] = value
-            elif key in os.environ:
-                del os.environ[key]
+    for key, value in defaults.items():
+        if value is not None:
+            os.environ[key] = value
+        elif key in os.environ:
+            del os.environ[key]
 
 
 @pytest.fixture(scope="package", autouse=True)

@@ -334,11 +334,8 @@ class Minio(Base):
         # NOTE:
         # we use a custom metadata entry to track the owner
         # as stats.owner_name is always empty.
-        owner = ""
-        stats = self._client.stat_object(self.repository, path)
-        if "x-amz-meta-owner" in stats.metadata:
-            owner = stats.metadata["x-amz-meta-owner"]
-        return owner
+        meta = self._client.stat_object(self.repository, path).metadata
+        return meta["x-amz-meta-owner"] if "x-amz-meta-owner" in meta else ""
 
     def path(
         self,
