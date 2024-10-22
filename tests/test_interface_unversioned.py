@@ -603,6 +603,17 @@ def test_file(tmpdir, src_path, dst_path, owner, interface):
     interface.put_file(src_path, dst_path)
     assert interface.exists(dst_path)
 
+    # Download with already existing src_path
+    interface.get_file(dst_path, src_path)
+    assert os.path.exists(src_path)
+    assert interface.checksum(dst_path) == audeer.md5(src_path)
+    assert interface.owner(dst_path) == owner
+    date = datetime.datetime.today().strftime("%Y-%m-%d")
+    assert interface.date(dst_path) == date
+
+    # Repeat, but remove src_path first
+    os.remove(src_path)
+    assert not os.path.exists(src_path)
     interface.get_file(dst_path, src_path)
     assert os.path.exists(src_path)
     assert interface.checksum(dst_path) == audeer.md5(src_path)
