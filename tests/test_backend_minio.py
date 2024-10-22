@@ -315,6 +315,21 @@ def test_get_config(tmpdir, hosts, hide_credentials):
 def test_maven_file_structure(
     tmpdir, interface, file, version, extensions, regex, expected
 ):
+    """Test using the Maven interface with a Minio backend.
+
+    Args:
+        tmpdir: tmpdir fixture
+        interface: interface fixture,
+            which needs to be called with the Minio backend
+            and the Maven interface
+        file: file name
+        version: file version
+        extensions: extensions considered by the Maven interface
+        regex: if ``True``,
+            ``extensions`` are considered as a regex
+        expected: expected file structure on backend
+
+    """
     interface.extensions = extensions
     interface.regex = regex
 
