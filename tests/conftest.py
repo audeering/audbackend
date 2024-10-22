@@ -33,6 +33,9 @@ def authentication():
         ]:
             defaults[key] = os.environ.get(key, None)
 
+        # MinIO credentials for the public read/write server
+        # at play.min.io, see
+        # https://min.io/docs/minio/linux/developers/python/minio-py.html
         os.environ["MINIO_ACCESS_KEY"] = "Q3AM3UQ867SPQQA43P2F"
         os.environ["MINIO_SECRET_KEY"] = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
 
