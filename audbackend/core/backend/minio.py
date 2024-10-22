@@ -406,7 +406,7 @@ class Minio(Base):
     def _size(
         self,
         path: str,
-    ) -> str:
+    ) -> int:
         r"""Get size of file on backend."""
         path = self.path(path)
         size = self._client.stat_object(self.repository, path).size
