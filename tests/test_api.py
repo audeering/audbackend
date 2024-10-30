@@ -40,15 +40,15 @@ import audbackend
             marks=pytest.mark.xfail(raises=ValueError),
         ),
         pytest.param(  # host does not exist
-            "artifactory",
+            "minio",
             "bad-host",
             "repo",
             None,
             marks=pytest.mark.xfail(raises=audbackend.BackendError),
         ),
         pytest.param(  # invalid repository name
-            "artifactory",
-            "artifactory",
+            "minio",
+            "minio",
             "bad/repo",
             None,
             marks=pytest.mark.xfail(raises=audbackend.BackendError),
