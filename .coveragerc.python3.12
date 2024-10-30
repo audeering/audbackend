@@ -1,0 +1,7 @@
+[report]
+exclude_lines =
+    pragma: no cover
+    pragma: no Linux cover
+omit =
+    audbackend/core/api.py
+    audbackend/core/backend/artifactory.py
