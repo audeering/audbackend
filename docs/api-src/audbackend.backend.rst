@@ -14,6 +14,7 @@ backends are supported:
 
     Artifactory
     FileSystem
+    Minio
 
 Users can implement their own
 backend by deriving from

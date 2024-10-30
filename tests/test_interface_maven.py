@@ -11,12 +11,16 @@ import audbackend
 from singlefolder import SingleFolder
 
 
+# Backend-interface combinations to use in all tests
+backend_interface_combinations = [
+    (audbackend.backend.FileSystem, audbackend.interface.Maven),
+    (SingleFolder, audbackend.interface.Maven),
+]
+
+
 @pytest.mark.parametrize(
     "interface",
-    [
-        (audbackend.backend.FileSystem, audbackend.interface.Maven),
-        (SingleFolder, audbackend.interface.Maven),
-    ],
+    backend_interface_combinations,
     indirect=True,
 )
 def test_errors(tmpdir, interface):
@@ -75,10 +79,7 @@ def test_errors(tmpdir, interface):
 
 @pytest.mark.parametrize(
     "interface",
-    [
-        (audbackend.backend.FileSystem, audbackend.interface.Maven),
-        (SingleFolder, audbackend.interface.Maven),
-    ],
+    backend_interface_combinations,
     indirect=True,
 )
 @pytest.mark.parametrize(

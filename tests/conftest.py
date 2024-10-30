@@ -15,6 +15,37 @@ from singlefolder import SingleFolder
 # unittest-<session-uid>-<repository-uid>
 pytest.UID = audeer.uid()[:8]
 
+# Define static hosts
+pytest.HOSTS = {
+    "artifactory": "https://audeering.jfrog.io/artifactory",
+    "minio": "play.min.io",
+}
+
+
+@pytest.fixture(scope="package", autouse=True)
+def authentication():
+    """Provide authentication tokens for supported backends."""
+    if pytest.HOSTS["minio"] == "play.min.io":
+        defaults = {
+            key: os.environ.get(key, None)
+            for key in ["MINIO_ACCESS_KEY", "MINIO_SECRET_KEY"]
+        }
+        # MinIO credentials for the public read/write server
+        # at play.min.io, see
+        # https://min.io/docs/minio/linux/developers/python/minio-py.html
+        os.environ["MINIO_ACCESS_KEY"] = "Q3AM3UQ867SPQQA43P2F"
+        os.environ["MINIO_SECRET_KEY"] = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
+    else:
+        defaults = {}
+
+    yield
+
+    for key, value in defaults.items():
+        if value is not None:
+            os.environ[key] = value
+        elif key in os.environ:
+            del os.environ[key]
+
 
 @pytest.fixture(scope="package", autouse=True)
 def register_single_folder():
@@ -31,8 +62,9 @@ def hosts(tmpdir_factory):
     return {
         # For tests based on backend names (deprecated),
         # like audbackend.access()
-        "artifactory": "https://audeering.jfrog.io/artifactory",
+        "artifactory": pytest.HOSTS["artifactory"],
         "file-system": str(tmpdir_factory.mktemp("host")),
+        "minio": pytest.HOSTS["minio"],
         "single-folder": str(tmpdir_factory.mktemp("host")),
     }
 
@@ -45,7 +77,15 @@ def owner(request):
         hasattr(audbackend.backend, "Artifactory")
         and backend_cls == audbackend.backend.Artifactory
     ):
-        owner = backend_cls.get_authentication("audeering.jfrog.io/artifactory")[0]
+        host_wo_https = pytest.HOSTS["artifactory"][8:]
+        owner = backend_cls.get_authentication(host_wo_https)[0]
+    elif (
+        hasattr(audbackend.backend, "Minio") and backend_cls == audbackend.backend.Minio
+    ):
+        if os.name == "nt":
+            owner = "runneradmin"
+        else:
+            owner = getpass.getuser()
     else:
         if os.name == "nt":
             owner = "Administrators"
@@ -76,14 +116,18 @@ def interface(tmpdir_factory, request):
 
     """
     backend_cls, interface_cls = request.param
+    artifactory = False
     if (
         hasattr(audbackend.backend, "Artifactory")
         and backend_cls == audbackend.backend.Artifactory
     ):
         artifactory = True
-        host = "https://audeering.jfrog.io/artifactory"
+        host = pytest.HOSTS["artifactory"]
+    elif (
+        hasattr(audbackend.backend, "Minio") and backend_cls == audbackend.backend.Minio
+    ):
+        host = pytest.HOSTS["minio"]
     else:
-        artifactory = False
         host = str(tmpdir_factory.mktemp("host"))
     repository = f"unittest-{pytest.UID}-{audeer.uid()[:8]}"
 

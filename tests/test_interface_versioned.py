@@ -15,6 +15,13 @@ import audbackend
 from singlefolder import SingleFolder
 
 
+# Backend-interface combinations to use in all tests
+backend_interface_combinations = [
+    (audbackend.backend.FileSystem, audbackend.interface.Versioned),
+    (SingleFolder, audbackend.interface.Versioned),
+]
+
+
 @pytest.fixture(scope="function", autouse=False)
 def tree(tmpdir, request):
     r"""Create file tree."""
@@ -88,10 +95,7 @@ def tree(tmpdir, request):
 )
 @pytest.mark.parametrize(
     "interface",
-    [
-        (audbackend.backend.FileSystem, audbackend.interface.Versioned),
-        (SingleFolder, audbackend.interface.Versioned),
-    ],
+    backend_interface_combinations,
     indirect=True,
 )
 def test_archive(tmpdir, tree, archive, files, tmp_root, interface, expected):
@@ -181,10 +185,7 @@ def test_archive(tmpdir, tree, archive, files, tmp_root, interface, expected):
 )
 @pytest.mark.parametrize(
     "interface",
-    [
-        (audbackend.backend.FileSystem, audbackend.interface.Versioned),
-        (SingleFolder, audbackend.interface.Versioned),
-    ],
+    backend_interface_combinations,
     indirect=True,
 )
 def test_copy(tmpdir, src_path, src_versions, dst_path, version, interface):
@@ -237,10 +238,7 @@ def test_copy(tmpdir, src_path, src_versions, dst_path, version, interface):
 
 @pytest.mark.parametrize(
     "interface",
-    [
-        (audbackend.backend.FileSystem, audbackend.interface.Versioned),
-        (SingleFolder, audbackend.interface.Versioned),
-    ],
+    backend_interface_combinations,
     indirect=True,
 )
 def test_errors(tmpdir, interface):
@@ -678,10 +676,7 @@ def test_errors(tmpdir, interface):
 )
 @pytest.mark.parametrize(
     "interface",
-    [
-        (audbackend.backend.FileSystem, audbackend.interface.Versioned),
-        (SingleFolder, audbackend.interface.Versioned),
-    ],
+    backend_interface_combinations,
     indirect=True,
 )
 def test_exists(tmpdir, path, version, interface):
@@ -721,14 +716,8 @@ def test_exists(tmpdir, path, version, interface):
 @pytest.mark.parametrize(
     "interface, owner",
     [
-        (
-            (audbackend.backend.FileSystem, audbackend.interface.Versioned),
-            audbackend.backend.FileSystem,
-        ),
-        (
-            (SingleFolder, audbackend.interface.Versioned),
-            SingleFolder,
-        ),
+        ((backend, interface), backend)
+        for backend, interface in backend_interface_combinations
     ],
     indirect=True,
 )
@@ -756,10 +745,7 @@ def test_file(tmpdir, src_path, dst_path, version, interface, owner):
 
 @pytest.mark.parametrize(
     "interface",
-    [
-        (audbackend.backend.FileSystem, audbackend.interface.Versioned),
-        (SingleFolder, audbackend.interface.Versioned),
-    ],
+    backend_interface_combinations,
     indirect=True,
 )
 @pytest.mark.parametrize(
@@ -1035,10 +1021,7 @@ def test_ls(tmpdir, interface, files, path, latest, pattern, expected):
 )
 @pytest.mark.parametrize(
     "interface",
-    [
-        (audbackend.backend.FileSystem, audbackend.interface.Versioned),
-        (SingleFolder, audbackend.interface.Versioned),
-    ],
+    backend_interface_combinations,
     indirect=True,
 )
 def test_move(tmpdir, src_path, src_versions, dst_path, version, interface):
@@ -1110,10 +1093,7 @@ def test_repr():
 @pytest.mark.parametrize("dst_path", ["/file.ext", "/sub/file.ext"])
 @pytest.mark.parametrize(
     "interface",
-    [
-        (audbackend.backend.FileSystem, audbackend.interface.Versioned),
-        (SingleFolder, audbackend.interface.Versioned),
-    ],
+    backend_interface_combinations,
     indirect=True,
 )
 def test_versions(tmpdir, dst_path, interface):
