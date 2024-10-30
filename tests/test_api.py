@@ -18,7 +18,7 @@ import audbackend
             "artifactory",
             "artifactory",
             f"unittest-{audeer.uid()[:8]}",
-            audbackend.backend.Artifactory,
+            pytest.importorskip("audbackend.backend.Artifactory"),
         ),
         (
             "minio",

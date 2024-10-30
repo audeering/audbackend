@@ -144,10 +144,31 @@ def test_create_delete_repositories(host, repository):
 @pytest.mark.parametrize("host", [pytest.HOSTS["minio"]])
 @pytest.mark.parametrize("repository", [f"unittest-{pytest.UID}-{audeer.uid()[:8]}"])
 @pytest.mark.parametrize("authentication", [("bad-access", "bad-secret")])
-def test_errors(host, repository, authentication):
+def test_errors_authentication(host, repository, authentication):
     backend = audbackend.backend.Minio(host, repository, authentication=authentication)
     with pytest.raises(audbackend.BackendError):
         backend.open()
+
+
+@pytest.mark.parametrize("host", [pytest.HOSTS["minio"]])
+@pytest.mark.parametrize("repository", [f"unittest-{pytest.UID}-{audeer.uid()[:8]}"])
+def test_errors(host, repository):
+    r"""Test error for creating and opening backend.
+
+    Args:
+        host: host
+        repository: repository
+
+    """
+    backend = audbackend.backend.Minio(host, repository)
+    with pytest.raises(FileNotFoundError):
+        backend._open()
+    backend._create()
+    backend._open()
+    backend._close()
+    with pytest.raises(FileExistsError):
+        backend._create()
+    backend._delete()
 
 
 def test_get_config(tmpdir, hosts, hide_credentials):

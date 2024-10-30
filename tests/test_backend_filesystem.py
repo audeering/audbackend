@@ -167,3 +167,24 @@ def test_maven_file_structure(
     assert path_expected == path
     assert interface.ls(file) == [(file, version)]
     assert interface.ls() == [(file, version)]
+
+
+def test_errors(tmpdir):
+    r"""Test error for creating and opening backend.
+
+    Args:
+        tmpdir: tmpdir fixture
+
+    """
+    host = audeer.mkdir(tmpdir, "backend")
+    repo = "repo"
+    backend = audbackend.backend.FileSystem(host, repo)
+    with pytest.raises(FileNotFoundError):
+        backend._open()
+    backend._create()
+    assert os.path.exists(os.path.join(host, repo))
+    backend._open()
+    backend._close()
+    with pytest.raises(FileExistsError):
+        backend._create()
+    backend._delete()

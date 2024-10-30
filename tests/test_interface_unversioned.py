@@ -17,11 +17,14 @@ from singlefolder import SingleFolder
 
 # Backend-interface combinations to use in all tests
 backend_interface_combinations = [
-    (audbackend.backend.Artifactory, audbackend.interface.Unversioned),
     (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
     (audbackend.backend.Minio, audbackend.interface.Unversioned),
     (SingleFolder, audbackend.interface.Unversioned),
 ]
+if hasattr(audbackend.backend, "Artifactory"):
+    backend_interface_combinations.append(
+        (audbackend.backend.Artifactory, audbackend.interface.Unversioned)
+    )
 
 
 @pytest.fixture(scope="function", autouse=False)
