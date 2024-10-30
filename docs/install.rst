@@ -25,3 +25,7 @@ e.g. :class:`audbackend.backend.Artifactory`
 .. code-block:: bash
 
     $ pip install audbackend[artifactory]
+
+Note,
+in Python 3.12 the :class:`audbackend.backend.Artifactory`
+backend is no longer available.

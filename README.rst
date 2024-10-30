@@ -18,11 +18,11 @@ the requested data structure
 in a repository
 on a storage system,
 such as a file system
-or Artifactory_.
+or MinIO_.
 
 Have a look at the installation_ and usage_ instructions.
 
-.. _Artifactory: https://jfrog.com/artifactory/
+.. _MinIO: https://min.io
 .. _backends: https://audeering.github.io/audbackend/api/audbackend.backend.html
 .. _interfaces: https://audeering.github.io/audbackend/api/audbackend.interface.html
 .. _installation: https://audeering.github.io/audbackend/install.html
