@@ -1,7 +1,6 @@
 import datetime
 import os
 import shutil
-import typing
 
 import audeer
 
@@ -107,9 +106,7 @@ class FileSystem(Base):
         <host>/<repository>/<path>
 
         """
-        path = path.replace(self.sep, os.path.sep)
-        if path.startswith(os.path.sep):
-            path = path[1:]
+        path = path.replace(self.sep, os.path.sep).removeprefix(os.path.sep)
         path = os.path.join(self._root, path)
         return path
 
@@ -126,7 +123,7 @@ class FileSystem(Base):
     def _ls(
         self,
         path: str,
-    ) -> typing.List[str]:
+    ) -> list[str]:
         r"""List all files under sub-path."""
         path = self._expand(path)
         if not os.path.exists(path):

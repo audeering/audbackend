@@ -1,5 +1,4 @@
 import os
-import typing
 
 import artifactory
 import dohq_artifactory
@@ -49,7 +48,7 @@ def _download(
 
     with audeer.progress_bar(total=src_size, disable=not verbose) as pbar:
         desc = audeer.format_display_message(
-            "Download {}".format(os.path.basename(str(src_path))),
+            f"Download {os.path.basename(str(src_path))}",
             pbar=True,
         )
         pbar.set_description_str(desc)
@@ -84,7 +83,7 @@ class Artifactory(Base):
         host: str,
         repository: str,
         *,
-        authentication: typing.Tuple[str, str] = None,
+        authentication: tuple[str, str] = None,
     ):
         super().__init__(host, repository, authentication=authentication)
 
@@ -99,7 +98,7 @@ class Artifactory(Base):
         self._session = None
 
     @classmethod
-    def get_authentication(cls, host: str) -> typing.Tuple[str, str]:
+    def get_authentication(cls, host: str) -> tuple[str, str]:
         """Username and password/access token for given host.
 
         Returns a username
@@ -271,7 +270,7 @@ class Artifactory(Base):
     def _ls(
         self,
         path: str,
-    ) -> typing.List[str]:
+    ) -> list[str]:
         r"""List all files under sub-path."""
         path = self.path(path)
         if not path.exists():
@@ -332,9 +331,7 @@ class Artifactory(Base):
             Artifactory path object
 
         """
-        path = path.replace(self.sep, "/")
-        if path.startswith("/"):
-            path = path[1:]
+        path = path.replace(self.sep, "/").removeprefix("/")
         # path -> host/repository/path
         return self._repo / path
 

@@ -3,7 +3,6 @@ import os
 import pickle
 import shutil
 import threading
-import typing
 
 import audeer
 
@@ -124,7 +123,7 @@ class SingleFolder(audbackend.backend.Base):
     def _ls(
         self,
         path: str,
-    ) -> typing.List[str]:
+    ) -> list[str]:
         with self.Map(self._path, self._lock) as m:
             ls = []
 

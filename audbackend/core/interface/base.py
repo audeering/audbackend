@@ -1,5 +1,3 @@
-import typing
-
 from audbackend.core.backend.base import Base as Backend
 
 
@@ -138,7 +136,7 @@ class Base:
     def split(
         self,
         path: str,
-    ) -> typing.Tuple[str, str]:
+    ) -> tuple[str, str]:
         r"""Split path on backend into sub-path and basename.
 
         Args:

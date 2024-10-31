@@ -1,7 +1,7 @@
+from collections.abc import Sequence
 import fnmatch
 import os
 import re
-import typing
 
 import audeer
 
@@ -82,7 +82,7 @@ class Maven(Versioned):
         self,
         backend: Backend,
         *,
-        extensions: typing.Sequence[str] = [],
+        extensions: Sequence[str] = [],
         regex: bool = False,
     ):
         super().__init__(backend)
@@ -96,7 +96,7 @@ class Maven(Versioned):
         latest_version: bool = False,
         pattern: str = None,
         suppress_backend_errors: bool = False,
-    ) -> typing.List[typing.Tuple[str, str]]:
+    ) -> list[tuple[str, str]]:
         r"""List files on backend.
 
         Returns a sorted list of tuples
@@ -250,7 +250,7 @@ class Maven(Versioned):
     def _split_ext(
         self,
         name: str,
-    ) -> typing.Tuple[str, str]:
+    ) -> tuple[str, str]:
         r"""Split name into basename and extension."""
         ext = None
         for custom_ext in self.extensions:

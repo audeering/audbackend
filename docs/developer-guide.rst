@@ -534,13 +534,11 @@ we provide a listing method.
 
 .. jupyter-execute::
 
-    import typing
-
     @add_method(SQLite)
     def _ls(
             self,
             path: str,
-    ) -> typing.List[str]:
+    ) -> list[str]:
 
         with self._db as db:
 
