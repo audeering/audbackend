@@ -351,11 +351,7 @@ class Minio(Base):
             path
 
         """
-        path = path.replace(self.sep, "/")
-        if path.startswith("/"):
-            # /path -> path
-            path = path[1:]
-        return path
+        return path.replace(self.sep, "/").removeprefix("/")
 
     def _put_file(
         self,

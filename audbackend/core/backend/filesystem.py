@@ -106,9 +106,7 @@ class FileSystem(Base):
         <host>/<repository>/<path>
 
         """
-        path = path.replace(self.sep, os.path.sep)
-        if path.startswith(os.path.sep):
-            path = path[1:]
+        path = path.replace(self.sep, os.path.sep).removeprefix(os.path.sep)
         path = os.path.join(self._root, path)
         return path
 

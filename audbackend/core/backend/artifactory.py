@@ -331,9 +331,7 @@ class Artifactory(Base):
             Artifactory path object
 
         """
-        path = path.replace(self.sep, "/")
-        if path.startswith("/"):
-            path = path[1:]
+        path = path.replace(self.sep, "/").removeprefix("/")
         # path -> host/repository/path
         return self._repo / path
 
