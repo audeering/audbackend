@@ -1,8 +1,8 @@
+from collections.abc import Callable
 import datetime
 import errno
 import os
 import re
-import typing
 
 from audbackend.core.errors import BackendError
 
@@ -17,12 +17,12 @@ VERSION_ALLOWED_CHARS_COMPILED = re.compile(VERSION_ALLOWED_CHARS)
 
 
 def call_function_on_backend(
-    function: typing.Callable,
+    function: Callable,
     *args,
     suppress_backend_errors: bool = False,
-    fallback_return_value: typing.Any = None,
+    fallback_return_value: object = None,
     **kwargs,
-) -> typing.Any:
+) -> object:
     try:
         return function(*args, **kwargs)
     except Exception as ex:

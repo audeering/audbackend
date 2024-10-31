@@ -1,5 +1,4 @@
 import os
-import typing
 
 import artifactory
 import dohq_artifactory
@@ -84,7 +83,7 @@ class Artifactory(Base):
         host: str,
         repository: str,
         *,
-        authentication: typing.Tuple[str, str] = None,
+        authentication: tuple[str, str] = None,
     ):
         super().__init__(host, repository, authentication=authentication)
 
@@ -99,7 +98,7 @@ class Artifactory(Base):
         self._session = None
 
     @classmethod
-    def get_authentication(cls, host: str) -> typing.Tuple[str, str]:
+    def get_authentication(cls, host: str) -> tuple[str, str]:
         """Username and password/access token for given host.
 
         Returns a username
@@ -271,7 +270,7 @@ class Artifactory(Base):
     def _ls(
         self,
         path: str,
-    ) -> typing.List[str]:
+    ) -> list[str]:
         r"""List all files under sub-path."""
         path = self.path(path)
         if not path.exists():

@@ -1,6 +1,8 @@
+from __future__ import annotations
+
+from collections.abc import Sequence
 import fnmatch
 import os
-import typing
 
 import audeer
 
@@ -263,7 +265,7 @@ class Versioned(Base):
         tmp_root: str = None,
         validate: bool = False,
         verbose: bool = False,
-    ) -> typing.List[str]:
+    ) -> list[str]:
         r"""Get archive from backend and extract.
 
         The archive type is derived from the extension of ``src_path``.
@@ -452,7 +454,7 @@ class Versioned(Base):
         latest_version: bool = False,
         pattern: str = None,
         suppress_backend_errors: bool = False,
-    ) -> typing.List[typing.Tuple[str, str]]:
+    ) -> list[tuple[str, str]]:
         r"""List files on backend.
 
         Returns a sorted list of tuples
@@ -717,7 +719,7 @@ class Versioned(Base):
         dst_path: str,
         version: str,
         *,
-        files: typing.Union[str, typing.Sequence[str]] = None,
+        files: str | Sequence[str] = None,
         tmp_root: str = None,
         validate: bool = False,
         verbose: bool = False,
@@ -908,7 +910,7 @@ class Versioned(Base):
         path: str,
         *,
         suppress_backend_errors: bool = False,
-    ) -> typing.List[str]:
+    ) -> list[str]:
         r"""Versions of a file.
 
         Args:

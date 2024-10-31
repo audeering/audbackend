@@ -1,5 +1,7 @@
+from __future__ import annotations
+
+from collections.abc import Sequence
 import os  # noqa: F401
-import typing
 
 from audbackend.core.interface.base import Base
 
@@ -217,7 +219,7 @@ class Unversioned(Base):
         tmp_root: str = None,
         validate: bool = False,
         verbose: bool = False,
-    ) -> typing.List[str]:
+    ) -> list[str]:
         r"""Get archive from backend and extract.
 
         The archive type is derived from the extension of ``src_path``.
@@ -360,7 +362,7 @@ class Unversioned(Base):
         *,
         pattern: str = None,
         suppress_backend_errors: bool = False,
-    ) -> typing.List[str]:
+    ) -> list[str]:
         r"""List files on backend.
 
         Returns a sorted list of tuples
@@ -537,7 +539,7 @@ class Unversioned(Base):
         src_root: str,
         dst_path: str,
         *,
-        files: typing.Union[str, typing.Sequence[str]] = None,
+        files: str | Sequence[str] = None,
         tmp_root: str = None,
         validate: bool = False,
         verbose: bool = False,

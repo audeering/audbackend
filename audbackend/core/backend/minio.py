@@ -3,7 +3,6 @@ import getpass
 import mimetypes
 import os
 import tempfile
-import typing
 
 import minio
 
@@ -58,7 +57,7 @@ class Minio(Base):
         host: str,
         repository: str,
         *,
-        authentication: typing.Tuple[str, str] = None,
+        authentication: tuple[str, str] = None,
         secure: bool = None,
         **kwargs,
     ):
@@ -81,7 +80,7 @@ class Minio(Base):
         )
 
     @classmethod
-    def get_authentication(cls, host: str) -> typing.Tuple[str, str]:
+    def get_authentication(cls, host: str) -> tuple[str, str]:
         """Access and secret tokens for given host.
 
         Returns a authentication for MinIO server
@@ -115,7 +114,7 @@ class Minio(Base):
         return access_key, secret_key
 
     @classmethod
-    def get_config(cls, host: str) -> typing.Dict:
+    def get_config(cls, host: str) -> dict:
         """Configuration of MinIO server.
 
         The default path of the config file is
@@ -297,7 +296,7 @@ class Minio(Base):
     def _ls(
         self,
         path: str,
-    ) -> typing.List[str]:
+    ) -> list[str]:
         r"""List all files under sub-path."""
         path = self.path(path)
         objects = self._client.list_objects(

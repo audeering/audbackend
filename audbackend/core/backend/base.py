@@ -1,8 +1,10 @@
+from __future__ import annotations
+
+from collections.abc import Sequence
 import fnmatch
 import inspect
 import os
 import tempfile
-import typing
 
 import audeer
 
@@ -27,7 +29,7 @@ class Base:
         host: str,
         repository: str,
         *,
-        authentication: typing.Any = None,
+        authentication: object = None,
     ):
         self.host = host
         r"""Host path."""
@@ -257,7 +259,7 @@ class Base:
         host: str,
         repository: str,
         *,
-        authentication: typing.Any = None,
+        authentication: object = None,
     ):
         r"""Create repository.
 
@@ -340,7 +342,7 @@ class Base:
         host: str,
         repository: str,
         *,
-        authentication: typing.Any = None,
+        authentication: object = None,
     ):
         r"""Delete repository.
 
@@ -421,7 +423,7 @@ class Base:
         tmp_root: str = None,
         validate: bool = False,
         verbose: bool = False,
-    ) -> typing.List[str]:
+    ) -> list[str]:
         r"""Get archive from backend and extract.
 
         The archive type is derived from the extension of ``src_path``.
@@ -625,7 +627,7 @@ class Base:
     def _ls(
         self,
         path: str,
-    ) -> typing.List[str]:  # pragma: no cover
+    ) -> list[str]:  # pragma: no cover
         r"""List all files under sub-path.
 
         If ``path`` does not exist
@@ -640,7 +642,7 @@ class Base:
         *,
         pattern: str = None,
         suppress_backend_errors: bool = False,
-    ) -> typing.List[str]:
+    ) -> list[str]:
         r"""List files on backend.
 
         Returns a sorted list of tuples
@@ -901,7 +903,7 @@ class Base:
         src_root: str,
         dst_path: str,
         *,
-        files: typing.Union[str, typing.Sequence[str]] = None,
+        files: str | Sequence[str] = None,
         tmp_root: str = None,
         validate: bool = False,
         verbose: bool = False,
@@ -1105,7 +1107,7 @@ class Base:
     def split(
         self,
         path: str,
-    ) -> typing.Tuple[str, str]:
+    ) -> tuple[str, str]:
         r"""Split path on backend into sub-path and basename.
 
         Args:

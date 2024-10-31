@@ -1,4 +1,3 @@
-import typing
 import warnings
 
 import audeer
@@ -53,7 +52,7 @@ def access(
     host: str,
     repository: str,
     *,
-    interface: typing.Type[Interface] = Versioned,
+    interface: type[Interface] = Versioned,
     interface_kwargs: dict = None,
 ) -> Interface:
     r"""Access repository.
@@ -198,7 +197,7 @@ def delete(
 @audeer.deprecated(removal_version="2.2.0", alternative="backend classes directly")
 def register(
     name: str,
-    cls: typing.Type[Base],
+    cls: type[Base],
 ):
     r"""Register backend class.
 
