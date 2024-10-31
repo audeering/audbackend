@@ -19,9 +19,19 @@ To install all backends run:
 
     $ pip install audbackend[all]
 
-or select single backends,
-e.g. :class:`audbackend.backend.Artifactory`
+You can also select single backends,
+e.g. :class:`audbackend.backend.Minio`:
+
+.. code-block:: bash
+
+    $ pip install audbackend[minio]
+    
+or :class:`audbackend.backend.Artifactory`:
 
 .. code-block:: bash
 
     $ pip install audbackend[artifactory]
+
+Note,
+in Python 3.12 the :class:`audbackend.backend.Artifactory`
+backend is not available at the moment.

@@ -21,6 +21,8 @@ jobs:
             python-version: '3.9'
           - os: ubuntu-latest
             python-version: '3.11'
+          - os: ubuntu-latest
+            python-version: '3.12'
 
     steps:
     - uses: actions/checkout@v4
@@ -48,16 +50,22 @@ jobs:
       run: |
         pip install -r requirements.txt
 
-    - name: Test with pytest
+    - name: Test with pytest for Python <3.12
       env:
         ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
         ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
       run: |
         python -m pytest --cov-config=.coveragerc.${{ runner.os }}
+      if: matrix.python-version != '3.12'
+
+    - name: Test with pytest for Python 3.12
+      run: |
+        python -m pytest --cov-config=.coveragerc.python3.12 --ignore=audbackend/core/backend/artifactory.py --ignore=tests/test_backend_artifactory.py
+      if: matrix.python-version == '3.12'
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: ./coverage.xml
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.os == 'ubuntu-latest' and matrix.python-version != '3.12'

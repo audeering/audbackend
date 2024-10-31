@@ -25,6 +25,7 @@ classifiers = [
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
     'Topic :: Scientific/Engineering',
 ]
 dependencies = [
@@ -37,13 +38,13 @@ dynamic = ['version']
 
 [project.optional-dependencies]
 artifactory = [
-    'dohq-artifactory >=0.10.0',
+    'dohq-artifactory >=0.10.0; python_version < "3.12"',
 ]
 minio = [
     'minio',
 ]
 all = [
-    'dohq-artifactory >=0.10.0',
+    'dohq-artifactory >=0.10.0; python_version < "3.12"',
     'minio',
 ]
 
