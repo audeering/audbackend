@@ -22,8 +22,8 @@ import audbackend
             f"unittest-{audeer.uid()[:8]}",
             "audbackend.backend.Artifactory",
             marks=pytest.mark.skipif(
-                sys.version_info > (3, 11),
-                reason="Requires Python 3.11 or lower",
+                sys.version_info >= (3, 12),
+                reason="Requires Python<3.12",
             ),
         ),
         (
