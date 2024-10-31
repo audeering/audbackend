@@ -48,7 +48,7 @@ def _download(
 
     with audeer.progress_bar(total=src_size, disable=not verbose) as pbar:
         desc = audeer.format_display_message(
-            "Download {}".format(os.path.basename(str(src_path))),
+            f"Download {os.path.basename(str(src_path))}",
             pbar=True,
         )
         pbar.set_description_str(desc)
