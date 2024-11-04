@@ -7,6 +7,16 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 2.1.0 (2024-10-31)
+--------------------------
+
+* Added: ``audbackend.backend.Minio`` backend
+  to access MinIO and S3 storages
+* Added: support for Python 3.12
+  (without Artifactory backend)
+* Removed: support for Python 3.8
+
+
 Version 2.0.1 (2024-05-14)
 --------------------------
 
