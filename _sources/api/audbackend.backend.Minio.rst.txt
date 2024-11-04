@@ -1,0 +1,112 @@
+﻿Minio
+=====
+
+.. currentmodule:: audbackend.backend
+
+.. autoclass:: Minio
+
+
+authentication
+--------------
+.. autoattribute:: Minio.authentication
+    
+checksum\(\)
+------------
+.. automethod:: Minio.checksum
+    
+close\(\)
+---------
+.. automethod:: Minio.close
+    
+copy\_file\(\)
+--------------
+.. automethod:: Minio.copy_file
+    
+create\(\)
+----------
+.. automethod:: Minio.create
+    
+date\(\)
+--------
+.. automethod:: Minio.date
+    
+delete\(\)
+----------
+.. automethod:: Minio.delete
+    
+exists\(\)
+----------
+.. automethod:: Minio.exists
+    
+get\_archive\(\)
+----------------
+.. automethod:: Minio.get_archive
+    
+get\_authentication\(\)
+-----------------------
+.. automethod:: Minio.get_authentication
+    
+get\_config\(\)
+---------------
+.. automethod:: Minio.get_config
+    
+get\_file\(\)
+-------------
+.. automethod:: Minio.get_file
+    
+host
+----
+.. autoattribute:: Minio.host
+    
+join\(\)
+--------
+.. automethod:: Minio.join
+    
+ls\(\)
+------
+.. automethod:: Minio.ls
+    
+move\_file\(\)
+--------------
+.. automethod:: Minio.move_file
+    
+open\(\)
+--------
+.. automethod:: Minio.open
+    
+opened
+------
+.. autoattribute:: Minio.opened
+    
+owner\(\)
+---------
+.. automethod:: Minio.owner
+    
+path\(\)
+--------
+.. automethod:: Minio.path
+    
+put\_archive\(\)
+----------------
+.. automethod:: Minio.put_archive
+    
+put\_file\(\)
+-------------
+.. automethod:: Minio.put_file
+    
+remove\_file\(\)
+----------------
+.. automethod:: Minio.remove_file
+    
+repository
+----------
+.. autoattribute:: Minio.repository
+    
+sep
+---
+.. autoattribute:: Minio.sep
+    
+split\(\)
+---------
+.. automethod:: Minio.split
+    

@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                2.0.1
+                2.1.0
               </div>
             
           
@@ -161,11 +161,18 @@ To install all backends run:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>audbackend<span class="o">[</span>all<span class="o">]</span>
 </pre></div>
 </div>
-<p>or select single backends,
-e.g. <a class="reference internal" href="api/audbackend.backend.Artifactory.html#audbackend.backend.Artifactory" title="audbackend.backend.Artifactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">audbackend.backend.Artifactory</span></code></a></p>
+<p>You can also select single backends,
+e.g. <a class="reference internal" href="api/audbackend.backend.Minio.html#audbackend.backend.Minio" title="audbackend.backend.Minio"><code class="xref py py-class docutils literal notranslate"><span class="pre">audbackend.backend.Minio</span></code></a>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>audbackend<span class="o">[</span>minio<span class="o">]</span>
+</pre></div>
+</div>
+<p>or <a class="reference internal" href="api/audbackend.backend.Artifactory.html#audbackend.backend.Artifactory" title="audbackend.backend.Artifactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">audbackend.backend.Artifactory</span></code></a>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>audbackend<span class="o">[</span>artifactory<span class="o">]</span>
 </pre></div>
 </div>
+<p>Note,
+in Python 3.12 the <a class="reference internal" href="api/audbackend.backend.Artifactory.html#audbackend.backend.Artifactory" title="audbackend.backend.Artifactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">audbackend.backend.Artifactory</span></code></a>
+backend is not available at the moment.</p>
 </div>
 
 
@@ -191,7 +198,7 @@ e.g. <a class="reference internal" href="api/audbackend.backend.Artifactory.html
         
         
         
-          Built with <a href="https://www.sphinx-doc.org/en/master/">Sphinx</a> on 2024/05/14 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2024/11/04 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
