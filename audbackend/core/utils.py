@@ -98,13 +98,30 @@ def checksum(file: str) -> str:
     or pyarrow_ is not installed,
     its MD5 sum is calculated instead.
 
+    .. _pyarrow: https://arrow.apache.org/docs/python/index.html
+
     Args:
         file: file path with extension
 
     Returns:
         MD5 checksum of file
 
-    .. _pyarrow: https://arrow.apache.org/docs/python/index.html
+    Examples:
+        >>> checksum("src.txt")
+        'd41d8cd98f00b204e9800998ecf8427e'
+        >>> import audformat
+        >>> import pandas as pd
+        >>> import pyarrow as pa
+        >>> import pyarrow.parquet as pq
+        >>> df = pd.DataFrame([0, 1], columns=["a"])
+        >>> hash = audformat.utils.hash(df, strict=True)
+        >>> hash
+        '9021a9b6e1e696ba9de4fe29346319b2'
+        >>> table = pa.Table.from_pandas(df)
+        >>> table = table.replace_schema_metadata({"hash": hash})
+        >>> pq.write_table(table, "file.parquet", compression="snappy")
+        >>> checksum("file.parquet")
+        '9021a9b6e1e696ba9de4fe29346319b2'
 
     """
     ext = audeer.file_extension(file)
