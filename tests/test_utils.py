@@ -9,6 +9,25 @@ import audeer
 import audbackend
 
 
+@pytest.fixture
+def pyarrow_installed(request):
+    """Simulate missing pyarrow installation.
+
+    Args:
+        request: request parameter for indirect call of fixture
+
+    """
+    if not request.param:
+        sys.modules["pyarrow"] = None
+
+        yield False
+
+        del sys.modules["pyarrow"]
+
+    else:
+        yield True
+
+
 class TestChecksum:
     """Test local checksum calculation."""
 
@@ -34,18 +53,12 @@ class TestChecksum:
         table = table.replace_schema_metadata(metadata)
         parquet.write_table(table, cls.files[file], compression="snappy")
 
+    @pytest.mark.parametrize("pyarrow_installed", [True, False], indirect=True)
     @pytest.mark.parametrize(
-        "file, pyarrow_installed, expected_checksum_function",
-        [
-            ("file.txt", True, audeer.md5),
-            ("file.parquet", True, audeer.md5),
-            ("file-metadata.parquet", True, lambda x: "my-hash"),
-            ("file.txt", False, audeer.md5),
-            ("file.parquet", False, audeer.md5),
-            ("file-metadata.parquet", False, audeer.md5),
-        ],
+        "file",
+        ["file.txt", "file.parquet", "file-metadata.parquet"],
     )
-    def test_checksum(self, file, pyarrow_installed, expected_checksum_function):
+    def test_checksum(self, file, pyarrow_installed):
         """Test checksum of local file.
 
         Args:
@@ -57,16 +70,14 @@ class TestChecksum:
 
         """
         path = self.files[file]
-        if not pyarrow_installed:
-            sys.modules["pyarrow"] = None
-        assert audbackend.checksum(path) == expected_checksum_function(path)
-        if not pyarrow_installed:
-            del sys.modules["pyarrow"]
+        expected_checksum = self.determine_expected_checksum(file, pyarrow_installed)
+        assert audbackend.checksum(path) == expected_checksum
 
     @pytest.mark.parametrize(
         "file, error, error_msg",
         [
             ("non-existing.txt", FileNotFoundError, "No such file or directory"),
+            ("non-existing.parquet", FileNotFoundError, "No such file or directory"),
         ],
     )
     def test_errors(self, file, error, error_msg):
@@ -80,3 +91,15 @@ class TestChecksum:
         """
         with pytest.raises(error, match=error_msg):
             audbackend.checksum(file)
+
+    def determine_expected_checksum(self, file, pyarrow_installed):
+        """Expected checksum for file and pyarrow installation.
+
+        Args:
+            file: file to calculate checksum for
+            pyarrow_installed: if ``True`` it assumes ``pyarrow`` is installed
+
+        """
+        if file == "file-metadata.parquet" and pyarrow_installed:
+            return "my-hash"
+        return audeer.md5(self.files[file])
