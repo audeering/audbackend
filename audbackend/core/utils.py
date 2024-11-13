@@ -83,20 +83,15 @@ def check_version(version: str) -> str:
 def checksum(file: str) -> str:
     r"""Checksum of file.
 
-    The checksum is given by the MD5 sum
-    as calculated with :func:`audeer.md5`.
+    This function is used by backends
+    to get the checksum of local files,
+    using :func:`audeer.md5`.
 
-    As parquet files are stored non-deterministically,
-    we allow to use them with precalculated checksums,
-    stored under the key ``b"hash"`` in its metadata.
-    To support this feature pyarrow_
-    has to be installed.
-    A deterministic checksum,
-    based on the content of the parquet file,
-    can be calculated with :func:`audformat.utils.hash`.
-    If the key is not present in the metadata of the parquet file,
-    or pyarrow_ is not installed,
-    its MD5 sum is calculated instead.
+    An exception are parquet files,
+    for which their ``"hash"`` metadata entry
+    is used as checksum,
+    if the entry is available
+    and pyarrow_ is installed.
 
     .. _pyarrow: https://arrow.apache.org/docs/python/index.html
 
