@@ -79,8 +79,8 @@ class TestChecksum:
     @pytest.mark.parametrize(
         "file, error, error_msg",
         [
-            ("non-existing.txt", FileNotFoundError, "No such file or directory"),
-            ("non-existing.parquet", FileNotFoundError, "No such file or directory"),
+            ("non-existing.txt", FileNotFoundError, "non-existing.txt"),
+            ("non-existing.parquet", FileNotFoundError, "non-existing.parquet"),
         ],
     )
     def test_errors(self, file, error, error_msg):
@@ -89,7 +89,10 @@ class TestChecksum:
         Args:
             file: file path
             error: expected error
-            error_msg: expected error message
+            error_msg: expected error message.
+                For ``FileNotFoundError``,
+                we recommend to use only the file name
+                as the rest of the error message differs under Windows
 
         """
         with pytest.raises(error, match=error_msg):
