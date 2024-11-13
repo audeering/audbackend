@@ -53,10 +53,13 @@ class TestChecksum:
         table = table.replace_schema_metadata(metadata)
         parquet.write_table(table, cls.files[file], compression="snappy")
 
+        file = "folder"
+        cls.files[file] = audeer.mkdir(tmpdir, file)
+
     @pytest.mark.parametrize("pyarrow_installed", [True, False], indirect=True)
     @pytest.mark.parametrize(
         "file",
-        ["file.txt", "file.parquet", "file-metadata.parquet"],
+        ["file.txt", "file.parquet", "file-metadata.parquet", "folder"],
     )
     def test_checksum(self, file, pyarrow_installed):
         """Test checksum of local file.
@@ -90,6 +93,7 @@ class TestChecksum:
 
         """
         with pytest.raises(error, match=error_msg):
+            file = self.files.get(file, file)
             audbackend.checksum(file)
 
     def determine_expected_checksum(self, file, pyarrow_installed):
