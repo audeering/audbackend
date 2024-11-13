@@ -7,6 +7,7 @@ from audbackend.core.api import register
 from audbackend.core.backend.base import Base as Backend  # legacy
 from audbackend.core.backend.filesystem import FileSystem  # legacy
 from audbackend.core.errors import BackendError
+from audbackend.core.utils import checksum
 from audbackend.core.repository import Repository
 
 # Import optional backends (legacy)

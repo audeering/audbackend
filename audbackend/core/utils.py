@@ -4,6 +4,8 @@ import errno
 import os
 import re
 
+import audeer
+
 from audbackend.core.errors import BackendError
 
 
@@ -76,6 +78,46 @@ def check_version(version: str) -> str:
         )
 
     return version
+
+
+def checksum(file: str) -> str:
+    r"""Checksum of file.
+
+    The checksum is given by the MD5 sum
+    as calculated with :func:`audeer.md5`.
+
+    As parquet files are stored non-deterministically,
+    we allow to use them with precalculated checksums,
+    stored under the key ``b"hash"`` in its metadata.
+    To support this feature pyarrow_
+    has to be installed.
+    A deterministic checksum,
+    based on the content of the parquet file,
+    can be calculated with :func:`audformat.utils.hash`.
+    If the key is not present in the metadata of the parquet file,
+    or pyarrow_ is not installed,
+    its MD5 sum is calculated instead.
+
+    Args:
+        file: file path with extension
+
+    Returns:
+        MD5 checksum of file
+
+    .. _pyarrow: https://arrow.apache.org/docs/python/index.html
+
+    """
+    ext = audeer.file_extension(file)
+    if ext == "parquet":
+        try:
+            import pyarrow.parquet as parquet
+
+            metadata = parquet.read_schema(file).metadata or {}
+            if b"hash" in metadata:
+                return metadata[b"hash"].decode()
+        except ModuleNotFoundError:
+            pass
+    return audeer.md5(file)
 
 
 def date_format(date: datetime.datetime) -> str:
