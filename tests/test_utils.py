@@ -62,3 +62,21 @@ class TestChecksum:
         assert audbackend.checksum(path) == expected_checksum_function(path)
         if not pyarrow_installed:
             del sys.modules["pyarrow"]
+
+    @pytest.mark.parametrize(
+        "file, error, error_msg",
+        [
+            ("non-existing.txt", FileNotFoundError, "No such file or directory"),
+        ],
+    )
+    def test_errors(self, file, error, error_msg):
+        """Test expected errors.
+
+        Args:
+            file: file path
+            error: expected error
+            error_msg: expected error message
+
+        """
+        with pytest.raises(error, match=error_msg):
+            audbackend.checksum(file)
