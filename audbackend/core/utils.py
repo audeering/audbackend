@@ -106,6 +106,9 @@ def checksum(file: str) -> str:
     Returns:
         MD5 checksum of file
 
+    Raises:
+        FileNotFoundError: if ``file`` does not exist
+
     Examples:
         >>> checksum("src.txt")
         'd41d8cd98f00b204e9800998ecf8427e'
