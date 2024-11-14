@@ -1,6 +1,5 @@
 from audbackend import backend
 from audbackend import interface
-from audbackend.core.api import register
 from audbackend.core.backend.base import Base as Backend  # legacy
 from audbackend.core.backend.filesystem import FileSystem  # legacy
 from audbackend.core.errors import BackendError

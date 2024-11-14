@@ -32,4 +32,3 @@ and functions are available.
     BackendError
     Repository
     checksum
-    register
