@@ -177,7 +177,8 @@ class Minio(Base):
     ) -> str:
         r"""MD5 checksum of file on backend."""
         path = self.path(path)
-        return self._client.stat_object(self.repository, path).etag
+        meta = self._client.stat_object(self.repository, path).metadata
+        return meta["x-amz-meta-checksum"] if "x-amz-meta-checksum" in meta else ""
 
     def _collapse(
         self,
@@ -202,20 +203,20 @@ class Minio(Base):
         r"""Copy file on backend."""
         src_path = self.path(src_path)
         dst_path = self.path(dst_path)
+        checksum = self._checksum(src_path)
         # `copy_object()` has a maximum size limit of 5GB.
         # We use 4.9GB to have some headroom
         if self._size(src_path) / 1024 / 1024 / 1024 >= 4.9:
             with tempfile.TemporaryDirectory() as tmp_dir:
                 tmp_path = audeer.path(tmp_dir, os.path.basename(src_path))
                 self._get_file(src_path, tmp_path, verbose)
-                checksum = self._checksum(src_path)
                 self._put_file(tmp_path, dst_path, checksum, verbose)
         else:
             self._client.copy_object(
                 self.repository,
                 dst_path,
                 minio.commonconfig.CopySource(self.repository, src_path),
-                metadata=_metadata(),
+                metadata=_metadata(checksum),
             )
 
     def _create(
@@ -375,7 +376,7 @@ class Minio(Base):
             dst_path,
             src_path,
             content_type=content_type,
-            metadata=_metadata(),
+            metadata=_metadata(checksum),
         )
 
         if verbose:  # pragma: no cover
@@ -402,11 +403,16 @@ class Minio(Base):
         return size
 
 
-def _metadata():
+def _metadata(checksum: str):
     """Dictionary with owner entry.
 
     When uploaded as metadata to MinIO,
     it can be accessed under ``stat_object(...).metadata["x-amz-meta-owner"]``.
 
+    Args:
+        checksum: checksum to be stored in metadata
     """
-    return {"owner": getpass.getuser()}
+    return {
+        "checksum": checksum,
+        "owner": getpass.getuser(),
+    }
