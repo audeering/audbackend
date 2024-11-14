@@ -15,6 +15,9 @@ class Unversioned(Base):
     Args:
         backend: backend object
 
+    ..
+        >>> import audbackend
+
     Examples:
         >>> file = "src.txt"
         >>> backend = audbackend.backend.FileSystem("host", "repo")
@@ -50,9 +53,7 @@ class Unversioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Unversioned(backend)
+            >>> interface = Unversioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"
@@ -106,9 +107,7 @@ class Unversioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Unversioned(backend)
+            >>> interface = Unversioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"
@@ -191,9 +190,7 @@ class Unversioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Unversioned(backend)
+            >>> interface = Unversioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"
@@ -262,9 +259,7 @@ class Unversioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Unversioned(backend)
+            >>> interface = Unversioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"
@@ -333,9 +328,7 @@ class Unversioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Unversioned(backend)
+            >>> interface = Unversioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"
@@ -401,9 +394,7 @@ class Unversioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Unversioned(backend)
+            >>> interface = Unversioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"
@@ -471,9 +462,7 @@ class Unversioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Unversioned(backend)
+            >>> interface = Unversioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"
@@ -588,9 +577,7 @@ class Unversioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Unversioned(backend)
+            >>> interface = Unversioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"
@@ -650,9 +637,7 @@ class Unversioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Unversioned(backend)
+            >>> interface = Unversioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"
@@ -687,9 +672,7 @@ class Unversioned(Base):
                 or does not match ``'[A-Za-z0-9/._-]+'``
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Unversioned(backend)
+            >>> interface = Unversioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"

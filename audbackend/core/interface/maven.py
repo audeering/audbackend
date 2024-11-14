@@ -63,6 +63,9 @@ class Maven(Versioned):
             ...
             as extensions
 
+    ..
+        >>> import audbackend
+
     Examples:
         >>> file = "src.txt"
         >>> backend = audbackend.backend.FileSystem("host", "repo")
@@ -139,9 +142,7 @@ class Maven(Versioned):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Maven(backend)
+            >>> interface = Maven(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"

@@ -21,7 +21,8 @@ class Versioned(Base):
     Args:
         backend: backend object
 
-    .. Prepare backend and interface for docstring examples
+    ..
+        >>> import audbackend
 
     Examples:
         >>> file = "src.txt"

@@ -44,7 +44,7 @@ class Minio(Base):
         >>> backend = Minio(host, repository, authentication=auth)
         >>> try:
         ...     with backend:
-        ...         backend.put_file(file, "/sub/file.txt")
+        ...         backend.put_file("src.txt", "/sub/file.txt")
         ...         backend.ls()
         ... finally:
         ...     Minio.delete(host, repository, authentication=auth)
