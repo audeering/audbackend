@@ -13,6 +13,8 @@ license = {file = 'LICENSE'}
 keywords = [
     'artifactory',
     'filesystem',
+    'minio',
+    's3',
 ]
 classifiers = [
     'Development Status :: 5 - Production/Stable',
