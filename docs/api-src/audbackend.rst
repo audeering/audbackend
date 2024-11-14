@@ -34,5 +34,4 @@ and functions are available.
     access
     checksum
     create
-    delete
     register

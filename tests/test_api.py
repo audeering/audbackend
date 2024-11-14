@@ -67,10 +67,6 @@ def test_api(hosts, name, host, repository, expected_class):
         "create is deprecated and will be removed with version 2.2.0. "
         r"Use class method Backend.create\(\) of corresponding backend instead."
     )
-    delete_warning = (
-        "delete is deprecated and will be removed with version 2.2.0. "
-        r"Use class method Backend.delete\(\) of corresponding backend instead."
-    )
 
     error_msg = "A backend class with name 'bad' does not exist."
     with pytest.raises(ValueError, match=error_msg):
@@ -99,9 +95,6 @@ def test_api(hosts, name, host, repository, expected_class):
     with pytest.warns(UserWarning, match=access_warning):
         interface = audbackend.access(name, host, repository)
     assert str(interface.backend).startswith(expected_class)
-
-    with pytest.warns(UserWarning, match=delete_warning):
-        audbackend.delete(name, host, repository)
 
     with pytest.raises(audbackend.BackendError, match=error_msg):
         with pytest.warns(UserWarning, match=access_warning):
