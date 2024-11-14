@@ -5,7 +5,6 @@ import audeer
 from audbackend.core import utils
 from audbackend.core.backend.base import Base
 from audbackend.core.backend.filesystem import FileSystem
-from audbackend.core.interface.base import Base as Interface
 from audbackend.core.interface.versioned import Versioned
 
 
@@ -41,63 +40,6 @@ def _backend(
 
     backend = backends[name][host][repository]
     return backend
-
-
-@audeer.deprecated(
-    removal_version="2.2.0",
-    alternative="Backend.__init__() of corresponding backend",
-)
-def access(
-    name: str,
-    host: str,
-    repository: str,
-    *,
-    interface: type[Interface] = Versioned,
-    interface_kwargs: dict = None,
-) -> Interface:
-    r"""Access repository.
-
-    Returns an ``interface`` instance
-    to access the ``repository``
-    located at ``host``
-    on the backend with alias ``name``
-    (see :func:`audbackend.register`).
-
-    .. Warning::
-
-        ``audbackend.access()`` is deprecated
-        and will be removed in version 2.2.0.
-        Repositories on backends are instead accessed
-        by instantiating the corresponding backend class,
-        and connecting to it using the ``open()`` method,
-        e.g.
-
-        .. code-block:: python
-
-            backend = audbackend.backend.FileSystem(host, repo)
-            backend.open()
-
-    Args:
-        name: backend alias
-        host: host address
-        repository: repository name
-        interface: interface class
-        interface_kwargs: keyword arguments for interface class
-
-    Returns:
-        interface object
-
-    Raises:
-        BackendError: if an error is raised on the backend,
-            e.g. repository does not exist
-        ValueError: if no backend class with alias ``name``
-            has been registered
-
-    """  # noqa: E501
-    backend = _backend(name, host, repository)
-    utils.call_function_on_backend(backend._open)
-    interface_kwargs = interface_kwargs or {}
-    return interface(backend, **interface_kwargs)
 
 
 @audeer.deprecated(

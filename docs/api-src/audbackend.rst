@@ -31,7 +31,6 @@ and functions are available.
 
     BackendError
     Repository
-    access
     checksum
     create
     register

@@ -1,6 +1,5 @@
 from audbackend import backend
 from audbackend import interface
-from audbackend.core.api import access
 from audbackend.core.api import create
 from audbackend.core.api import register
 from audbackend.core.backend.base import Base as Backend  # legacy

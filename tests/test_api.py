@@ -59,28 +59,14 @@ def test_api(hosts, name, host, repository, expected_class):
     if host is not None and host in hosts:
         host = hosts[name]
 
-    access_warning = (
-        "access is deprecated and will be removed with version 2.2.0. "
-        r"Use Backend.__init__\(\) of corresponding backend instead."
-    )
     create_warning = (
         "create is deprecated and will be removed with version 2.2.0. "
         r"Use class method Backend.create\(\) of corresponding backend instead."
     )
-
-    error_msg = "A backend class with name 'bad' does not exist."
-    with pytest.raises(ValueError, match=error_msg):
-        with pytest.warns(UserWarning, match=access_warning):
-            audbackend.access("bad", host, repository)
-
     error_msg = (
         "An exception was raised by the backend, "
         "please see stack trace for further information."
     )
-
-    with pytest.raises(audbackend.BackendError, match=error_msg):
-        with pytest.warns(UserWarning, match=access_warning):
-            audbackend.access(name, host, repository)
 
     # returns versioned interface for legacy reasons
     with pytest.warns(UserWarning, match=create_warning):
@@ -91,11 +77,3 @@ def test_api(hosts, name, host, repository, expected_class):
     with pytest.raises(audbackend.BackendError, match=error_msg):
         with pytest.warns(UserWarning, match=create_warning):
             audbackend.create(name, host, repository)
-
-    with pytest.warns(UserWarning, match=access_warning):
-        interface = audbackend.access(name, host, repository)
-    assert str(interface.backend).startswith(expected_class)
-
-    with pytest.raises(audbackend.BackendError, match=error_msg):
-        with pytest.warns(UserWarning, match=access_warning):
-            audbackend.access(name, host, repository)
