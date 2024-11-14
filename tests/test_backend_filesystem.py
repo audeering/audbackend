@@ -9,6 +9,16 @@ import audbackend
 from bad_file_system import BadFileSystem
 
 
+@pytest.mark.parametrize("repository", [f"unittest-{pytest.UID}-{audeer.uid()[:8]}"])
+def test_create_delete_repositories(tmpdir, repository):
+    host = audeer.mkdir(tmpdir, "host")
+    audbackend.backend.FileSystem.create(host, repository)
+    with pytest.raises(audbackend.BackendError):
+        # Repository exists already
+        audbackend.backend.FileSystem.create(host, repository)
+    audbackend.backend.FileSystem.delete(host, repository)
+
+
 @pytest.mark.parametrize(
     "interface",
     [(BadFileSystem, audbackend.interface.Versioned)],
@@ -167,3 +177,15 @@ def test_maven_file_structure(
     assert path_expected == path
     assert interface.ls(file) == [(file, version)]
     assert interface.ls() == [(file, version)]
+
+
+@pytest.mark.parametrize("repository", [f"unittest-{pytest.UID}-{audeer.uid()[:8]}"])
+def test_open_close(tmpdir, repository):
+    host = audeer.mkdir(tmpdir, "host")
+    backend = audbackend.backend.FileSystem(host, repository)
+    with pytest.raises(audbackend.BackendError):
+        # Repository does not exist yet
+        backend.open()
+    audbackend.backend.FileSystem.create(host, repository)
+    backend.open()
+    backend.close()

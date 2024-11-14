@@ -74,6 +74,9 @@ def test_authentication(tmpdir, hosts, hide_credentials):
 @pytest.mark.parametrize("repository", [f"unittest-{pytest.UID}-{audeer.uid()[:8]}"])
 def test_create_delete_repositories(host, repository):
     audbackend.backend.Artifactory.create(host, repository)
+    with pytest.raises(audbackend.BackendError):
+        # Repository exists already
+        audbackend.backend.Artifactory.create(host, repository)
     audbackend.backend.Artifactory.delete(host, repository)
 
 
@@ -213,3 +216,15 @@ def test_maven_file_structure(
     assert url_expected == url
     assert interface.ls(file) == [(file, version)]
     assert interface.ls() == [(file, version)]
+
+
+@pytest.mark.parametrize("host", [pytest.HOSTS["artifactory"]])
+@pytest.mark.parametrize("repository", [f"unittest-{pytest.UID}-{audeer.uid()[:8]}"])
+def test_open_close(host, repository):
+    backend = audbackend.backend.Artifactory(host, repository)
+    with pytest.raises(audbackend.BackendError):
+        # Repository does not exist yet
+        backend.open()
+    audbackend.backend.Artifactory.create(host, repository)
+    backend.open()
+    backend.close()

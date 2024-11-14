@@ -7,8 +7,6 @@ import audeer
 
 import audbackend
 
-from singlefolder import SingleFolder
-
 
 # UID for test session
 # Repositories on the host will be named
@@ -45,16 +43,6 @@ def authentication():
             os.environ[key] = value
         elif key in os.environ:
             del os.environ[key]
-
-
-@pytest.fixture(scope="package", autouse=True)
-def register_single_folder():
-    warning = (
-        "register is deprecated and will be removed with version 2.2.0. "
-        "Use backend classes directly instead."
-    )
-    with pytest.warns(UserWarning, match=warning):
-        audbackend.register("single-folder", SingleFolder)
 
 
 @pytest.fixture(scope="package", autouse=False)

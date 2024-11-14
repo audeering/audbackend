@@ -219,7 +219,7 @@ class Artifactory(Base):
     def _create(
         self,
     ):
-        r"""Access existing repository."""
+        r"""Create repository."""
         with requests.Session() as session:
             session.auth = self.authentication
             path = artifactory.ArtifactoryPath(self.host, session=session)
