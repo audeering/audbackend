@@ -3,8 +3,9 @@
 [project]
 name = 'audbackend'
 authors = [
-    {name = 'Johannes Wagner', email = 'jwagner@audeering.com'},
+    {name = 'Johannes Wagner'},
     {name = 'Hagen Wierstorf', email = 'hwierstorf@audeering.com'},
+    {name = 'Christian Geng', email = 'cgeng@audeering.com'},
 ]
 description = 'Backends to access Artifactory and local file system'
 readme = 'README.rst'
