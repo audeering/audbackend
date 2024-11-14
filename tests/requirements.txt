@@ -1,4 +1,4 @@
 audformat
-pytest<8.1.0  # required by doctestplus
+pytest
 pytest-cov
 pytest-doctestplus
