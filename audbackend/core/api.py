@@ -2,10 +2,8 @@ import warnings
 
 import audeer
 
-from audbackend.core import utils
 from audbackend.core.backend.base import Base
 from audbackend.core.backend.filesystem import FileSystem
-from audbackend.core.interface.versioned import Versioned
 
 
 backends = {}
@@ -13,83 +11,6 @@ r"""Backend cache."""
 
 backend_registry = {}
 r"""Backend registry."""
-
-
-def _backend(
-    name: str,
-    host: str,
-    repository: str,
-) -> Base:
-    r"""Get backend instance."""
-    if name not in backend_registry:
-        raise ValueError(
-            f"A backend class with name "
-            f"'{name}' "
-            f"does not exist. "
-            f"Use 'audbackend.register()' to register one."
-        )
-
-    if name not in backends:
-        backends[name] = {}
-    if host not in backends[name]:
-        backends[name][host] = {}
-    if repository not in backends[name][host]:
-        backend_cls = backend_registry[name]
-        backend = backend_cls(host, repository)
-        backends[name][host][repository] = backend
-
-    backend = backends[name][host][repository]
-    return backend
-
-
-@audeer.deprecated(
-    removal_version="2.2.0",
-    alternative="class method Backend.create() of corresponding backend",
-)
-def create(
-    name: str,
-    host: str,
-    repository: str,
-):
-    r"""Create repository.
-
-    Creates ``repository``
-    located at ``host``
-    on the backend with alias ``name``
-    (see :func:`audbackend.register`).
-
-    .. note:: For legacy reasons the method
-        returns an (undocumented) instance of
-        :class:`audbackend.interface.Versioned`.
-        Since the return value might be removed in
-        a future version it is not recommended to use it.
-
-    .. Warning::
-
-        ``audbackend.create()`` is deprecated
-        and will be removed in version 2.2.0.
-        Repositories on backends are instead created
-        by the class method ``create()``
-        for the desired backend,
-        e.g. :meth:`audbackend.backend.FileSystem.create`.
-
-    Args:
-        name: backend alias
-        host: host address
-        repository: repository name
-
-    Raises:
-        BackendError: if an error is raised on the backend,
-            e.g. repository exists already
-            or cannot be created
-        ValueError: if no backend class with alias ``name``
-            has been registered
-
-    """  # noqa: E501
-    backend = _backend(name, host, repository)
-    utils.call_function_on_backend(backend._create)
-    # for legacy reasons we return a versioned interface
-    return Versioned(backend)
 
 
 @audeer.deprecated(removal_version="2.2.0", alternative="backend classes directly")

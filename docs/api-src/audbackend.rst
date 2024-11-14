@@ -32,5 +32,4 @@ and functions are available.
     BackendError
     Repository
     checksum
-    create
     register
