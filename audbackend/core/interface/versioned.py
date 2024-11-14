@@ -192,9 +192,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = DoctestFileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> interface = Versioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"
@@ -699,9 +697,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = DoctestFileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> interface = Versioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"

@@ -151,9 +151,7 @@ class Unversioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = DoctestFileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Unversioned(backend)
+            >>> interface = Unversioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"
@@ -521,9 +519,7 @@ class Unversioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = DoctestFileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Unversioned(backend)
+            >>> interface = Unversioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"

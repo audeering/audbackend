@@ -16,7 +16,7 @@ import audbackend
 pytest_collect_file = sybil.Sybil(
     parsers=[DocTestParser(optionflags=doctest.ELLIPSIS)],
     patterns=["*.py"],
-    fixtures=["prepare_docstring_tests"],
+    fixtures=["prepare_docstring_tests", "filesystem_backend"],
 ).pytest()
 
 
@@ -34,6 +34,16 @@ class DoctestFileSystem(audbackend.backend.FileSystem):
         path: str,
     ) -> str:
         return "doctest"
+
+
+@pytest.fixture(scope="function")
+def filesystem_backend():
+    backend = audbackend.backend.FileSystem("host", "repo")
+    backend.open()
+
+    yield backend
+
+    backend.close()
 
 
 @pytest.fixture(scope="function", autouse=True)
