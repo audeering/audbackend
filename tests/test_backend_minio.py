@@ -138,6 +138,9 @@ def test_copy_large_file(tmpdir, interface, src_path, dst_path):
 @pytest.mark.parametrize("repository", [f"unittest-{pytest.UID}-{audeer.uid()[:8]}"])
 def test_create_delete_repositories(host, repository):
     audbackend.backend.Minio.create(host, repository)
+    with pytest.raises(audbackend.BackendError):
+        # Repository exists already
+        audbackend.backend.Minio.create(host, repository)
     audbackend.backend.Minio.delete(host, repository)
 
 
@@ -342,3 +345,15 @@ def test_maven_file_structure(
     assert url_expected == url
     assert interface.ls(file) == [(file, version)]
     assert interface.ls() == [(file, version)]
+
+
+@pytest.mark.parametrize("host", [pytest.HOSTS["minio"]])
+@pytest.mark.parametrize("repository", [f"unittest-{pytest.UID}-{audeer.uid()[:8]}"])
+def test_open_close(host, repository):
+    backend = audbackend.backend.Minio(host, repository)
+    with pytest.raises(audbackend.BackendError):
+        # Repository does not exist yet
+        backend.open()
+    audbackend.backend.Minio.create(host, repository)
+    backend.open()
+    backend.close()
