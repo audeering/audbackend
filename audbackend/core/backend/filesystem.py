@@ -64,7 +64,7 @@ class FileSystem(Base):
     def _create(
         self,
     ):
-        r"""Access existing repository."""
+        r"""Create repository."""
         if os.path.exists(self._root):
             utils.raise_file_exists_error(self._root)
 
