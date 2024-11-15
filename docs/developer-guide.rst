@@ -70,7 +70,7 @@ helper class.
             self.remote_file = "/.db.pkl"
             self.local_file = audeer.path(".db.pkl")
 
-        def __enter__(self) -> shelve.Shelf:
+        def __enter__(self) -> dict:
             if self.backend.exists(self.remote_file):
                 self.backend.get_file(self.remote_file, self.local_file)
             if os.path.exists(self.local_file):
