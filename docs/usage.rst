@@ -232,7 +232,7 @@ for a file.
 >>> interface.versions("/file.txt")
 ['1.0.0', '2.0.0']
 
-Or request it's latest version.
+Or request its latest version.
 
 >>> interface.latest_version("/file.txt")
 '2.0.0'
