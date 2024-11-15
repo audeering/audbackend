@@ -23,12 +23,13 @@ class Versioned(Base):
 
     ..
         >>> import audbackend
+        >>> backend = filesystem
 
     Examples:
         >>> file = "src.txt"
-        >>> backend = audbackend.backend.FileSystem("host", "repo")
-        >>> backend.open()
-        >>> interface = Versioned(backend)
+        >>> # backend = audbackend.backend.FileSystem("host", "repo")
+        >>> # backend.open()
+        >>> interface = Versioned(filesystem)
         >>> interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
         >>> for version in ["1.0.0", "2.0.0"]:
         ...     interface.put_file(file, "/file.txt", version)
@@ -36,9 +37,6 @@ class Versioned(Base):
         [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
         >>> interface.get_file("/file.txt", "dst.txt", "2.0.0")
         '...dst.txt'
-
-    ..
-        >>> clear()
 
     """
 
@@ -73,7 +71,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> interface = Versioned(filesystem_backend)
+            >>> interface = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -83,9 +81,6 @@ class Versioned(Base):
             >>> interface.put_file(file, "/file.txt", "1.0.0")
             >>> interface.checksum("/file.txt", "1.0.0")
             'd41d8cd98f00b204e9800998ecf8427e'
-
-        ..
-            >>> clear()
 
         """
         path_with_version = self._path_with_version(path, version)
@@ -139,7 +134,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> interface = Versioned(filesystem_backend)
+            >>> interface = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -149,9 +144,6 @@ class Versioned(Base):
             >>> interface.copy_file("/file.txt", "/copy.txt", version="1.0.0")
             >>> interface.exists("/copy.txt", "1.0.0")
             True
-
-        ..
-            >>> clear()
 
         """
         if version is None:
@@ -197,16 +189,14 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> interface = Versioned(filesystem_backend)
+            >>> interface = Versioned(filesystem)
+            >>> interface.date = mock_date
 
         Examples:
             >>> file = "src.txt"
             >>> interface.put_file(file, "/file.txt", "1.0.0")
             >>> interface.date("/file.txt", "1.0.0")
             '1991-02-20'
-
-        ..
-            >>> clear()
 
         """
         path_with_version = self._path_with_version(path, version)
@@ -243,7 +233,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> interface = Versioned(filesystem_backend)
+            >>> interface = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -252,9 +242,6 @@ class Versioned(Base):
             >>> interface.put_file(file, "/file.txt", "1.0.0")
             >>> interface.exists("/file.txt", "1.0.0")
             True
-
-        ..
-            >>> clear()
 
         """
         path_with_version = self._path_with_version(path, version)
@@ -320,7 +307,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> interface = Versioned(filesystem_backend)
+            >>> interface = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -328,9 +315,6 @@ class Versioned(Base):
             >>> os.remove(file)
             >>> interface.get_archive("/sub/archive.zip", ".", "1.0.0")
             ['src.txt']
-
-        ..
-            >>> clear()
 
         """
         src_path_with_version = self._path_with_version(src_path, version)
@@ -397,19 +381,17 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> interface = Versioned(filesystem_backend)
+            >>> interface = Versioned(filesystem)
 
         Examples:
-            >>> file = "src.txt"
-            >>> interface.put_file(file, "/file.txt", "1.0.0")
-            >>> os.path.exists("dst.txt")
+            >>> src_file = "src.txt"
+            >>> dst_file = "dst.txt"
+            >>> interface.put_file(src_file, "/file.txt", "1.0.0")
+            >>> os.path.exists(dst_file)
             False
-            >>> _ = interface.get_file("/file.txt", "dst.txt", "1.0.0")
-            >>> os.path.exists("dst.txt")
+            >>> dst_file = interface.get_file("/file.txt", dst_file, "1.0.0")
+            >>> os.path.exists(dst_file)
             True
-
-        ..
-            >>> clear()
 
         """
         src_path_with_version = self._path_with_version(src_path, version)
@@ -441,7 +423,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
          ..
-            >>> interface = Versioned(filesystem_backend)
+            >>> interface = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -449,9 +431,6 @@ class Versioned(Base):
             >>> interface.put_file(file, "/file.txt", "2.0.0")
             >>> interface.latest_version("/file.txt")
             '2.0.0'
-
-        ..
-            >>> clear()
 
         """
         vs = self.versions(path)
@@ -507,7 +486,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> interface = Versioned(filesystem_backend)
+            >>> interface = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -526,9 +505,6 @@ class Versioned(Base):
             [('/sub/archive.zip', '1.0.0')]
             >>> interface.ls("/sub/")
             [('/sub/archive.zip', '1.0.0')]
-
-        ..
-            >>> clear()
 
         """  # noqa: E501
         if path.endswith("/"):  # find files under sub-path
@@ -650,7 +626,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> interface = Versioned(filesystem_backend)
+            >>> interface = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -662,9 +638,6 @@ class Versioned(Base):
             True
             >>> interface.exists("/file.txt", "1.0.0")
             False
-
-        ..
-            >>> clear()
 
         """
         if version is None:
@@ -711,16 +684,14 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> interface = Versioned(filesystem_backend)
+            >>> interface = Versioned(filesystem)
+            >>> interface.owner = mock_owner
 
         Examples:
             >>> file = "src.txt"
             >>> interface.put_file(file, "/file.txt", "1.0.0")
             >>> interface.owner("/file.txt", "1.0.0")
             'doctest'
-
-        ..
-            >>> clear()
 
         """
         path_with_version = self._path_with_version(path, version)
@@ -788,7 +759,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> interface = Versioned(filesystem_backend)
+            >>> interface = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -797,9 +768,6 @@ class Versioned(Base):
             >>> interface.put_archive(".", "/sub/archive.tar.gz", "1.0.0")
             >>> interface.exists("/sub/archive.tar.gz", "1.0.0")
             True
-
-        ..
-            >>> clear()
 
         """
         dst_path_with_version = self._path_with_version(dst_path, version)
@@ -859,7 +827,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> interface = Versioned(filesystem_backend)
+            >>> interface = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -868,9 +836,6 @@ class Versioned(Base):
             >>> interface.put_file(file, "/file.txt", "3.0.0")
             >>> interface.exists("/file.txt", "3.0.0")
             True
-
-        ..
-            >>> clear()
 
         """
         dst_path_with_version = self._path_with_version(dst_path, version)
@@ -903,7 +868,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> interface = Versioned(filesystem_backend)
+            >>> interface = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -913,9 +878,6 @@ class Versioned(Base):
             >>> interface.remove_file("/file.txt", "1.0.0")
             >>> interface.exists("/file.txt", "1.0.0")
             False
-
-        ..
-            >>> clear()
 
         """
         path_with_version = self._path_with_version(path, version)
@@ -948,7 +910,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> interface = Versioned(filesystem_backend)
+            >>> interface = Versioned(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -956,9 +918,6 @@ class Versioned(Base):
             >>> interface.put_file(file, "/file.txt", "2.0.0")
             >>> interface.versions("/file.txt")
             ['1.0.0', '2.0.0']
-
-        ..
-            >>> clear()
 
         """
         utils.check_path(path)

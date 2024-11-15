@@ -9,6 +9,7 @@ from sybil.parsers.rest import DocTestParser
 import audeer
 
 import audbackend
+from tests.conftest import filesystem  # noqa: F401
 
 
 # Collect doctests
@@ -16,7 +17,10 @@ pytest_collect_file = sybil.Sybil(
     parsers=[DocTestParser(optionflags=doctest.ELLIPSIS)],
     patterns=["*.py"],
     fixtures=[
+        "filesystem",
         "filesystem_backend",
+        "mock_date",
+        "mock_owner",
         "prepare_docstring_tests",
         "clear",
     ],
@@ -35,6 +39,28 @@ class FileSystem(audbackend.backend.FileSystem):
 
     def _owner(self, path):
         return "doctest"
+
+
+@pytest.fixture(scope="function")
+def mock_date():
+    r"""Custom date method to return a fixed date."""
+
+    def date(path: str, version: str = None) -> str:
+        date = datetime.datetime(1991, 2, 20)
+        date = audbackend.core.utils.date_format(date)
+        return date
+
+    yield date
+
+
+@pytest.fixture(scope="function")
+def mock_owner():
+    r"""Custom owner method to return a fixed owner."""
+
+    def owner(path: str, version: str = None) -> str:
+        return "doctest"
+
+    yield owner
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -80,23 +106,35 @@ def filesystem_backend():
     yield FileSystem("host", "repo")
 
 
-@pytest.fixture(scope="module", autouse=True)
-def prepare_docstring_tests(tmpdir_factory):
+@pytest.fixture(scope="function", autouse=True)
+def prepare_docstring_tests(tmpdir, monkeypatch):
     r"""Code to be run before each doctest."""
-    tmp_dir = tmpdir_factory.mktemp("tmp")
+    # Change to tmp dir
+    monkeypatch.chdir(tmpdir)
 
-    try:
-        # Change to tmp dir
-        current_dir = os.getcwd()
-        os.chdir(tmp_dir)
+    # Provide example file `src.txt`
+    audeer.touch("src.txt")
 
-        # Provide example file `src.txt`
-        audeer.touch("src.txt")
+    yield
 
-        # Prepare backend
-        audeer.mkdir("host", "repo")
 
-        yield
-
-    finally:
-        os.chdir(current_dir)
+# @pytest.fixture(scope="module", autouse=True)
+# def prepare_docstring_tests(tmpdir_factory):
+#     r"""Code to be run before each doctest."""
+#     tmp_dir = tmpdir_factory.mktemp("tmp")
+#
+#     try:
+#         # Change to tmp dir
+#         current_dir = os.getcwd()
+#         os.chdir(tmp_dir)
+#
+#         # Provide example file `src.txt`
+#         audeer.touch("src.txt")
+#
+#         # Prepare backend
+#         audeer.mkdir("host", "repo")
+#
+#         yield
+#
+#     finally:
+#         os.chdir(current_dir)
