@@ -37,6 +37,7 @@ you have to list those extensions explicitly.
     import audbackend
     import audeer
 
+
     host = audeer.mkdir("host")
     audbackend.backend.FileSystem.create(host, "repo")
     backend = audbackend.backend.FileSystem(host, "repo")
@@ -48,6 +49,7 @@ Afterwards we upload an TAR.GZ archive.
 .. code-block:: python
 
     import tempfile
+
 
     with tempfile.TemporaryDirectory() as tmp:
         audeer.touch(audeer.path(tmp, "file.txt"))

@@ -52,9 +52,11 @@ helper class.
 
 .. code-block:: python
 
-    import audbackend
     import os
-    import shelve
+    import pickle
+
+    import audbackend
+
 
     class UserDB:
         r"""User database.
@@ -65,20 +67,24 @@ helper class.
         """
         def __init__(self, backend: audbackend.backend.Base):
             self.backend = backend
+            self.remote_file = "/.db.pkl"
+            self.local_file = audeer.path(".db.pkl")
 
         def __enter__(self) -> shelve.Shelf:
-            if self.backend.exists("/user.db"):
-                self.backend.get_file("/user.db", "~.db")
-                self._map = shelve.open("~.db", flag="w", writeback=True)
+            if self.backend.exists(self.remote_file):
+                self.backend.get_file(self.remote_file, self.local_file)
+            if os.path.exists(self.local_file):
+                with open(self.local_file, "rb") as file:
+                    self._map = pickle.load(file)
             else:
-                self._map = shelve.open("~.db", writeback=True)
+                self._map = {}
             return self._map
 
         def __exit__(self, exc_type, exc_val, exc_tb):
-            self._map.close()
-            self.backend.put_file("~.db", "/user.db")
-            os.remove("~.db")
-
+            with open(self.local_file, "wb") as file:
+                pickle.dump(self._map, file, protocol=pickle.HIGHEST_PROTOCOL)
+            self.backend.put_file(self.local_file, self.remote_file)
+            os.remove(self.local_file)
 
 Now,
 we implement the interface.
@@ -176,8 +182,10 @@ in the constructor:
 
 .. code-block:: python
 
-    import audbackend
     import os
+
+    import audbackend
+
 
     class SQLite(audbackend.backend.Base):
 
@@ -202,6 +210,7 @@ using a dedicated decorator:
 .. code-block:: python
 
     import functools
+
 
     def add_method(cls):
         def decorator(func):
@@ -248,6 +257,7 @@ stored on our backend:
     import errno
     import os
     import sqlite3 as sl
+
 
     @add_method(SQLite)
     def _create(
@@ -339,6 +349,7 @@ a file to our backend.
 
     import datetime
     import getpass
+
 
     @add_method(SQLite)
     def _put_file(
