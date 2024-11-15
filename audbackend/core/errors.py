@@ -8,10 +8,11 @@ class BackendError(Exception):
 
         >>> import audeer
         >>> import audbackend
-        >>> _ = audeer.mkdir("host", "repo")
 
     Examples:
-        >>> backend = audbackend.backend.FileSystem("host", "repo")
+        >>> host = audeer.mkdir("host")
+        >>> audbackend.backend.FileSystem.create(host, "repo")
+        >>> backend = audbackend.backend.FileSystem(host, "repo")
         >>> backend.open()
         >>> try:
         ...     interface = audbackend.interface.Unversioned(backend)

@@ -68,10 +68,12 @@ class Maven(Versioned):
         >>> import audeer
 
     Examples:
-        >>> file = "src.txt"
-        >>> backend = audbackend.backend.FileSystem("host", "repo")
+        >>> host = audeer.mkdir("host")
+        >>> audbackend.backend.FileSystem.create(host, "repo")
+        >>> backend = audbackend.backend.FileSystem(host, "repo")
         >>> backend.open()
         >>> interface = Maven(backend)
+        >>> file = "src.txt"
         >>> interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
         >>> for version in ["1.0.0", "2.0.0"]:
         ...     interface.put_file(file, "/file.txt", version)
@@ -79,9 +81,6 @@ class Maven(Versioned):
         [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
         >>> interface.get_file("/file.txt", "dst.txt", "2.0.0")
         '...dst.txt'
-
-    ..
-        >>> clear()
 
     """  # noqa: E501
 
@@ -146,7 +145,7 @@ class Maven(Versioned):
             RuntimeError: if backend was not opened
 
         ..
-            >>> interface = Maven(filesystem_backend)
+            >>> interface = Maven(filesystem)
 
         Examples:
             >>> file = "src.txt"
@@ -165,9 +164,6 @@ class Maven(Versioned):
             [('/sub/archive.zip', '1.0.0')]
             >>> interface.ls("/sub/")
             [('/sub/archive.zip', '1.0.0')]
-
-        ..
-            >>> clear()
 
         """  # noqa: E501
         if path.endswith("/"):  # find files under sub-path

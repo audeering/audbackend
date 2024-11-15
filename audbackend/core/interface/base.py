@@ -36,7 +36,9 @@ class Base:
             backend object
 
         ..
-            >>> interface = Base(filesystem_backend)
+            >>> import audbackend
+            >>> backend = audbackend.backend.FileSystem("host", "repo")
+            >>> interface = Base(backend)
 
         Examples:
             >>> interface.backend
@@ -50,9 +52,6 @@ class Base:
         r"""Host path.
 
         Returns: host path
-
-        ..
-            >>> interface = Base(filesystem_backend)
 
         Examples:
             >>> interface.host
@@ -80,9 +79,6 @@ class Base:
                 or does not start with ``'/'``,
                 or if joined path contains invalid character
 
-        ..
-            >>> interface = Base(filesystem_backend)
-
         Examples:
             >>> interface.join("/", "file.txt")
             '/file.txt'
@@ -101,9 +97,6 @@ class Base:
         Returns:
             repository name
 
-        ..
-            >>> interface = Base(filesystem_backend)
-
         Examples:
             >>> interface.repository
             'repo'
@@ -117,9 +110,6 @@ class Base:
 
         Returns:
             file separator
-
-        ..
-            >>> interface = Base(filesystem_backend)
 
         Examples:
             >>> interface.sep
@@ -143,9 +133,6 @@ class Base:
         Raises:
             ValueError: if ``path`` does not start with ``'/'`` or
                 does not match ``'[A-Za-z0-9/._-]+'``
-
-        ..
-            >>> interface = Base(filesystem_backend)
 
         Examples:
             >>> interface.split("/")

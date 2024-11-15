@@ -23,13 +23,15 @@ class Versioned(Base):
 
     ..
         >>> import audbackend
-        >>> backend = filesystem
+        >>> import audeer
 
     Examples:
+        >>> host = audeer.mkdir("host")
+        >>> audbackend.backend.FileSystem.create(host, "repo")
+        >>> backend = audbackend.backend.FileSystem(host, "repo")
+        >>> backend.open()
+        >>> interface = Versioned(backend)
         >>> file = "src.txt"
-        >>> # backend = audbackend.backend.FileSystem("host", "repo")
-        >>> # backend.open()
-        >>> interface = Versioned(filesystem)
         >>> interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
         >>> for version in ["1.0.0", "2.0.0"]:
         ...     interface.put_file(file, "/file.txt", version)
@@ -384,14 +386,10 @@ class Versioned(Base):
             >>> interface = Versioned(filesystem)
 
         Examples:
-            >>> src_file = "src.txt"
-            >>> dst_file = "dst.txt"
-            >>> interface.put_file(src_file, "/file.txt", "1.0.0")
-            >>> os.path.exists(dst_file)
-            False
-            >>> dst_file = interface.get_file("/file.txt", dst_file, "1.0.0")
-            >>> os.path.exists(dst_file)
-            True
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt", "1.0.0")
+            >>> interface.get_file("/file.txt", "dst.txt", "1.0.0")
+            '...dst.txt'
 
         """
         src_path_with_version = self._path_with_version(src_path, version)

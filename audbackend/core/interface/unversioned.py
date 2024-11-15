@@ -20,19 +20,18 @@ class Unversioned(Base):
         >>> import audeer
 
     Examples:
-        >>> file = "src.txt"
-        >>> backend = audbackend.backend.FileSystem("host", "repo")
+        >>> host = audeer.mkdir("host")
+        >>> audbackend.backend.FileSystem.create(host, "repo")
+        >>> backend = audbackend.backend.FileSystem(host, "repo")
         >>> backend.open()
         >>> interface = Unversioned(backend)
+        >>> file = "src.txt"
         >>> interface.put_file(file, "/file.txt")
         >>> interface.put_archive(".", "/sub/archive.zip", files=[file])
         >>> interface.ls()
         ['/file.txt', '/sub/archive.zip']
         >>> interface.get_file("/file.txt", "dst.txt")
         '...dst.txt'
-
-    ..
-        >>> clear()
 
     """
 
@@ -338,11 +337,8 @@ class Unversioned(Base):
         Examples:
             >>> file = "src.txt"
             >>> interface.put_file(file, "/file.txt")
-            >>> os.path.exists("dst.txt")
-            False
-            >>> _ = interface.get_file("/file.txt", "dst.txt")
-            >>> os.path.exists("dst.txt")
-            True
+            >>> interface.get_file("/file.txt", "dst.txt")
+            '...dst.txt'
 
         """
         return self.backend.get_file(

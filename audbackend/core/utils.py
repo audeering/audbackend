@@ -115,10 +115,11 @@ def checksum(file: str) -> str:
         >>> hash = audformat.utils.hash(df, strict=True)
         >>> hash
         '9021a9b6e1e696ba9de4fe29346319b2'
+        >>> parquet_file = audeer.path("file.parquet")
         >>> table = pa.Table.from_pandas(df)
         >>> table = table.replace_schema_metadata({"hash": hash})
-        >>> pq.write_table(table, "file.parquet", compression="snappy")
-        >>> checksum("file.parquet")
+        >>> pq.write_table(table, parquet_file, compression="snappy")
+        >>> checksum(parquet_file)
         '9021a9b6e1e696ba9de4fe29346319b2'
 
     """
