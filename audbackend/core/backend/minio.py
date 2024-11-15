@@ -40,7 +40,7 @@ class Minio(Base):
         >>> auth = ("Q3AM3UQ867SPQQA43P2F", "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
         >>> repository = "my-data" + audeer.uid()
         >>> Minio.create(host, repository, authentication=auth)
-        >>> file = audeer.touch("file.txt")
+        >>> file = audeer.touch("src.txt")
         >>> backend = Minio(host, repository, authentication=auth)
         >>> try:
         ...     with backend:

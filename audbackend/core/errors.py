@@ -7,11 +7,12 @@ class BackendError(Exception):
     .. Prepare backend and interface for docstring examples
 
         >>> import audeer
-        >>> audeer.rmdir("host", "repo")
-        >>> _ = audeer.mkdir("host", "repo")
+        >>> import audbackend
 
     Examples:
-        >>> backend = audbackend.backend.FileSystem("host", "repo")
+        >>> host = audeer.mkdir("host")
+        >>> audbackend.backend.FileSystem.create(host, "repo")
+        >>> backend = audbackend.backend.FileSystem(host, "repo")
         >>> backend.open()
         >>> try:
         ...     interface = audbackend.interface.Unversioned(backend)

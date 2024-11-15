@@ -1,4 +1,4 @@
 audformat
 pytest
 pytest-cov
-pytest-doctestplus
+sybil

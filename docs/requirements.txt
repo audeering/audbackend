@@ -1,5 +1,3 @@
-ipykernel
-jupyter-sphinx
 sphinx
 sphinx-apipages
 sphinx-audeering-theme >=1.2.1

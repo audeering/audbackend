@@ -63,11 +63,17 @@ class Maven(Versioned):
             ...
             as extensions
 
+    ..
+        >>> import audbackend
+        >>> import audeer
+
     Examples:
-        >>> file = "src.txt"
-        >>> backend = audbackend.backend.FileSystem("host", "repo")
+        >>> host = audeer.mkdir("host")
+        >>> audbackend.backend.FileSystem.create(host, "repo")
+        >>> backend = audbackend.backend.FileSystem(host, "repo")
         >>> backend.open()
         >>> interface = Maven(backend)
+        >>> file = "src.txt"
         >>> interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])
         >>> for version in ["1.0.0", "2.0.0"]:
         ...     interface.put_file(file, "/file.txt", version)
@@ -139,9 +145,7 @@ class Maven(Versioned):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Maven(backend)
+            >>> interface = Maven(filesystem)
 
         Examples:
             >>> file = "src.txt"
