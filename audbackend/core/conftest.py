@@ -8,7 +8,6 @@ from sybil.parsers.rest import DocTestParser
 import audeer
 
 import audbackend
-from tests.conftest import filesystem  # noqa: F401
 
 
 # Collect doctests
@@ -23,6 +22,30 @@ pytest_collect_file = sybil.Sybil(
         "prepare_docstring_tests",
     ],
 ).pytest()
+
+
+@pytest.fixture(scope="function")
+def filesystem(tmpdir):
+    """Filesystem backend.
+
+    A repository with unique name is created
+    for the filesystem backend.
+    The filesystem backend is marked as opened
+    and returned.
+
+    Args:
+        tmpdir: tmpdir fixture
+
+    Returns:
+        filesystem backend object
+
+    """
+    repo = f"repo-{audeer.uid()[:8]}"
+    host = audeer.mkdir(tmpdir, "host")
+    audeer.mkdir(host, repo)
+    backend = audbackend.backend.FileSystem(host, repo)
+    backend.opened = True
+    yield backend
 
 
 @pytest.fixture(scope="function")

@@ -45,33 +45,6 @@ def authentication():
             del os.environ[key]
 
 
-@pytest.fixture(scope="function")
-def filesystem(tmpdir):
-    repo = f"unittest-{pytest.UID}-{audeer.uid()[:8]}"
-    host = audeer.mkdir(tmpdir, "host")
-    audeer.mkdir(host, repo)
-    backend = audbackend.backend.FileSystem(host, repo)
-    backend.opened = True
-    yield backend
-
-
-# @pytest.fixture(scope="function")
-# def filesystem(tmpdir):
-#     repo = f"unittest-{pytest.UID}-{audeer.uid()[:8]}"
-#     host = audeer.mkdir(tmpdir, "host")
-#     audeer.mkdir(host, repo)
-#     backend = audbackend.backend.Filesystem(host, repo)
-#
-#     root = audeer.mkdir(tmpdir, f"unittest-{pytest.UID}-{audeer.uid()[:8]}")
-#     # Wrap "local" filesystem in "dir" filesystem
-#     # to return paths relatiove to root
-#     yield fsspec.filesystem(
-#         "dir",
-#         path=root,
-#         fs=fsspec.filesystem("local"),
-#     )
-
-
 @pytest.fixture(scope="package", autouse=False)
 def hosts(tmpdir_factory):
     return {
