@@ -1,5 +1,6 @@
 import datetime
 import doctest
+import os
 
 import pytest
 import sybil
@@ -14,74 +15,88 @@ import audbackend
 pytest_collect_file = sybil.Sybil(
     parsers=[DocTestParser(optionflags=doctest.ELLIPSIS)],
     patterns=["*.py"],
-    fixtures=["prepare_docstring_tests", "filesystem_backend"],
+    fixtures=[
+        "filesystem_backend",
+        "prepare_docstring_tests",
+        "clear",
+    ],
 ).pytest()
 
 
 class FileSystem(audbackend.backend.FileSystem):
-    def __init__(
-        self,
-        host: str,
-        repository: str,
-    ):
+    def __init__(self, host, repository):
         super().__init__(host, repository)
         self.opened = True
 
-    def _date(
-        self,
-        path: str,
-    ) -> str:
+    def _date(self, path):
         date = datetime.datetime(1991, 2, 20)
         date = audbackend.core.utils.date_format(date)
         return date
 
-    def _owner(
-        self,
-        path: str,
-    ) -> str:
+    def _owner(self, path):
         return "doctest"
+
+
+@pytest.fixture(scope="session", autouse=True)
+def clear():
+    """Clear local files and filesystem backend.
+
+    When using a tmpdir with the scope ``"function"`` or ``"class"``,
+    a new tmpdir is used each line
+    in the docstring tests.
+    When using the next greater scope ``"module"``,
+    the same tmpdir is used in the whole file,
+    which means there is no scope
+    that provides a new tmpdir
+    for each function/method
+    within a file.
+    To simulate this behavior,
+    we use the scope ``"module"``,
+    and provide this ``clear()`` function
+    to reset after a finished docstring.
+
+    """
+
+    def clear_all():
+        # Clear backend
+        audeer.rmdir("host", "repo")
+        audeer.mkdir("host", "repo")
+        # Clear local files
+        files = audeer.list_file_names(".", basenames=True)
+        files = [file for file in files if not file == "src.txt"]
+        for file in files:
+            os.remove(file)
+
+    yield clear_all
 
 
 @pytest.fixture(scope="function")
 def filesystem_backend():
+    """Filesystem backend with patched date and owner methods.
+
+    The backend is also opened already.
+
+    """
     yield FileSystem("host", "repo")
 
 
-@pytest.fixture(scope="function", autouse=True)
-def prepare_docstring_tests(tmpdir, monkeypatch):
+@pytest.fixture(scope="module", autouse=True)
+def prepare_docstring_tests(tmpdir_factory):
     r"""Code to be run before each doctest."""
-    # Change to tmp dir
-    monkeypatch.chdir(tmpdir)
+    tmp_dir = tmpdir_factory.mktemp("tmp")
 
-    # Provide example file `src.txt`
-    audeer.touch("src.txt")
+    try:
+        # Change to tmp dir
+        current_dir = os.getcwd()
+        os.chdir(tmp_dir)
 
-    # Prepare backend
-    audeer.mkdir("host", "repo")
+        # Provide example file `src.txt`
+        audeer.touch("src.txt")
 
-    yield
+        # Prepare backend
+        audeer.mkdir("host", "repo")
 
+        yield
 
-# @pytest.fixture(scope="function", autouse=True)
-# def prepare_docstring_tests(doctest_namespace):
-#     with tempfile.TemporaryDirectory() as tmp:
-#         # Change to tmp dir
-#         current_dir = os.getcwd()
-#         os.chdir(tmp)
-#         # Prepare backend
-#         audeer.mkdir("host")
-#         audbackend.backend.FileSystem.create("host", "repo")
-#         # Provide example file `src.txt`
-#         audeer.touch("src.txt")
-#         # Provide DoctestFileSystem as FileSystem,
-#         # and audbackend
-#         # in docstring examples
-#         doctest_namespace["DoctestFileSystem"] = DoctestFileSystem
-#         doctest_namespace["audbackend"] = audbackend
-#
-#         yield
-#
-#         # Remove backend
-#         audbackend.backend.FileSystem.delete("host", "repo")
-#         # Change back to current dir
-#         os.chdir(current_dir)
+    finally:
+        os.chdir(current_dir)

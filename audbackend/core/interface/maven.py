@@ -65,6 +65,7 @@ class Maven(Versioned):
 
     ..
         >>> import audbackend
+        >>> import audeer
 
     Examples:
         >>> file = "src.txt"
@@ -78,6 +79,9 @@ class Maven(Versioned):
         [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]
         >>> interface.get_file("/file.txt", "dst.txt", "2.0.0")
         '...dst.txt'
+
+    ..
+        >>> clear()
 
     """  # noqa: E501
 
@@ -161,6 +165,9 @@ class Maven(Versioned):
             [('/sub/archive.zip', '1.0.0')]
             >>> interface.ls("/sub/")
             [('/sub/archive.zip', '1.0.0')]
+
+        ..
+            >>> clear()
 
         """  # noqa: E501
         if path.endswith("/"):  # find files under sub-path

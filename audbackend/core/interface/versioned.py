@@ -37,6 +37,8 @@ class Versioned(Base):
         >>> interface.get_file("/file.txt", "dst.txt", "2.0.0")
         '...dst.txt'
 
+    ..
+        >>> clear()
 
     """
 
@@ -71,9 +73,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> interface = Versioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"
@@ -83,6 +83,9 @@ class Versioned(Base):
             >>> interface.put_file(file, "/file.txt", "1.0.0")
             >>> interface.checksum("/file.txt", "1.0.0")
             'd41d8cd98f00b204e9800998ecf8427e'
+
+        ..
+            >>> clear()
 
         """
         path_with_version = self._path_with_version(path, version)
@@ -136,9 +139,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> interface = Versioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"
@@ -148,6 +149,9 @@ class Versioned(Base):
             >>> interface.copy_file("/file.txt", "/copy.txt", version="1.0.0")
             >>> interface.exists("/copy.txt", "1.0.0")
             True
+
+        ..
+            >>> clear()
 
         """
         if version is None:
@@ -201,6 +205,9 @@ class Versioned(Base):
             >>> interface.date("/file.txt", "1.0.0")
             '1991-02-20'
 
+        ..
+            >>> clear()
+
         """
         path_with_version = self._path_with_version(path, version)
         return self.backend.date(path_with_version)
@@ -236,9 +243,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> interface = Versioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"
@@ -247,6 +252,9 @@ class Versioned(Base):
             >>> interface.put_file(file, "/file.txt", "1.0.0")
             >>> interface.exists("/file.txt", "1.0.0")
             True
+
+        ..
+            >>> clear()
 
         """
         path_with_version = self._path_with_version(path, version)
@@ -312,9 +320,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> interface = Versioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"
@@ -322,6 +328,9 @@ class Versioned(Base):
             >>> os.remove(file)
             >>> interface.get_archive("/sub/archive.zip", ".", "1.0.0")
             ['src.txt']
+
+        ..
+            >>> clear()
 
         """
         src_path_with_version = self._path_with_version(src_path, version)
@@ -388,9 +397,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> interface = Versioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"
@@ -400,6 +407,9 @@ class Versioned(Base):
             >>> _ = interface.get_file("/file.txt", "dst.txt", "1.0.0")
             >>> os.path.exists("dst.txt")
             True
+
+        ..
+            >>> clear()
 
         """
         src_path_with_version = self._path_with_version(src_path, version)
@@ -431,9 +441,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
          ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> interface = Versioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"
@@ -441,6 +449,9 @@ class Versioned(Base):
             >>> interface.put_file(file, "/file.txt", "2.0.0")
             >>> interface.latest_version("/file.txt")
             '2.0.0'
+
+        ..
+            >>> clear()
 
         """
         vs = self.versions(path)
@@ -496,9 +507,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> interface = Versioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"
@@ -517,6 +526,9 @@ class Versioned(Base):
             [('/sub/archive.zip', '1.0.0')]
             >>> interface.ls("/sub/")
             [('/sub/archive.zip', '1.0.0')]
+
+        ..
+            >>> clear()
 
         """  # noqa: E501
         if path.endswith("/"):  # find files under sub-path
@@ -638,9 +650,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> interface = Versioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"
@@ -652,6 +662,9 @@ class Versioned(Base):
             True
             >>> interface.exists("/file.txt", "1.0.0")
             False
+
+        ..
+            >>> clear()
 
         """
         if version is None:
@@ -705,6 +718,9 @@ class Versioned(Base):
             >>> interface.put_file(file, "/file.txt", "1.0.0")
             >>> interface.owner("/file.txt", "1.0.0")
             'doctest'
+
+        ..
+            >>> clear()
 
         """
         path_with_version = self._path_with_version(path, version)
@@ -772,9 +788,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> interface = Versioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"
@@ -783,6 +797,9 @@ class Versioned(Base):
             >>> interface.put_archive(".", "/sub/archive.tar.gz", "1.0.0")
             >>> interface.exists("/sub/archive.tar.gz", "1.0.0")
             True
+
+        ..
+            >>> clear()
 
         """
         dst_path_with_version = self._path_with_version(dst_path, version)
@@ -842,9 +859,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> interface = Versioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"
@@ -853,6 +868,9 @@ class Versioned(Base):
             >>> interface.put_file(file, "/file.txt", "3.0.0")
             >>> interface.exists("/file.txt", "3.0.0")
             True
+
+        ..
+            >>> clear()
 
         """
         dst_path_with_version = self._path_with_version(dst_path, version)
@@ -885,9 +903,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> interface = Versioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"
@@ -897,6 +913,9 @@ class Versioned(Base):
             >>> interface.remove_file("/file.txt", "1.0.0")
             >>> interface.exists("/file.txt", "1.0.0")
             False
+
+        ..
+            >>> clear()
 
         """
         path_with_version = self._path_with_version(path, version)
@@ -929,9 +948,7 @@ class Versioned(Base):
             RuntimeError: if backend was not opened
 
         ..
-            >>> backend = audbackend.backend.FileSystem("host", "repo")
-            >>> backend.open()
-            >>> interface = Versioned(backend)
+            >>> interface = Versioned(filesystem_backend)
 
         Examples:
             >>> file = "src.txt"
@@ -939,6 +956,9 @@ class Versioned(Base):
             >>> interface.put_file(file, "/file.txt", "2.0.0")
             >>> interface.versions("/file.txt")
             ['1.0.0', '2.0.0']
+
+        ..
+            >>> clear()
 
         """
         utils.check_path(path)

@@ -17,6 +17,17 @@ class Unversioned(Base):
 
     ..
         >>> import audbackend
+        >>> import audeer
+
+    ..    >>> def clear():
+    ..    ...    # Clear backend
+    ..    ...    audeer.rmdir("host", "repo")
+    ..    ...    audeer.mkdir("host", "repo")
+    ..    ...    # Clear local files
+    ..    ...    files = audeer.list_file_names(".", basenames=True)
+    ..    ...    files = [file for file in files if not file == "src.txt"]
+    ..    ...    for file in files:
+    ..    ...        os.remove(file)
 
     Examples:
         >>> file = "src.txt"
@@ -29,6 +40,9 @@ class Unversioned(Base):
         ['/file.txt', '/sub/archive.zip']
         >>> interface.get_file("/file.txt", "dst.txt")
         '...dst.txt'
+
+    ..
+        >>> clear()
 
     """
 
@@ -63,6 +77,9 @@ class Unversioned(Base):
             >>> interface.put_file(file, "/file.txt")
             >>> interface.checksum("/file.txt")
             'd41d8cd98f00b204e9800998ecf8427e'
+
+        ..
+            >>> clear()
 
         """
         return self.backend.checksum(path)
@@ -118,6 +135,9 @@ class Unversioned(Base):
             >>> interface.exists("/copy.txt")
             True
 
+        ..
+            >>> clear()
+
         """
         self.backend.copy_file(
             src_path,
@@ -157,6 +177,9 @@ class Unversioned(Base):
             >>> interface.put_file(file, "/file.txt")
             >>> interface.date("/file.txt")
             '1991-02-20'
+
+        ..
+            >>> clear()
 
         """
         return self.backend.date(path)
@@ -199,6 +222,9 @@ class Unversioned(Base):
             >>> interface.put_file(file, "/file.txt")
             >>> interface.exists("/file.txt")
             True
+
+        ..
+            >>> clear()
 
         """
         return self.backend.exists(
@@ -267,6 +293,9 @@ class Unversioned(Base):
             >>> os.remove(file)
             >>> interface.get_archive("/sub/archive.zip", ".")
             ['src.txt']
+
+        ..
+            >>> clear()
 
         """
         return self.backend.get_archive(
@@ -338,6 +367,9 @@ class Unversioned(Base):
             >>> _ = interface.get_file("/file.txt", "dst.txt")
             >>> os.path.exists("dst.txt")
             True
+
+        ..
+            >>> clear()
 
         """
         return self.backend.get_file(
@@ -411,6 +443,9 @@ class Unversioned(Base):
             >>> interface.ls("/sub/")
             ['/sub/archive.zip']
 
+        ..
+            >>> clear()
+
         """  # noqa: E501
         return self.backend.ls(
             path,
@@ -475,6 +510,9 @@ class Unversioned(Base):
             >>> interface.exists("/file.txt")
             False
 
+        ..
+            >>> clear()
+
         """
         self.backend.move_file(
             src_path,
@@ -516,6 +554,7 @@ class Unversioned(Base):
             >>> interface.owner("/file.txt")
             'doctest'
 
+            >>> clear()
         """
         return self.backend.owner(path)
 
@@ -587,6 +626,8 @@ class Unversioned(Base):
             >>> interface.exists("/sub/archive.tar.gz")
             True
 
+            >>> clear()
+
         """
         self.backend.put_archive(
             src_root,
@@ -647,6 +688,9 @@ class Unversioned(Base):
             >>> interface.exists("/file.txt")
             True
 
+        ..
+            >>> clear()
+
         """
         self.backend.put_file(
             src_path,
@@ -682,6 +726,9 @@ class Unversioned(Base):
             >>> interface.remove_file("/file.txt")
             >>> interface.exists("/file.txt")
             False
+
+        ..
+            >>> clear()
 
         """
         self.backend.remove_file(path)
