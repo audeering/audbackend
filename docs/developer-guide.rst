@@ -502,7 +502,7 @@ from the backend.
 
 Which we then use to download the file.
 
->>> interface.get_file("/file.txt", "local.txt", "1.0.0")
+>>> interface.get_file("/file.txt", audeer.path("local.txt"), "1.0.0")
 '...local.txt'
 
 To inspect the files

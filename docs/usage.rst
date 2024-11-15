@@ -110,7 +110,9 @@ We move it to a new location.
 We download the file
 and store it as ``local.txt``.
 
->>> file = interface.get_file("/file.txt", "local.txt")
+>>> file = audeer.path("local.txt")
+>>> interface.get_file("/file.txt", file)
+'...local.txt'
 
 It is possible to upload
 one or more files
@@ -251,7 +253,7 @@ We move them to a new location.
 When downloading a file,
 we can select the desired version.
 
->>> path = interface.get_file("/file.txt", "local.txt", "1.0.0")
+>>> path = interface.get_file("/file.txt", audeer.path("local.txt"), "1.0.0")
 >>> with open(path, "r") as file:
 ...     print(file.read())
 Content v1.0.0

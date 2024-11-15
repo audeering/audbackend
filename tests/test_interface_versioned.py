@@ -1158,21 +1158,12 @@ def test_validate(tmpdir):
     interface.put_file(path, "/remote.txt", "1.0.0", validate=True)
     assert interface.exists("/remote.txt", "1.0.0")
 
+    local_file = audeer.path(tmpdir, "local.txt")
     with pytest.raises(InterruptedError, match=error_msg):
-        interface_bad.get_file(
-            "/remote.txt",
-            "local.txt",
-            "1.0.0",
-            validate=True,
-        )
-    assert not os.path.exists("local.txt")
-    interface.get_file(
-        "/remote.txt",
-        "local.txt",
-        "1.0.0",
-        validate=True,
-    )
-    assert os.path.exists("local.txt")
+        interface_bad.get_file("/remote.txt", local_file, "1.0.0", validate=True)
+    assert not os.path.exists(local_file)
+    interface.get_file("/remote.txt", local_file, "1.0.0", validate=True)
+    assert os.path.exists(local_file)
 
     with pytest.raises(InterruptedError, match=error_msg):
         interface_bad.copy_file(

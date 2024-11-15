@@ -788,11 +788,12 @@ def test_validate(tmpdir):
     interface.put_file(path, "/remote.txt", validate=True)
     assert interface.exists("/remote.txt")
 
+    local_file = audeer.path(tmpdir, "local.txt")
     with pytest.raises(InterruptedError, match=error_msg):
-        interface_bad.get_file("/remote.txt", "local.txt", validate=True)
-    assert not os.path.exists("local.txt")
-    interface.get_file("/remote.txt", "local.txt", validate=True)
-    assert os.path.exists("local.txt")
+        interface_bad.get_file("/remote.txt", local_file, validate=True)
+    assert not os.path.exists(local_file)
+    interface.get_file("/remote.txt", local_file, validate=True)
+    assert os.path.exists(local_file)
 
     with pytest.raises(InterruptedError, match=error_msg):
         interface_bad.copy_file("/remote.txt", "/copy.txt", validate=True)
