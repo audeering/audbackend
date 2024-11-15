@@ -1,15 +1,3 @@
-.. set temporal working directory
-.. jupyter-execute::
-    :hide-code:
-
-    import os
-    import audeer
-
-    _cwd_root = os.getcwd()
-    _tmp_root = audeer.mkdir(os.path.join("docs", "tmp-developer-guide"))
-    os.chdir(_tmp_root)
-
-
 .. _developer-guide:
 
 Developer guide
@@ -62,9 +50,10 @@ we implement the following
 helper class.
 
 
-.. jupyter-execute::
+.. code-block:: python
 
     import audbackend
+    import os
     import shelve
 
     class UserDB:
@@ -94,7 +83,7 @@ helper class.
 Now,
 we implement the interface.
 
-.. jupyter-execute::
+.. code-block:: python
 
     class UserContent(audbackend.interface.Base):
 
@@ -122,27 +111,24 @@ Let's create a repository
 with our custom interface,
 and upload a file:
 
-.. jupyter-execute::
 
-    import audeer
-
-    audbackend.backend.FileSystem.create("./host", "repo")
-    backend = audbackend.backend.FileSystem("./host", "repo")
-    backend.open()
-    interface = UserContent(backend)
-
-    interface.add_user("audeering", "pa$$word")
-    audeer.touch("local.txt")
-    interface.upload("audeering", "pa$$word", "local.txt")
-    interface.ls("audeering")
+>>> import audeer
+>>> host = audeer.mkdir("host")
+>>> audbackend.backend.FileSystem.create(host, "repo")
+>>> backend = audbackend.backend.FileSystem(host, "repo")
+>>> backend.open()
+>>> interface = UserContent(backend)
+>>> interface.add_user("audeering", "pa$$word")
+>>> file = audeer.touch("local.txt")
+>>> interface.upload("audeering", "pa$$word", file)
+>>> interface.ls("audeering")
+['/audeering/local.txt']
 
 
 At the end we clean up and delete our repo.
 
-.. jupyter-execute::
-
-    backend.close()
-    audbackend.backend.FileSystem.delete("./host", "repo")
+>>> backend.close()
+>>> audbackend.backend.FileSystem.delete(host, "repo")
 
 
 .. _develop-new-backend:
@@ -188,7 +174,7 @@ in the constructor:
   namely ``"<host>/<repository>/db"``.
 * ``_db``: connection object to the database.
 
-.. jupyter-execute::
+.. code-block:: python
 
     import audbackend
     import os
@@ -213,7 +199,7 @@ we will dynamically add
 the required methods one after another
 using a dedicated decorator:
 
-.. jupyter-execute::
+.. code-block:: python
 
     import functools
 
@@ -234,7 +220,7 @@ This is not mandatory
 and whether it is needed
 depends on the backend.
 
-.. jupyter-execute::
+.. code-block:: python
 
     @add_method(SQLite)
     def __del__(self):
@@ -257,7 +243,7 @@ stored on our backend:
 * ``date``: the date when the file was added
 * ``owner``: the owner of the file
 
-.. jupyter-execute::
+.. code-block:: python
 
     import errno
     import os
@@ -290,9 +276,7 @@ stored on our backend:
 
 Now we create a repository.
 
-.. jupyter-execute::
-
-    SQLite.create("./host", "repo")
+>>> SQLite.create(host, "repo")
 
 Before we can access the repository
 we add a method to open
@@ -300,7 +284,7 @@ an existing database
 (or raise an error
 it is not found).
 
-.. jupyter-execute::
+.. code-block:: python
 
     @add_method(SQLite)
     def _open(
@@ -319,17 +303,15 @@ and access the repository we created.
 We then wrap the object
 with the :class:`audbackend.interface.Versioned` interface.
 
-.. jupyter-execute::
-
-    backend = SQLite("./host", "repo")
-    backend.open()
-    interface = audbackend.interface.Versioned(backend)
+>>> backend = SQLite(host, "repo")
+>>> backend.open()
+>>> interface = audbackend.interface.Versioned(backend)
 
 Next,
 we implement a method to check
 if a file exists.
 
-.. jupyter-execute::
+.. code-block:: python
 
     @add_method(SQLite)
     def _exists(
@@ -347,12 +329,13 @@ if a file exists.
             result = db.execute(query).fetchone()[0] == 1
         return result
 
-    interface.exists("/file.txt", "1.0.0")
+>>> interface.exists("/file.txt", "1.0.0")
+False
 
 And a method that uploads
 a file to our backend.
 
-.. jupyter-execute::
+.. code-block:: python
 
     import datetime
     import getpass
@@ -379,16 +362,15 @@ a file to our backend.
 
 Let's put a file on the backend.
 
-.. jupyter-execute::
-
-    file = audeer.touch("file.txt")
-    interface.put_file(file, "/file.txt", "1.0.0")
-    interface.exists("/file.txt", "1.0.0")
+>>> file = audeer.touch("file.txt")
+>>> interface.put_file(file, "/file.txt", "1.0.0")
+>>> interface.exists("/file.txt", "1.0.0")
+True
 
 We need three more functions
 to access its meta information.
 
-.. jupyter-execute::
+.. code-block:: python
 
     @add_method(SQLite)
     def _checksum(
@@ -404,9 +386,7 @@ to access its meta information.
             checksum = db.execute(query).fetchone()[0]
         return checksum
 
-    interface.checksum("/file.txt", "1.0.0")
-
-.. jupyter-execute::
+.. code-block:: python
 
     @add_method(SQLite)
     def _date(
@@ -422,9 +402,7 @@ to access its meta information.
             date = db.execute(query).fetchone()[0]
         return date
 
-    interface.date("/file.txt", "1.0.0")
-
-.. jupyter-execute::
+.. code-block:: python
 
     @add_method(SQLite)
     def _owner(
@@ -440,8 +418,6 @@ to access its meta information.
             owner = db.execute(query).fetchone()[0]
         return owner
 
-    interface.owner("/file.txt", "1.0.0")
-
 Implementing a copy function is optional.
 But the default implementation
 will temporarily download the file
@@ -449,7 +425,7 @@ and then upload it again.
 Hence,
 we provide a more efficient implementation.
 
-.. jupyter-execute::
+.. code-block:: python
 
     @add_method(SQLite)
     def _copy_file(
@@ -473,13 +449,14 @@ we provide a more efficient implementation.
             data = (dst_path, checksum, content, date, owner)
             db.execute(query, data)
 
-    interface.copy_file("/file.txt", "/copy/file.txt", version="1.0.0")
-    interface.exists("/copy/file.txt", "1.0.0")
+>>> interface.copy_file("/file.txt", "/copy/file.txt", version="1.0.0")
+>>> interface.exists("/copy/file.txt", "1.0.0")
+True
 
 Implementing a move function is also optional,
 but it is more efficient if we provide one.
 
-.. jupyter-execute::
+.. code-block:: python
 
     @add_method(SQLite)
     def _move_file(
@@ -496,14 +473,15 @@ but it is more efficient if we provide one.
             """
             db.execute(query)
 
-    interface.move_file("/copy/file.txt", "/move/file.txt", version="1.0.0")
-    interface.exists("/move/file.txt", "1.0.0")
+>>> interface.move_file("/copy/file.txt", "/move/file.txt", version="1.0.0")
+>>> interface.exists("/move/file.txt", "1.0.0")
+True
 
 We implement a method
 to fetch a file
 from the backend.
 
-.. jupyter-execute::
+.. code-block:: python
 
     @add_method(SQLite)
     def _get_file(
@@ -524,15 +502,14 @@ from the backend.
 
 Which we then use to download the file.
 
-.. jupyter-execute::
-
-    file = interface.get_file("/file.txt", "local.txt", "1.0.0")
+>>> interface.get_file("/file.txt", "local.txt", "1.0.0")
+'...local.txt'
 
 To inspect the files
 on our backend
 we provide a listing method.
 
-.. jupyter-execute::
+.. code-block:: python
 
     @add_method(SQLite)
     def _ls(
@@ -556,19 +533,16 @@ we provide a listing method.
 
 Let's test it.
 
-.. jupyter-execute::
-
-    interface.ls("/")
-
-.. jupyter-execute::
-
-    interface.ls("/file.txt")
+>>> interface.ls("/")
+[('/file.txt', '1.0.0'), ('/move/file.txt', '1.0.0')]
+>>> interface.ls("/file.txt")
+[('/file.txt', '1.0.0')]
 
 To delete a file
 from our backend
 requires another method.
 
-.. jupyter-execute::
+.. code-block:: python
 
     @add_method(SQLite)
     def _remove_file(
@@ -583,13 +557,14 @@ requires another method.
             """
             db.execute(query)
 
-    interface.remove_file("/file.txt", "1.0.0")
-    interface.ls("/")
+>>> interface.remove_file("/file.txt", "1.0.0")
+>>> interface.ls("/")
+[('/move/file.txt', '1.0.0')]
 
 We add a method to close the connection
 to a database and call it.
 
-.. jupyter-execute::
+.. code-block:: python
 
     @add_method(SQLite)
     def _close(
@@ -597,7 +572,7 @@ to a database and call it.
     ):
         self._db.close()
 
-    backend.close()
+>>> backend.close()
 
 Finally,
 we add a method that
@@ -606,7 +581,7 @@ and removes the repository
 (or raises an error
 if the database does not exist).
 
-.. jupyter-execute::
+.. code-block:: python
 
     @add_method(SQLite)
     def _delete(
@@ -621,20 +596,11 @@ if the database does not exist).
         os.remove(self._path)
         os.rmdir(os.path.dirname(self._path))
 
-    SQLite.delete("./host", "repo")
+>>> SQLite.delete(host, "repo")
 
 And that's it,
 we have a fully functional backend.
 
 Voilà!
-
-.. reset working directory and clean up
-.. jupyter-execute::
-    :hide-code:
-
-    import shutil
-    os.chdir(_cwd_root)
-    shutil.rmtree(_tmp_root)
-
 
 .. _SQLite: https://sqlite.org/index.html
