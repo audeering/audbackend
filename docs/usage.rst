@@ -177,6 +177,11 @@ we will get an error
 for all backend classes
 as it depends on the implementation).
 
+..
+    >>> import platform
+
+.. skip: next if(platform.system() == "Windows")
+
 >>> try:
 ...     backend.open()
 ... except audbackend.BackendError as ex:
