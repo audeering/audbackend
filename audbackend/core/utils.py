@@ -55,10 +55,9 @@ def call_function_on_backend(
         except Exception as ex:
             if suppress_backend_errors:
                 return fallback_return_value
-            else:
-                if retry + 1 == retries:
-                    raise BackendError(ex)
-                time.sleep(0.05)
+            if retry + 1 == retries:
+                raise BackendError(ex) from ex
+            time.sleep(0.05)
 
 
 def check_path(
