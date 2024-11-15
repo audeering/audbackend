@@ -30,7 +30,6 @@ exclude_patterns = [
 ]
 pygments_style = None
 extensions = [
-    "jupyter_sphinx",
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
