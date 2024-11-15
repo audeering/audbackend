@@ -1,15 +1,3 @@
-.. set temporal working directory
-.. jupyter-execute::
-    :hide-code:
-
-    import os
-    import audeer
-
-    _cwd_root = os.getcwd()
-    _tmp_root = audeer.mkdir(os.path.join("docs", "tmp"))
-    os.chdir(_tmp_root)
-
-
 .. _legacy-backends:
 
 Legacy backends
@@ -44,34 +32,28 @@ that contain a dot
 in its file extension,
 you have to list those extensions explicitly.
 
-.. jupyter-execute::
+.. code-block:: python
 
     import audbackend
+    import audeer
 
-    audbackend.backend.FileSystem.create("./host", "repo")
-    backend = audbackend.backend.FileSystem("./host", "repo")
+    host = audeer.mkdir("host")
+    audbackend.backend.FileSystem.create(host, "repo")
+    backend = audbackend.backend.FileSystem(host, "repo")
     backend.open()
     interface = audbackend.interface.Maven(backend, extensions=["tar.gz"])
 
-Afterwards we upload an TAR.GZ archive
-and check that it is stored as expected.
+Afterwards we upload an TAR.GZ archive.
 
-.. jupyter-execute::
+.. code-block:: python
 
-    import audeer
     import tempfile
 
     with tempfile.TemporaryDirectory() as tmp:
         audeer.touch(audeer.path(tmp, "file.txt"))
         interface.put_archive(tmp, "/file.tar.gz", "1.0.0")
 
-    audeer.list_file_names("./host", recursive=True, basenames=True)
+And check that it is stored as expected.
 
-
-.. reset working directory and clean up
-.. jupyter-execute::
-    :hide-code:
-
-    import shutil
-    os.chdir(_cwd_root)
-    shutil.rmtree(_tmp_root)
+>>> audeer.list_file_names(host, recursive=True, basenames=True)
+['repo/file/1.0.0/file-1.0.0.tar.gz']
