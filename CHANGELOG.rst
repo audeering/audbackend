@@ -7,6 +7,25 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 2.2.0 (2024-11-18)
+--------------------------
+
+* Added: ``audbackend.checksum()``
+  for calculating MD5 sum of files;
+  for parquet files
+  it considers the ``"hash"`` metadata entry instead,
+  if it is present
+* Changed: retry to re-establish connection to backend two times,
+  before finally failing
+* Removed: deprecated functions
+  ``audbackend.access()``,
+  ``audbackend.create()``,
+  ``audbackend.delete()``,
+  ``audbackend.register()``
+* Fixed: storing of checksum
+  on S3/MinIO backends
+
+
 Version 2.1.0 (2024-10-31)
 --------------------------
 
