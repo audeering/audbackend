@@ -28,8 +28,6 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/audeering.css" type="text/css" />
-  <link rel="stylesheet" href="_static/jupyter-sphinx.css" type="text/css" />
-  <link rel="stylesheet" href="_static/thebelab.css" type="text/css" />
   <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -67,7 +65,7 @@
             
             
               <div class="version">
-                2.1.0
+                2.2.0
               </div>
             
           
@@ -149,11 +147,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="jupyter_cell docutils container">
-<div class="cell_output docutils container">
-</div>
-</div>
-<div class="section" id="developer-guide">
+  <div class="section" id="developer-guide">
 <span id="id1"></span><h1>Developer guide<a class="headerlink" href="#developer-guide" title="Permalink to this heading">¶</a></h1>
 <p>The aim of
 <a class="reference internal" href="api/audbackend.html#module-audbackend" title="audbackend"><code class="xref py py-mod docutils literal notranslate"><span class="pre">audbackend</span></code></a>
@@ -194,10 +188,11 @@ To access and update
 the database
 we implement the following
 helper class.</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">audbackend</span>
-<span class="kn">import</span> <span class="nn">shelve</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+
+<span class="kn">import</span> <span class="nn">audbackend</span>
+
 
 <span class="k">class</span> <span class="nc">UserDB</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;User database.</span>
@@ -208,30 +203,29 @@ helper class.</p>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">Base</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">backend</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remote_file</span> <span class="o">=</span> <span class="s2">&quot;/.db.pkl&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">local_file</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="s2">&quot;.db.pkl&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">shelve</span><span class="o">.</span><span class="n">Shelf</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;/user.db&quot;</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span><span class="s2">&quot;/user.db&quot;</span><span class="p">,</span> <span class="s2">&quot;~.db&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_map</span> <span class="o">=</span> <span class="n">shelve</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;~.db&quot;</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">writeback</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_file</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">local_file</span><span class="p">):</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">local_file</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_map</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_map</span> <span class="o">=</span> <span class="n">shelve</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;~.db&quot;</span><span class="p">,</span> <span class="n">writeback</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_map</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_map</span>
 
     <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_map</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">put_file</span><span class="p">(</span><span class="s2">&quot;~.db&quot;</span><span class="p">,</span> <span class="s2">&quot;/user.db&quot;</span><span class="p">)</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;~.db&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">local_file</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_map</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">pickle</span><span class="o">.</span><span class="n">HIGHEST_PROTOCOL</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">put_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">local_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_file</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">local_file</span><span class="p">)</span>
 </pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-</div>
 </div>
 <p>Now,
 we implement the interface.</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">UserContent</span><span class="p">(</span><span class="n">audbackend</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">Base</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">UserContent</span><span class="p">(</span><span class="n">audbackend</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">Base</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">add_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Add user to database.&quot;&quot;&quot;</span>
@@ -253,45 +247,26 @@ we implement the interface.</p>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-</div>
-</div>
 <p>Let’s create a repository
 with our custom interface,
 and upload a file:</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">audeer</span>
-
-<span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;./host&quot;</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
-<span class="n">backend</span> <span class="o">=</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="p">(</span><span class="s2">&quot;./host&quot;</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
-<span class="n">backend</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
-<span class="n">interface</span> <span class="o">=</span> <span class="n">UserContent</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
-
-<span class="n">interface</span><span class="o">.</span><span class="n">add_user</span><span class="p">(</span><span class="s2">&quot;audeering&quot;</span><span class="p">,</span> <span class="s2">&quot;pa$$word&quot;</span><span class="p">)</span>
-<span class="n">audeer</span><span class="o">.</span><span class="n">touch</span><span class="p">(</span><span class="s2">&quot;local.txt&quot;</span><span class="p">)</span>
-<span class="n">interface</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="s2">&quot;audeering&quot;</span><span class="p">,</span> <span class="s2">&quot;pa$$word&quot;</span><span class="p">,</span> <span class="s2">&quot;local.txt&quot;</span><span class="p">)</span>
-<span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">&quot;audeering&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">audeer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">host</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">UserContent</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">add_user</span><span class="p">(</span><span class="s2">&quot;audeering&quot;</span><span class="p">,</span> <span class="s2">&quot;pa$$word&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">file</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">touch</span><span class="p">(</span><span class="s2">&quot;local.txt&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="s2">&quot;audeering&quot;</span><span class="p">,</span> <span class="s2">&quot;pa$$word&quot;</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">&quot;audeering&quot;</span><span class="p">)</span>
+<span class="go">[&#39;/audeering/local.txt&#39;]</span>
 </pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>[&#39;/audeering/local.txt&#39;]
-</pre></div>
-</div>
-</div>
 </div>
 <p>At the end we clean up and delete our repo.</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">backend</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-<span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">&quot;./host&quot;</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
 </pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-</div>
 </div>
 </div>
 <div class="section" id="develop-new-backend">
@@ -333,10 +308,10 @@ which we derive from the host and repository,
 namely <code class="docutils literal notranslate"><span class="pre">&quot;&lt;host&gt;/&lt;repository&gt;/db&quot;</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">_db</span></code>: connection object to the database.</p></li>
 </ul>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">audbackend</span>
-<span class="kn">import</span> <span class="nn">os</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">audbackend</span>
+
 
 <span class="k">class</span> <span class="nc">SQLite</span><span class="p">(</span><span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">Base</span><span class="p">):</span>
 
@@ -350,10 +325,6 @@ namely <code class="docutils literal notranslate"><span class="pre">&quot;&lt;ho
         <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="o">=</span> <span class="kc">None</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-</div>
-</div>
 <p>Obviously,
 this is not yet a fully
 functional backend implementation.
@@ -361,9 +332,8 @@ But for the sake of clarity,
 we will dynamically add
 the required methods one after another
 using a dedicated decorator:</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">functools</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">functools</span>
+
 
 <span class="k">def</span> <span class="nf">add_method</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
@@ -375,10 +345,6 @@ using a dedicated decorator:</p>
     <span class="k">return</span> <span class="n">decorator</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-</div>
-</div>
 <p>For instance,
 to ensure the connection to the database
 is properly closed,
@@ -386,17 +352,11 @@ we add a destructor method.
 This is not mandatory
 and whether it is needed
 depends on the backend.</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
 <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-</div>
 </div>
 <p>Before we can instantiate an instance,
 we implement a method that
@@ -413,11 +373,10 @@ stored on our backend:</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">date</span></code>: the date when the file was added</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">owner</span></code>: the owner of the file</p></li>
 </ul>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">errno</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">errno</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sqlite3</span> <span class="k">as</span> <span class="nn">sl</span>
+
 
 <span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_create</span><span class="p">(</span>
@@ -445,28 +404,16 @@ stored on our backend:</p>
         <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-</div>
-</div>
 <p>Now we create a repository.</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">SQLite</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="s2">&quot;./host&quot;</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">SQLite</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
 </pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-</div>
 </div>
 <p>Before we can access the repository
 we add a method to open
 an existing database
 (or raise an error
 it is not found).</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_open</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
 <span class="p">):</span>
@@ -479,31 +426,19 @@ it is not found).</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="o">=</span> <span class="n">sl</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-</div>
-</div>
 <p>Now we instantiate an object of our backend
 and access the repository we created.
 We then wrap the object
 with the <a class="reference internal" href="api/audbackend.interface.Versioned.html#audbackend.interface.Versioned" title="audbackend.interface.Versioned"><code class="xref py py-class docutils literal notranslate"><span class="pre">audbackend.interface.Versioned</span></code></a> interface.</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">backend</span> <span class="o">=</span> <span class="n">SQLite</span><span class="p">(</span><span class="s2">&quot;./host&quot;</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
-<span class="n">backend</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
-<span class="n">interface</span> <span class="o">=</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">Versioned</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="n">SQLite</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">Versioned</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
 </pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-</div>
 </div>
 <p>Next,
 we implement a method to check
 if a file exists.</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_exists</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -518,23 +453,17 @@ if a file exists.</p>
 <span class="s2">        &quot;&quot;&quot;</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
     <span class="k">return</span> <span class="n">result</span>
-
-<span class="n">interface</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>False
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
+<span class="go">False</span>
 </pre></div>
-</div>
-</div>
 </div>
 <p>And a method that uploads
 a file to our backend.</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">datetime</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">getpass</span>
+
 
 <span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_put_file</span><span class="p">(</span>
@@ -557,30 +486,16 @@ a file to our backend.</p>
         <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-</div>
-</div>
 <p>Let’s put a file on the backend.</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">file</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">touch</span><span class="p">(</span><span class="s2">&quot;file.txt&quot;</span><span class="p">)</span>
-<span class="n">interface</span><span class="o">.</span><span class="n">put_file</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
-<span class="n">interface</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">file</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">touch</span><span class="p">(</span><span class="s2">&quot;file.txt&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">put_file</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
+<span class="go">True</span>
 </pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>True
-</pre></div>
-</div>
-</div>
 </div>
 <p>We need three more functions
 to access its meta information.</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_checksum</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -593,20 +508,9 @@ to access its meta information.</p>
 <span class="s2">        &quot;&quot;&quot;</span>
         <span class="n">checksum</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">checksum</span>
-
-<span class="n">interface</span><span class="o">.</span><span class="n">checksum</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>&#39;d41d8cd98f00b204e9800998ecf8427e&#39;
-</pre></div>
-</div>
-</div>
-</div>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_date</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -619,20 +523,9 @@ to access its meta information.</p>
 <span class="s2">        &quot;&quot;&quot;</span>
         <span class="n">date</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">date</span>
-
-<span class="n">interface</span><span class="o">.</span><span class="n">date</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>&#39;2024-11-04&#39;
-</pre></div>
-</div>
-</div>
-</div>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_owner</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -645,16 +538,7 @@ to access its meta information.</p>
 <span class="s2">        &quot;&quot;&quot;</span>
         <span class="n">owner</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">owner</span>
-
-<span class="n">interface</span><span class="o">.</span><span class="n">owner</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
 </pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>&#39;runner&#39;
-</pre></div>
-</div>
-</div>
 </div>
 <p>Implementing a copy function is optional.
 But the default implementation
@@ -662,9 +546,7 @@ will temporarily download the file
 and then upload it again.
 Hence,
 we provide a more efficient implementation.</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_copy_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -685,23 +567,16 @@ we provide a more efficient implementation.</p>
 <span class="s2">        &quot;&quot;&quot;</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="n">dst_path</span><span class="p">,</span> <span class="n">checksum</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="n">owner</span><span class="p">)</span>
         <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
-
-<span class="n">interface</span><span class="o">.</span><span class="n">copy_file</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;/copy/file.txt&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
-<span class="n">interface</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;/copy/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>True
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">copy_file</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;/copy/file.txt&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;/copy/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
+<span class="go">True</span>
 </pre></div>
-</div>
-</div>
 </div>
 <p>Implementing a move function is also optional,
 but it is more efficient if we provide one.</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_move_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -715,24 +590,17 @@ but it is more efficient if we provide one.</p>
 <span class="s2">            WHERE path=&quot;</span><span class="si">{</span><span class="n">src_path</span><span class="si">}</span><span class="s2">&quot;</span>
 <span class="s2">        &quot;&quot;&quot;</span>
         <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
-
-<span class="n">interface</span><span class="o">.</span><span class="n">move_file</span><span class="p">(</span><span class="s2">&quot;/copy/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;/move/file.txt&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
-<span class="n">interface</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;/move/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>True
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">move_file</span><span class="p">(</span><span class="s2">&quot;/copy/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;/move/file.txt&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;/move/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
+<span class="go">True</span>
 </pre></div>
-</div>
-</div>
 </div>
 <p>We implement a method
 to fetch a file
 from the backend.</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_get_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -750,26 +618,15 @@ from the backend.</p>
             <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-</div>
-</div>
 <p>Which we then use to download the file.</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">file</span> <span class="o">=</span> <span class="n">interface</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;local.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="s2">&quot;local.txt&quot;</span><span class="p">),</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
+<span class="go">&#39;...local.txt&#39;</span>
 </pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-</div>
 </div>
 <p>To inspect the files
 on our backend
 we provide a listing method.</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_ls</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -790,41 +647,17 @@ we provide a listing method.</p>
     <span class="k">return</span> <span class="n">ls</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-</div>
-</div>
 <p>Let’s test it.</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+<span class="go">[(&#39;/file.txt&#39;, &#39;1.0.0&#39;), (&#39;/move/file.txt&#39;, &#39;1.0.0&#39;)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">)</span>
+<span class="go">[(&#39;/file.txt&#39;, &#39;1.0.0&#39;)]</span>
 </pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>[(&#39;/file.txt&#39;, &#39;1.0.0&#39;), (&#39;/move/file.txt&#39;, &#39;1.0.0&#39;)]
-</pre></div>
-</div>
-</div>
-</div>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>[(&#39;/file.txt&#39;, &#39;1.0.0&#39;)]
-</pre></div>
-</div>
-</div>
 </div>
 <p>To delete a file
 from our backend
 requires another method.</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_remove_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -836,34 +669,24 @@ requires another method.</p>
 <span class="s2">            WHERE path=&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span>
 <span class="s2">        &quot;&quot;&quot;</span>
         <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
-
-<span class="n">interface</span><span class="o">.</span><span class="n">remove_file</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
-<span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-none notranslate"><div class="highlight"><pre><span></span>[(&#39;/move/file.txt&#39;, &#39;1.0.0&#39;)]
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">remove_file</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+<span class="go">[(&#39;/move/file.txt&#39;, &#39;1.0.0&#39;)]</span>
 </pre></div>
-</div>
-</div>
 </div>
 <p>We add a method to close the connection
 to a database and call it.</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_close</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-
-<span class="n">backend</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
 </div>
 <p>Finally,
 we add a method that
@@ -871,9 +694,7 @@ deletes the database
 and removes the repository
 (or raises an error
 if the database does not exist).</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">_delete</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
 <span class="p">):</span>
@@ -885,21 +706,14 @@ if the database does not exist).</p>
         <span class="p">)</span>
     <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="p">)</span>
     <span class="n">os</span><span class="o">.</span><span class="n">rmdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="p">))</span>
-
-<span class="n">SQLite</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">&quot;./host&quot;</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">SQLite</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
+</pre></div>
 </div>
 <p>And that’s it,
 we have a fully functional backend.</p>
 <p>Voilà!</p>
-<div class="jupyter_cell docutils container">
-<div class="cell_output docutils container">
-</div>
-</div>
 </div>
 </div>
 
@@ -926,7 +740,7 @@ we have a fully functional backend.</p>
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2024/11/04 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2024/11/18 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -964,11 +778,8 @@ we have a fully functional backend.</p>
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/sphinx_highlight.js"></script>
-        <script src="_static/thebelab-helper.js"></script>
         <script src="_static/clipboard.min.js"></script>
         <script src="_static/copybutton.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
     
 
   

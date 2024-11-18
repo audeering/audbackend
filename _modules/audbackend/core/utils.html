@@ -1,0 +1,423 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>audbackend.core.utils &mdash; Documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.png"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/audeering.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    
+  
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          <a href="../../../index.html">
+          
+            <img src="../../../_static/images/audeering.png" class="logo" alt="audEERING"/>
+          
+          
+            <span> audbackend</span>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer-guide.html">Developer guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../legacy.html">Legacy backends</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/audbackend.html">audbackend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/audbackend.backend.html">audbackend.backend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/audbackend.interface.html">audbackend.interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../genindex.html">Index</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">audbackend</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      <li>audbackend.core.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for audbackend.core.utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Callable</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">errno</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">audeer</span>
+
+<span class="kn">from</span> <span class="nn">audbackend.core.errors</span> <span class="kn">import</span> <span class="n">BackendError</span>
+
+
+<span class="n">BACKEND_ALLOWED_CHARS</span> <span class="o">=</span> <span class="s2">&quot;[A-Za-z0-9/._-]+&quot;</span>
+<span class="n">BACKEND_ALLOWED_CHARS_COMPILED</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">BACKEND_ALLOWED_CHARS</span><span class="p">)</span>
+
+<span class="n">BACKEND_SEPARATOR</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span>
+
+<span class="n">VERSION_ALLOWED_CHARS</span> <span class="o">=</span> <span class="n">BACKEND_ALLOWED_CHARS</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">BACKEND_SEPARATOR</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="n">VERSION_ALLOWED_CHARS_COMPILED</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">VERSION_ALLOWED_CHARS</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">call_function_on_backend</span><span class="p">(</span>
+    <span class="n">function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+    <span class="n">suppress_backend_errors</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">fallback_return_value</span><span class="p">:</span> <span class="nb">object</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Call function on backend.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        function: function to call on backend</span>
+<span class="sd">        suppress_backend_errors: if ``True``</span>
+<span class="sd">            and ``function`` fails during execution,</span>
+<span class="sd">            ``fallback_return_value`` is returned</span>
+<span class="sd">            instead of raising an error</span>
+<span class="sd">        fallback_return_value: value returned</span>
+<span class="sd">            if ``function`` fails during execution</span>
+<span class="sd">            and ``suppress_backend_errors`` is ``True``</span>
+<span class="sd">        retries: number of times ``function``</span>
+<span class="sd">            is tried to execute</span>
+<span class="sd">            when it raises an error,</span>
+<span class="sd">            before raising the error</span>
+<span class="sd">        *args: positional args of ``function``</span>
+<span class="sd">        **kwargs: keyword arguments of ``function``</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        return value(s) of ``function``</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">retry</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">retries</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">function</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">suppress_backend_errors</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">fallback_return_value</span>
+            <span class="k">if</span> <span class="n">retry</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="n">retries</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">BackendError</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">ex</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">check_path</span><span class="p">(</span>
+    <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">allow_sub_path</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Check path.&quot;&quot;&quot;</span>
+    <span class="c1"># Assert path starts with sep and does not contain invalid characters.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">BACKEND_SEPARATOR</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Invalid backend path &#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&#39;, must start with &#39;</span><span class="si">{</span><span class="n">BACKEND_SEPARATOR</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">allow_sub_path</span> <span class="ow">and</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">BACKEND_SEPARATOR</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Invalid backend path &#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&#39;, must not end on &#39;</span><span class="si">{</span><span class="n">BACKEND_SEPARATOR</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">path</span> <span class="ow">and</span> <span class="n">BACKEND_ALLOWED_CHARS_COMPILED</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Invalid backend path &#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&#39;, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;does not match &#39;</span><span class="si">{</span><span class="n">BACKEND_ALLOWED_CHARS</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Remove immediately consecutive seps</span>
+    <span class="n">is_sub_path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">BACKEND_SEPARATOR</span><span class="p">)</span>
+    <span class="n">paths</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">BACKEND_SEPARATOR</span><span class="p">)</span>
+    <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">path</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span> <span class="k">if</span> <span class="n">path</span><span class="p">]</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">BACKEND_SEPARATOR</span> <span class="o">+</span> <span class="n">BACKEND_SEPARATOR</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_sub_path</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">BACKEND_SEPARATOR</span><span class="p">):</span>
+        <span class="n">path</span> <span class="o">+=</span> <span class="n">BACKEND_SEPARATOR</span>
+
+    <span class="k">return</span> <span class="n">path</span>
+
+
+<span class="k">def</span> <span class="nf">check_version</span><span class="p">(</span><span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Check version.&quot;&quot;&quot;</span>
+    <span class="c1"># Assert version is not empty and does not contain invalid characters.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">version</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Version must not be empty.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">VERSION_ALLOWED_CHARS_COMPILED</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">version</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Invalid version &#39;</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2">&#39;, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;does not match &#39;</span><span class="si">{</span><span class="n">VERSION_ALLOWED_CHARS</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">version</span>
+
+
+<div class="viewcode-block" id="checksum"><a class="viewcode-back" href="../../../api/audbackend.checksum.html#audbackend.checksum">[docs]</a><span class="k">def</span> <span class="nf">checksum</span><span class="p">(</span><span class="n">file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Checksum of file.</span>
+
+<span class="sd">    This function is used by backends</span>
+<span class="sd">    to get the checksum of local files,</span>
+<span class="sd">    using :func:`audeer.md5`.</span>
+
+<span class="sd">    An exception are parquet files,</span>
+<span class="sd">    for which their ``&quot;hash&quot;`` metadata entry</span>
+<span class="sd">    is used as checksum,</span>
+<span class="sd">    if the entry is available</span>
+<span class="sd">    and pyarrow_ is installed.</span>
+
+<span class="sd">    .. _pyarrow: https://arrow.apache.org/docs/python/index.html</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        file: file path with extension</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        MD5 checksum of file</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        FileNotFoundError: if ``file`` does not exist</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; checksum(&quot;src.txt&quot;)</span>
+<span class="sd">        &#39;d41d8cd98f00b204e9800998ecf8427e&#39;</span>
+<span class="sd">        &gt;&gt;&gt; import audformat</span>
+<span class="sd">        &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">        &gt;&gt;&gt; import pyarrow as pa</span>
+<span class="sd">        &gt;&gt;&gt; import pyarrow.parquet as pq</span>
+<span class="sd">        &gt;&gt;&gt; df = pd.DataFrame([0, 1], columns=[&quot;a&quot;])</span>
+<span class="sd">        &gt;&gt;&gt; hash = audformat.utils.hash(df, strict=True)</span>
+<span class="sd">        &gt;&gt;&gt; hash</span>
+<span class="sd">        &#39;9021a9b6e1e696ba9de4fe29346319b2&#39;</span>
+<span class="sd">        &gt;&gt;&gt; parquet_file = audeer.path(&quot;file.parquet&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; table = pa.Table.from_pandas(df)</span>
+<span class="sd">        &gt;&gt;&gt; table = table.replace_schema_metadata({&quot;hash&quot;: hash})</span>
+<span class="sd">        &gt;&gt;&gt; pq.write_table(table, parquet_file, compression=&quot;snappy&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; checksum(parquet_file)</span>
+<span class="sd">        &#39;9021a9b6e1e696ba9de4fe29346319b2&#39;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ext</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">file_extension</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s2">&quot;parquet&quot;</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">pyarrow.parquet</span> <span class="k">as</span> <span class="nn">parquet</span>
+
+            <span class="n">metadata</span> <span class="o">=</span> <span class="n">parquet</span><span class="o">.</span><span class="n">read_schema</span><span class="p">(</span><span class="n">file</span><span class="p">)</span><span class="o">.</span><span class="n">metadata</span> <span class="ow">or</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="sa">b</span><span class="s2">&quot;hash&quot;</span> <span class="ow">in</span> <span class="n">metadata</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">metadata</span><span class="p">[</span><span class="sa">b</span><span class="s2">&quot;hash&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">ModuleNotFoundError</span><span class="p">:</span>
+            <span class="k">pass</span>
+    <span class="k">return</span> <span class="n">audeer</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">file</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">date_format</span><span class="p">(</span><span class="n">date</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">date</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">file_owner</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get file owner.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;nt&quot;</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+        <span class="kn">import</span> <span class="nn">win32security</span>
+
+        <span class="n">sd</span> <span class="o">=</span> <span class="n">win32security</span><span class="o">.</span><span class="n">GetFileSecurity</span><span class="p">(</span>
+            <span class="n">path</span><span class="p">,</span>
+            <span class="n">win32security</span><span class="o">.</span><span class="n">OWNER_SECURITY_INFORMATION</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">owner_sid</span> <span class="o">=</span> <span class="n">sd</span><span class="o">.</span><span class="n">GetSecurityDescriptorOwner</span><span class="p">()</span>
+        <span class="n">owner</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">win32security</span><span class="o">.</span><span class="n">LookupAccountSid</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">owner_sid</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># pragma: no Windows cover</span>
+        <span class="kn">import</span> <span class="nn">pwd</span>
+
+        <span class="n">owner</span> <span class="o">=</span> <span class="n">pwd</span><span class="o">.</span><span class="n">getpwuid</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">st_uid</span><span class="p">)</span><span class="o">.</span><span class="n">pw_name</span>
+
+    <span class="k">return</span> <span class="n">owner</span>
+
+
+<span class="k">def</span> <span class="nf">raise_file_exists_error</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="ne">FileExistsError</span><span class="p">(</span>
+        <span class="n">errno</span><span class="o">.</span><span class="n">EEXIST</span><span class="p">,</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="o">.</span><span class="n">EEXIST</span><span class="p">),</span>
+        <span class="n">path</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">raise_file_not_found_error</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+        <span class="n">errno</span><span class="o">.</span><span class="n">ENOENT</span><span class="p">,</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="o">.</span><span class="n">ENOENT</span><span class="p">),</span>
+        <span class="n">path</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">raise_is_a_directory</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="ne">IsADirectoryError</span><span class="p">(</span>
+        <span class="n">errno</span><span class="o">.</span><span class="n">EISDIR</span><span class="p">,</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="o">.</span><span class="n">EISDIR</span><span class="p">),</span>
+        <span class="n">path</span><span class="p">,</span>
+    <span class="p">)</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div>
+    <p>
+        
+        
+        
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2024/11/18 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+        
+    </p>
+  </div>
+
+  <div role="contentinfo">
+    <p>
+        
+      &copy; 2021-2024 audEERING GmbH
+    </p>
+  </div> 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

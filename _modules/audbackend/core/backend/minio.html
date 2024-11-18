@@ -28,8 +28,6 @@
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/audeering.css" type="text/css" />
-  <link rel="stylesheet" href="../../../../_static/jupyter-sphinx.css" type="text/css" />
-  <link rel="stylesheet" href="../../../../_static/thebelab.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -65,7 +63,7 @@
             
             
               <div class="version">
-                2.1.0
+                2.2.0
               </div>
             
           
@@ -186,7 +184,7 @@
 <span class="sd">        &gt;&gt;&gt; auth = (&quot;Q3AM3UQ867SPQQA43P2F&quot;, &quot;zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG&quot;)</span>
 <span class="sd">        &gt;&gt;&gt; repository = &quot;my-data&quot; + audeer.uid()</span>
 <span class="sd">        &gt;&gt;&gt; Minio.create(host, repository, authentication=auth)</span>
-<span class="sd">        &gt;&gt;&gt; file = audeer.touch(&quot;file.txt&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; file = audeer.touch(&quot;src.txt&quot;)</span>
 <span class="sd">        &gt;&gt;&gt; backend = Minio(host, repository, authentication=auth)</span>
 <span class="sd">        &gt;&gt;&gt; try:</span>
 <span class="sd">        ...     with backend:</span>
@@ -323,7 +321,8 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;MD5 checksum of file on backend.&quot;&quot;&quot;</span>
         <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">stat_object</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">etag</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">stat_object</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">metadata</span>
+        <span class="k">return</span> <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;x-amz-meta-checksum&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;x-amz-meta-checksum&quot;</span> <span class="ow">in</span> <span class="n">meta</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">_collapse</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -348,20 +347,20 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Copy file on backend.&quot;&quot;&quot;</span>
         <span class="n">src_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
         <span class="n">dst_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span>
+        <span class="n">checksum</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checksum</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
         <span class="c1"># `copy_object()` has a maximum size limit of 5GB.</span>
         <span class="c1"># We use 4.9GB to have some headroom</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_size</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1024</span> <span class="o">/</span> <span class="mi">1024</span> <span class="o">/</span> <span class="mi">1024</span> <span class="o">&gt;=</span> <span class="mf">4.9</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmp_dir</span><span class="p">:</span>
                 <span class="n">tmp_path</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">tmp_dir</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">src_path</span><span class="p">))</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_get_file</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
-                <span class="n">checksum</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checksum</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_put_file</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">,</span> <span class="n">checksum</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">copy_object</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">,</span>
                 <span class="n">dst_path</span><span class="p">,</span>
                 <span class="n">minio</span><span class="o">.</span><span class="n">commonconfig</span><span class="o">.</span><span class="n">CopySource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">,</span> <span class="n">src_path</span><span class="p">),</span>
-                <span class="n">metadata</span><span class="o">=</span><span class="n">_metadata</span><span class="p">(),</span>
+                <span class="n">metadata</span><span class="o">=</span><span class="n">_metadata</span><span class="p">(</span><span class="n">checksum</span><span class="p">),</span>
             <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_create</span><span class="p">(</span>
@@ -521,7 +520,7 @@
             <span class="n">dst_path</span><span class="p">,</span>
             <span class="n">src_path</span><span class="p">,</span>
             <span class="n">content_type</span><span class="o">=</span><span class="n">content_type</span><span class="p">,</span>
-            <span class="n">metadata</span><span class="o">=</span><span class="n">_metadata</span><span class="p">(),</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="n">_metadata</span><span class="p">(</span><span class="n">checksum</span><span class="p">),</span>
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
@@ -548,14 +547,19 @@
         <span class="k">return</span> <span class="n">size</span></div>
 
 
-<span class="k">def</span> <span class="nf">_metadata</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">_metadata</span><span class="p">(</span><span class="n">checksum</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Dictionary with owner entry.</span>
 
 <span class="sd">    When uploaded as metadata to MinIO,</span>
 <span class="sd">    it can be accessed under ``stat_object(...).metadata[&quot;x-amz-meta-owner&quot;]``.</span>
 
+<span class="sd">    Args:</span>
+<span class="sd">        checksum: checksum to be stored in metadata</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;owner&quot;</span><span class="p">:</span> <span class="n">getpass</span><span class="o">.</span><span class="n">getuser</span><span class="p">()}</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;checksum&quot;</span><span class="p">:</span> <span class="n">checksum</span><span class="p">,</span>
+        <span class="s2">&quot;owner&quot;</span><span class="p">:</span> <span class="n">getpass</span><span class="o">.</span><span class="n">getuser</span><span class="p">(),</span>
+    <span class="p">}</span>
 </pre></div>
 
            </div>
@@ -571,7 +575,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2024/11/04 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2024/11/18 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -609,11 +613,8 @@
         <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../../_static/doctools.js"></script>
         <script src="../../../../_static/sphinx_highlight.js"></script>
-        <script src="../../../../_static/thebelab-helper.js"></script>
         <script src="../../../../_static/clipboard.min.js"></script>
         <script src="../../../../_static/copybutton.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
     
 
   

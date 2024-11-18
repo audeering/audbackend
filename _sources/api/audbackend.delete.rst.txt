@@ -1,6 +1,0 @@
-﻿delete\(\)
-==========
-
-.. currentmodule:: audbackend
-
-.. autofunction:: audbackend.delete

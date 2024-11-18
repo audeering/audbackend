@@ -28,8 +28,6 @@
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/audeering.css" type="text/css" />
-  <link rel="stylesheet" href="../../../../_static/jupyter-sphinx.css" type="text/css" />
-  <link rel="stylesheet" href="../../../../_static/thebelab.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -65,7 +63,7 @@
             
             
               <div class="version">
-                2.1.0
+                2.2.0
               </div>
             
           
@@ -167,13 +165,17 @@
 <span class="sd">    Args:</span>
 <span class="sd">        backend: backend object</span>
 
-<span class="sd">    .. Prepare backend and interface for docstring examples</span>
+<span class="sd">    ..</span>
+<span class="sd">        &gt;&gt;&gt; import audbackend</span>
+<span class="sd">        &gt;&gt;&gt; import audeer</span>
 
 <span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
-<span class="sd">        &gt;&gt;&gt; backend = audbackend.backend.FileSystem(&quot;host&quot;, &quot;repo&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; host = audeer.mkdir(&quot;host&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; audbackend.backend.FileSystem.create(host, &quot;repo&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; backend = audbackend.backend.FileSystem(host, &quot;repo&quot;)</span>
 <span class="sd">        &gt;&gt;&gt; backend.open()</span>
 <span class="sd">        &gt;&gt;&gt; interface = Versioned(backend)</span>
+<span class="sd">        &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
 <span class="sd">        &gt;&gt;&gt; interface.put_archive(&quot;.&quot;, &quot;/sub/archive.zip&quot;, &quot;1.0.0&quot;, files=[file])</span>
 <span class="sd">        &gt;&gt;&gt; for version in [&quot;1.0.0&quot;, &quot;2.0.0&quot;]:</span>
 <span class="sd">        ...     interface.put_file(file, &quot;/file.txt&quot;, version)</span>
@@ -181,7 +183,6 @@
 <span class="sd">        [(&#39;/file.txt&#39;, &#39;1.0.0&#39;), (&#39;/file.txt&#39;, &#39;2.0.0&#39;), (&#39;/sub/archive.zip&#39;, &#39;1.0.0&#39;)]</span>
 <span class="sd">        &gt;&gt;&gt; interface.get_file(&quot;/file.txt&quot;, &quot;dst.txt&quot;, &quot;2.0.0&quot;)</span>
 <span class="sd">        &#39;...dst.txt&#39;</span>
-
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -216,14 +217,12 @@
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
-<span class="sd">            &gt;&gt;&gt; backend = audbackend.backend.FileSystem(&quot;host&quot;, &quot;repo&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; backend.open()</span>
-<span class="sd">            &gt;&gt;&gt; interface = Versioned(backend)</span>
+<span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
 <span class="sd">            &gt;&gt;&gt; import audeer</span>
-<span class="sd">            &gt;&gt;&gt; audeer.md5(file)</span>
+<span class="sd">            &gt;&gt;&gt; audbackend.checksum(file)</span>
 <span class="sd">            &#39;d41d8cd98f00b204e9800998ecf8427e&#39;</span>
 <span class="sd">            &gt;&gt;&gt; interface.put_file(file, &quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
 <span class="sd">            &gt;&gt;&gt; interface.checksum(&quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
@@ -281,9 +280,7 @@
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
-<span class="sd">            &gt;&gt;&gt; backend = audbackend.backend.FileSystem(&quot;host&quot;, &quot;repo&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; backend.open()</span>
-<span class="sd">            &gt;&gt;&gt; interface = Versioned(backend)</span>
+<span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
@@ -338,9 +335,8 @@
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
-<span class="sd">            &gt;&gt;&gt; backend = DoctestFileSystem(&quot;host&quot;, &quot;repo&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; backend.open()</span>
-<span class="sd">            &gt;&gt;&gt; interface = Versioned(backend)</span>
+<span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
+<span class="sd">            &gt;&gt;&gt; interface.date = mock_date</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
@@ -383,9 +379,7 @@
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
-<span class="sd">            &gt;&gt;&gt; backend = audbackend.backend.FileSystem(&quot;host&quot;, &quot;repo&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; backend.open()</span>
-<span class="sd">            &gt;&gt;&gt; interface = Versioned(backend)</span>
+<span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
@@ -459,9 +453,7 @@
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
-<span class="sd">            &gt;&gt;&gt; backend = audbackend.backend.FileSystem(&quot;host&quot;, &quot;repo&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; backend.open()</span>
-<span class="sd">            &gt;&gt;&gt; interface = Versioned(backend)</span>
+<span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
@@ -535,18 +527,13 @@
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
-<span class="sd">            &gt;&gt;&gt; backend = audbackend.backend.FileSystem(&quot;host&quot;, &quot;repo&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; backend.open()</span>
-<span class="sd">            &gt;&gt;&gt; interface = Versioned(backend)</span>
+<span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
 <span class="sd">            &gt;&gt;&gt; interface.put_file(file, &quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; os.path.exists(&quot;dst.txt&quot;)</span>
-<span class="sd">            False</span>
-<span class="sd">            &gt;&gt;&gt; _ = interface.get_file(&quot;/file.txt&quot;, &quot;dst.txt&quot;, &quot;1.0.0&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; os.path.exists(&quot;dst.txt&quot;)</span>
-<span class="sd">            True</span>
+<span class="sd">            &gt;&gt;&gt; interface.get_file(&quot;/file.txt&quot;, &quot;dst.txt&quot;, &quot;1.0.0&quot;)</span>
+<span class="sd">            &#39;...dst.txt&#39;</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">src_path_with_version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_with_version</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
@@ -578,9 +565,7 @@
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">         ..</span>
-<span class="sd">            &gt;&gt;&gt; backend = audbackend.backend.FileSystem(&quot;host&quot;, &quot;repo&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; backend.open()</span>
-<span class="sd">            &gt;&gt;&gt; interface = Versioned(backend)</span>
+<span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
@@ -643,9 +628,7 @@
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
-<span class="sd">            &gt;&gt;&gt; backend = audbackend.backend.FileSystem(&quot;host&quot;, &quot;repo&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; backend.open()</span>
-<span class="sd">            &gt;&gt;&gt; interface = Versioned(backend)</span>
+<span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
@@ -785,9 +768,7 @@
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
-<span class="sd">            &gt;&gt;&gt; backend = audbackend.backend.FileSystem(&quot;host&quot;, &quot;repo&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; backend.open()</span>
-<span class="sd">            &gt;&gt;&gt; interface = Versioned(backend)</span>
+<span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
@@ -845,9 +826,8 @@
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
-<span class="sd">            &gt;&gt;&gt; backend = DoctestFileSystem(&quot;host&quot;, &quot;repo&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; backend.open()</span>
-<span class="sd">            &gt;&gt;&gt; interface = Versioned(backend)</span>
+<span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
+<span class="sd">            &gt;&gt;&gt; interface.owner = mock_owner</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
@@ -921,9 +901,7 @@
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
-<span class="sd">            &gt;&gt;&gt; backend = audbackend.backend.FileSystem(&quot;host&quot;, &quot;repo&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; backend.open()</span>
-<span class="sd">            &gt;&gt;&gt; interface = Versioned(backend)</span>
+<span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
@@ -991,9 +969,7 @@
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
-<span class="sd">            &gt;&gt;&gt; backend = audbackend.backend.FileSystem(&quot;host&quot;, &quot;repo&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; backend.open()</span>
-<span class="sd">            &gt;&gt;&gt; interface = Versioned(backend)</span>
+<span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
@@ -1034,9 +1010,7 @@
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
-<span class="sd">            &gt;&gt;&gt; backend = audbackend.backend.FileSystem(&quot;host&quot;, &quot;repo&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; backend.open()</span>
-<span class="sd">            &gt;&gt;&gt; interface = Versioned(backend)</span>
+<span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
@@ -1078,9 +1052,7 @@
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
-<span class="sd">            &gt;&gt;&gt; backend = audbackend.backend.FileSystem(&quot;host&quot;, &quot;repo&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; backend.open()</span>
-<span class="sd">            &gt;&gt;&gt; interface = Versioned(backend)</span>
+<span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
@@ -1129,7 +1101,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2024/11/04 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2024/11/18 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -1167,11 +1139,8 @@
         <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../../_static/doctools.js"></script>
         <script src="../../../../_static/sphinx_highlight.js"></script>
-        <script src="../../../../_static/thebelab-helper.js"></script>
         <script src="../../../../_static/clipboard.min.js"></script>
         <script src="../../../../_static/copybutton.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
     
 
   
