@@ -15,7 +15,7 @@ Version 2.2.0 (2024-11-18)
   For parquet files
   it considers the ``"hash"`` metadata entry instead,
   if it is present
-* Changed: retry to re-establish connection to backend two times,
+* Changed: retry to re-establish connection to backend two times
   before finally failing
 * Removed: deprecated functions
   ``audbackend.access()``,
