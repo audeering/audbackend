@@ -3,6 +3,7 @@ import datetime
 import errno
 import os
 import re
+import time
 
 import audeer
 
@@ -23,15 +24,40 @@ def call_function_on_backend(
     *args,
     suppress_backend_errors: bool = False,
     fallback_return_value: object = None,
+    retries: int = 3,
     **kwargs,
 ) -> object:
-    try:
-        return function(*args, **kwargs)
-    except Exception as ex:
-        if suppress_backend_errors:
-            return fallback_return_value
-        else:
-            raise BackendError(ex)
+    r"""Call function on backend.
+
+    Args:
+        function: function to call on backend
+        suppress_backend_errors: if ``True``
+            and ``function`` fails during execution,
+            ``fallback_return_value`` is returned
+            instead of raising an error
+        fallback_return_value: value returned
+            if ``function`` fails during execution
+            and ``suppress_backend_errors`` is ``True``
+        retries: number of times ``function``
+            is tried to execute
+            when it raises an error,
+            before raising the error
+        *args: positional args of ``function``
+        **kwargs: keyword arguments of ``function``
+
+    Returns:
+        return value(s) of ``function``
+
+    """
+    for retry in range(retries):
+        try:
+            return function(*args, **kwargs)
+        except Exception as ex:
+            if suppress_backend_errors:
+                return fallback_return_value
+            if retry + 1 == retries:
+                raise BackendError(ex) from ex
+            time.sleep(0.05)
 
 
 def check_path(
