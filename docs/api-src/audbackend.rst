@@ -31,7 +31,3 @@ and functions are available.
 
     BackendError
     Repository
-    access
-    create
-    delete
-    register
