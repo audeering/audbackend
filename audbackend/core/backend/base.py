@@ -69,12 +69,12 @@ class Base:
 
         """
         if path_is_local:
-            checksum = utils.checksum(path)
+            checksum = audeer.md5(path)
         else:
             checksum = self.checksum(path)
 
         if path_ref_is_local:
-            checksum_ref = utils.checksum(path_ref)
+            checksum_ref = audeer.md5(path_ref)
         else:
             checksum_ref = self.checksum(path_ref)
 
@@ -569,7 +569,7 @@ class Base:
             msg = f"Permission denied: '{dst_path}'"
             raise PermissionError(msg)
 
-        if not os.path.exists(dst_path) or utils.checksum(dst_path) != self.checksum(
+        if not os.path.exists(dst_path) or audeer.md5(dst_path) != self.checksum(
             src_path
         ):
             # get file to a temporary directory first,
@@ -1042,7 +1042,7 @@ class Base:
         elif os.path.isdir(src_path):
             raise utils.raise_is_a_directory(src_path)
 
-        checksum = utils.checksum(src_path)
+        checksum = audeer.md5(src_path)
 
         # skip if file with same checksum already exists
         if not self.exists(dst_path) or self.checksum(dst_path) != checksum:

@@ -32,7 +32,7 @@ class FileSystem(Base):
     ) -> str:
         r"""MD5 checksum of file on backend."""
         path = self._expand(path)
-        return utils.checksum(path)
+        return audeer.md5(path)
 
     def _collapse(
         self,

@@ -5,8 +5,6 @@ import os
 import re
 import time
 
-import audeer
-
 from audbackend.core.errors import BackendError
 
 
@@ -104,62 +102,6 @@ def check_version(version: str) -> str:
         )
 
     return version
-
-
-def checksum(file: str) -> str:
-    r"""Checksum of file.
-
-    This function is used by backends
-    to get the checksum of local files,
-    using :func:`audeer.md5`.
-
-    An exception are parquet files,
-    for which their ``"hash"`` metadata entry
-    is used as checksum,
-    if the entry is available
-    and pyarrow_ is installed.
-
-    .. _pyarrow: https://arrow.apache.org/docs/python/index.html
-
-    Args:
-        file: file path with extension
-
-    Returns:
-        MD5 checksum of file
-
-    Raises:
-        FileNotFoundError: if ``file`` does not exist
-
-    Examples:
-        >>> checksum("src.txt")
-        'd41d8cd98f00b204e9800998ecf8427e'
-        >>> import audformat
-        >>> import pandas as pd
-        >>> import pyarrow as pa
-        >>> import pyarrow.parquet as pq
-        >>> df = pd.DataFrame([0, 1], columns=["a"])
-        >>> hash = audformat.utils.hash(df, strict=True)
-        >>> hash
-        '9021a9b6e1e696ba9de4fe29346319b2'
-        >>> parquet_file = audeer.path("file.parquet")
-        >>> table = pa.Table.from_pandas(df)
-        >>> table = table.replace_schema_metadata({"hash": hash})
-        >>> pq.write_table(table, parquet_file, compression="snappy")
-        >>> checksum(parquet_file)
-        '9021a9b6e1e696ba9de4fe29346319b2'
-
-    """
-    ext = audeer.file_extension(file)
-    if ext == "parquet":
-        try:
-            import pyarrow.parquet as parquet
-
-            metadata = parquet.read_schema(file).metadata or {}
-            if b"hash" in metadata:
-                return metadata[b"hash"].decode()
-        except ModuleNotFoundError:
-            pass
-    return audeer.md5(file)
 
 
 def date_format(date: datetime.datetime) -> str:

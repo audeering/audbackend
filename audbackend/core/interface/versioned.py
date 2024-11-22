@@ -78,7 +78,7 @@ class Versioned(Base):
         Examples:
             >>> file = "src.txt"
             >>> import audeer
-            >>> audbackend.checksum(file)
+            >>> audeer.md5(file)
             'd41d8cd98f00b204e9800998ecf8427e'
             >>> interface.put_file(file, "/file.txt", "1.0.0")
             >>> interface.checksum("/file.txt", "1.0.0")

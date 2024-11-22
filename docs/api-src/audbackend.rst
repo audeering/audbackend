@@ -31,4 +31,7 @@ and functions are available.
 
     BackendError
     Repository
-    checksum
+    access
+    create
+    delete
+    register
