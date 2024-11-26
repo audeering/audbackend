@@ -63,22 +63,38 @@ class Base:
     ):
         r"""Assert checksums are equal.
 
+        Compare the MD5 sum of a file
+        (``path``)
+        to the MD5 sum of a reference file
+        (``path_ref``).
         If check fails,
         ``path`` is removed
         and an error is raised.
 
+        Both ``path`` and ``path_ref``
+        can be local files,
+        or stored on any backend.
+
+        Args:
+            path: path to a file.
+                Its MD5 sum is compared
+                to a reference one,
+                calculated from ``path_ref``
+            path_is_local: if ``True``,
+                assumes ``path`` is stored on local machine
+            path_ref: path to a file.
+                Its MD5 sum is used as reference
+            path_ref_is_local: if ``True``,
+                assumes ``path_ref`` is stored on local machine
+
+        Raises:
+            InterruptedError: if the MD5 sums to not match
+
         """
-        if path_is_local:
-            checksum = audeer.md5(path)
-        else:
-            checksum = self.checksum(path)
+        md5 = audeer.md5(path) if path_is_local else self.checksum(path)
+        md5_ref = audeer.md5(path_ref) if path_ref_is_local else self.checksum(path_ref)
 
-        if path_ref_is_local:
-            checksum_ref = audeer.md5(path_ref)
-        else:
-            checksum_ref = self.checksum(path_ref)
-
-        if checksum != checksum_ref:
+        if md5 != md5_ref:
             if path_is_local:
                 os.remove(path)
                 location = "local file system"
@@ -90,9 +106,9 @@ class Base:
                 f"Execution is interrupted because "
                 f"{path} "
                 f"has checksum "
-                f"'{checksum}' "
+                f"'{md5}' "
                 "when the expected checksum is "
-                f"'{checksum_ref}'. "
+                f"'{md5_ref}'. "
                 f"The file has been removed from the "
                 f"{location}."
             )
