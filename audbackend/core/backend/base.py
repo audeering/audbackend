@@ -88,7 +88,7 @@ class Base:
                 assumes ``path_ref`` is stored on local machine
 
         Raises:
-            InterruptedError: if the MD5 sums to not match
+            InterruptedError: if the MD5 sums do not match
 
         """
         md5 = audeer.md5(path) if path_is_local else self.checksum(path)
