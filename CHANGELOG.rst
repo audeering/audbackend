@@ -7,6 +7,17 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 2.2.1 (2024-11-26)
+--------------------------
+
+* Fixed: ensure we always use MD5 sums
+  when comparing files
+* Removed: ``audbackend.checksum()``,
+  as parquet files
+  should not be treated differently,
+  and hence it was introduced wrongly
+
+
 Version 2.2.0 (2024-11-18)
 --------------------------
 
