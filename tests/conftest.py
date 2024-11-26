@@ -4,6 +4,7 @@ import os
 import pytest
 
 import audeer
+import audformat
 
 import audbackend
 
@@ -81,6 +82,34 @@ def owner(request):
             owner = getpass.getuser()
 
     yield owner
+
+
+@pytest.fixture(scope="function")
+def parquet_file(tmpdir):
+    r"""Provide a parquet file with checksum stored in metadata.
+
+    ``audformat`` provides the possibility
+    to store a checksum,
+    based on the content of a parquet file,
+    in the metadata of that file.
+    The motivation is that a parquet file
+    cannot be written in a deterministic way
+    and the checksum is a way to track,
+    if the content has changed.
+
+    """
+    db = audformat.Database("mydb")
+    db.schemes["age"] = audformat.Scheme("int")
+    db["files"] = audformat.Table(audformat.filewise_index(["f1"]))
+    db["files"]["age"] = audformat.Column(scheme_id="age")
+    db["files"]["age"].set([40])
+    path = audeer.path(tmpdir, "files.parquet")
+    db["files"].save(
+        audeer.replace_file_extension(path, ""),
+        storage_format="parquet",
+    )
+
+    yield path
 
 
 @pytest.fixture(scope="function", autouse=False)

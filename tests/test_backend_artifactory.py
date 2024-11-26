@@ -228,3 +228,23 @@ def test_open_close(host, repository):
     audbackend.backend.Artifactory.create(host, repository)
     backend.open()
     backend.close()
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.Artifactory, audbackend.interface.Maven)],
+    indirect=True,
+)
+def test_parquet_file(interface, parquet_file):
+    """Test uploading a parquet file with hash in metadata.
+
+    We need to make sure to hand the MD5 sum
+    to the deploy method of Artifactory,
+    not the checksum hash of the parquet file metadata.
+    See https://github.com/audeering/audbackend/issues/254.
+
+    """
+    dst_file = f"/{os.path.basename(parquet_file)}"
+    version = "1.0.0"
+    interface.put_file(parquet_file, dst_file, version)
+    assert interface.exists(dst_file, version)

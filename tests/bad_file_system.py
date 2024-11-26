@@ -1,3 +1,5 @@
+import audeer
+
 import audbackend
 
 
@@ -14,7 +16,7 @@ class BadFileSystem(audbackend.backend.FileSystem):
         verbose: bool = False,
     ):
         r"""Put file on backend."""
-        checksum = audbackend.checksum(src_path)
+        checksum = audeer.md5(src_path)
         audbackend.core.utils.call_function_on_backend(
             self._put_file,
             src_path,
