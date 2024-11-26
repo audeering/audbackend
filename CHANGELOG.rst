@@ -7,7 +7,7 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
-Version 2.2.1 (2024-11-26)
+Version 2.2.1 (2024-11-27)
 --------------------------
 
 * Fixed: ensure we always use MD5 sums
