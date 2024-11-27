@@ -50,22 +50,16 @@ jobs:
       run: |
         pip install -r requirements.txt
 
-    - name: Test with pytest for Python <3.13
+    - name: Test with pytest for Python
       env:
         ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
         ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
       run: |
         python -m pytest --cov-config=.coveragerc.${{ runner.os }}
-      if: ${{ matrix.python-version != '3.13' }}
-
-    - name: Test with pytest for Python >=3.13
-      run: |
-        python -m pytest --cov-config=.coveragerc.python3.13 --ignore=audbackend/core/backend/artifactory.py --ignore=tests/test_backend_artifactory.py
-      if: ${{ matrix.python-version == '3.13' }}
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: ./coverage.xml
-      if: ${{ (matrix.os == 'ubuntu-latest') && (matrix.python-version != '3.13') }}
+      if: ${{ (matrix.os == 'ubuntu-latest') }}
