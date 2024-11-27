@@ -58,7 +58,7 @@ jobs:
         python -m pytest --cov-config=.coveragerc.${{ runner.os }}
       if: ${{ (matrix.python-version != '3.12') && (matrix.python-version != '3.13') }}
 
-    - name: Test with pytest for Python 3.12 and 3.12
+    - name: Test with pytest for Python >=3.12
       run: |
         python -m pytest --cov-config=.coveragerc.python3.12 --ignore=audbackend/core/backend/artifactory.py --ignore=tests/test_backend_artifactory.py
       if: ${{ (matrix.python-version == '3.12') || (matrix.python-version == '3.13') }}
