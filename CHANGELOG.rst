@@ -13,9 +13,9 @@ Version 2.2.1 (2024-11-27)
 * Fixed: ensure we always use MD5 sums
   when comparing files
 * Removed: ``audbackend.checksum()``,
-  as parquet files
-  should not be treated differently,
-  and hence it was introduced wrongly
+  because the special handling
+  of parquet file metadata checksums
+  introduced potential issues
 
 
 Version 2.2.0 (2024-11-18)
