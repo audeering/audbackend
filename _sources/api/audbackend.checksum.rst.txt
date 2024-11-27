@@ -1,6 +1,0 @@
-﻿checksum\(\)
-============
-
-.. currentmodule:: audbackend
-
-.. autofunction:: audbackend.checksum

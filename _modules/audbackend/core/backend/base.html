@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                2.2.0
+                2.2.1
               </div>
             
           
@@ -207,22 +207,38 @@
     <span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Assert checksums are equal.</span>
 
+<span class="sd">        Compare the MD5 sum of a file</span>
+<span class="sd">        (``path``)</span>
+<span class="sd">        to the MD5 sum of a reference file</span>
+<span class="sd">        (``path_ref``).</span>
 <span class="sd">        If check fails,</span>
 <span class="sd">        ``path`` is removed</span>
 <span class="sd">        and an error is raised.</span>
 
+<span class="sd">        Both ``path`` and ``path_ref``</span>
+<span class="sd">        can be local files,</span>
+<span class="sd">        or stored on any backend.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: path to a file.</span>
+<span class="sd">                Its MD5 sum is compared</span>
+<span class="sd">                to a reference one,</span>
+<span class="sd">                calculated from ``path_ref``</span>
+<span class="sd">            path_is_local: if ``True``,</span>
+<span class="sd">                assumes ``path`` is stored on local machine</span>
+<span class="sd">            path_ref: path to a file.</span>
+<span class="sd">                Its MD5 sum is used as reference</span>
+<span class="sd">            path_ref_is_local: if ``True``,</span>
+<span class="sd">                assumes ``path_ref`` is stored on local machine</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            InterruptedError: if the MD5 sums do not match</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">path_is_local</span><span class="p">:</span>
-            <span class="n">checksum</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">checksum</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">checksum</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">checksum</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">md5</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">if</span> <span class="n">path_is_local</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">checksum</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">md5_ref</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">path_ref</span><span class="p">)</span> <span class="k">if</span> <span class="n">path_ref_is_local</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">checksum</span><span class="p">(</span><span class="n">path_ref</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">path_ref_is_local</span><span class="p">:</span>
-            <span class="n">checksum_ref</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">checksum</span><span class="p">(</span><span class="n">path_ref</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">checksum_ref</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">checksum</span><span class="p">(</span><span class="n">path_ref</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">checksum</span> <span class="o">!=</span> <span class="n">checksum_ref</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">md5</span> <span class="o">!=</span> <span class="n">md5_ref</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">path_is_local</span><span class="p">:</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
                 <span class="n">location</span> <span class="o">=</span> <span class="s2">&quot;local file system&quot;</span>
@@ -234,9 +250,9 @@
                 <span class="sa">f</span><span class="s2">&quot;Execution is interrupted because &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;has checksum &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">checksum</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">md5</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
                 <span class="s2">&quot;when the expected checksum is &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">checksum_ref</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">md5_ref</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;The file has been removed from the &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">location</span><span class="si">}</span><span class="s2">.&quot;</span>
             <span class="p">)</span>
@@ -713,7 +729,7 @@
             <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Permission denied: &#39;</span><span class="si">{</span><span class="n">dst_path</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
             <span class="k">raise</span> <span class="ne">PermissionError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span> <span class="ow">or</span> <span class="n">utils</span><span class="o">.</span><span class="n">checksum</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">checksum</span><span class="p">(</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span> <span class="ow">or</span> <span class="n">audeer</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">checksum</span><span class="p">(</span>
             <span class="n">src_path</span>
         <span class="p">):</span>
             <span class="c1"># get file to a temporary directory first,</span>
@@ -1186,7 +1202,7 @@
         <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">src_path</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">utils</span><span class="o">.</span><span class="n">raise_is_a_directory</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
 
-        <span class="n">checksum</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">checksum</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
+        <span class="n">checksum</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
 
         <span class="c1"># skip if file with same checksum already exists</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">checksum</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span> <span class="o">!=</span> <span class="n">checksum</span><span class="p">:</span>
@@ -1286,7 +1302,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2024/11/18 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2024/11/27 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
