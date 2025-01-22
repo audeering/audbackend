@@ -497,7 +497,7 @@ def test_errors(tmpdir, interface):
             files=local_file,
         )
     # extension of `dst_path` is not supported
-    error_msg = "Unsupported archive format. Supported formats ..."
+    error_msg = "Unsupported archive format. Supported formats: ..."
     with pytest.raises(RuntimeError, match=error_msg):
         interface.put_archive(tmpdir, "/archive.bad", files=local_file)
 
