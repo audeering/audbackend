@@ -33,5 +33,5 @@ or :class:`audbackend.backend.Artifactory`:
     $ pip install audbackend[artifactory]
 
 Note,
-in Python 3.12 the :class:`audbackend.backend.Artifactory`
+in Python 3.13 the :class:`audbackend.backend.Artifactory`
 backend is not available at the moment.
