@@ -199,6 +199,8 @@ class Artifactory(Base):
         /<path>
 
         """
+        # Requires dohq-artifactory>=1.0.0,
+        # before length was one longer
         path = path[len(str(self.path("/"))) :]
         path = path.replace("/", self.sep)
         return path
