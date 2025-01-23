@@ -346,7 +346,7 @@ def test_errors(tmpdir, interface):
     with pytest.raises(FileNotFoundError, match=error_msg):
         interface.get_archive(archive, tmpdir, tmp_root="non-existing")
     # extension of `src_path` is not supported
-    error_msg = "You can only extract ZIP and TAR.GZ files, ..."
+    error_msg = "You can only extract ZIP and TAR files, ..."
     interface.put_file(
         audeer.touch(audeer.path(tmpdir, "archive.bad")),
         "/archive.bad",
@@ -497,7 +497,7 @@ def test_errors(tmpdir, interface):
             files=local_file,
         )
     # extension of `dst_path` is not supported
-    error_msg = "You can only create a ZIP or TAR.GZ archive, not ..."
+    error_msg = "Unsupported archive format. Supported formats: ..."
     with pytest.raises(RuntimeError, match=error_msg):
         interface.put_archive(tmpdir, "/archive.bad", files=local_file)
 
