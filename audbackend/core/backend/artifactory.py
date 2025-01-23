@@ -200,6 +200,7 @@ class Artifactory(Base):
 
         """
         print(f"{path=}")
+        print(f"{self.path=}")
         path = path[len(str(self.path("/"))) - 1 :]
         print(f"{path=}")
         path = path.replace("/", self.sep)

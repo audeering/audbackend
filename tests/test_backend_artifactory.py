@@ -218,6 +218,8 @@ def test_maven_file_structure(
     assert interface.ls(file) == [(file, version)]
     assert interface.ls() == [(file, version)]
 
+    assert False
+
 
 @pytest.mark.parametrize("host", [pytest.HOSTS["artifactory"]])
 @pytest.mark.parametrize("repository", [f"unittest-{pytest.UID}-{audeer.uid()[:8]}"])
