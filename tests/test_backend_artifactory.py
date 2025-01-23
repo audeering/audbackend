@@ -207,7 +207,8 @@ def test_maven_file_structure(
     interface.regex = regex
 
     src_path = audeer.touch(audeer.path(tmpdir, "tmp"))
-    interface.put_file(src_path, file, version)
+    file_on_backend = interface.put_file(src_path, file, version)
+    print(f"{file_on_backend=}")
 
     url = str(interface.backend.path(expected))
     url_expected = str(

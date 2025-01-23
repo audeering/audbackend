@@ -181,8 +181,14 @@ class Maven(Versioned):
                 ]
 
         else:  # find versions of path
+            print("Find versions of path")
             root, file = self.split(path)
             name, ext = self._split_ext(file)
+
+            print(f"{root=}")
+            print(f"{file=}")
+            print(f"{name=}")
+            print(f"{ext=}")
 
             # Look inside `<root>/<name>/`
             # for available versions.
@@ -192,6 +198,7 @@ class Maven(Versioned):
                 self.backend.join(root, name, self.sep),
                 suppress_backend_errors=suppress_backend_errors,
             )
+            print(f"{paths=}")
 
             # filter for '<root>/<name>/<version>/<name>-x.x.x<ext>'
             depth = root.count("/") + 2
@@ -201,6 +208,7 @@ class Maven(Versioned):
                 for p in paths
                 if (p.count("/") == depth and match.match(os.path.basename(p)))
             ]
+            print(f"{paths=}")
 
             if not paths and not suppress_backend_errors:
                 # since the backend does no longer raise an error
@@ -235,6 +243,7 @@ class Maven(Versioned):
                     paths_and_versions.append((path, version))
 
         paths_and_versions = sorted(paths_and_versions)
+        print(f"{paths_and_versions=}")
 
         if latest_version:
             # d[path] = ['1.0.0', '2.0.0']
