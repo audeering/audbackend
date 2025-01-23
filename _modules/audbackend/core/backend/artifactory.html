@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                2.2.1
+                2.2.2
               </div>
             
           
@@ -142,19 +142,19 @@
            <div itemprop="articleBody">
             
   <h1>Source code for audbackend.core.backend.artifactory</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
-<span class="kn">import</span> <span class="nn">artifactory</span>
-<span class="kn">import</span> <span class="nn">dohq_artifactory</span>
-<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">artifactory</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dohq_artifactory</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
-<span class="kn">import</span> <span class="nn">audeer</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">audeer</span>
 
-<span class="kn">from</span> <span class="nn">audbackend.core</span> <span class="kn">import</span> <span class="n">utils</span>
-<span class="kn">from</span> <span class="nn">audbackend.core.backend.base</span> <span class="kn">import</span> <span class="n">Base</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">audbackend.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">audbackend.core.backend.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Base</span>
 
 
-<span class="k">def</span> <span class="nf">_deploy</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_deploy</span><span class="p">(</span>
     <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">dst_path</span><span class="p">:</span> <span class="n">artifactory</span><span class="o">.</span><span class="n">ArtifactoryPath</span><span class="p">,</span>
     <span class="n">checksum</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -180,7 +180,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="n">audeer</span><span class="o">.</span><span class="n">format_display_message</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">pbar</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_download</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_download</span><span class="p">(</span>
     <span class="n">src_path</span><span class="p">:</span> <span class="n">artifactory</span><span class="o">.</span><span class="n">ArtifactoryPath</span><span class="p">,</span>
     <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -210,7 +210,7 @@
                         <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">n_data</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="Artifactory"><a class="viewcode-back" href="../../../../api/audbackend.backend.Artifactory.html#audbackend.backend.Artifactory">[docs]</a><span class="k">class</span> <span class="nc">Artifactory</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+<div class="viewcode-block" id="Artifactory"><a class="viewcode-back" href="../../../../api/audbackend.backend.Artifactory.html#audbackend.backend.Artifactory">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Artifactory</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Backend for Artifactory.</span>
 
 <span class="sd">    Args:</span>
@@ -222,7 +222,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">repository</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -242,7 +242,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_session</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="Artifactory.get_authentication"><a class="viewcode-back" href="../../../../api/audbackend.backend.Artifactory.html#audbackend.backend.Artifactory.get_authentication">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">get_authentication</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_authentication</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Username and password/access token for given host.</span>
 
 <span class="sd">        Returns a username</span>
@@ -310,7 +310,7 @@
 
         <span class="k">return</span> <span class="n">username</span><span class="p">,</span> <span class="n">api_key</span></div>
 
-    <span class="k">def</span> <span class="nf">_checksum</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_checksum</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -319,7 +319,7 @@
         <span class="n">checksum</span> <span class="o">=</span> <span class="n">artifactory</span><span class="o">.</span><span class="n">ArtifactoryPath</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">md5</span>
         <span class="k">return</span> <span class="n">checksum</span>
 
-    <span class="k">def</span> <span class="nf">_close</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_close</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Close connection to repository.</span>
@@ -332,7 +332,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_collapse</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_collapse</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">,</span>
     <span class="p">):</span>
@@ -343,11 +343,13 @@
 <span class="sd">        /&lt;path&gt;</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)))</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">:]</span>
+        <span class="c1"># Requires dohq-artifactory&gt;=1.0.0,</span>
+        <span class="c1"># before length was one longer</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)))</span> <span class="p">:]</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">path</span>
 
-    <span class="k">def</span> <span class="nf">_copy_file</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_copy_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -360,7 +362,7 @@
             <span class="n">dst_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">()</span>
         <span class="n">src_path</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_create</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Create repository.&quot;&quot;&quot;</span>
@@ -376,7 +378,7 @@
                 <span class="n">utils</span><span class="o">.</span><span class="n">raise_file_exists_error</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">repo</span><span class="o">.</span><span class="n">path</span><span class="p">))</span>
             <span class="n">repo</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_date</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_date</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -386,14 +388,14 @@
         <span class="n">date</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">date_format</span><span class="p">(</span><span class="n">date</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">date</span>
 
-    <span class="k">def</span> <span class="nf">_delete</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_delete</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Delete repository and all its content.&quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_repo</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_exists</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_exists</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -401,7 +403,7 @@
         <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_get_file</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -411,7 +413,7 @@
         <span class="n">src_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
         <span class="n">_download</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_ls</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ls</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
@@ -425,7 +427,7 @@
 
         <span class="k">return</span> <span class="n">paths</span>
 
-    <span class="k">def</span> <span class="nf">_move_file</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_move_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -438,7 +440,7 @@
             <span class="n">dst_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">()</span>
         <span class="n">src_path</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_open</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_open</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Open connection to backend.&quot;&quot;&quot;</span>
@@ -449,7 +451,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_repo</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">utils</span><span class="o">.</span><span class="n">raise_file_not_found_error</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_owner</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_owner</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -458,7 +460,7 @@
         <span class="n">owner</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">modified_by</span>
         <span class="k">return</span> <span class="n">owner</span>
 
-<div class="viewcode-block" id="Artifactory.path"><a class="viewcode-back" href="../../../../api/audbackend.backend.Artifactory.html#audbackend.backend.Artifactory.path">[docs]</a>    <span class="k">def</span> <span class="nf">path</span><span class="p">(</span>
+<div class="viewcode-block" id="Artifactory.path"><a class="viewcode-back" href="../../../../api/audbackend.backend.Artifactory.html#audbackend.backend.Artifactory.path">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">path</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">artifactory</span><span class="o">.</span><span class="n">ArtifactoryPath</span><span class="p">:</span>
@@ -479,7 +481,7 @@
         <span class="c1"># path -&gt; host/repository/path</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_repo</span> <span class="o">/</span> <span class="n">path</span></div>
 
-    <span class="k">def</span> <span class="nf">_put_file</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_put_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -490,7 +492,7 @@
         <span class="n">dst_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span>
         <span class="n">_deploy</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">,</span> <span class="n">checksum</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_remove_file</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_remove_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">):</span>
@@ -512,7 +514,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2024/11/27 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2025/01/23 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -520,7 +522,7 @@
   <div role="contentinfo">
     <p>
         
-      &copy; 2021-2024 audEERING GmbH
+      &copy; 2021-2025 audEERING GmbH
     </p>
   </div> 
 

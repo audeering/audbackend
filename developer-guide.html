@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                2.2.1
+                2.2.2
               </div>
             
           
@@ -188,25 +188,25 @@ To access and update
 the database
 we implement the following
 helper class.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">pickle</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
 
-<span class="kn">import</span> <span class="nn">audbackend</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">audbackend</span>
 
 
-<span class="k">class</span> <span class="nc">UserDB</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">UserDB</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;User database.</span>
 
 <span class="sd">    Temporarily get user database</span>
 <span class="sd">    and write changes back to the backend.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">Base</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">Base</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">backend</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">remote_file</span> <span class="o">=</span> <span class="s2">&quot;/.db.pkl&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">local_file</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="s2">&quot;.db.pkl&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_file</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_file</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">local_file</span><span class="p">):</span>
@@ -216,7 +216,7 @@ helper class.</p>
             <span class="bp">self</span><span class="o">.</span><span class="n">_map</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_map</span>
 
-    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">local_file</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
             <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_map</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">pickle</span><span class="o">.</span><span class="n">HIGHEST_PROTOCOL</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">put_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">local_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_file</span><span class="p">)</span>
@@ -225,21 +225,21 @@ helper class.</p>
 </div>
 <p>Now,
 we implement the interface.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">UserContent</span><span class="p">(</span><span class="n">audbackend</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">Base</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">UserContent</span><span class="p">(</span><span class="n">audbackend</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">Base</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="nf">add_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Add user to database.&quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">UserDB</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="p">)</span> <span class="k">as</span> <span class="nb">map</span><span class="p">:</span>
             <span class="nb">map</span><span class="p">[</span><span class="n">username</span><span class="p">]</span> <span class="o">=</span> <span class="n">password</span>
 
-    <span class="k">def</span> <span class="nf">upload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">upload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Upload user file.&quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">UserDB</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="p">)</span> <span class="k">as</span> <span class="nb">map</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">username</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">map</span> <span class="ow">or</span> <span class="nb">map</span><span class="p">[</span><span class="n">username</span><span class="p">]</span> <span class="o">!=</span> <span class="n">password</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;User does not exist or wrong password.&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">put_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">ls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;List files of user.&quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">UserDB</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="p">)</span> <span class="k">as</span> <span class="nb">map</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">username</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">map</span><span class="p">:</span>
@@ -250,7 +250,7 @@ we implement the interface.</p>
 <p>Let’s create a repository
 with our custom interface,
 and upload a file:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">audeer</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">audeer</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">host</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
@@ -308,14 +308,14 @@ which we derive from the host and repository,
 namely <code class="docutils literal notranslate"><span class="pre">&quot;&lt;host&gt;/&lt;repository&gt;/db&quot;</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">_db</span></code>: connection object to the database.</p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
-<span class="kn">import</span> <span class="nn">audbackend</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">audbackend</span>
 
 
-<span class="k">class</span> <span class="nc">SQLite</span><span class="p">(</span><span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">Base</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SQLite</span><span class="p">(</span><span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">Base</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
             <span class="n">repository</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -332,13 +332,13 @@ But for the sake of clarity,
 we will dynamically add
 the required methods one after another
 using a dedicated decorator:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">functools</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
 
 
-<span class="k">def</span> <span class="nf">add_method</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_method</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">decorator</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
         <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="nb">setattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">wrapper</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">func</span>
@@ -353,7 +353,7 @@ This is not mandatory
 and whether it is needed
 depends on the backend.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
-<span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
@@ -373,13 +373,13 @@ stored on our backend:</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">date</span></code>: the date when the file was added</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">owner</span></code>: the owner of the file</p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">errno</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">sqlite3</span> <span class="k">as</span> <span class="nn">sl</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">errno</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sqlite3</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sl</span>
 
 
 <span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">_create</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_create</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="p">):</span>
@@ -414,7 +414,7 @@ an existing database
 (or raise an error
 it is not found).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">_open</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_open</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="p">):</span>
@@ -439,7 +439,7 @@ with the <a class="reference internal" href="api/audbackend.interface.Versioned.
 we implement a method to check
 if a file exists.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">_exists</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_exists</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -461,12 +461,12 @@ if a file exists.</p>
 </div>
 <p>And a method that uploads
 a file to our backend.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">datetime</span>
-<span class="kn">import</span> <span class="nn">getpass</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">getpass</span>
 
 
 <span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">_put_file</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_put_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -496,7 +496,7 @@ a file to our backend.</p>
 <p>We need three more functions
 to access its meta information.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">_checksum</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_checksum</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -511,7 +511,7 @@ to access its meta information.</p>
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">_date</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_date</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -526,7 +526,7 @@ to access its meta information.</p>
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">_owner</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_owner</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -547,7 +547,7 @@ and then upload it again.
 Hence,
 we provide a more efficient implementation.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">_copy_file</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_copy_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -577,7 +577,7 @@ we provide a more efficient implementation.</p>
 <p>Implementing a move function is also optional,
 but it is more efficient if we provide one.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">_move_file</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_move_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -601,7 +601,7 @@ but it is more efficient if we provide one.</p>
 to fetch a file
 from the backend.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">_get_file</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -627,7 +627,7 @@ from the backend.</p>
 on our backend
 we provide a listing method.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">_ls</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_ls</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
@@ -658,7 +658,7 @@ we provide a listing method.</p>
 from our backend
 requires another method.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">_remove_file</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_remove_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">):</span>
@@ -679,7 +679,7 @@ requires another method.</p>
 <p>We add a method to close the connection
 to a database and call it.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">_close</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_close</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -695,7 +695,7 @@ and removes the repository
 (or raises an error
 if the database does not exist).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">_delete</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_delete</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="p">):</span>
@@ -740,7 +740,7 @@ we have a fully functional backend.</p>
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2024/11/27 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2025/01/23 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -748,7 +748,7 @@ we have a fully functional backend.</p>
   <div role="contentinfo">
     <p>
         
-      &copy; 2021-2024 audEERING GmbH
+      &copy; 2021-2025 audEERING GmbH
     </p>
   </div> 
 

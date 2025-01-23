@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                2.2.1
+                2.2.2
               </div>
             
           
@@ -256,7 +256,7 @@ For each file on the backend path one or more versions may exist.</p>
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">file</span> <span class="o">=</span> <span class="s2">&quot;src.txt&quot;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">audeer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">audeer</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">audeer</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
 <span class="go">&#39;d41d8cd98f00b204e9800998ecf8427e&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">put_file</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
@@ -424,7 +424,7 @@ and return <code class="docutils literal notranslate"><span class="pre">False</s
 <span class="sig-prename descclassname"><span class="pre">Versioned.</span></span><span class="sig-name descname"><span class="pre">get_archive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmp_root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/interface/versioned.html#Versioned.get_archive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.interface.Versioned.get_archive" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get archive from backend and extract.</p>
 <p>The archive type is derived from the extension of <code class="docutils literal notranslate"><span class="pre">src_path</span></code>.
-See <a class="reference external" href="https://audeering.github.io/audeer/api/audeer.extract_archive.html#audeer.extract_archive" title="(in audeer vv2.2.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">audeer.extract_archive()</span></code></a> for supported extensions.</p>
+See <a class="reference external" href="https://audeering.github.io/audeer/api/audeer.extract_archive.html#audeer.extract_archive" title="(in audeer vv2.2.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">audeer.extract_archive()</span></code></a> for supported extensions.</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">dst_root</span></code> does not exist,
 it is created.</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">validate</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>,
@@ -831,7 +831,7 @@ an empty string is returned.</p>
 <span class="sig-prename descclassname"><span class="pre">Versioned.</span></span><span class="sig-name descname"><span class="pre">put_archive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tmp_root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/interface/versioned.html#Versioned.put_archive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.interface.Versioned.put_archive" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create archive and put on backend.</p>
 <p>The archive type is derived from the extension of <code class="docutils literal notranslate"><span class="pre">dst_path</span></code>.
-See <a class="reference external" href="https://audeering.github.io/audeer/api/audeer.create_archive.html#audeer.create_archive" title="(in audeer vv2.2.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">audeer.create_archive()</span></code></a> for supported extensions.</p>
+See <a class="reference external" href="https://audeering.github.io/audeer/api/audeer.create_archive.html#audeer.create_archive" title="(in audeer vv2.2.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">audeer.create_archive()</span></code></a> for supported extensions.</p>
 <p>The operation is silently skipped,
 if an archive with the same checksum
 already exists on the backend.</p>
@@ -1131,7 +1131,7 @@ and return an empty list</p></li>
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2024/11/27 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2025/01/23 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -1139,7 +1139,7 @@ and return an empty list</p></li>
   <div role="contentinfo">
     <p>
         
-      &copy; 2021-2024 audEERING GmbH
+      &copy; 2021-2025 audEERING GmbH
     </p>
   </div> 
 
