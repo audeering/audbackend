@@ -277,7 +277,9 @@ class Artifactory(Base):
             return []
 
         paths = [str(x) for x in path.glob("**/*") if x.is_file()]
+        print(f"{paths=}")
         paths = [self._collapse(path) for path in paths]
+        print(f"{path=}")
 
         return paths
 
