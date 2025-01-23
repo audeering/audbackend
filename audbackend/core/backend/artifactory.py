@@ -199,8 +199,11 @@ class Artifactory(Base):
         /<path>
 
         """
+        print(f"{path=}")
         path = path[len(str(self.path("/"))) - 1 :]
+        print(f"{path=}")
         path = path.replace("/", self.sep)
+        print(f"{path=}")
         return path
 
     def _copy_file(
@@ -279,7 +282,7 @@ class Artifactory(Base):
         paths = [str(x) for x in path.glob("**/*") if x.is_file()]
         print(f"{paths=}")
         paths = [self._collapse(path) for path in paths]
-        print(f"{path=}")
+        print(f"{paths=}")
 
         return paths
 
