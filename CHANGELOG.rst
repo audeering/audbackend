@@ -7,6 +7,18 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 2.2.2 (2025-01-23)
+--------------------------
+
+* Added: support for Python 3.13
+  (without Artifactory backend)
+* Added: support for Artifactory backend
+  in Python 3.12
+* Changed: depend on ``dohq-artifactory>=1.0.0``
+* Fixed: wrong path names
+  in Artifactory backend with ``dohq-artifactory==1.0.0``
+
+
 Version 2.2.1 (2024-11-27)
 --------------------------
 
