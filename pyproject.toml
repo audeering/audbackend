@@ -42,13 +42,13 @@ dynamic = ['version']
 
 [project.optional-dependencies]
 artifactory = [
-    'dohq-artifactory >=1.0.0; python_version < "3.13"',
+    'dohq-artifactory @ git+https://github.com/devopshq/artifactory@python-3-13',
 ]
 minio = [
     'minio',
 ]
 all = [
-    'dohq-artifactory >=1.0.0; python_version < "3.13"',
+    'dohq-artifactory @ git+https://github.com/devopshq/artifactory@python-3-13',
     'minio',
 ]
 
