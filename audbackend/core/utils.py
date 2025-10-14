@@ -75,8 +75,7 @@ def check_path(
         )
     if path and BACKEND_ALLOWED_CHARS_COMPILED.fullmatch(path) is None:
         raise ValueError(
-            f"Invalid backend path '{path}', "
-            f"does not match '{BACKEND_ALLOWED_CHARS}'."
+            f"Invalid backend path '{path}', does not match '{BACKEND_ALLOWED_CHARS}'."
         )
 
     # Remove immediately consecutive seps
@@ -97,8 +96,7 @@ def check_version(version: str) -> str:
         raise ValueError("Version must not be empty.")
     if VERSION_ALLOWED_CHARS_COMPILED.fullmatch(version) is None:
         raise ValueError(
-            f"Invalid version '{version}', "
-            f"does not match '{VERSION_ALLOWED_CHARS}'."
+            f"Invalid version '{version}', does not match '{VERSION_ALLOWED_CHARS}'."
         )
 
     return version

@@ -42,7 +42,7 @@ def test_errors(tmpdir, interface):
     # Invalid file names / versions and error messages
     file_invalid_path = "invalid/path.txt"
     error_invalid_path = re.escape(
-        f"Invalid backend path '{file_invalid_path}', " f"must start with '/'."
+        f"Invalid backend path '{file_invalid_path}', must start with '/'."
     )
     file_invalid_char = "/invalid/char.txt?"
     error_invalid_char = re.escape(

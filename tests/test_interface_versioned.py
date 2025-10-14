@@ -261,11 +261,11 @@ def test_errors(tmpdir, interface):
     # Invalid file names / versions and error messages
     file_invalid_path = "invalid/path.txt"
     error_invalid_path = re.escape(
-        f"Invalid backend path '{file_invalid_path}', " f"must start with '/'."
+        f"Invalid backend path '{file_invalid_path}', must start with '/'."
     )
     file_sub_path = "/sub/"
     error_sub_path = re.escape(
-        f"Invalid backend path '{file_sub_path}', " f"must not end on '/'."
+        f"Invalid backend path '{file_sub_path}', must not end on '/'."
     )
     file_invalid_char = "/invalid/char.txt?"
     error_invalid_char = re.escape(
@@ -284,7 +284,7 @@ def test_errors(tmpdir, interface):
     error_empty_version = "Version must not be empty."
     invalid_version = "1.0.?"
     error_invalid_version = re.escape(
-        f"Invalid version '{invalid_version}', " f"does not match '[A-Za-z0-9._-]+'."
+        f"Invalid version '{invalid_version}', does not match '[A-Za-z0-9._-]+'."
     )
     if platform.system() == "Windows":
         error_is_a_folder = "Is a directory: "
