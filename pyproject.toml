@@ -9,7 +9,8 @@ authors = [
 ]
 description = 'Backends to access Artifactory and local file system'
 readme = 'README.rst'
-license = {file = 'LICENSE'}
+license = 'MIT'
+license-files = ['LICENSE']
 keywords = [
     'artifactory',
     'filesystem',
