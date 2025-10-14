@@ -43,10 +43,4 @@ class Repository:
         warnings.warn(message, category=UserWarning, stacklevel=2)
 
     def __repr__(self):  # noqa: D105
-        return (
-            f"Repository("
-            f"'{self.name}', "
-            f"'{self.host}', "
-            f"'{self.backend}'"
-            f")"
-        )
+        return f"Repository('{self.name}', '{self.host}', '{self.backend}')"
