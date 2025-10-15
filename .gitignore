@@ -9,3 +9,4 @@ venv/
 coverage.xml
 __init__.pyc
 docs/api/
+uv.lock
