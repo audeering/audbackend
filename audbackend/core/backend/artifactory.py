@@ -209,6 +209,7 @@ class Artifactory(Base):
         self,
         src_path: str,
         dst_path: str,
+        num_workers: int,
         verbose: bool,
     ):
         r"""Copy file on backend."""
@@ -263,6 +264,7 @@ class Artifactory(Base):
         self,
         src_path: str,
         dst_path: str,
+        num_workers: int,
         verbose: bool,
     ):
         r"""Get file from backend."""
@@ -287,6 +289,7 @@ class Artifactory(Base):
         self,
         src_path: str,
         dst_path: str,
+        num_workers: int,
         verbose: bool,
     ):
         r"""Move file on backend."""
