@@ -115,6 +115,8 @@ class FileSystem(Base):
         src_path: str,
         dst_path: str,
         verbose: bool,
+        num_workers: int,
+        chunk_size: int,
     ):
         r"""Get file from backend."""
         src_path = self._expand(src_path)

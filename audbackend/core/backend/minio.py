@@ -1,8 +1,10 @@
+import concurrent.futures
 import configparser
 import getpass
 import mimetypes
 import os
 import tempfile
+import threading
 
 import minio
 
@@ -209,7 +211,9 @@ class Minio(Base):
         if self._size(src_path) / 1024 / 1024 / 1024 >= 4.9:
             with tempfile.TemporaryDirectory() as tmp_dir:
                 tmp_path = audeer.path(tmp_dir, os.path.basename(src_path))
-                self._get_file(src_path, tmp_path, verbose)
+                self._get_file(
+                    src_path, tmp_path, verbose, num_workers=1, chunk_size=None
+                )
                 self._put_file(tmp_path, dst_path, checksum, verbose)
         else:
             self._client.copy_object(
@@ -265,11 +269,33 @@ class Minio(Base):
         src_path: str,
         dst_path: str,
         verbose: bool,
+        num_workers: int,
+        chunk_size: int,
     ):
         r"""Get file from backend."""
         src_path = self.path(src_path)
         src_size = self._client.stat_object(self.repository, src_path).size
-        chunk = 4 * 1024
+
+        if chunk_size is None:
+            chunk_size = 4 * 1024
+
+        # Use parallel download if num_workers > 1
+        if num_workers > 1:
+            self._get_file_parallel(
+                src_path, dst_path, src_size, num_workers, chunk_size, verbose
+            )
+        else:
+            self._get_file_sequential(src_path, dst_path, src_size, chunk_size, verbose)
+
+    def _get_file_sequential(
+        self,
+        src_path: str,
+        dst_path: str,
+        src_size: int,
+        chunk_size: int,
+        verbose: bool,
+    ):
+        r"""Download file sequentially."""
         with audeer.progress_bar(total=src_size, disable=not verbose) as pbar:
             desc = audeer.format_display_message(
                 f"Download {os.path.basename(str(src_path))}", pbar=True
@@ -282,7 +308,7 @@ class Minio(Base):
                 response = self._client.get_object(self.repository, src_path)
                 with open(dst_path, "wb") as dst_fp:
                     while src_size > dst_size:
-                        data = response.read(chunk)
+                        data = response.read(chunk_size)
                         n_data = len(data)
                         if n_data > 0:
                             dst_fp.write(data)
@@ -293,6 +319,91 @@ class Minio(Base):
             finally:
                 response.close()
                 response.release_conn()
+
+    def _get_file_parallel(
+        self,
+        src_path: str,
+        dst_path: str,
+        src_size: int,
+        num_workers: int,
+        chunk_size: int,
+        verbose: bool,
+    ):
+        r"""Download file in parallel using multiple workers."""
+        # Calculate part size for each worker
+        part_size = src_size // num_workers
+        if part_size == 0:
+            # File too small for parallel download, use sequential
+            self._get_file_sequential(src_path, dst_path, src_size, chunk_size, verbose)
+            return
+
+        # Create temporary directory for parts
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Thread-safe progress bar
+            pbar_lock = threading.Lock()
+
+            with audeer.progress_bar(total=src_size, disable=not verbose) as pbar:
+                desc = audeer.format_display_message(
+                    f"Download {os.path.basename(str(src_path))}", pbar=True
+                )
+                pbar.set_description_str(desc)
+                pbar.refresh()
+
+                def download_part(part_num):
+                    """Download a single part of the file."""
+                    start = part_num * part_size
+                    # Last part gets remaining bytes
+                    end = (
+                        src_size - 1
+                        if part_num == num_workers - 1
+                        else (part_num + 1) * part_size - 1
+                    )
+
+                    part_file = os.path.join(temp_dir, f"part_{part_num}")
+
+                    try:
+                        response = self._client.get_object(
+                            self.repository,
+                            src_path,
+                            offset=start,
+                            length=end - start + 1,
+                        )
+                        with open(part_file, "wb") as f:
+                            downloaded = 0
+                            while True:
+                                data = response.read(chunk_size)
+                                n_data = len(data)
+                                if n_data == 0:
+                                    break
+                                f.write(data)
+                                downloaded += n_data
+                                with pbar_lock:
+                                    pbar.update(n_data)
+                        return part_num, part_file
+                    except Exception as e:  # pragma: no cover
+                        raise RuntimeError(f"Error downloading part {part_num}: {e}")
+                    finally:
+                        response.close()
+                        response.release_conn()
+
+                # Download parts in parallel
+                with concurrent.futures.ThreadPoolExecutor(
+                    max_workers=num_workers
+                ) as executor:
+                    futures = [
+                        executor.submit(download_part, i) for i in range(num_workers)
+                    ]
+                    parts = [None] * num_workers
+
+                    for future in concurrent.futures.as_completed(futures):
+                        part_num, part_file = future.result()
+                        parts[part_num] = part_file
+
+                # Combine parts into final file
+                with open(dst_path, "wb") as dst_fp:
+                    for part_file in parts:
+                        with open(part_file, "rb") as src_fp:
+                            dst_fp.write(src_fp.read())
 
     def _ls(
         self,

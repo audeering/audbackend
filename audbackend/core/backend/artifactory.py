@@ -264,10 +264,14 @@ class Artifactory(Base):
         src_path: str,
         dst_path: str,
         verbose: bool,
+        num_workers: int,
+        chunk_size: int,
     ):
         r"""Get file from backend."""
         src_path = self.path(src_path)
-        _download(src_path, dst_path, verbose=verbose)
+        if chunk_size is None:
+            chunk_size = 4 * 1024
+        _download(src_path, dst_path, chunk=chunk_size, verbose=verbose)
 
     def _ls(
         self,
