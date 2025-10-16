@@ -111,7 +111,7 @@ fails.
 To remove leftover files on the Artifactory server
 run::
 
-    python tests/misc/cleanup_artifactory.py
+    uv run tests/misc/cleanup_artifactory.py
 
 .. _pytest: https://pytest.org
 
