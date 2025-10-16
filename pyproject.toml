@@ -74,6 +74,11 @@ dev = [
     'sybil',
     'toml',
 ]
+test-filesystem = [
+    'audformat',
+    'pytest',
+    'pytest-cov',
+]
 
 
 # ===== BUILD-SYSTEM ======================================================
