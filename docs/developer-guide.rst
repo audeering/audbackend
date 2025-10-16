@@ -500,6 +500,8 @@ from the backend.
             src_path: str,
             dst_path: str,
             verbose: bool,
+            num_workers: int,
+            chunk_size: int,
     ):
         with self._db as db:
             query = f"""
