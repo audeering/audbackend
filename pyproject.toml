@@ -57,6 +57,30 @@ repository = 'https://github.com/audeering/audbackend/'
 documentation = 'https://audeering.github.io/audbackend/'
 
 
+# ===== Dependency groups =================================================
+[dependency-groups]
+dev = [
+    'audeer >=2.2.1',
+    'audformat',
+    'dohq-artifactory >=1.0.0; python_version < "3.13"',
+    'minio',
+    'pytest',
+    'pytest-cov',
+    'sphinx',
+    'sphinx-apipages',
+    'sphinx-audeering-theme >=1.2.1',
+    'sphinx-autodoc-typehints',
+    'sphinx-copybutton',
+    'sybil',
+    'toml',
+]
+test-filesystem = [
+    'audformat',
+    'pytest',
+    'pytest-cov',
+]
+
+
 # ===== BUILD-SYSTEM ======================================================
 #
 # Requirements for building the Python package
