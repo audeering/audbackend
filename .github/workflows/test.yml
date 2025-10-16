@@ -38,7 +38,7 @@ jobs:
 
     - name: Test file-system only package
       run: |
-        uv run pytest --cov-fail-under=0 tests/test_backend_filesystem_only.py tests/test_backend_filesystem.py
+        uv run --no-default-groups --isolated --with pytest --with pytest-cov --with audformat pytest --cov-fail-under=0 tests/test_backend_filesystem_only.py tests/test_backend_filesystem.py 
 
     - name: Test with pytest for Python <3.13
       env:
