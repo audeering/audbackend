@@ -33,17 +33,12 @@ jobs:
     - name: Install uv
       uses: astral-sh/setup-uv@3259c6206f993105e3a61b142c2d97bf4b9ef83d
 
-    - name: Install packages with file-system backend
-      run: |
-        uv pip install --system -e .
-        uv pip install --system pytest pytest-cov sybil
+    - name: Sync Python environment
+      run: uv sync
 
     - name: Test file-system only package
       run: |
-        python -m pytest --cov-fail-under=0 tests/test_backend_filesystem_only.py tests/test_backend_filesystem.py
-
-    - name: Sync Python environment
-      run: uv sync
+        uv run pytest --cov-fail-under=0 tests/test_backend_filesystem_only.py tests/test_backend_filesystem.py
 
     - name: Test with pytest for Python <3.13
       env:
