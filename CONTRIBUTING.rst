@@ -17,7 +17,7 @@ please create an issue_.
 Development Installation
 ------------------------
 
-Instead of pip-installing the latest release from PyPI_,
+Instead of installing the latest release from PyPI_,
 you should get the newest development version from Github_::
 
     git clone https://github.com/audeering/audbackend/
