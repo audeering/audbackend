@@ -438,7 +438,7 @@ class Base:
         validate: bool = False,
         verbose: bool = False,
         num_workers: int = 1,
-        chunk_size: int = None,
+        chunk_size: int | None = None,
     ) -> list[str]:
         r"""Get archive from backend and extract.
 
@@ -464,9 +464,7 @@ class Base:
             validate: verify archive was successfully
                 retrieved from the backend
             verbose: show debug messages
-            num_workers: number of parallel jobs.
-                If ``None`` or ``1``,
-                no parallelization is used
+            num_workers: number of parallel jobs
             chunk_size: chunk size in bytes for downloading.
                 If ``None``,
                 the backend decides on a suitable chunk size
@@ -522,7 +520,7 @@ class Base:
         dst_path: str,
         verbose: bool,
         num_workers: int,
-        chunk_size: int,
+        chunk_size: int | None,
     ):  # pragma: no cover
         r"""Get file from backend."""
         raise NotImplementedError()
@@ -535,7 +533,7 @@ class Base:
         validate: bool = False,
         verbose: bool = False,
         num_workers: int = 1,
-        chunk_size: int = None,
+        chunk_size: int | None = None,
     ) -> str:
         r"""Get file from backend.
 
@@ -563,9 +561,7 @@ class Base:
             validate: verify file was successfully
                 retrieved from the backend
             verbose: show debug messages
-            num_workers: number of parallel jobs.
-                If ``None`` or ``1``,
-                no parallelization is used
+            num_workers: number of parallel jobs
             chunk_size: chunk size in bytes for downloading.
                 If ``None``,
                 the backend decides on a suitable chunk size
