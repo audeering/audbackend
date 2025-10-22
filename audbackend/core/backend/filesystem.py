@@ -14,6 +14,13 @@ class FileSystem(Base):
     Args:
         host: host directory
         repository: repository name
+        num_workers: number of parallel jobs for downloads.
+            Not used for file system backend.
+            Defaults to ``1``
+        chunk_size: chunk size in bytes for downloading.
+            Not used for file system backend.
+            If ``None``,
+            defaults to ``4096`` bytes
 
     """
 
@@ -21,8 +28,16 @@ class FileSystem(Base):
         self,
         host: str,
         repository: str,
+        *,
+        num_workers: int = 1,
+        chunk_size: int | None = None,
     ):
-        super().__init__(host, repository)
+        super().__init__(
+            host,
+            repository,
+            num_workers=num_workers,
+            chunk_size=chunk_size,
+        )
 
         self._root = audeer.path(host, repository) + os.sep
 
@@ -115,8 +130,6 @@ class FileSystem(Base):
         src_path: str,
         dst_path: str,
         verbose: bool,
-        num_workers: int,
-        chunk_size: int,
     ):
         r"""Get file from backend."""
         src_path = self._expand(src_path)

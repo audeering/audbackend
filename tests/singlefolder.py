@@ -54,8 +54,16 @@ class SingleFolder(audbackend.backend.Base):
         self,
         host: str,
         repository: str,
+        *,
+        num_workers: int = 1,
+        chunk_size: int | None = None,
     ):
-        super().__init__(host, repository)
+        super().__init__(
+            host,
+            repository,
+            num_workers=num_workers,
+            chunk_size=chunk_size,
+        )
 
         self._root = audeer.mkdir(audeer.path(host, repository))
         self._path = audeer.path(self._root, ".map")
@@ -116,8 +124,6 @@ class SingleFolder(audbackend.backend.Base):
         src_path: str,
         dst_path: str,
         verbose: bool,
-        num_workers: int,
-        chunk_size: int,
     ):
         with self.Map(self._path, self._lock) as m:
             shutil.copy(m[src_path][0], dst_path)

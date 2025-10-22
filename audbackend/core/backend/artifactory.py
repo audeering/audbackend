@@ -75,6 +75,12 @@ class Artifactory(Base):
         authentication: username, password / API key / access token tuple.
             If ``None``,
             it requests it by calling :meth:`get_authentication`
+        num_workers: number of parallel jobs for downloads.
+            Not used for Artifactory backend.
+            Defaults to ``1``
+        chunk_size: chunk size in bytes for downloading.
+            If ``None``,
+            defaults to ``4096`` bytes
 
     """  # noqa: E501
 
@@ -84,8 +90,16 @@ class Artifactory(Base):
         repository: str,
         *,
         authentication: tuple[str, str] = None,
+        num_workers: int = 1,
+        chunk_size: int | None = None,
     ):
-        super().__init__(host, repository, authentication=authentication)
+        super().__init__(
+            host,
+            repository,
+            authentication=authentication,
+            num_workers=num_workers,
+            chunk_size=chunk_size,
+        )
 
         if authentication is None:
             self.authentication = self.get_authentication(host)
@@ -264,13 +278,10 @@ class Artifactory(Base):
         src_path: str,
         dst_path: str,
         verbose: bool,
-        num_workers: int,
-        chunk_size: int,
     ):
         r"""Get file from backend."""
         src_path = self.path(src_path)
-        if chunk_size is None:
-            chunk_size = 4 * 1024
+        chunk_size = self.chunk_size if self.chunk_size is not None else 4 * 1024
         _download(src_path, dst_path, chunk=chunk_size, verbose=verbose)
 
     def _ls(
