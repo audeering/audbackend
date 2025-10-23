@@ -1,3 +1,4 @@
+import filecmp
 import os
 
 import pytest
@@ -5,6 +6,18 @@ import pytest
 import audeer
 
 import audbackend
+
+
+def create_file_exact_size(filename, size_mb):
+    """Create binary file of given size."""
+    size_bytes = size_mb * 1024 * 1024
+    with open(filename, "wb") as f:
+        remaining = size_bytes
+        chunk_size = 8192  # Write in 8KB chunks
+        while remaining > 0:
+            to_write = min(chunk_size, remaining)
+            f.write(b"A" * to_write)  # Can use any byte pattern
+            remaining -= to_write
 
 
 @pytest.fixture(scope="function", autouse=False)
@@ -357,3 +370,31 @@ def test_open_close(host, repository):
     audbackend.backend.Minio.create(host, repository)
     backend.open()
     backend.close()
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.Minio, audbackend.interface.Unversioned)],
+    indirect=True,
+)
+def test_get_file(tmpdir, interface):
+    r"""Test getting file.
+
+    Args:
+        tmpdir: tmpdir fixture
+        interface: interface fixture
+
+    """
+    tmp_path = audeer.path(tmpdir, "file.bin")
+    create_file_exact_size(tmp_path, 2)
+    backend_path = "/file.bin"
+    interface.put_file(tmp_path, backend_path)
+
+    dst_path1 = audeer.path(tmpdir, "dst1.bin")
+    dst_path2 = audeer.path(tmpdir, "dst2.bin")
+    interface.get_file(backend_path, dst_path1, num_workers=1)
+    interface.get_file(backend_path, dst_path2, num_workers=2)
+
+    # Check both downloaded files are the same
+    assert os.path.getsize(dst_path1) == os.path.getsize(dst_path2)
+    assert filecmp.cmp(dst_path1, dst_path2)
