@@ -5,7 +5,6 @@ import os
 import tempfile
 
 import minio
-import tqdm
 
 import audeer
 
@@ -269,7 +268,7 @@ class Minio(Base):
         num_workers: int,
         verbose: bool,
         *,
-        chunk_size: int = 1024 * 1024,  # 50MB
+        chunk_size: int = 1024 * 1024,  # 1MB
     ):
         r"""Get file from backend."""
         src_path = self.path(src_path)
@@ -279,20 +278,16 @@ class Minio(Base):
         with open(dst_path, "wb") as f:
             f.truncate(src_size)
 
-        pbar = audeer.progress_bar(
-            total=src_size,
-            disable=not verbose,
-            desc=f"Download {os.path.basename(str(src_path))}",
-            #maximum_refresh_time=1,
-        )
         params = []
         for offset in range(0, src_size, chunk_size):
             length = min(chunk_size, src_size - offset)
-            params.append(([src_path, dst_path, offset, length, pbar], {}))
+            params.append(([src_path, dst_path, offset, length], {}))
         audeer.run_tasks(
             self._get_file_part,
             params,
             num_workers=num_workers,
+            progress_bar=verbose,
+            task_description=f"Download {os.path.basename(str(src_path))}",
         )
 
     def _get_file_part(
@@ -301,9 +296,9 @@ class Minio(Base):
         dst_path: str,
         offset: int,
         length: int,
-        pbar: tqdm.std.tqdm,
     ):
         """Get part of file from backend."""
+        response = None
         try:
             # Fetch byte range from remote file
             response = self._client.get_object(
@@ -317,12 +312,12 @@ class Minio(Base):
             with open(dst_path, "r+b") as fp:
                 fp.seek(offset)
                 fp.write(data)
-            pbar.update(len(data))
         except Exception as e:  # pragma: no cover
             raise RuntimeError(f"Error downloading file: {e}")
         finally:
-            response.close()
-            response.release_conn()
+            if response is not None:
+                response.close()
+                response.release_conn()
 
     def _ls(
         self,
