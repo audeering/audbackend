@@ -69,5 +69,6 @@ def main():
         df.to_csv(f"results-{name}.csv", index=False)
         df.to_markdown(f"results-{name}.md", index=False)
 
+
 if __name__ == "__main__":
     main()
