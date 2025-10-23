@@ -176,6 +176,7 @@ class Base:
         self,
         src_path: str,
         dst_path: str,
+        num_workers: int,
         verbose: bool,
     ):
         r"""Copy file on backend.
@@ -189,7 +190,12 @@ class Base:
         """
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = audeer.path(tmp, "~")
-            tmp_path = self.get_file(src_path, tmp_path, verbose=verbose)
+            tmp_path = self.get_file(
+                src_path,
+                tmp_path,
+                num_workers=num_workers,
+                verbose=verbose,
+            )
             self.put_file(tmp_path, dst_path, verbose=verbose)
 
     def copy_file(
@@ -197,6 +203,7 @@ class Base:
         src_path: str,
         dst_path: str,
         *,
+        num_workers: int = 1,
         validate: bool = False,
         verbose: bool = False,
     ):
@@ -219,6 +226,7 @@ class Base:
         Args:
             src_path: source path to file on backend
             dst_path: destination path to file on backend
+            num_workers: number of parallel jobs
             validate: verify file was successfully copied
             verbose: show debug messages
 
@@ -246,6 +254,7 @@ class Base:
                 self._copy_file,
                 src_path,
                 dst_path,
+                num_workers,
                 verbose,
             )
 
@@ -502,10 +511,9 @@ class Base:
             self.get_file(
                 src_path,
                 local_archive,
+                num_workers=num_workers,
                 validate=validate,
                 verbose=verbose,
-                num_workers=num_workers,
-                chunk_size=chunk_size,
             )
 
             return audeer.extract_archive(
@@ -518,9 +526,8 @@ class Base:
         self,
         src_path: str,
         dst_path: str,
-        verbose: bool,
         num_workers: int,
-        chunk_size: int | None,
+        verbose: bool,
     ):  # pragma: no cover
         r"""Get file from backend."""
         raise NotImplementedError()
@@ -530,10 +537,9 @@ class Base:
         src_path: str,
         dst_path: str,
         *,
+        num_workers: int = 1,
         validate: bool = False,
         verbose: bool = False,
-        num_workers: int = 1,
-        chunk_size: int | None = None,
     ) -> str:
         r"""Get file from backend.
 
@@ -558,13 +564,10 @@ class Base:
         Args:
             src_path: path to file on backend
             dst_path: destination path to local file
+            num_workers: number of parallel jobs
             validate: verify file was successfully
                 retrieved from the backend
             verbose: show debug messages
-            num_workers: number of parallel jobs
-            chunk_size: chunk size in bytes for downloading.
-                If ``None``,
-                the backend decides on a suitable chunk size
 
         Returns:
             full path to local file
@@ -610,9 +613,8 @@ class Base:
                     self._get_file,
                     src_path,
                     tmp_path,
-                    verbose,
                     num_workers,
-                    chunk_size,
+                    verbose,
                 )
                 audeer.move_file(tmp_path, dst_path)
 
@@ -756,6 +758,7 @@ class Base:
         self,
         src_path: str,
         dst_path: str,
+        num_workers: int,
         verbose: bool,
     ):
         r"""Move file on backend.
@@ -767,7 +770,7 @@ class Base:
         if backend supports a native way to move files.
 
         """
-        self.copy_file(src_path, dst_path, verbose=verbose)
+        self.copy_file(src_path, dst_path, num_workers=num_workers, verbose=verbose)
         self.remove_file(src_path)
 
     def move_file(
@@ -775,6 +778,7 @@ class Base:
         src_path: str,
         dst_path: str,
         *,
+        num_workers: int = 1,
         validate: bool = False,
         verbose: bool = False,
     ):
@@ -801,6 +805,7 @@ class Base:
         Args:
             src_path: source path to file on backend
             dst_path: destination path to file on backend
+            num_workers: number of parallel jobs
             validate: verify file was successfully moved
             verbose: show debug messages
 
@@ -830,6 +835,7 @@ class Base:
                 self.copy_file(
                     src_path,
                     dst_path,
+                    num_workers=num_workers,
                     validate=True,
                     verbose=verbose,
                 )
@@ -839,6 +845,7 @@ class Base:
                     self._move_file,
                     src_path,
                     dst_path,
+                    num_workers,
                     verbose,
                 )
         else:
