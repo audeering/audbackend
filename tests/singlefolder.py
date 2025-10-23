@@ -115,9 +115,8 @@ class SingleFolder(audbackend.backend.Base):
         self,
         src_path: str,
         dst_path: str,
-        verbose: bool,
         num_workers: int,
-        chunk_size: int,
+        verbose: bool,
     ):
         with self.Map(self._path, self._lock) as m:
             shutil.copy(m[src_path][0], dst_path)
