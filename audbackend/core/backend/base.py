@@ -444,10 +444,9 @@ class Base:
         dst_root: str,
         *,
         tmp_root: str = None,
+        num_workers: int = 1,
         validate: bool = False,
         verbose: bool = False,
-        num_workers: int = 1,
-        chunk_size: int | None = None,
     ) -> list[str]:
         r"""Get archive from backend and extract.
 
@@ -470,13 +469,10 @@ class Base:
             dst_root: local destination directory
             tmp_root: directory under which archive is temporarily extracted.
                 Defaults to temporary directory of system
+            num_workers: number of parallel jobs
             validate: verify archive was successfully
                 retrieved from the backend
             verbose: show debug messages
-            num_workers: number of parallel jobs
-            chunk_size: chunk size in bytes for downloading.
-                If ``None``,
-                the backend decides on a suitable chunk size
 
         Returns:
             extracted files
