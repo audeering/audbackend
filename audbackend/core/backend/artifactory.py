@@ -209,6 +209,7 @@ class Artifactory(Base):
         self,
         src_path: str,
         dst_path: str,
+        num_workers: int,
         verbose: bool,
     ):
         r"""Copy file on backend."""
@@ -263,15 +264,12 @@ class Artifactory(Base):
         self,
         src_path: str,
         dst_path: str,
-        verbose: bool,
         num_workers: int,
-        chunk_size: int,
+        verbose: bool,
     ):
         r"""Get file from backend."""
         src_path = self.path(src_path)
-        if chunk_size is None:
-            chunk_size = 4 * 1024
-        _download(src_path, dst_path, chunk=chunk_size, verbose=verbose)
+        _download(src_path, dst_path, verbose=verbose)
 
     def _ls(
         self,
@@ -291,6 +289,7 @@ class Artifactory(Base):
         self,
         src_path: str,
         dst_path: str,
+        num_workers: int,
         verbose: bool,
     ):
         r"""Move file on backend."""

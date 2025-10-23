@@ -53,6 +53,7 @@ class FileSystem(Base):
         self,
         src_path: str,
         dst_path: str,
+        num_workers: int,
         verbose: bool,
     ):
         r"""Copy file on backend."""
@@ -114,9 +115,8 @@ class FileSystem(Base):
         self,
         src_path: str,
         dst_path: str,
-        verbose: bool,
         num_workers: int,
-        chunk_size: int,
+        verbose: bool,
     ):
         r"""Get file from backend."""
         src_path = self._expand(src_path)
@@ -144,6 +144,7 @@ class FileSystem(Base):
         self,
         src_path: str,
         dst_path: str,
+        num_workers: int,
         verbose: bool,
     ):
         r"""Move file on backend."""
