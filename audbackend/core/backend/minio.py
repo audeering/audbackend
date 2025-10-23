@@ -283,7 +283,7 @@ class Minio(Base):
             total=src_size,
             disable=not verbose,
             desc=f"Download {os.path.basename(str(src_path))}",
-            maximum_refresh_time=1,
+            #maximum_refresh_time=1,
         )
         params = []
         for offset in range(0, src_size, chunk_size):
