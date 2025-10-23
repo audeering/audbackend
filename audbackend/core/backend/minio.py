@@ -32,11 +32,6 @@ class Minio(Base):
             when using TLS for the connection,
             and ``False`` otherwise,
             e.g. when using a `local MinIO server`_.
-        num_workers: number of parallel jobs for downloads.
-            Defaults to ``1``
-        chunk_size: chunk size in bytes for downloading.
-            If ``None``,
-            defaults to ``4096`` bytes
         **kwargs: keyword arguments passed on to `minio.Minio`_
 
     .. _local MinIO server: https://min.io/docs/minio/container/index.html
@@ -66,17 +61,9 @@ class Minio(Base):
         *,
         authentication: tuple[str, str] = None,
         secure: bool = None,
-        num_workers: int = 1,
-        chunk_size: int | None = None,
         **kwargs,
     ):
-        super().__init__(
-            host,
-            repository,
-            authentication=authentication,
-            num_workers=num_workers,
-            chunk_size=chunk_size,
-        )
+        super().__init__(host, repository, authentication=authentication)
 
         if authentication is None:
             self.authentication = self.get_authentication(host)
@@ -224,16 +211,9 @@ class Minio(Base):
         if self._size(src_path) / 1024 / 1024 / 1024 >= 4.9:
             with tempfile.TemporaryDirectory() as tmp_dir:
                 tmp_path = audeer.path(tmp_dir, os.path.basename(src_path))
-                # Save original values
-                orig_num_workers = self.num_workers
-                orig_chunk_size = self.chunk_size
-                # Use sequential download for copy
-                self.num_workers = 1
-                self.chunk_size = None
-                self._get_file(src_path, tmp_path, verbose)
-                # Restore original values
-                self.num_workers = orig_num_workers
-                self.chunk_size = orig_chunk_size
+                self._get_file(
+                    src_path, tmp_path, verbose, num_workers=1, chunk_size=None
+                )
                 self._put_file(tmp_path, dst_path, checksum, verbose)
         else:
             self._client.copy_object(
@@ -289,17 +269,20 @@ class Minio(Base):
         src_path: str,
         dst_path: str,
         verbose: bool,
+        num_workers: int,
+        chunk_size: int,
     ):
         r"""Get file from backend."""
         src_path = self.path(src_path)
         src_size = self._client.stat_object(self.repository, src_path).size
 
-        chunk_size = self.chunk_size if self.chunk_size is not None else 4 * 1024
+        if chunk_size is None:
+            chunk_size = 4 * 1024
 
         # Use parallel download if num_workers > 1
-        if self.num_workers > 1:
+        if num_workers > 1:
             self._get_file_parallel(
-                src_path, dst_path, src_size, self.num_workers, chunk_size, verbose
+                src_path, dst_path, src_size, num_workers, chunk_size, verbose
             )
         else:
             self._get_file_sequential(src_path, dst_path, src_size, chunk_size, verbose)

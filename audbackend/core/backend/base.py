@@ -20,17 +20,6 @@ class Base:
 
     Derive from this class to implement a new backend.
 
-    Args:
-        host: host address
-        repository: repository name
-        authentication: object used for authentication,
-            e.g. username, password tuple
-        num_workers: number of parallel jobs for downloads.
-            Defaults to ``1``
-        chunk_size: chunk size in bytes for downloading.
-            If ``None``,
-            the backend decides on a suitable chunk size
-
     """
 
     def __init__(
@@ -39,8 +28,6 @@ class Base:
         repository: str,
         *,
         authentication: object = None,
-        num_workers: int = 1,
-        chunk_size: int | None = None,
     ):
         self.host = host
         r"""Host path."""
@@ -48,14 +35,6 @@ class Base:
         r"""Repository name."""
         self.authentication = authentication
         r"""Object used for authentication, e.g. username, password tuple."""
-        self.num_workers = num_workers
-        r"""Number of parallel jobs for downloads."""
-        self.chunk_size = chunk_size
-        r"""Chunk size in bytes for downloading.
-
-        If ``None``, backend decides on suitable chunk size.
-
-        """
         self.opened = False
         r"""If a connection to the repository has been established."""
 
@@ -210,9 +189,8 @@ class Base:
         """
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = audeer.path(tmp, "~")
-            self._get_file(src_path, tmp_path, verbose)
-            checksum = audeer.md5(tmp_path)
-            self._put_file(tmp_path, dst_path, checksum, verbose)
+            tmp_path = self.get_file(src_path, tmp_path, verbose=verbose)
+            self.put_file(tmp_path, dst_path, verbose=verbose)
 
     def copy_file(
         self,
@@ -459,6 +437,8 @@ class Base:
         tmp_root: str = None,
         validate: bool = False,
         verbose: bool = False,
+        num_workers: int = 1,
+        chunk_size: int | None = None,
     ) -> list[str]:
         r"""Get archive from backend and extract.
 
@@ -484,6 +464,10 @@ class Base:
             validate: verify archive was successfully
                 retrieved from the backend
             verbose: show debug messages
+            num_workers: number of parallel jobs
+            chunk_size: chunk size in bytes for downloading.
+                If ``None``,
+                the backend decides on a suitable chunk size
 
         Returns:
             extracted files
@@ -520,6 +504,8 @@ class Base:
                 local_archive,
                 validate=validate,
                 verbose=verbose,
+                num_workers=num_workers,
+                chunk_size=chunk_size,
             )
 
             return audeer.extract_archive(
@@ -533,6 +519,8 @@ class Base:
         src_path: str,
         dst_path: str,
         verbose: bool,
+        num_workers: int,
+        chunk_size: int | None,
     ):  # pragma: no cover
         r"""Get file from backend."""
         raise NotImplementedError()
@@ -544,6 +532,8 @@ class Base:
         *,
         validate: bool = False,
         verbose: bool = False,
+        num_workers: int = 1,
+        chunk_size: int | None = None,
     ) -> str:
         r"""Get file from backend.
 
@@ -571,6 +561,10 @@ class Base:
             validate: verify file was successfully
                 retrieved from the backend
             verbose: show debug messages
+            num_workers: number of parallel jobs
+            chunk_size: chunk size in bytes for downloading.
+                If ``None``,
+                the backend decides on a suitable chunk size
 
         Returns:
             full path to local file
@@ -617,6 +611,8 @@ class Base:
                     src_path,
                     tmp_path,
                     verbose,
+                    num_workers,
+                    chunk_size,
                 )
                 audeer.move_file(tmp_path, dst_path)
 
