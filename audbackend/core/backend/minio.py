@@ -198,6 +198,7 @@ class Minio(Base):
         self,
         src_path: str,
         dst_path: str,
+        num_workers: int,
         verbose: bool,
     ):
         r"""Copy file on backend."""
@@ -209,7 +210,7 @@ class Minio(Base):
         if self._size(src_path) / 1024 / 1024 / 1024 >= 4.9:
             with tempfile.TemporaryDirectory() as tmp_dir:
                 tmp_path = audeer.path(tmp_dir, os.path.basename(src_path))
-                self._get_file(src_path, tmp_path, verbose)
+                self._get_file(src_path, tmp_path, num_workers, verbose)
                 self._put_file(tmp_path, dst_path, checksum, verbose)
         else:
             self._client.copy_object(
@@ -264,33 +265,57 @@ class Minio(Base):
         self,
         src_path: str,
         dst_path: str,
+        num_workers: int,
         verbose: bool,
+        *,
+        chunk_size: int = 1024 * 1024,  # 1MB
     ):
         r"""Get file from backend."""
         src_path = self.path(src_path)
         src_size = self._client.stat_object(self.repository, src_path).size
-        chunk = 4 * 1024
-        with audeer.progress_bar(total=src_size, disable=not verbose) as pbar:
-            desc = audeer.format_display_message(
-                f"Download {os.path.basename(str(src_path))}", pbar=True
-            )
-            pbar.set_description_str(desc)
-            pbar.refresh()
 
-            dst_size = 0
-            try:
-                response = self._client.get_object(self.repository, src_path)
-                with open(dst_path, "wb") as dst_fp:
-                    while src_size > dst_size:
-                        data = response.read(chunk)
-                        n_data = len(data)
-                        if n_data > 0:
-                            dst_fp.write(data)
-                            dst_size += n_data
-                            pbar.update(n_data)
-            except Exception as e:  # pragma: no cover
-                raise RuntimeError(f"Error downloading file: {e}")
-            finally:
+        # Pre-allocate local file of same size
+        with open(dst_path, "wb") as f:
+            f.truncate(src_size)
+
+        params = []
+        for offset in range(0, src_size, chunk_size):
+            length = min(chunk_size, src_size - offset)
+            params.append(([src_path, dst_path, offset, length], {}))
+        audeer.run_tasks(
+            self._get_file_part,
+            params,
+            num_workers=num_workers,
+            progress_bar=verbose,
+            task_description=f"Download {os.path.basename(str(src_path))}",
+        )
+
+    def _get_file_part(
+        self,
+        src_path: str,
+        dst_path: str,
+        offset: int,
+        length: int,
+    ):
+        """Get part of file from backend."""
+        response = None
+        try:
+            # Fetch byte range from remote file
+            response = self._client.get_object(
+                self.repository,
+                src_path,
+                offset=offset,
+                length=length,
+            )
+            data = response.read()
+            # Write into correct spot in local file
+            with open(dst_path, "r+b") as fp:
+                fp.seek(offset)
+                fp.write(data)
+        except Exception as e:  # pragma: no cover
+            raise RuntimeError(f"Error downloading file: {e}")
+        finally:
+            if response is not None:
                 response.close()
                 response.release_conn()
 
@@ -311,10 +336,11 @@ class Minio(Base):
         self,
         src_path: str,
         dst_path: str,
+        num_workers: int,
         verbose: bool,
     ):
         r"""Move file on backend."""
-        self._copy_file(src_path, dst_path, verbose)
+        self._copy_file(src_path, dst_path, num_workers, verbose)
         self._remove_file(src_path)
 
     def _open(
