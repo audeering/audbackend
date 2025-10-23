@@ -269,7 +269,7 @@ class Minio(Base):
         num_workers: int,
         verbose: bool,
         *,
-        chunk_size: int = 50 * 1024 * 1024,  # 50MB
+        chunk_size: int = 1024 * 1024,  # 50MB
     ):
         r"""Get file from backend."""
         src_path = self.path(src_path)
