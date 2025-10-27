@@ -271,120 +271,59 @@ class Minio(Base):
         r"""Get file from backend."""
         src_path = self.path(src_path)
         src_size = self._client.stat_object(self.repository, src_path).size
-        desc = f"Download {os.path.basename(str(src_path))}"
+
+        # Setup progress bar
+        desc = audeer.format_display_message(
+            f"Download {os.path.basename(str(src_path))}",
+            pbar=verbose,
+        )
+        pbar = audeer.progress_bar(total=src_size, desc=desc, disable=not verbose)
 
         if num_workers == 1:
-            self._download_single(src_path, dst_path, src_size, desc, verbose)
+            # Simple single-threaded download
+            self._download_file(src_path, dst_path, pbar)
         else:
-            self._download_parallel(
-                src_path, dst_path, src_size, desc, num_workers, verbose
-            )
+            # Multi-threaded download with pre-allocated file
+            with open(dst_path, "wb") as f:
+                f.truncate(src_size)
 
-    def _download_single(
+            # Create and run download tasks
+            tasks = []
+            chunk_size = src_size // num_workers
+            for i in range(num_workers):
+                offset = i * chunk_size
+                length = chunk_size if i < num_workers - 1 else src_size - offset
+                tasks.append(([src_path, dst_path, pbar, offset, length], {}))
+
+            audeer.run_tasks(self._download_file, tasks, num_workers=num_workers)
+
+    def _download_file(
         self,
         src_path: str,
         dst_path: str,
-        src_size: int,
-        desc: str,
-        verbose: bool,
-    ):
-        """Download file in a single stream."""
-        chunk_size = 4 * 1024  # 4 KB
-
-        desc = audeer.format_display_message(desc, pbar=verbose)
-        pbar = audeer.progress_bar(total=src_size, desc=desc, disable=not verbose)
-
-        with pbar:
-            response = self._client.get_object(self.repository, src_path)
-            try:
-                with open(dst_path, "wb") as f:
-                    while True:
-                        data = response.read(chunk_size)
-                        if not data:
-                            break
-                        f.write(data)
-                        pbar.update(len(data))
-            finally:
-                response.close()
-                response.release_conn()
-
-    def _download_parallel(
-        self,
-        src_path: str,
-        dst_path: str,
-        src_size: int,
-        desc: str,
-        num_workers: int,
-        verbose: bool,
-    ):
-        """Get file from backend using multiple workers."""
-        desc = audeer.format_display_message(desc, pbar=verbose)
-        pbar = audeer.progress_bar(total=src_size, desc=desc, disable=not verbose)
-
-        # Pre-allocate local file of same size
-        with open(dst_path, "wb") as f:
-            f.truncate(src_size)
-
-        # Create download tasks for each chunk
-        tasks = []
-        for offset, length in self._chunk_file(src_size, num_workers):
-            tasks.append(([src_path, dst_path, offset, length, pbar], {}))
-        audeer.run_tasks(
-            self._download_chunk,
-            tasks,
-            num_workers=num_workers,
-        )
-
-    def _chunk_file(
-        self,
-        src_size: int,
-        num_chunks: int,
-    ) -> tuple[int, int]:
-        """Generate (offset, chunk_size) pairs for a fixed number of chunks."""
-        base_chunk_size = src_size // num_chunks
-        remainder = src_size % num_chunks
-
-        offset = 0
-        for i in range(num_chunks):
-            # First 'remainder' chunks get an extra byte
-            chunk_size = base_chunk_size + (1 if i < remainder else 0)
-            yield offset, chunk_size
-            offset += chunk_size
-
-    def _download_chunk(
-        self,
-        src_path: str,
-        dst_path: str,
-        offset: int,
-        length: int,
         pbar,
+        offset: int = 0,
+        length: int | None = None,
     ):
-        """Get part of file from backend."""
-        # Fetch byte range from remote file
+        """Download file or part of file."""
         chunk_size = 4 * 1024  # 4 KB
 
-        # desc = audeer.format_display_message(desc, pbar=verbose)
-        # pbar = audeer.progress_bar(total=src_size, desc=desc, disable=not verbose)
+        # Get the data stream
+        kwargs = {"offset": offset, "length": length} if length else {}
+        response = self._client.get_object(self.repository, src_path, **kwargs)
 
-        with pbar:
-            response = self._client.get_object(
-                self.repository,
-                src_path,
-                offset=offset,
-                length=length,
-            )
-            try:
-                with open(dst_path, "r+b") as f:
+        try:
+            with open(dst_path, "r+b" if offset else "wb") as f:
+                if offset:
                     f.seek(offset)
-                    while True:
-                        data = response.read(chunk_size)
-                        if not data:
-                            break
+
+                with pbar:
+                    while data := response.read(chunk_size):
                         f.write(data)
                         pbar.update(len(data))
-            finally:
-                response.close()
-                response.release_conn()
+        finally:
+            response.close()
+            response.release_conn()
 
     def _ls(
         self,
