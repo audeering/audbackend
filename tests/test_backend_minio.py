@@ -1,3 +1,4 @@
+import filecmp
 import os
 
 import pytest
@@ -395,6 +396,6 @@ def test_get_file(tmpdir, interface):
     interface.get_file(backend_path, dst_path2, num_workers=2)
 
     # Check both downloaded files are the same
-    # assert os.path.getsize(dst_path1) == os.path.getsize(dst_path2)
-    # assert audeer.md5(dst_path1) == audeer.md5(dst_path2)
-    # assert filecmp.cmp(dst_path1, dst_path2, shallow=False)
+    assert os.path.getsize(dst_path1) == os.path.getsize(dst_path2)
+    assert audeer.md5(dst_path1) == audeer.md5(dst_path2)
+    assert filecmp.cmp(dst_path1, dst_path2, shallow=False)

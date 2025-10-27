@@ -341,8 +341,6 @@ class Minio(Base):
         num_chunks: int,
     ) -> tuple[int, int]:
         """Generate (offset, chunk_size) pairs for a fixed number of chunks."""
-        print(f"{src_size=}")
-        print(f"{num_chunks=}")
         base_chunk_size = src_size // num_chunks
         remainder = src_size % num_chunks
 
@@ -368,9 +366,6 @@ class Minio(Base):
         # desc = audeer.format_display_message(desc, pbar=verbose)
         # pbar = audeer.progress_bar(total=src_size, desc=desc, disable=not verbose)
 
-        print(f"{offset=}")
-        print(f"{length=}")
-        print()
         with pbar:
             response = self._client.get_object(
                 self.repository,
@@ -379,7 +374,7 @@ class Minio(Base):
                 length=length,
             )
             try:
-                with open(dst_path, "wb") as f:
+                with open(dst_path, "r+b") as f:
                     f.seek(offset)
                     while True:
                         data = response.read(chunk_size)
