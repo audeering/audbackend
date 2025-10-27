@@ -318,7 +318,7 @@ class Minio(Base):
         verbose: bool,
     ):
         """Get file from backend using multiple workers."""
-        chunk_size = 1024 * 1024  # 1 MB
+        chunk_size = 10 * 1024 * 1024  # 10 MB
 
         # Pre-allocate local file of same size
         with open(dst_path, "wb") as f:
