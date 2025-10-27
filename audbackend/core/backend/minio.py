@@ -318,8 +318,8 @@ class Minio(Base):
         verbose: bool,
     ):
         """Get file from backend using multiple workers."""
-        # chunk_size = 10 * 1024 * 1024  # 10 MB
-        chunk_size = 4 * 1024  # 4 KB
+        desc = audeer.format_display_message(desc, pbar=verbose)
+        pbar = audeer.progress_bar(total=src_size, desc=desc, disable=not verbose)
 
         # Pre-allocate local file of same size
         with open(dst_path, "wb") as f:
@@ -327,16 +327,31 @@ class Minio(Base):
 
         # Create download tasks for each chunk
         tasks = []
-        for offset in range(0, src_size, chunk_size):
-            length = min(chunk_size, src_size - offset)
-            tasks.append(([src_path, dst_path, offset, length], {}))
+        for offset, length in self._chunk_file(src_size, num_workers):
+            tasks.append(([src_path, dst_path, offset, length, pbar], {}))
         audeer.run_tasks(
             self._download_chunk,
             tasks,
             num_workers=num_workers,
-            progress_bar=verbose,
-            task_description=desc,
         )
+
+    def _chunk_file(
+        self,
+        src_size: int,
+        num_chunks: int,
+    ) -> tuple[int, int]:
+        """Generate (offset, chunk_size) pairs for a fixed number of chunks."""
+        print(f"{src_size=}")
+        print(f"{num_chunks=}")
+        base_chunk_size = src_size // num_chunks
+        remainder = src_size % num_chunks
+
+        offset = 0
+        for i in range(num_chunks):
+            # First 'remainder' chunks get an extra byte
+            chunk_size = base_chunk_size + (1 if i < remainder else 0)
+            yield offset, chunk_size
+            offset += chunk_size
 
     def _download_chunk(
         self,
@@ -344,23 +359,37 @@ class Minio(Base):
         dst_path: str,
         offset: int,
         length: int,
+        pbar,
     ):
         """Get part of file from backend."""
         # Fetch byte range from remote file
-        response = self._client.get_object(
-            self.repository,
-            src_path,
-            offset=offset,
-            length=length,
-        )
-        try:
-            data = response.read()
-            with open(dst_path, "r+b") as f:
-                f.seek(offset)
-                f.write(data)
-        finally:
-            response.close()
-            response.release_conn()
+        chunk_size = 4 * 1024  # 4 KB
+
+        # desc = audeer.format_display_message(desc, pbar=verbose)
+        # pbar = audeer.progress_bar(total=src_size, desc=desc, disable=not verbose)
+
+        print(f"{offset=}")
+        print(f"{length=}")
+        print()
+        with pbar:
+            response = self._client.get_object(
+                self.repository,
+                src_path,
+                offset=offset,
+                length=length,
+            )
+            try:
+                with open(dst_path, "wb") as f:
+                    f.seek(offset)
+                    while True:
+                        data = response.read(chunk_size)
+                        if not data:
+                            break
+                        f.write(data)
+                        pbar.update(len(data))
+            finally:
+                response.close()
+                response.release_conn()
 
     def _ls(
         self,
