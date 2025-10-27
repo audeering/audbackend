@@ -267,30 +267,77 @@ class Minio(Base):
         dst_path: str,
         num_workers: int,
         verbose: bool,
-        *,
-        chunk_size: int = 1024 * 1024,  # 1MB
     ):
         r"""Get file from backend."""
         src_path = self.path(src_path)
         src_size = self._client.stat_object(self.repository, src_path).size
+        desc = f"Download {os.path.basename(str(src_path))}"
+
+        if num_workers == 1:
+            self._download_single(src_path, dst_path, src_size, desc, verbose)
+        else:
+            self._download_parallel(
+                src_path, dst_path, src_size, desc, num_workers, verbose
+            )
+
+    def _download_single(
+        self,
+        src_path: str,
+        dst_path: str,
+        src_size: int,
+        desc: str,
+        verbose: bool,
+    ):
+        """Download file in a single stream."""
+        chunk_size = 4 * 1024  # 4 KB
+
+        desc = audeer.format_display_message(desc, pbar=verbose)
+        pbar = audeer.progress_bar(total=src_size, desc=desc, disable=not verbose)
+
+        with pbar:
+            response = self._client.get_object(self.repository, src_path)
+            try:
+                with open(dst_path, "wb") as f:
+                    while True:
+                        data = response.read(chunk_size)
+                        if not data:
+                            break
+                        f.write(data)
+                        pbar.update(len(data))
+            finally:
+                response.close()
+                response.release_conn()
+
+    def _download_parallel(
+        self,
+        src_path: str,
+        dst_path: str,
+        src_size: int,
+        desc: str,
+        num_workers: int,
+        verbose: bool,
+    ):
+        """Get file from backend using multiple workers."""
+        chunk_size = 1024 * 1024  # 1 MB
 
         # Pre-allocate local file of same size
         with open(dst_path, "wb") as f:
             f.truncate(src_size)
 
-        params = []
+        # Create download tasks for each chunk
+        tasks = []
         for offset in range(0, src_size, chunk_size):
             length = min(chunk_size, src_size - offset)
-            params.append(([src_path, dst_path, offset, length], {}))
+            tasks.append(([src_path, dst_path, offset, length], {}))
         audeer.run_tasks(
-            self._get_file_part,
-            params,
+            self._download_chunk,
+            tasks,
             num_workers=num_workers,
             progress_bar=verbose,
-            task_description=f"Download {os.path.basename(str(src_path))}",
+            task_description=desc,
         )
 
-    def _get_file_part(
+    def _download_chunk(
         self,
         src_path: str,
         dst_path: str,
@@ -298,26 +345,21 @@ class Minio(Base):
         length: int,
     ):
         """Get part of file from backend."""
-        response = None
+        # Fetch byte range from remote file
+        response = self._client.get_object(
+            self.repository,
+            src_path,
+            offset=offset,
+            length=length,
+        )
         try:
-            # Fetch byte range from remote file
-            response = self._client.get_object(
-                self.repository,
-                src_path,
-                offset=offset,
-                length=length,
-            )
             data = response.read()
-            # Write into correct spot in local file
-            with open(dst_path, "r+b") as fp:
-                fp.seek(offset)
-                fp.write(data)
-        except Exception as e:  # pragma: no cover
-            raise RuntimeError(f"Error downloading file: {e}")
+            with open(dst_path, "r+b") as f:
+                f.seek(offset)
+                f.write(data)
         finally:
-            if response is not None:
-                response.close()
-                response.release_conn()
+            response.close()
+            response.release_conn()
 
     def _ls(
         self,
