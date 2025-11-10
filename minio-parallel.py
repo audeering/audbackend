@@ -63,8 +63,8 @@ def main():
         backend.close()
 
     df = pd.DataFrame(ds)
-    df.to_csv(f"results.csv", index=False)
-    df.to_markdown(f"results.md", index=False)
+    df.to_csv("results.csv", index=False)
+    df.to_markdown("results.md", index=False)
 
 
 if __name__ == "__main__":
