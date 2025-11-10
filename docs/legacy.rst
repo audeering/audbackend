@@ -58,6 +58,6 @@ Afterwards we upload an TAR.GZ archive.
 And check that it is stored as expected.
 
 >>> files = audeer.list_file_names(host, recursive=True, basenames=True)
->>> import os
->>> [os.path.normpath(file) for file in files]
+>>> from pathlib import Path
+>>> [Path(file).as_posix() for file in files]
 ['repo/file/1.0.0/file-1.0.0.tar.gz']
