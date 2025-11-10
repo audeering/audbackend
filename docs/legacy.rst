@@ -57,10 +57,7 @@ Afterwards we upload an TAR.GZ archive.
 
 And check that it is stored as expected.
 
-..
-    >>> import platform
-
-.. skip: next if(platform.system() == "Windows")
-
->>> audeer.list_file_names(host, recursive=True, basenames=True)
+>>> files = audeer.list_file_names(host, recursive=True, basenames=True)
+>>> from pathlib import Path
+>>> [Path(file).as_posix() for file in files]
 ['repo/file/1.0.0/file-1.0.0.tar.gz']
