@@ -2,7 +2,9 @@ import configparser
 import getpass
 import mimetypes
 import os
+import signal
 import tempfile
+import threading
 
 import minio
 
@@ -287,15 +289,35 @@ class Minio(Base):
             with open(dst_path, "wb") as f:
                 f.truncate(src_size)
 
+            # Create cancellation event for handling interrupts
+            cancel_event = threading.Event()
+
+            # Install signal handler to set cancel_event on Ctrl+C
+            def signal_handler(signum, frame):
+                cancel_event.set()
+
+            original_handler = signal.signal(signal.SIGINT, signal_handler)
+
             # Create and run download tasks
             tasks = []
             chunk_size = src_size // num_workers
             for i in range(num_workers):
                 offset = i * chunk_size
                 length = chunk_size if i < num_workers - 1 else src_size - offset
-                tasks.append(([src_path, dst_path, pbar, offset, length], {}))
+                tasks.append(
+                    ([src_path, dst_path, pbar, offset, length, cancel_event], {})
+                )
 
-            audeer.run_tasks(self._download_file, tasks, num_workers=num_workers)
+            try:
+                audeer.run_tasks(self._download_file, tasks, num_workers=num_workers)
+            except KeyboardInterrupt:
+                # Clean up partial file
+                if os.path.exists(dst_path):
+                    os.remove(dst_path)
+                raise
+            finally:
+                # Restore original signal handler
+                signal.signal(signal.SIGINT, original_handler)
 
     def _download_file(
         self,
@@ -304,6 +326,7 @@ class Minio(Base):
         pbar,
         offset: int = 0,
         length: int | None = None,
+        cancel_event: threading.Event = None,
     ):
         """Download file or part of file."""
         chunk_size = 4 * 1024  # 4 KB
@@ -319,6 +342,9 @@ class Minio(Base):
 
                 with pbar:
                     while data := response.read(chunk_size):
+                        # Check if cancellation was requested
+                        if cancel_event and cancel_event.is_set():
+                            raise KeyboardInterrupt("Download cancelled by user")
                         f.write(data)
                         pbar.update(len(data))
         finally:
