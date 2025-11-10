@@ -177,16 +177,11 @@ we will get an error
 for all backend classes
 as it depends on the implementation).
 
-..
-    >>> import platform
-
-.. skip: next if(platform.system() == "Windows")
-
 >>> try:
 ...     backend.open()
 ... except audbackend.BackendError as ex:
 ...     print(str(ex.exception))
-[Errno 2] No such file or directory: .../host/repo/'
+[Errno 2] No such file or directory: ...'
 
 
 .. _versioned-data-on-a-file-system:
