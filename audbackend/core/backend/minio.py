@@ -286,7 +286,7 @@ class Minio(Base):
 
         # Install signal handler to set cancel_event on Ctrl+C
         def signal_handler(signum, frame):
-            cancel_event.set()
+            cancel_event.set()  # pragma: no cover
 
         original_handler = signal.signal(signal.SIGINT, signal_handler)
 
