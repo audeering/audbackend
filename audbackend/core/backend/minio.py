@@ -281,52 +281,52 @@ class Minio(Base):
         )
         pbar = audeer.progress_bar(total=src_size, desc=desc, disable=not verbose)
 
-        if num_workers == 1:
-            # Simple single-threaded download
-            self._download_file(src_path, dst_path, pbar)
-        else:
-            # Multi-threaded download with pre-allocated file
-            with open(dst_path, "wb") as f:
-                f.truncate(src_size)
+        # Create cancellation event for handling interrupts
+        cancel_event = threading.Event()
 
-            # Create cancellation event for handling interrupts
-            cancel_event = threading.Event()
+        # Install signal handler to set cancel_event on Ctrl+C
+        def signal_handler(signum, frame):
+            cancel_event.set()
 
-            # Install signal handler to set cancel_event on Ctrl+C
-            def signal_handler(signum, frame):
-                cancel_event.set()
+        original_handler = signal.signal(signal.SIGINT, signal_handler)
 
-            original_handler = signal.signal(signal.SIGINT, signal_handler)
+        try:
+            if num_workers == 1:
+                # Simple single-threaded download
+                self._download_file(src_path, dst_path, pbar, cancel_event)
+            else:
+                # Multi-threaded download with pre-allocated file
+                with open(dst_path, "wb") as f:
+                    f.truncate(src_size)
 
-            # Create and run download tasks
-            tasks = []
-            chunk_size = src_size // num_workers
-            for i in range(num_workers):
-                offset = i * chunk_size
-                length = chunk_size if i < num_workers - 1 else src_size - offset
-                tasks.append(
-                    ([src_path, dst_path, pbar, offset, length, cancel_event], {})
-                )
+                # Create and run download tasks
+                tasks = []
+                chunk_size = src_size // num_workers
+                for i in range(num_workers):
+                    offset = i * chunk_size
+                    length = chunk_size if i < num_workers - 1 else src_size - offset
+                    tasks.append(
+                        ([src_path, dst_path, pbar, cancel_event, offset, length], {})
+                    )
 
-            try:
                 audeer.run_tasks(self._download_file, tasks, num_workers=num_workers)
-            except KeyboardInterrupt:
-                # Clean up partial file
-                if os.path.exists(dst_path):
-                    os.remove(dst_path)
-                raise
-            finally:
-                # Restore original signal handler
-                signal.signal(signal.SIGINT, original_handler)
+        except KeyboardInterrupt:
+            # Clean up partial file
+            if os.path.exists(dst_path):
+                os.remove(dst_path)
+            raise
+        finally:
+            # Restore original signal handler
+            signal.signal(signal.SIGINT, original_handler)
 
     def _download_file(
         self,
         src_path: str,
         dst_path: str,
         pbar,
+        cancel_event: threading.Event = None,
         offset: int = 0,
         length: int | None = None,
-        cancel_event: threading.Event = None,
     ):
         """Download file or part of file."""
         chunk_size = 4 * 1024  # 4 KB
