@@ -334,7 +334,9 @@ class Minio(Base):
         chunk_size = 4 * 1024  # 4 KB
 
         # Get the data stream
-        kwargs = {"offset": offset, "length": length} if length else {}
+        kwargs = {"offset": offset}
+        if length is not None:
+            kwargs["length"] = length
         response = self._client.get_object(self.repository, src_path, **kwargs)
 
         try:
