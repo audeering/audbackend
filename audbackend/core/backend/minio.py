@@ -312,14 +312,12 @@ class Minio(Base):
                     )
 
                 audeer.run_tasks(self._download_file, tasks, num_workers=num_workers)
-        except KeyboardInterrupt:
-            # Clean up partial file
-            if os.path.exists(dst_path):
-                os.remove(dst_path)
-            raise
         finally:
             # Restore original signal handler
             signal.signal(signal.SIGINT, original_handler)
+            # Clean up partial file
+            if os.path.exists(dst_path):
+                os.remove(dst_path)
 
     def _download_file(
         self,
