@@ -7,7 +7,7 @@ Collection of benchmark scripts to evaluate functionality.
 Parallel file loading
 ---------------------
 
-The ``Minio`` backend support parallel loading of files.
+The ``Minio`` backend supports parallel loading of files.
 It can be benchmarked with:
 
 .. code-block:: bash
