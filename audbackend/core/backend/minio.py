@@ -274,6 +274,13 @@ class Minio(Base):
         src_path = self.path(src_path)
         src_size = self._client.stat_object(self.repository, src_path).size
 
+        # Setup progress bar
+        desc = audeer.format_display_message(
+            f"Download {os.path.basename(str(src_path))}",
+            pbar=verbose,
+        )
+        pbar = audeer.progress_bar(total=src_size, desc=desc, disable=not verbose)
+
         # Create cancellation event for handling interrupts
         cancel_event = threading.Event()
 
@@ -283,55 +290,36 @@ class Minio(Base):
 
         original_handler = signal.signal(signal.SIGINT, signal_handler)
 
-        # Setup progress bar
-        desc = audeer.format_display_message(
-            f"Download {os.path.basename(str(src_path))}",
-            pbar=verbose,
-        )
-        disable = not verbose
-        with audeer.progress_bar(total=src_size, desc=desc, disable=disable) as pbar:
-            try:
-                if num_workers == 1:
-                    # Simple single-threaded download
-                    self._download_file(src_path, dst_path, pbar, cancel_event)
-                else:
-                    # Multi-threaded download with pre-allocated file
-                    with open(dst_path, "wb") as f:
-                        f.truncate(src_size)
+        try:
+            if num_workers == 1:
+                # Simple single-threaded download
+                self._download_file(src_path, dst_path, pbar, cancel_event)
+            else:
+                # Multi-threaded download with pre-allocated file
+                with open(dst_path, "wb") as f:
+                    f.truncate(src_size)
 
-                    # Create and run download tasks
-                    tasks = []
-                    # Ensure num_workers does not exceed src_size
-                    num_workers = min(num_workers, src_size) if src_size > 0 else 1
-                    chunk_size = src_size // num_workers
-                    for i in range(num_workers):
-                        offset = i * chunk_size
-                        length = (
-                            chunk_size if i < num_workers - 1 else src_size - offset
-                        )
-                        tasks.append(
-                            (
-                                [
-                                    src_path,
-                                    dst_path,
-                                    pbar,
-                                    cancel_event,
-                                    offset,
-                                    length,
-                                ],
-                                {},
-                            )
-                        )
-
-                    audeer.run_tasks(
-                        self._download_file, tasks, num_workers=num_workers
+                # Create and run download tasks
+                tasks = []
+                # Ensure num_workers does not exceed src_size
+                num_workers = min(num_workers, src_size) if src_size > 0 else 1
+                chunk_size = src_size // num_workers
+                for i in range(num_workers):
+                    offset = i * chunk_size
+                    length = chunk_size if i < num_workers - 1 else src_size - offset
+                    tasks.append(
+                        ([src_path, dst_path, pbar, cancel_event, offset, length], {})
                     )
-            finally:
-                # Restore original signal handler
-                signal.signal(signal.SIGINT, original_handler)
-                # Clean up partial file
-                if os.path.exists(dst_path):
-                    os.remove(dst_path)
+
+                audeer.run_tasks(self._download_file, tasks, num_workers=num_workers)
+        except KeyboardInterrupt:
+            # Clean up partial file
+            if os.path.exists(dst_path):
+                os.remove(dst_path)
+            raise
+        finally:
+            # Restore original signal handler
+            signal.signal(signal.SIGINT, original_handler)
 
     def _download_file(
         self,
@@ -356,12 +344,13 @@ class Minio(Base):
                 if offset:
                     f.seek(offset)
 
-                while data := response.read(chunk_size):
-                    # Check if cancellation was requested
-                    if cancel_event and cancel_event.is_set():
-                        raise KeyboardInterrupt("Download cancelled by user")
-                    f.write(data)
-                    pbar.update(len(data))
+                with pbar:
+                    while data := response.read(chunk_size):
+                        # Check if cancellation was requested
+                        if cancel_event and cancel_event.is_set():
+                            raise KeyboardInterrupt("Download cancelled by user")
+                        f.write(data)
+                        pbar.update(len(data))
         finally:
             response.close()
             response.release_conn()
