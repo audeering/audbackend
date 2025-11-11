@@ -301,6 +301,8 @@ class Minio(Base):
 
                 # Create and run download tasks
                 tasks = []
+                # Ensure num_workers does not exceed src_size
+                num_workers = min(num_workers, src_size) if src_size > 0 else 1
                 chunk_size = src_size // num_workers
                 for i in range(num_workers):
                     offset = i * chunk_size
