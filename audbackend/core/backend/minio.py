@@ -72,7 +72,7 @@ class Minio(Base):
 
         # Open MinIO client
         self._client = minio.Minio(
-            host,
+            endpoint=host,
             access_key=self.authentication[0],
             secret_key=self.authentication[1],
             secure=secure,
