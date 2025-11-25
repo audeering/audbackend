@@ -219,7 +219,7 @@ class Minio(Base):
                 bucket_name=self.repository,
                 object_name=dst_path,
                 source=minio.commonconfig.CopySource(self.repository, src_path),
-                metadata=_metadata(checksum),
+                user_metadata=_metadata(checksum),
             )
 
     def _create(
@@ -397,7 +397,7 @@ class Minio(Base):
             object_name=dst_path,
             file_path=src_path,
             content_type=content_type,
-            metadata=_metadata(checksum),
+            user_metadata=_metadata(checksum),
         )
 
         if verbose:  # pragma: no cover
