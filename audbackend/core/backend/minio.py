@@ -177,7 +177,10 @@ class Minio(Base):
     ) -> str:
         r"""MD5 checksum of file on backend."""
         path = self.path(path)
-        meta = self._client.stat_object(self.repository, path).metadata
+        meta = self._client.stat_object(
+            bucket_name=self.repository,
+            object_name=path,
+        ).metadata
         return meta["x-amz-meta-checksum"] if "x-amz-meta-checksum" in meta else ""
 
     def _collapse(
@@ -213,9 +216,9 @@ class Minio(Base):
                 self._put_file(tmp_path, dst_path, checksum, verbose)
         else:
             self._client.copy_object(
-                self.repository,
-                dst_path,
-                minio.commonconfig.CopySource(self.repository, src_path),
+                bucket_name=self.repository,
+                object_name=dst_path,
+                source=minio.commonconfig.CopySource(self.repository, src_path),
                 metadata=_metadata(checksum),
             )
 
@@ -223,9 +226,9 @@ class Minio(Base):
         self,
     ):
         r"""Create repository."""
-        if self._client.bucket_exists(self.repository):
+        if self._client.bucket_exists(bucket_name=self.repository):
             utils.raise_file_exists_error(self.repository)
-        self._client.make_bucket(self.repository)
+        self._client.make_bucket(bucket_name=self.repository)
 
     def _date(
         self,
@@ -233,7 +236,10 @@ class Minio(Base):
     ) -> str:
         r"""Get last modification date of file on backend."""
         path = self.path(path)
-        date = self._client.stat_object(self.repository, path).last_modified
+        date = self._client.stat_object(
+            bucket_name=self.repository,
+            object_name=path,
+        ).last_modified
         date = utils.date_format(date)
         return date
 
@@ -242,11 +248,14 @@ class Minio(Base):
     ):
         r"""Delete repository and all its content."""
         # Delete all objects in bucket
-        objects = self._client.list_objects(self.repository, recursive=True)
+        objects = self._client.list_objects(bucket_name=self.repository, recursive=True)
         for obj in objects:
-            self._client.remove_object(self.repository, obj.object_name)
+            self._client.remove_object(
+                bucket_name=self.repository,
+                object_name=obj.object_name,
+            )
         # Delete bucket
-        self._client.remove_bucket(self.repository)
+        self._client.remove_bucket(bucket_name=self.repository)
 
     def _exists(
         self,
@@ -255,7 +264,10 @@ class Minio(Base):
         r"""Check if file exists on backend."""
         path = self.path(path)
         try:
-            self._client.stat_object(self.repository, path)
+            self._client.stat_object(
+                bucket_name=self.repository,
+                object_name=path,
+            )
         except minio.error.S3Error:
             return False
         return True
@@ -268,7 +280,10 @@ class Minio(Base):
     ):
         r"""Get file from backend."""
         src_path = self.path(src_path)
-        src_size = self._client.stat_object(self.repository, src_path).size
+        src_size = self._client.stat_object(
+            bucket_name=self.repository,
+            object_name=src_path,
+        ).size
         chunk = 4 * 1024
         with audeer.progress_bar(total=src_size, disable=not verbose) as pbar:
             desc = audeer.format_display_message(
@@ -279,7 +294,10 @@ class Minio(Base):
 
             dst_size = 0
             try:
-                response = self._client.get_object(self.repository, src_path)
+                response = self._client.get_object(
+                    bucket_name=self.repository,
+                    object_name=src_path,
+                )
                 with open(dst_path, "wb") as dst_fp:
                     while src_size > dst_size:
                         data = response.read(chunk)
@@ -301,7 +319,7 @@ class Minio(Base):
         r"""List all files under sub-path."""
         path = self.path(path)
         objects = self._client.list_objects(
-            self.repository,
+            bucket_name=self.repository,
             prefix=path,
             recursive=True,
         )
@@ -324,7 +342,7 @@ class Minio(Base):
         # At the moment, session management is handled automatically.
         # If we want to manage this ourselves,
         # we need to use the `http_client` argument of `minio.Minio`
-        if not self._client.bucket_exists(self.repository):
+        if not self._client.bucket_exists(bucket_name=self.repository):
             utils.raise_file_not_found_error(self.repository)
 
     def _owner(
@@ -336,7 +354,10 @@ class Minio(Base):
         # NOTE:
         # we use a custom metadata entry to track the owner
         # as stats.owner_name is always empty.
-        meta = self._client.stat_object(self.repository, path).metadata
+        meta = self._client.stat_object(
+            bucket_name=self.repository,
+            object_name=path,
+        ).metadata
         return meta["x-amz-meta-owner"] if "x-amz-meta-owner" in meta else ""
 
     def path(
@@ -372,9 +393,9 @@ class Minio(Base):
 
         content_type = mimetypes.guess_type(src_path)[0] or "application/octet-stream"
         self._client.fput_object(
-            self.repository,
-            dst_path,
-            src_path,
+            bucket_name=self.repository,
+            object_name=dst_path,
+            file_path=src_path,
             content_type=content_type,
             metadata=_metadata(checksum),
         )
@@ -390,8 +411,14 @@ class Minio(Base):
         r"""Remove file from backend."""
         path = self.path(path)
         # Enforce error if path does not exist
-        self._client.stat_object(self.repository, path)
-        self._client.remove_object(self.repository, path)
+        self._client.stat_object(
+            bucket_name=self.repository,
+            object_name=path,
+        )
+        self._client.remove_object(
+            bucket_name=self.repository,
+            object_name=path,
+        )
 
     def _size(
         self,
@@ -399,7 +426,10 @@ class Minio(Base):
     ) -> int:
         r"""Get size of file on backend."""
         path = self.path(path)
-        size = self._client.stat_object(self.repository, path).size
+        size = self._client.stat_object(
+            bucket_name=self.repository,
+            object_name=path,
+        ).size
         return size
 
 
