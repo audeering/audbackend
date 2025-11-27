@@ -41,7 +41,7 @@ jobs:
     - name: Sync Python environment
       run: uv sync
 
-    - name: Install minio ${{ matrix.minio }}
+    - name: Install older minio version
       run: uv pip install minio==${{ matrix.minio }}
       if: ${{ matrix.minio }} == '7.2.18'
 
