@@ -23,6 +23,9 @@ jobs:
             python-version: '3.13'
           - os: ubuntu-latest
             python-version: '3.14'
+          - os: ubuntu-latest
+            python-version: '3.12'
+            minio: '7.2.18'
 
     steps:
     - uses: actions/checkout@v4
@@ -37,6 +40,10 @@ jobs:
 
     - name: Sync Python environment
       run: uv sync
+
+    - name: Install minio $${{ matrix.minio }}
+      run: uv pip install minio==$${{ matrix.minio }}
+      if: ${{ matrix.minio }} == '7.2.18'
 
     - name: Test file-system only package
       run: |
