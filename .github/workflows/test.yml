@@ -24,7 +24,7 @@ jobs:
           - os: ubuntu-latest
             python-version: '3.14'
           - os: ubuntu-latest
-            python-version: '3.12'
+            python-version: '3.14'
             minio: '7.2.18'
 
     steps:
