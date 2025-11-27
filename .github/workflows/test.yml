@@ -43,7 +43,7 @@ jobs:
 
     - name: Install older minio version
       run: uv pip install minio==${{ matrix.minio }}
-      if: ${{ matrix.minio }} == '7.2.18'
+      if: matrix.minio == '7.2.18'
 
     - name: Test file-system only package
       run: |
