@@ -7,6 +7,17 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 2.2.3 (2025-12-08)
+--------------------------
+
+* Added: support for Python 3.14
+* Added: support for Artifactory backend
+  in Python 3.13
+* Fixed: require ``minio!=7.2.19``
+  to avoid installing the broken ``minio`` package
+* Removed: support for Python 3.9
+
+
 Version 2.2.2 (2025-01-23)
 --------------------------
 
