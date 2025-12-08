@@ -14,7 +14,7 @@ Version 2.2.3 (2025-12-08)
 * Added: support for Artifactory backend
   in Python 3.13
 * Fixed: require ``minio!=7.2.19``
-  to avoid install broken ``minio`` package
+  to avoid installing the broken ``minio`` package
 * Removed: support for Python 3.9
 
 
