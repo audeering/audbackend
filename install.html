@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                2.2.2
+                2.2.3
               </div>
             
           
@@ -146,30 +146,27 @@
   <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">¶</a></h1>
 <p>To install <a class="reference internal" href="api/audbackend.html#module-audbackend" title="audbackend"><code class="xref py py-mod docutils literal notranslate"><span class="pre">audbackend</span></code></a> run:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="c1"># Create and activate Python virtual environment, e.g.</span>
-$<span class="w"> </span><span class="c1"># virtualenv --python=python3 ${HOME}/.envs/audbackend</span>
-$<span class="w"> </span><span class="c1"># source ${HOME}/.envs/audbackend/bin/activate</span>
-$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>audbackend
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>audbackend
 </pre></div>
 </div>
 <p>By default,
 only the <a class="reference internal" href="api/audbackend.backend.FileSystem.html#audbackend.backend.FileSystem" title="audbackend.backend.FileSystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">audbackend.backend.FileSystem</span></code></a>
 backend will be installed.
 To install all backends run:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>audbackend<span class="o">[</span>all<span class="o">]</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>audbackend<span class="o">[</span>all<span class="o">]</span>
 </pre></div>
 </div>
 <p>You can also select single backends,
 e.g. <a class="reference internal" href="api/audbackend.backend.Minio.html#audbackend.backend.Minio" title="audbackend.backend.Minio"><code class="xref py py-class docutils literal notranslate"><span class="pre">audbackend.backend.Minio</span></code></a>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>audbackend<span class="o">[</span>minio<span class="o">]</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>audbackend<span class="o">[</span>minio<span class="o">]</span>
 </pre></div>
 </div>
 <p>or <a class="reference internal" href="api/audbackend.backend.Artifactory.html#audbackend.backend.Artifactory" title="audbackend.backend.Artifactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">audbackend.backend.Artifactory</span></code></a>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>audbackend<span class="o">[</span>artifactory<span class="o">]</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>audbackend<span class="o">[</span>artifactory<span class="o">]</span>
 </pre></div>
 </div>
 <p>Note,
-in Python 3.13 the <a class="reference internal" href="api/audbackend.backend.Artifactory.html#audbackend.backend.Artifactory" title="audbackend.backend.Artifactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">audbackend.backend.Artifactory</span></code></a>
+in Python 3.14 the <a class="reference internal" href="api/audbackend.backend.Artifactory.html#audbackend.backend.Artifactory" title="audbackend.backend.Artifactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">audbackend.backend.Artifactory</span></code></a>
 backend is not available at the moment.</p>
 </div>
 
@@ -196,7 +193,7 @@ backend is not available at the moment.</p>
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2025/01/23 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2025/12/08 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
