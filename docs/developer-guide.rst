@@ -443,6 +443,7 @@ we provide a more efficient implementation.
             self,
             src_path: str,
             dst_path: str,
+            num_workers: int,
             verbose: bool,
     ):
         with self._db as db:
@@ -474,6 +475,7 @@ but it is more efficient if we provide one.
             self,
             src_path: str,
             dst_path: str,
+            num_workers: int,
             verbose: bool,
     ):
         with self._db as db:
@@ -499,6 +501,7 @@ from the backend.
             self,
             src_path: str,
             dst_path: str,
+            num_workers: int,
             verbose: bool,
     ):
         with self._db as db:

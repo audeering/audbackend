@@ -30,8 +30,10 @@ class BadFileSystem(audbackend.backend.FileSystem):
         src_path: str,
         dst_path: str,
         verbose: bool,
+        num_workers: int,
+        chunk_size: int,
     ):
-        super()._get_file(src_path, dst_path, verbose)
+        super()._get_file(src_path, dst_path, verbose, num_workers, chunk_size)
         # raise error after file was retrieved
         raise InterruptedError()
 

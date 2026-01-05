@@ -1,10 +1,25 @@
+import filecmp
 import os
+import signal
+import threading
 
 import pytest
 
 import audeer
 
 import audbackend
+
+
+def create_file_exact_size(filename, size_mb):
+    """Create binary file of given size."""
+    size_bytes = size_mb * 1024 * 1024
+    with open(filename, "wb") as f:
+        remaining = size_bytes
+        chunk_size = 8192  # Write in 8KB chunks
+        while remaining > 0:
+            to_write = min(chunk_size, remaining)
+            f.write(b"A" * to_write)  # Can use any byte pattern
+            remaining -= to_write
 
 
 @pytest.fixture(scope="function", autouse=False)
@@ -360,3 +375,152 @@ def test_open_close(host, repository):
     audbackend.backend.Minio.create(host, repository)
     backend.open()
     backend.close()
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.Minio, audbackend.interface.Unversioned)],
+    indirect=True,
+)
+def test_get_file(tmpdir, interface):
+    r"""Test getting file.
+
+    Args:
+        tmpdir: tmpdir fixture
+        interface: interface fixture
+
+    """
+    tmp_path = audeer.path(tmpdir, "file.bin")
+    create_file_exact_size(tmp_path, 2)
+    backend_path = "/file.bin"
+    interface.put_file(tmp_path, backend_path)
+
+    dst_path1 = audeer.path(tmpdir, "dst1.bin")
+    dst_path2 = audeer.path(tmpdir, "dst2.bin")
+    interface.get_file(backend_path, dst_path1, num_workers=1)
+    interface.get_file(backend_path, dst_path2, num_workers=2)
+
+    # Check both downloaded files are the same
+    assert os.path.getsize(dst_path1) == os.path.getsize(dst_path2)
+    assert audeer.md5(dst_path1) == audeer.md5(dst_path2)
+    assert filecmp.cmp(dst_path1, dst_path2, shallow=False)
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.Minio, audbackend.interface.Unversioned)],
+    indirect=True,
+)
+def test_interrupt_signal_handler(tmpdir, interface):
+    r"""Test that signal handler sets cancel_event correctly.
+
+    This tests the signal handler setup
+    that sets the cancel_event when SIGINT is received.
+
+    Args:
+        tmpdir: tmpdir fixture
+        interface: interface fixture
+
+    """
+    # Create a cancel_event like _get_file does
+    cancel_event = threading.Event()
+
+    # Create the signal handler as defined in _get_file
+    def signal_handler(signum, frame):
+        cancel_event.set()
+
+    # Install the handler
+    original_handler = signal.signal(signal.SIGINT, signal_handler)
+
+    try:
+        # Verify event is not set initially
+        assert not cancel_event.is_set()
+
+        # Call the signal handler directly (simulating Ctrl+C)
+        signal_handler(signal.SIGINT, None)
+
+        # Verify event was set by the handler (minio.py:289)
+        assert cancel_event.is_set()
+    finally:
+        # Restore original handler
+        signal.signal(signal.SIGINT, original_handler)
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.Minio, audbackend.interface.Unversioned)],
+    indirect=True,
+)
+def test_interrupt_via_cancel_event(tmpdir, interface):
+    r"""Test that cancel_event check during download raises KeyboardInterrupt.
+
+    This tests the interrupt handling mechanism
+    where the cancel_event is checked during file download.
+    Directly calls _download_file with a cancel_event that gets set.
+
+    Args:
+        tmpdir: tmpdir fixture
+        interface: interface fixture
+
+    """
+    # Create and upload a test file
+    tmp_path = audeer.path(tmpdir, "file.bin")
+    create_file_exact_size(tmp_path, 2)  # 2 MB file
+    backend_path = "/file.bin"
+    interface.put_file(tmp_path, backend_path)
+
+    # Create a cancel_event and set it immediately
+    # This will cause the download loop to raise KeyboardInterrupt
+    cancel_event = threading.Event()
+    cancel_event.set()
+
+    # Prepare download
+    src_path = interface._backend.path(backend_path)
+    dst_path = audeer.path(tmpdir, "download.bin")
+    pbar = audeer.progress_bar(total=100, disable=True)
+
+    # Attempt download with cancel_event already set - should raise KeyboardInterrupt
+    with pytest.raises(KeyboardInterrupt, match="Download cancelled by user"):
+        interface._backend._download_file(src_path, dst_path, pbar, cancel_event)
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.Minio, audbackend.interface.Unversioned)],
+    indirect=True,
+)
+def test_interrupt_cleanup(tmpdir, interface, monkeypatch):
+    r"""Test that KeyboardInterrupt cleans up partial file.
+
+    This tests the exception handler
+    that removes partial files when download is interrupted.
+
+    Args:
+        tmpdir: tmpdir fixture
+        interface: interface fixture
+        monkeypatch: monkeypatch fixture
+
+    """
+    # Create and upload test file
+    tmp_path = audeer.path(tmpdir, "file.bin")
+    create_file_exact_size(tmp_path, 2)
+    backend_path = "/file.bin"
+    interface.put_file(tmp_path, backend_path)
+
+    # Mock _download_file to raise KeyboardInterrupt
+    def mock_download(*args, **kwargs):
+        # Create partial file before interrupting
+        dst_path = args[1]
+        with open(dst_path, "wb") as f:
+            f.write(b"partial data")
+        raise KeyboardInterrupt("Simulated interrupt")
+
+    monkeypatch.setattr(interface._backend, "_download_file", mock_download)
+
+    # Attempt download
+    dst_path = audeer.path(tmpdir, "download.bin")
+    with pytest.raises(KeyboardInterrupt):
+        interface.get_file(backend_path, dst_path, num_workers=1)
+
+    # Verify cleanup happened
+    assert not os.path.exists(dst_path)

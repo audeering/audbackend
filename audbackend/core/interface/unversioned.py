@@ -73,6 +73,7 @@ class Unversioned(Base):
         src_path: str,
         dst_path: str,
         *,
+        num_workers: int = 1,
         validate: bool = False,
         verbose: bool = False,
     ):
@@ -95,6 +96,7 @@ class Unversioned(Base):
         Args:
             src_path: source path to file on backend
             dst_path: destination path to file on backend
+            num_workers: number of parallel jobs
             validate: verify file was successfully copied
             verbose: show debug messages
 
@@ -123,6 +125,7 @@ class Unversioned(Base):
         self.backend.copy_file(
             src_path,
             dst_path,
+            num_workers=num_workers,
             validate=validate,
             verbose=verbose,
         )
@@ -284,6 +287,7 @@ class Unversioned(Base):
         src_path: str,
         dst_path: str,
         *,
+        num_workers: int = 1,
         validate: bool = False,
         verbose: bool = False,
     ) -> str:
@@ -310,6 +314,7 @@ class Unversioned(Base):
         Args:
             src_path: path to file on backend
             dst_path: destination path to local file
+            num_workers: number of parallel jobs
             validate: verify file was successfully
                 retrieved from the backend
             verbose: show debug messages
@@ -342,6 +347,7 @@ class Unversioned(Base):
         return self.backend.get_file(
             src_path,
             dst_path,
+            num_workers=num_workers,
             validate=validate,
             verbose=verbose,
         )
@@ -422,6 +428,7 @@ class Unversioned(Base):
         src_path: str,
         dst_path: str,
         *,
+        num_workers: int = 1,
         validate: bool = False,
         verbose: bool = False,
     ):
@@ -448,6 +455,7 @@ class Unversioned(Base):
         Args:
             src_path: source path to file on backend
             dst_path: destination path to file on backend
+            num_workers: number of parallel jobs
             validate: verify file was successfully moved
             verbose: show debug messages
 
@@ -478,6 +486,7 @@ class Unversioned(Base):
         self.backend.move_file(
             src_path,
             dst_path,
+            num_workers=num_workers,
             validate=validate,
             verbose=verbose,
         )

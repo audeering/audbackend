@@ -2,7 +2,9 @@ import configparser
 import getpass
 import mimetypes
 import os
+import signal
 import tempfile
+import threading
 
 import minio
 
@@ -201,6 +203,7 @@ class Minio(Base):
         self,
         src_path: str,
         dst_path: str,
+        num_workers: int,
         verbose: bool,
     ):
         r"""Copy file on backend."""
@@ -212,7 +215,7 @@ class Minio(Base):
         if self._size(src_path) / 1024 / 1024 / 1024 >= 4.9:
             with tempfile.TemporaryDirectory() as tmp_dir:
                 tmp_path = audeer.path(tmp_dir, os.path.basename(src_path))
-                self._get_file(src_path, tmp_path, verbose)
+                self._get_file(src_path, tmp_path, num_workers, verbose)
                 self._put_file(tmp_path, dst_path, checksum, verbose)
         else:
             self._client.copy_object(
@@ -276,6 +279,7 @@ class Minio(Base):
         self,
         src_path: str,
         dst_path: str,
+        num_workers: int,
         verbose: bool,
     ):
         r"""Get file from backend."""
@@ -284,33 +288,94 @@ class Minio(Base):
             bucket_name=self.repository,
             object_name=src_path,
         ).size
-        chunk = 4 * 1024
-        with audeer.progress_bar(total=src_size, disable=not verbose) as pbar:
-            desc = audeer.format_display_message(
-                f"Download {os.path.basename(str(src_path))}", pbar=True
-            )
-            pbar.set_description_str(desc)
-            pbar.refresh()
 
-            dst_size = 0
-            try:
-                response = self._client.get_object(
-                    bucket_name=self.repository,
-                    object_name=src_path,
-                )
-                with open(dst_path, "wb") as dst_fp:
-                    while src_size > dst_size:
-                        data = response.read(chunk)
-                        n_data = len(data)
-                        if n_data > 0:
-                            dst_fp.write(data)
-                            dst_size += n_data
-                            pbar.update(n_data)
-            except Exception as e:  # pragma: no cover
-                raise RuntimeError(f"Error downloading file: {e}")
-            finally:
-                response.close()
-                response.release_conn()
+        # Create cancellation event for handling interrupts
+        cancel_event = threading.Event()
+
+        # Install signal handler to set cancel_event on Ctrl+C
+        def signal_handler(signum, frame):
+            cancel_event.set()  # pragma: no cover
+
+        original_handler = signal.signal(signal.SIGINT, signal_handler)
+
+        # Setup progress bar
+        desc = audeer.format_display_message(
+            f"Download {os.path.basename(str(src_path))}",
+            pbar=verbose,
+        )
+        pbar = audeer.progress_bar(total=src_size, desc=desc, disable=not verbose)
+
+        try:
+            if num_workers == 1:
+                # Simple single-threaded download
+                with pbar:
+                    self._download_file(src_path, dst_path, pbar, cancel_event)
+            else:
+                # Multi-threaded download with pre-allocated file
+                with open(dst_path, "wb") as f:
+                    f.truncate(src_size)
+
+                # Create and run download tasks
+                tasks = []
+                # Ensure num_workers does not exceed src_size
+                num_workers = min(num_workers, src_size) if src_size > 0 else 1
+                chunk_size = src_size // num_workers
+                for i in range(num_workers):
+                    offset = i * chunk_size
+                    length = chunk_size if i < num_workers - 1 else src_size - offset
+                    tasks.append(
+                        ([src_path, dst_path, pbar, cancel_event, offset, length], {})
+                    )
+
+                with pbar:
+                    audeer.run_tasks(
+                        self._download_file, tasks, num_workers=num_workers
+                    )
+        except KeyboardInterrupt:
+            # Clean up partial file
+            if os.path.exists(dst_path):
+                os.remove(dst_path)
+            raise
+        finally:
+            # Restore original signal handler
+            signal.signal(signal.SIGINT, original_handler)
+
+    def _download_file(
+        self,
+        src_path: str,
+        dst_path: str,
+        pbar,
+        cancel_event: threading.Event = None,
+        offset: int = 0,
+        length: int | None = None,
+    ):
+        """Download file or part of file."""
+        chunk_size = 4 * 1024  # 4 KB
+
+        # Get the data stream
+        kwargs = {"offset": offset}
+        if length is not None:
+            kwargs["length"] = length
+        response = self._client.get_object(
+            bucket_name=self.repository,
+            object_name=src_path,
+            **kwargs,
+        )
+
+        try:
+            with open(dst_path, "r+b" if offset else "wb") as f:
+                if offset:
+                    f.seek(offset)
+
+                while data := response.read(chunk_size):
+                    # Check if cancellation was requested
+                    if cancel_event and cancel_event.is_set():
+                        raise KeyboardInterrupt("Download cancelled by user")
+                    f.write(data)
+                    pbar.update(len(data))
+        finally:
+            response.close()
+            response.release_conn()
 
     def _ls(
         self,
@@ -329,10 +394,11 @@ class Minio(Base):
         self,
         src_path: str,
         dst_path: str,
+        num_workers: int,
         verbose: bool,
     ):
         r"""Move file on backend."""
-        self._copy_file(src_path, dst_path, verbose)
+        self._copy_file(src_path, dst_path, num_workers, verbose)
         self._remove_file(src_path)
 
     def _open(

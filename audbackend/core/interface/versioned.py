@@ -92,6 +92,7 @@ class Versioned(Base):
         dst_path: str,
         *,
         version: str = None,
+        num_workers: int = 1,
         validate: bool = False,
         verbose: bool = False,
     ):
@@ -118,8 +119,9 @@ class Versioned(Base):
         Args:
             src_path: source path to file on backend
             dst_path: destination path to file on backend
-            validate: verify file was successfully copied
             version: version string
+            num_workers: number of parallel jobs
+            validate: verify file was successfully copied
             verbose: show debug messages
 
         Raises:
@@ -157,6 +159,7 @@ class Versioned(Base):
             self.backend.copy_file(
                 src_path_with_version,
                 dst_path_with_version,
+                num_workers=num_workers,
                 validate=validate,
                 verbose=verbose,
             )
@@ -332,6 +335,7 @@ class Versioned(Base):
         dst_path: str,
         version: str,
         *,
+        num_workers: int = 1,
         validate: bool = False,
         verbose: bool = False,
     ) -> str:
@@ -359,6 +363,7 @@ class Versioned(Base):
             src_path: path to file on backend
             dst_path: destination path to local file
             version: version string
+            num_workers: number of parallel jobs
             validate: verify file was successfully
                 retrieved from the backend
             verbose: show debug messages
@@ -394,6 +399,7 @@ class Versioned(Base):
         return self.backend.get_file(
             src_path_with_version,
             dst_path,
+            num_workers=num_workers,
             validate=validate,
             verbose=verbose,
         )
@@ -576,6 +582,7 @@ class Versioned(Base):
         dst_path: str,
         *,
         version: str = None,
+        num_workers: int = 1,
         validate: bool = False,
         verbose: bool = False,
     ):
@@ -607,6 +614,7 @@ class Versioned(Base):
             src_path: source path to file on backend
             dst_path: destination path to file on backend
             version: version string
+            num_workers: number of parallel jobs
             validate: verify file was successfully moved
             verbose: show debug messages
 
@@ -647,6 +655,7 @@ class Versioned(Base):
             self.backend.move_file(
                 src_path_with_version,
                 dst_path_with_version,
+                num_workers=num_workers,
                 validate=validate,
                 verbose=verbose,
             )
