@@ -284,7 +284,10 @@ class Minio(Base):
     ):
         r"""Get file from backend."""
         src_path = self.path(src_path)
-        src_size = self._client.stat_object(self.repository, src_path).size
+        src_size = self._client.stat_object(
+            bucket_name=self.repository,
+            object_name=src_path,
+        ).size
 
         # Create cancellation event for handling interrupts
         cancel_event = threading.Event()
@@ -353,7 +356,11 @@ class Minio(Base):
         kwargs = {"offset": offset}
         if length is not None:
             kwargs["length"] = length
-        response = self._client.get_object(self.repository, src_path, **kwargs)
+        response = self._client.get_object(
+            bucket_name=self.repository,
+            object_name=src_path,
+            **kwargs,
+        )
 
         try:
             with open(dst_path, "r+b" if offset else "wb") as f:
