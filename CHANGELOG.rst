@@ -18,7 +18,7 @@ Version 2.3.0 (2026-01-07)
   ``Interface.copy_file()``,
   ``Interface.get_file()``,
   ``Interface.move_file()``.
-  Argument is only applied on a ``Minio`` backend
+  Argument is only applied on ``Minio`` backends
 
 
 Version 2.2.3 (2025-12-08)
