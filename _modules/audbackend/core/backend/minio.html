@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                2.2.3
+                2.3.0
               </div>
             
           
@@ -146,7 +146,9 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">getpass</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">mimetypes</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">signal</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">minio</span>
 
@@ -156,7 +158,9 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">audbackend.core.backend.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Base</span>
 
 
-<div class="viewcode-block" id="Minio"><a class="viewcode-back" href="../../../../api/audbackend.backend.Minio.html#audbackend.backend.Minio">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Minio</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+<div class="viewcode-block" id="Minio">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Minio.html#audbackend.backend.Minio">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Minio</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Backend for MinIO.</span>
 
 <span class="sd">    Args:</span>
@@ -223,7 +227,9 @@
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="Minio.get_authentication"><a class="viewcode-back" href="../../../../api/audbackend.backend.Minio.html#audbackend.backend.Minio.get_authentication">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Minio.get_authentication">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Minio.html#audbackend.backend.Minio.get_authentication">[docs]</a>
+    <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_authentication</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Access and secret tokens for given host.</span>
 
@@ -257,7 +263,10 @@
 
         <span class="k">return</span> <span class="n">access_key</span><span class="p">,</span> <span class="n">secret_key</span></div>
 
-<div class="viewcode-block" id="Minio.get_config"><a class="viewcode-back" href="../../../../api/audbackend.backend.Minio.html#audbackend.backend.Minio.get_config">[docs]</a>    <span class="nd">@classmethod</span>
+
+<div class="viewcode-block" id="Minio.get_config">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Minio.html#audbackend.backend.Minio.get_config">[docs]</a>
+    <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Configuration of MinIO server.</span>
 
@@ -302,7 +311,10 @@
 
         <span class="k">return</span> <span class="n">config</span></div>
 
-<div class="viewcode-block" id="Minio.close"><a class="viewcode-back" href="../../../../api/audbackend.backend.Minio.html#audbackend.backend.Minio.close">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span>
+
+<div class="viewcode-block" id="Minio.close">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Minio.html#audbackend.backend.Minio.close">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Close connection to backend.</span>
@@ -314,6 +326,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">opened</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">opened</span> <span class="o">=</span> <span class="kc">False</span></div>
+
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_checksum</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -345,6 +358,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Copy file on backend.&quot;&quot;&quot;</span>
@@ -356,7 +370,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_size</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1024</span> <span class="o">/</span> <span class="mi">1024</span> <span class="o">/</span> <span class="mi">1024</span> <span class="o">&gt;=</span> <span class="mf">4.9</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmp_dir</span><span class="p">:</span>
                 <span class="n">tmp_path</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">tmp_dir</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">src_path</span><span class="p">))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_get_file</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_get_file</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">,</span> <span class="n">num_workers</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_put_file</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">,</span> <span class="n">checksum</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">copy_object</span><span class="p">(</span>
@@ -420,6 +434,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get file from backend.&quot;&quot;&quot;</span>
@@ -428,33 +443,94 @@
             <span class="n">bucket_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">,</span>
             <span class="n">object_name</span><span class="o">=</span><span class="n">src_path</span><span class="p">,</span>
         <span class="p">)</span><span class="o">.</span><span class="n">size</span>
-        <span class="n">chunk</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="mi">1024</span>
-        <span class="k">with</span> <span class="n">audeer</span><span class="o">.</span><span class="n">progress_bar</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="n">src_size</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">verbose</span><span class="p">)</span> <span class="k">as</span> <span class="n">pbar</span><span class="p">:</span>
-            <span class="n">desc</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">format_display_message</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Download </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">src_path</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">pbar</span><span class="o">=</span><span class="kc">True</span>
-            <span class="p">)</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">set_description_str</span><span class="p">(</span><span class="n">desc</span><span class="p">)</span>
-            <span class="n">pbar</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
 
-            <span class="n">dst_size</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span>
-                    <span class="n">bucket_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">,</span>
-                    <span class="n">object_name</span><span class="o">=</span><span class="n">src_path</span><span class="p">,</span>
-                <span class="p">)</span>
-                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dst_path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">dst_fp</span><span class="p">:</span>
-                    <span class="k">while</span> <span class="n">src_size</span> <span class="o">&gt;</span> <span class="n">dst_size</span><span class="p">:</span>
-                        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
-                        <span class="n">n_data</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="n">n_data</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                            <span class="n">dst_fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-                            <span class="n">dst_size</span> <span class="o">+=</span> <span class="n">n_data</span>
-                            <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">n_data</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
-                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error downloading file: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">finally</span><span class="p">:</span>
-                <span class="n">response</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-                <span class="n">response</span><span class="o">.</span><span class="n">release_conn</span><span class="p">()</span>
+        <span class="c1"># Create cancellation event for handling interrupts</span>
+        <span class="n">cancel_event</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+
+        <span class="c1"># Install signal handler to set cancel_event on Ctrl+C</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">signal_handler</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
+            <span class="n">cancel_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>  <span class="c1"># pragma: no cover</span>
+
+        <span class="n">original_handler</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="n">signal_handler</span><span class="p">)</span>
+
+        <span class="c1"># Setup progress bar</span>
+        <span class="n">desc</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">format_display_message</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Download </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">src_path</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">pbar</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">pbar</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">progress_bar</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="n">src_size</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="n">desc</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">verbose</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">num_workers</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="c1"># Simple single-threaded download</span>
+                <span class="k">with</span> <span class="n">pbar</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_download_file</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">,</span> <span class="n">pbar</span><span class="p">,</span> <span class="n">cancel_event</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Multi-threaded download with pre-allocated file</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dst_path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="n">src_size</span><span class="p">)</span>
+
+                <span class="c1"># Create and run download tasks</span>
+                <span class="n">tasks</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="c1"># Ensure num_workers does not exceed src_size</span>
+                <span class="n">num_workers</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">num_workers</span><span class="p">,</span> <span class="n">src_size</span><span class="p">)</span> <span class="k">if</span> <span class="n">src_size</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">1</span>
+                <span class="n">chunk_size</span> <span class="o">=</span> <span class="n">src_size</span> <span class="o">//</span> <span class="n">num_workers</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_workers</span><span class="p">):</span>
+                    <span class="n">offset</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">chunk_size</span>
+                    <span class="n">length</span> <span class="o">=</span> <span class="n">chunk_size</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">num_workers</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">src_size</span> <span class="o">-</span> <span class="n">offset</span>
+                    <span class="n">tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="p">([</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">,</span> <span class="n">pbar</span><span class="p">,</span> <span class="n">cancel_event</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">length</span><span class="p">],</span> <span class="p">{})</span>
+                    <span class="p">)</span>
+
+                <span class="k">with</span> <span class="n">pbar</span><span class="p">:</span>
+                    <span class="n">audeer</span><span class="o">.</span><span class="n">run_tasks</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_download_file</span><span class="p">,</span> <span class="n">tasks</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span>
+                    <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+            <span class="c1"># Clean up partial file</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dst_path</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span>
+            <span class="k">raise</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="c1"># Restore original signal handler</span>
+            <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="n">original_handler</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_download_file</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">pbar</span><span class="p">,</span>
+        <span class="n">cancel_event</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download file or part of file.&quot;&quot;&quot;</span>
+        <span class="n">chunk_size</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="mi">1024</span>  <span class="c1"># 4 KB</span>
+
+        <span class="c1"># Get the data stream</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="n">offset</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">length</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;length&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">length</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span>
+            <span class="n">bucket_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">,</span>
+            <span class="n">object_name</span><span class="o">=</span><span class="n">src_path</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dst_path</span><span class="p">,</span> <span class="s2">&quot;r+b&quot;</span> <span class="k">if</span> <span class="n">offset</span> <span class="k">else</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">offset</span><span class="p">:</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
+
+                <span class="k">while</span> <span class="n">data</span> <span class="o">:=</span> <span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">chunk_size</span><span class="p">):</span>
+                    <span class="c1"># Check if cancellation was requested</span>
+                    <span class="k">if</span> <span class="n">cancel_event</span> <span class="ow">and</span> <span class="n">cancel_event</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
+                        <span class="k">raise</span> <span class="ne">KeyboardInterrupt</span><span class="p">(</span><span class="s2">&quot;Download cancelled by user&quot;</span><span class="p">)</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                    <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">release_conn</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_ls</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -473,10 +549,11 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Move file on backend.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_copy_file</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_copy_file</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">,</span> <span class="n">num_workers</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_remove_file</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_open</span><span class="p">(</span>
@@ -504,7 +581,9 @@
         <span class="p">)</span><span class="o">.</span><span class="n">metadata</span>
         <span class="k">return</span> <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;x-amz-meta-owner&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;x-amz-meta-owner&quot;</span> <span class="ow">in</span> <span class="n">meta</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
 
-<div class="viewcode-block" id="Minio.path"><a class="viewcode-back" href="../../../../api/audbackend.backend.Minio.html#audbackend.backend.Minio.path">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">path</span><span class="p">(</span>
+<div class="viewcode-block" id="Minio.path">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Minio.html#audbackend.backend.Minio.path">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">path</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -518,6 +597,7 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span></div>
+
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_put_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -577,6 +657,7 @@
         <span class="k">return</span> <span class="n">size</span></div>
 
 
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_metadata</span><span class="p">(</span><span class="n">checksum</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Dictionary with owner entry.</span>
 
@@ -605,7 +686,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2025/12/08 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/01/07 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -613,7 +694,7 @@
   <div role="contentinfo">
     <p>
         
-      &copy; 2021-2025 audEERING GmbH
+      &copy; 2021-2026 audEERING GmbH
     </p>
   </div> 
 
@@ -637,14 +718,11 @@
     
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
-        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-        <script src="../../../../_static/jquery.js"></script>
-        <script src="../../../../_static/underscore.js"></script>
-        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="../../../../_static/doctools.js"></script>
-        <script src="../../../../_static/sphinx_highlight.js"></script>
-        <script src="../../../../_static/clipboard.min.js"></script>
-        <script src="../../../../_static/copybutton.js"></script>
+        <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     
 
   

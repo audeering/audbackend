@@ -5,7 +5,8 @@
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>Changelog &mdash; Documentation</title>
@@ -64,7 +65,7 @@
             
             
               <div class="version">
-                2.2.3
+                2.3.0
               </div>
             
           
@@ -106,6 +107,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#version-2-3-0-2026-01-07">Version 2.3.0 (2026-01-07)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-2-2-3-2025-12-08">Version 2.2.3 (2025-12-08)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-2-2-2-2025-01-23">Version 2.2.2 (2025-01-23)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-2-2-1-2024-11-27">Version 2.2.1 (2024-11-27)</a></li>
@@ -176,13 +178,27 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="changelog">
-<h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this heading">¶</a></h1>
+  <section id="changelog">
+<h1>Changelog<a class="headerlink" href="#changelog" title="Link to this heading">¶</a></h1>
 <p>All notable changes to this project will be documented in this file.</p>
 <p>The format is based on <a class="reference external" href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,
 and this project adheres to <a class="reference external" href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
-<div class="section" id="version-2-2-3-2025-12-08">
-<h2>Version 2.2.3 (2025-12-08)<a class="headerlink" href="#version-2-2-3-2025-12-08" title="Permalink to this heading">¶</a></h2>
+<section id="version-2-3-0-2026-01-07">
+<h2>Version 2.3.0 (2026-01-07)<a class="headerlink" href="#version-2-3-0-2026-01-07" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: <code class="docutils literal notranslate"><span class="pre">num_workers</span></code> argument to
+<code class="docutils literal notranslate"><span class="pre">Backend.copy_file()</span></code>,
+<code class="docutils literal notranslate"><span class="pre">Backend.get_archive()</span></code>,
+<code class="docutils literal notranslate"><span class="pre">Backend.get_file()</span></code>,
+<code class="docutils literal notranslate"><span class="pre">Backend.move_file()</span></code>,
+<code class="docutils literal notranslate"><span class="pre">Interface.copy_file()</span></code>,
+<code class="docutils literal notranslate"><span class="pre">Interface.get_file()</span></code>,
+<code class="docutils literal notranslate"><span class="pre">Interface.move_file()</span></code>.
+Argument is only applied on <code class="docutils literal notranslate"><span class="pre">Minio</span></code> backends</p></li>
+</ul>
+</section>
+<section id="version-2-2-3-2025-12-08">
+<h2>Version 2.2.3 (2025-12-08)<a class="headerlink" href="#version-2-2-3-2025-12-08" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Added: support for Python 3.14</p></li>
 <li><p>Added: support for Artifactory backend
@@ -191,9 +207,9 @@ in Python 3.13</p></li>
 to avoid installing the broken <code class="docutils literal notranslate"><span class="pre">minio</span></code> package</p></li>
 <li><p>Removed: support for Python 3.9</p></li>
 </ul>
-</div>
-<div class="section" id="version-2-2-2-2025-01-23">
-<h2>Version 2.2.2 (2025-01-23)<a class="headerlink" href="#version-2-2-2-2025-01-23" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-2-2-2-2025-01-23">
+<h2>Version 2.2.2 (2025-01-23)<a class="headerlink" href="#version-2-2-2-2025-01-23" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Added: support for Python 3.13
 (without Artifactory backend)</p></li>
@@ -203,9 +219,9 @@ in Python 3.12</p></li>
 <li><p>Fixed: wrong path names
 in Artifactory backend with <code class="docutils literal notranslate"><span class="pre">dohq-artifactory==1.0.0</span></code></p></li>
 </ul>
-</div>
-<div class="section" id="version-2-2-1-2024-11-27">
-<h2>Version 2.2.1 (2024-11-27)<a class="headerlink" href="#version-2-2-1-2024-11-27" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-2-2-1-2024-11-27">
+<h2>Version 2.2.1 (2024-11-27)<a class="headerlink" href="#version-2-2-1-2024-11-27" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Fixed: ensure we always use MD5 sums
 when comparing files</p></li>
@@ -214,9 +230,9 @@ because the special handling
 of parquet file metadata checksums
 introduced potential issues</p></li>
 </ul>
-</div>
-<div class="section" id="version-2-2-0-2024-11-18">
-<h2>Version 2.2.0 (2024-11-18)<a class="headerlink" href="#version-2-2-0-2024-11-18" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-2-2-0-2024-11-18">
+<h2>Version 2.2.0 (2024-11-18)<a class="headerlink" href="#version-2-2-0-2024-11-18" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Added: <code class="docutils literal notranslate"><span class="pre">audbackend.checksum()</span></code>
 for calculating MD5 sum of files.
@@ -233,9 +249,9 @@ before finally failing</p></li>
 <li><p>Fixed: storing of checksum
 on S3/MinIO backends</p></li>
 </ul>
-</div>
-<div class="section" id="version-2-1-0-2024-10-31">
-<h2>Version 2.1.0 (2024-10-31)<a class="headerlink" href="#version-2-1-0-2024-10-31" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-2-1-0-2024-10-31">
+<h2>Version 2.1.0 (2024-10-31)<a class="headerlink" href="#version-2-1-0-2024-10-31" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Added: <code class="docutils literal notranslate"><span class="pre">audbackend.backend.Minio</span></code> backend
 to access MinIO and S3 storages</p></li>
@@ -243,9 +259,9 @@ to access MinIO and S3 storages</p></li>
 (without Artifactory backend)</p></li>
 <li><p>Removed: support for Python 3.8</p></li>
 </ul>
-</div>
-<div class="section" id="version-2-0-1-2024-05-14">
-<h2>Version 2.0.1 (2024-05-14)<a class="headerlink" href="#version-2-0-1-2024-05-14" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-2-0-1-2024-05-14">
+<h2>Version 2.0.1 (2024-05-14)<a class="headerlink" href="#version-2-0-1-2024-05-14" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Added: support for Python 3.11</p></li>
 <li><p>Fixed: ensure execution time of
@@ -253,9 +269,9 @@ to access MinIO and S3 storages</p></li>
 is independent of repository size
 on all backends</p></li>
 </ul>
-</div>
-<div class="section" id="version-2-0-0-2024-05-10">
-<h2>Version 2.0.0 (2024-05-10)<a class="headerlink" href="#version-2-0-0-2024-05-10" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-2-0-0-2024-05-10">
+<h2>Version 2.0.0 (2024-05-10)<a class="headerlink" href="#version-2-0-0-2024-05-10" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Added: <code class="docutils literal notranslate"><span class="pre">audbackend.interface</span></code> sub-module
 including an backend interface base class
@@ -337,9 +353,9 @@ and <code class="docutils literal notranslate"><span class="pre">audbackend.back
 instead</p></li>
 <li><p>Removed: <code class="docutils literal notranslate"><span class="pre">audbackend.available()</span></code></p></li>
 </ul>
-</div>
-<div class="section" id="version-1-0-2-2024-02-13">
-<h2>Version 1.0.2 (2024-02-13)<a class="headerlink" href="#version-1-0-2-2024-02-13" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-1-0-2-2024-02-13">
+<h2>Version 1.0.2 (2024-02-13)<a class="headerlink" href="#version-1-0-2-2024-02-13" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Added: support for accessing
 remote and virtual repositories
@@ -351,9 +367,9 @@ to file basenames</p></li>
 of the docstring
 of <code class="docutils literal notranslate"><span class="pre">audbackend.exists()</span></code></p></li>
 </ul>
-</div>
-<div class="section" id="version-1-0-1-2023-10-18">
-<h2>Version 1.0.1 (2023-10-18)<a class="headerlink" href="#version-1-0-1-2023-10-18" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-1-0-1-2023-10-18">
+<h2>Version 1.0.1 (2023-10-18)<a class="headerlink" href="#version-1-0-1-2023-10-18" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Added: <code class="docutils literal notranslate"><span class="pre">regex</span></code> argument
 to <code class="docutils literal notranslate"><span class="pre">audbackend.Backend._use_legacy_file_structure()</span></code>
@@ -361,9 +377,9 @@ to support providing regex pattern
 in the <code class="docutils literal notranslate"><span class="pre">extensions</span></code> argument</p></li>
 <li><p>Changed: depend on <code class="docutils literal notranslate"><span class="pre">dohq-artifactory&gt;=0.9.0</span></code></p></li>
 </ul>
-</div>
-<div class="section" id="version-1-0-0-2023-10-16">
-<h2>Version 1.0.0 (2023-10-16)<a class="headerlink" href="#version-1-0-0-2023-10-16" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-1-0-0-2023-10-16">
+<h2>Version 1.0.0 (2023-10-16)<a class="headerlink" href="#version-1-0-0-2023-10-16" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Added:
 <code class="docutils literal notranslate"><span class="pre">audbackend.Backend.access()</span></code>,
@@ -414,54 +430,54 @@ and their dependencies</p></li>
 <li><p>Removed: support for <code class="docutils literal notranslate"><span class="pre">Python</span> <span class="pre">3.7</span></code></p></li>
 <li><p>Removed: dependency on <code class="docutils literal notranslate"><span class="pre">audfactory</span></code></p></li>
 </ul>
-</div>
-<div class="section" id="version-0-3-18-2023-02-17">
-<h2>Version 0.3.18 (2023-02-17)<a class="headerlink" href="#version-0-3-18-2023-02-17" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-0-3-18-2023-02-17">
+<h2>Version 0.3.18 (2023-02-17)<a class="headerlink" href="#version-0-3-18-2023-02-17" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Fixed: support <code class="docutils literal notranslate"><span class="pre">dohq_artifactory.exception.ArtifactoryException</span></code>
 which was introduced in <code class="docutils literal notranslate"><span class="pre">dohq_artifactory&gt;=0.8</span></code>
 and is raised instead of a HTTP request error</p></li>
 </ul>
-</div>
-<div class="section" id="version-0-3-17-2023-02-13">
-<h2>Version 0.3.17 (2023-02-13)<a class="headerlink" href="#version-0-3-17-2023-02-13" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-0-3-17-2023-02-13">
+<h2>Version 0.3.17 (2023-02-13)<a class="headerlink" href="#version-0-3-17-2023-02-13" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Added: support for Python 3.10</p></li>
 <li><p>Changed: depend on <code class="docutils literal notranslate"><span class="pre">audfactory&gt;=1.0.10</span></code></p></li>
 </ul>
-</div>
-<div class="section" id="version-0-3-16-2022-10-13">
-<h2>Version 0.3.16 (2022-10-13)<a class="headerlink" href="#version-0-3-16-2022-10-13" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-0-3-16-2022-10-13">
+<h2>Version 0.3.16 (2022-10-13)<a class="headerlink" href="#version-0-3-16-2022-10-13" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Added: argument <code class="docutils literal notranslate"><span class="pre">tmp_root</span></code> to
 <code class="docutils literal notranslate"><span class="pre">audbackend.Backend.get_archive()</span></code> and
 <code class="docutils literal notranslate"><span class="pre">audbackend.Backend.put_archive()</span></code></p></li>
 </ul>
-</div>
-<div class="section" id="version-0-3-15-2022-04-01">
-<h2>Version 0.3.15 (2022-04-01)<a class="headerlink" href="#version-0-3-15-2022-04-01" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-0-3-15-2022-04-01">
+<h2>Version 0.3.15 (2022-04-01)<a class="headerlink" href="#version-0-3-15-2022-04-01" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Changed: depend on <code class="docutils literal notranslate"><span class="pre">audfactory&gt;=1.0.8</span></code>
 to change a critical bug
 when looking for available versions of an artifact</p></li>
 </ul>
-</div>
-<div class="section" id="version-0-3-14-2022-02-24">
-<h2>Version 0.3.14 (2022-02-24)<a class="headerlink" href="#version-0-3-14-2022-02-24" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-0-3-14-2022-02-24">
+<h2>Version 0.3.14 (2022-02-24)<a class="headerlink" href="#version-0-3-14-2022-02-24" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Changed: check for path name before creating archive
 in <code class="docutils literal notranslate"><span class="pre">audbackend.Backend.put_archive()</span></code></p></li>
 </ul>
-</div>
-<div class="section" id="version-0-3-13-2022-01-03">
-<h2>Version 0.3.13 (2022-01-03)<a class="headerlink" href="#version-0-3-13-2022-01-03" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-0-3-13-2022-01-03">
+<h2>Version 0.3.13 (2022-01-03)<a class="headerlink" href="#version-0-3-13-2022-01-03" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Added: Python 3.9 support</p></li>
 <li><p>Removed: Python 3.6 support</p></li>
 </ul>
-</div>
-<div class="section" id="version-0-3-12-2021-09-28">
-<h2>Version 0.3.12 (2021-09-28)<a class="headerlink" href="#version-0-3-12-2021-09-28" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-0-3-12-2021-09-28">
+<h2>Version 0.3.12 (2021-09-28)<a class="headerlink" href="#version-0-3-12-2021-09-28" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Added: <code class="docutils literal notranslate"><span class="pre">verbose</span></code> argument to
 <code class="docutils literal notranslate"><span class="pre">Backend.get_archive()</span></code>,
@@ -469,107 +485,107 @@ in <code class="docutils literal notranslate"><span class="pre">audbackend.Backe
 <code class="docutils literal notranslate"><span class="pre">Backend.put_archive()</span></code>,
 <code class="docutils literal notranslate"><span class="pre">Backend.put_file()</span></code></p></li>
 </ul>
-</div>
-<div class="section" id="version-0-3-11-2021-09-28">
-<h2>Version 0.3.11 (2021-09-28)<a class="headerlink" href="#version-0-3-11-2021-09-28" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-0-3-11-2021-09-28">
+<h2>Version 0.3.11 (2021-09-28)<a class="headerlink" href="#version-0-3-11-2021-09-28" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Fixed: catch 403 Error for Artifactory backend paths</p></li>
 </ul>
-</div>
-<div class="section" id="version-0-3-10-2021-08-05">
-<h2>Version 0.3.10 (2021-08-05)<a class="headerlink" href="#version-0-3-10-2021-08-05" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-0-3-10-2021-08-05">
+<h2>Version 0.3.10 (2021-08-05)<a class="headerlink" href="#version-0-3-10-2021-08-05" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Added: <code class="docutils literal notranslate"><span class="pre">audbackend.Backend.ls()</span></code></p></li>
 </ul>
-</div>
-<div class="section" id="version-0-3-9-2021-07-22">
-<h2>Version 0.3.9 (2021-07-22)<a class="headerlink" href="#version-0-3-9-2021-07-22" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-0-3-9-2021-07-22">
+<h2>Version 0.3.9 (2021-07-22)<a class="headerlink" href="#version-0-3-9-2021-07-22" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Fixed: ignore empty strings in <code class="docutils literal notranslate"><span class="pre">backend.join()</span></code></p></li>
 </ul>
-</div>
-<div class="section" id="version-0-3-8-2021-07-13">
-<h2>Version 0.3.8 (2021-07-13)<a class="headerlink" href="#version-0-3-8-2021-07-13" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-0-3-8-2021-07-13">
+<h2>Version 0.3.8 (2021-07-13)<a class="headerlink" href="#version-0-3-8-2021-07-13" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Added: <code class="docutils literal notranslate"><span class="pre">Repository</span></code></p></li>
 </ul>
-</div>
-<div class="section" id="version-0-3-7-2021-07-13">
-<h2>Version 0.3.7 (2021-07-13)<a class="headerlink" href="#version-0-3-7-2021-07-13" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-0-3-7-2021-07-13">
+<h2>Version 0.3.7 (2021-07-13)<a class="headerlink" href="#version-0-3-7-2021-07-13" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Added: <code class="docutils literal notranslate"><span class="pre">Repository</span></code></p></li>
 </ul>
-</div>
-<div class="section" id="version-0-3-6-2021-06-17">
-<h2>Version 0.3.6 (2021-06-17)<a class="headerlink" href="#version-0-3-6-2021-06-17" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-0-3-6-2021-06-17">
+<h2>Version 0.3.6 (2021-06-17)<a class="headerlink" href="#version-0-3-6-2021-06-17" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Changed: link to <code class="docutils literal notranslate"><span class="pre">audfactory</span></code> documentation for Artifactory authentication</p></li>
 <li><p>Changed: split up source code into several files</p></li>
 </ul>
-</div>
-<div class="section" id="version-0-3-5-2021-05-11">
-<h2>Version 0.3.5 (2021-05-11)<a class="headerlink" href="#version-0-3-5-2021-05-11" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-0-3-5-2021-05-11">
+<h2>Version 0.3.5 (2021-05-11)<a class="headerlink" href="#version-0-3-5-2021-05-11" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Added: argument <code class="docutils literal notranslate"><span class="pre">folder</span></code> to <code class="docutils literal notranslate"><span class="pre">Backend.glob()</span></code></p></li>
 </ul>
-</div>
-<div class="section" id="version-0-3-4-2021-05-06">
-<h2>Version 0.3.4 (2021-05-06)<a class="headerlink" href="#version-0-3-4-2021-05-06" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-0-3-4-2021-05-06">
+<h2>Version 0.3.4 (2021-05-06)<a class="headerlink" href="#version-0-3-4-2021-05-06" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Added: support files without extension and file extensions with dot(s)</p></li>
 </ul>
-</div>
-<div class="section" id="version-0-3-3-2021-03-29">
-<h2>Version 0.3.3 (2021-03-29)<a class="headerlink" href="#version-0-3-3-2021-03-29" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-0-3-3-2021-03-29">
+<h2>Version 0.3.3 (2021-03-29)<a class="headerlink" href="#version-0-3-3-2021-03-29" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Fixed: <code class="docutils literal notranslate"><span class="pre">audbackend.Artifactory.exists()</span></code> for cases of missing permissions</p></li>
 </ul>
-</div>
-<div class="section" id="version-0-3-2-2021-03-29">
-<h2>Version 0.3.2 (2021-03-29)<a class="headerlink" href="#version-0-3-2-2021-03-29" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-0-3-2-2021-03-29">
+<h2>Version 0.3.2 (2021-03-29)<a class="headerlink" href="#version-0-3-2-2021-03-29" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Fixed: use <code class="docutils literal notranslate"><span class="pre">audfactory</span> <span class="pre">&gt;=1.0.3</span></code> as it fixes <code class="docutils literal notranslate"><span class="pre">versions()</span></code>
 for paths with missing user permissions</p></li>
 </ul>
-</div>
-<div class="section" id="version-0-3-1-2021-03-26">
-<h2>Version 0.3.1 (2021-03-26)<a class="headerlink" href="#version-0-3-1-2021-03-26" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-0-3-1-2021-03-26">
+<h2>Version 0.3.1 (2021-03-26)<a class="headerlink" href="#version-0-3-1-2021-03-26" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Changed: adjust Python package keywords to <code class="docutils literal notranslate"><span class="pre">artifactory</span></code>, <code class="docutils literal notranslate"><span class="pre">filesystem</span></code></p></li>
 <li><p>Fixed: contribution section in documentation now provides correct links
 and explains Artifactory server access for running tests</p></li>
 </ul>
-</div>
-<div class="section" id="version-0-3-0-2021-03-26">
-<h2>Version 0.3.0 (2021-03-26)<a class="headerlink" href="#version-0-3-0-2021-03-26" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-0-3-0-2021-03-26">
+<h2>Version 0.3.0 (2021-03-26)<a class="headerlink" href="#version-0-3-0-2021-03-26" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Added: open source release on Github</p></li>
 <li><p>Changed: use <code class="docutils literal notranslate"><span class="pre">audfactory</span></code> &gt;=1.0.0</p></li>
 <li><p>Changed: use public Artifactory server for tests</p></li>
 </ul>
-</div>
-<div class="section" id="version-0-2-0-2021-02-22">
-<h2>Version 0.2.0 (2021-02-22)<a class="headerlink" href="#version-0-2-0-2021-02-22" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-0-2-0-2021-02-22">
+<h2>Version 0.2.0 (2021-02-22)<a class="headerlink" href="#version-0-2-0-2021-02-22" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Added: <code class="docutils literal notranslate"><span class="pre">audbackend.FileSystem</span></code> backend</p></li>
 <li><p>Changed: rename package to <code class="docutils literal notranslate"><span class="pre">audbackend</span></code></p></li>
 <li><p>Changed: include <code class="docutils literal notranslate"><span class="pre">repository</span></code> argument in the init methods of the backends</p></li>
 </ul>
-</div>
-<div class="section" id="version-0-1-1-2021-02-19">
-<h2>Version 0.1.1 (2021-02-19)<a class="headerlink" href="#version-0-1-1-2021-02-19" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-0-1-1-2021-02-19">
+<h2>Version 0.1.1 (2021-02-19)<a class="headerlink" href="#version-0-1-1-2021-02-19" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Fixed: missing <code class="docutils literal notranslate"><span class="pre">__init__</span></code> file in <code class="docutils literal notranslate"><span class="pre">audb_artifactory.core</span></code></p></li>
 </ul>
-</div>
-<div class="section" id="version-0-1-0-2021-02-19">
-<h2>Version 0.1.0 (2021-02-19)<a class="headerlink" href="#version-0-1-0-2021-02-19" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="version-0-1-0-2021-02-19">
+<h2>Version 0.1.0 (2021-02-19)<a class="headerlink" href="#version-0-1-0-2021-02-19" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Added: Initial release</p></li>
 <li><p>Added: <code class="docutils literal notranslate"><span class="pre">audb_artifactory.Artifactory</span></code></p></li>
 </ul>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
@@ -592,7 +608,7 @@ and explains Artifactory server access for running tests</p></li>
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2025/12/08 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/01/07 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -600,7 +616,7 @@ and explains Artifactory server access for running tests</p></li>
   <div role="contentinfo">
     <p>
         
-      &copy; 2021-2025 audEERING GmbH
+      &copy; 2021-2026 audEERING GmbH
     </p>
   </div> 
 
@@ -624,14 +640,11 @@ and explains Artifactory server access for running tests</p></li>
     
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
-        <script src="_static/clipboard.min.js"></script>
-        <script src="_static/copybutton.js"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
     
 
   

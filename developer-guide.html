@@ -5,7 +5,8 @@
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>Developer guide &mdash; Documentation</title>
@@ -65,7 +66,7 @@
             
             
               <div class="version">
-                2.2.3
+                2.3.0
               </div>
             
           
@@ -147,8 +148,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="developer-guide">
-<span id="id1"></span><h1>Developer guide<a class="headerlink" href="#developer-guide" title="Permalink to this heading">¶</a></h1>
+  <section id="developer-guide">
+<span id="id1"></span><h1>Developer guide<a class="headerlink" href="#developer-guide" title="Link to this heading">¶</a></h1>
 <p>The aim of
 <a class="reference internal" href="api/audbackend.html#module-audbackend" title="audbackend"><code class="xref py py-mod docutils literal notranslate"><span class="pre">audbackend</span></code></a>
 is to provide an
@@ -167,8 +168,8 @@ we take a deep dive
 and develop a backend
 that stores files into
 a <a class="reference external" href="https://sqlite.org/index.html">SQLite</a> database.</p>
-<div class="section" id="develop-new-interface">
-<span id="id2"></span><h2>Develop new interface<a class="headerlink" href="#develop-new-interface" title="Permalink to this heading">¶</a></h2>
+<section id="develop-new-interface">
+<span id="id2"></span><h2>Develop new interface<a class="headerlink" href="#develop-new-interface" title="Link to this heading">¶</a></h2>
 <p>We can implement our own interface
 by deriving from
 <a class="reference internal" href="api/audbackend.interface.Base.html#audbackend.interface.Base" title="audbackend.interface.Base"><code class="xref py py-class docutils literal notranslate"><span class="pre">audbackend.interface.Base</span></code></a>.
@@ -268,9 +269,9 @@ and upload a file:</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="develop-new-backend">
-<span id="id3"></span><h2>Develop new backend<a class="headerlink" href="#develop-new-backend" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="develop-new-backend">
+<span id="id3"></span><h2>Develop new backend<a class="headerlink" href="#develop-new-backend" title="Link to this heading">¶</a></h2>
 <p>In the previous section
 we have used an existing
 backend implementation.
@@ -551,6 +552,7 @@ we provide a more efficient implementation.</p>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
@@ -581,6 +583,7 @@ but it is more efficient if we provide one.</p>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
@@ -605,6 +608,7 @@ from the backend.</p>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
@@ -714,8 +718,8 @@ if the database does not exist).</p>
 <p>And that’s it,
 we have a fully functional backend.</p>
 <p>Voilà!</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
@@ -740,7 +744,7 @@ we have a fully functional backend.</p>
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2025/12/08 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/01/07 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -748,7 +752,7 @@ we have a fully functional backend.</p>
   <div role="contentinfo">
     <p>
         
-      &copy; 2021-2025 audEERING GmbH
+      &copy; 2021-2026 audEERING GmbH
     </p>
   </div> 
 
@@ -772,14 +776,11 @@ we have a fully functional backend.</p>
     
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
-        <script src="_static/clipboard.min.js"></script>
-        <script src="_static/copybutton.js"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
     
 
   

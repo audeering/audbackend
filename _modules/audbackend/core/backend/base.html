@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                2.2.3
+                2.3.0
               </div>
             
           
@@ -159,7 +159,9 @@
 <span class="p">)</span>
 
 
-<div class="viewcode-block" id="Base"><a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Base</span><span class="p">:</span>
+<div class="viewcode-block" id="Base">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Base</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Backend base class.</span>
 
 <span class="sd">    Derive from this class to implement a new backend.</span>
@@ -262,7 +264,9 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;MD5 checksum of file on backend.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Base.checksum"><a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.checksum">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">checksum</span><span class="p">(</span>
+<div class="viewcode-block" id="Base.checksum">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.checksum">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">checksum</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -291,6 +295,7 @@
             <span class="n">path</span><span class="p">,</span>
         <span class="p">)</span></div>
 
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_close</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
     <span class="p">):</span>  <span class="c1"># pragma: no cover</span>
@@ -303,7 +308,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span>
 
-<div class="viewcode-block" id="Base.close"><a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.close">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span>
+<div class="viewcode-block" id="Base.close">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.close">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Close connection to backend.</span>
@@ -316,10 +323,12 @@
             <span class="n">utils</span><span class="o">.</span><span class="n">call_function_on_backend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_close</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">opened</span> <span class="o">=</span> <span class="kc">False</span></div>
 
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_copy_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Copy file on backend.</span>
@@ -333,14 +342,22 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
             <span class="n">tmp_path</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="s2">&quot;~&quot;</span><span class="p">)</span>
-            <span class="n">tmp_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+            <span class="n">tmp_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span>
+                <span class="n">src_path</span><span class="p">,</span>
+                <span class="n">tmp_path</span><span class="p">,</span>
+                <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">,</span>
+                <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+            <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">put_file</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Base.copy_file"><a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.copy_file">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">copy_file</span><span class="p">(</span>
+<div class="viewcode-block" id="Base.copy_file">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.copy_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
@@ -363,6 +380,7 @@
 <span class="sd">        Args:</span>
 <span class="sd">            src_path: source path to file on backend</span>
 <span class="sd">            dst_path: destination path to file on backend</span>
+<span class="sd">            num_workers: number of parallel jobs</span>
 <span class="sd">            validate: verify file was successfully copied</span>
 <span class="sd">            verbose: show debug messages</span>
 
@@ -390,6 +408,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_copy_file</span><span class="p">,</span>
                 <span class="n">src_path</span><span class="p">,</span>
                 <span class="n">dst_path</span><span class="p">,</span>
+                <span class="n">num_workers</span><span class="p">,</span>
                 <span class="n">verbose</span><span class="p">,</span>
             <span class="p">)</span>
 
@@ -401,6 +420,7 @@
                     <span class="n">path_ref_is_local</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                 <span class="p">)</span></div>
 
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_create</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
     <span class="p">):</span>  <span class="c1"># pragma: no cover</span>
@@ -411,7 +431,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Base.create"><a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.create">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Base.create">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.create">[docs]</a>
+    <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -444,6 +466,7 @@
             <span class="n">backend</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">repository</span><span class="p">)</span>
         <span class="n">utils</span><span class="o">.</span><span class="n">call_function_on_backend</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">_create</span><span class="p">)</span></div>
 
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_date</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -456,7 +479,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Base.date"><a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.date">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">date</span><span class="p">(</span>
+<div class="viewcode-block" id="Base.date">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.date">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">date</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -488,13 +513,16 @@
             <span class="n">path</span><span class="p">,</span>
         <span class="p">)</span></div>
 
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_delete</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
     <span class="p">):</span>  <span class="c1"># pragma: no cover</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Delete repository and all its content.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Base.delete"><a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.delete">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Base.delete">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.delete">[docs]</a>
+    <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">delete</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -527,6 +555,7 @@
             <span class="n">backend</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">repository</span><span class="p">)</span>
         <span class="n">utils</span><span class="o">.</span><span class="n">call_function_on_backend</span><span class="p">(</span><span class="n">backend</span><span class="o">.</span><span class="n">_delete</span><span class="p">)</span></div>
 
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_exists</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -534,7 +563,9 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Check if file exists on backend.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Base.exists"><a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.exists">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">exists</span><span class="p">(</span>
+<div class="viewcode-block" id="Base.exists">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.exists">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">exists</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -573,12 +604,16 @@
             <span class="n">fallback_return_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="Base.get_archive"><a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.get_archive">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_archive</span><span class="p">(</span>
+
+<div class="viewcode-block" id="Base.get_archive">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.get_archive">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_archive</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">tmp_root</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
@@ -603,6 +638,7 @@
 <span class="sd">            dst_root: local destination directory</span>
 <span class="sd">            tmp_root: directory under which archive is temporarily extracted.</span>
 <span class="sd">                Defaults to temporary directory of system</span>
+<span class="sd">            num_workers: number of parallel jobs</span>
 <span class="sd">            validate: verify archive was successfully</span>
 <span class="sd">                retrieved from the backend</span>
 <span class="sd">            verbose: show debug messages</span>
@@ -640,6 +676,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span>
                 <span class="n">src_path</span><span class="p">,</span>
                 <span class="n">local_archive</span><span class="p">,</span>
+                <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">,</span>
                 <span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">,</span>
                 <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
             <span class="p">)</span>
@@ -650,20 +687,25 @@
                 <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
             <span class="p">)</span></div>
 
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="p">):</span>  <span class="c1"># pragma: no cover</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get file from backend.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Base.get_file"><a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.get_file">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_file</span><span class="p">(</span>
+<div class="viewcode-block" id="Base.get_file">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.get_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -690,6 +732,7 @@
 <span class="sd">        Args:</span>
 <span class="sd">            src_path: path to file on backend</span>
 <span class="sd">            dst_path: destination path to local file</span>
+<span class="sd">            num_workers: number of parallel jobs</span>
 <span class="sd">            validate: verify file was successfully</span>
 <span class="sd">                retrieved from the backend</span>
 <span class="sd">            verbose: show debug messages</span>
@@ -738,6 +781,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">_get_file</span><span class="p">,</span>
                     <span class="n">src_path</span><span class="p">,</span>
                     <span class="n">tmp_path</span><span class="p">,</span>
+                    <span class="n">num_workers</span><span class="p">,</span>
                     <span class="n">verbose</span><span class="p">,</span>
                 <span class="p">)</span>
                 <span class="n">audeer</span><span class="o">.</span><span class="n">move_file</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">)</span>
@@ -752,7 +796,10 @@
 
         <span class="k">return</span> <span class="n">dst_path</span></div>
 
-<div class="viewcode-block" id="Base.join"><a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.join">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">join</span><span class="p">(</span>
+
+<div class="viewcode-block" id="Base.join">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.join">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">join</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">*</span><span class="n">paths</span><span class="p">,</span>
@@ -782,6 +829,7 @@
 
         <span class="k">return</span> <span class="n">path</span></div>
 
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_ls</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -794,7 +842,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Base.ls"><a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.ls">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">ls</span><span class="p">(</span>
+<div class="viewcode-block" id="Base.ls">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.ls">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ls</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -878,10 +928,12 @@
 
         <span class="k">return</span> <span class="n">paths</span></div>
 
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_move_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Move file on backend.</span>
@@ -893,14 +945,17 @@
 <span class="sd">        if backend supports a native way to move files.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">copy_file</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">copy_file</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">remove_file</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Base.move_file"><a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.move_file">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">move_file</span><span class="p">(</span>
+<div class="viewcode-block" id="Base.move_file">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.move_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">move_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
@@ -927,6 +982,7 @@
 <span class="sd">        Args:</span>
 <span class="sd">            src_path: source path to file on backend</span>
 <span class="sd">            dst_path: destination path to file on backend</span>
+<span class="sd">            num_workers: number of parallel jobs</span>
 <span class="sd">            validate: verify file was successfully moved</span>
 <span class="sd">            verbose: show debug messages</span>
 
@@ -956,6 +1012,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">copy_file</span><span class="p">(</span>
                     <span class="n">src_path</span><span class="p">,</span>
                     <span class="n">dst_path</span><span class="p">,</span>
+                    <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">,</span>
                     <span class="n">validate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                     <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
                 <span class="p">)</span>
@@ -965,10 +1022,12 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">_move_file</span><span class="p">,</span>
                     <span class="n">src_path</span><span class="p">,</span>
                     <span class="n">dst_path</span><span class="p">,</span>
+                    <span class="n">num_workers</span><span class="p">,</span>
                     <span class="n">verbose</span><span class="p">,</span>
                 <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">remove_file</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span></div>
+
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_open</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -982,7 +1041,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span>
 
-<div class="viewcode-block" id="Base.open"><a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.open">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span>
+<div class="viewcode-block" id="Base.open">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.open">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">open</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Open connection to backend.</span>
@@ -1012,6 +1073,7 @@
             <span class="n">utils</span><span class="o">.</span><span class="n">call_function_on_backend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_open</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">opened</span> <span class="o">=</span> <span class="kc">True</span></div>
 
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_owner</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -1023,7 +1085,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Base.owner"><a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.owner">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">owner</span><span class="p">(</span>
+<div class="viewcode-block" id="Base.owner">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.owner">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">owner</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -1056,7 +1120,10 @@
             <span class="n">path</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="Base.put_archive"><a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.put_archive">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">put_archive</span><span class="p">(</span>
+
+<div class="viewcode-block" id="Base.put_archive">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.put_archive">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">put_archive</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -1141,6 +1208,7 @@
                 <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
             <span class="p">)</span></div>
 
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_put_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -1151,7 +1219,9 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Put file to backend.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Base.put_file"><a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.put_file">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">put_file</span><span class="p">(</span>
+<div class="viewcode-block" id="Base.put_file">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.put_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">put_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -1220,6 +1290,7 @@
                     <span class="n">path_ref_is_local</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="p">)</span></div>
 
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_remove_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -1227,7 +1298,9 @@
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Remove file from backend.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Base.remove_file"><a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.remove_file">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">remove_file</span><span class="p">(</span>
+<div class="viewcode-block" id="Base.remove_file">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.remove_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">):</span>
@@ -1253,6 +1326,7 @@
             <span class="n">path</span><span class="p">,</span>
         <span class="p">)</span></div>
 
+
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">sep</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;File separator on backend.</span>
@@ -1262,7 +1336,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">utils</span><span class="o">.</span><span class="n">BACKEND_SEPARATOR</span>
 
-<div class="viewcode-block" id="Base.split"><a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.split">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">split</span><span class="p">(</span>
+<div class="viewcode-block" id="Base.split">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.split">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">split</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
@@ -1284,7 +1360,9 @@
         <span class="n">root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">sep</span>
         <span class="n">basename</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
-        <span class="k">return</span> <span class="n">root</span><span class="p">,</span> <span class="n">basename</span></div></div>
+        <span class="k">return</span> <span class="n">root</span><span class="p">,</span> <span class="n">basename</span></div>
+</div>
+
 </pre></div>
 
            </div>
@@ -1300,7 +1378,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2025/12/08 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/01/07 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -1308,7 +1386,7 @@
   <div role="contentinfo">
     <p>
         
-      &copy; 2021-2025 audEERING GmbH
+      &copy; 2021-2026 audEERING GmbH
     </p>
   </div> 
 
@@ -1332,14 +1410,11 @@
     
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
-        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-        <script src="../../../../_static/jquery.js"></script>
-        <script src="../../../../_static/underscore.js"></script>
-        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="../../../../_static/doctools.js"></script>
-        <script src="../../../../_static/sphinx_highlight.js"></script>
-        <script src="../../../../_static/clipboard.min.js"></script>
-        <script src="../../../../_static/copybutton.js"></script>
+        <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     
 
   

@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                2.2.3
+                2.3.0
               </div>
             
           
@@ -148,7 +148,9 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">audbackend.core.interface.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Base</span>
 
 
-<div class="viewcode-block" id="Unversioned"><a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Unversioned</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+<div class="viewcode-block" id="Unversioned">
+<a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Unversioned</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Interface for unversioned file access.</span>
 
 <span class="sd">    Use this interface if you don&#39;t care about versioning.</span>
@@ -177,7 +179,9 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Unversioned.checksum"><a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.checksum">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">checksum</span><span class="p">(</span>
+<div class="viewcode-block" id="Unversioned.checksum">
+<a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.checksum">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">checksum</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -212,11 +216,15 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">checksum</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Unversioned.copy_file"><a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.copy_file">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">copy_file</span><span class="p">(</span>
+
+<div class="viewcode-block" id="Unversioned.copy_file">
+<a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.copy_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
@@ -239,6 +247,7 @@
 <span class="sd">        Args:</span>
 <span class="sd">            src_path: source path to file on backend</span>
 <span class="sd">            dst_path: destination path to file on backend</span>
+<span class="sd">            num_workers: number of parallel jobs</span>
 <span class="sd">            validate: verify file was successfully copied</span>
 <span class="sd">            verbose: show debug messages</span>
 
@@ -267,11 +276,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">copy_file</span><span class="p">(</span>
             <span class="n">src_path</span><span class="p">,</span>
             <span class="n">dst_path</span><span class="p">,</span>
+            <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">,</span>
             <span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">,</span>
             <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="Unversioned.date"><a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.date">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">date</span><span class="p">(</span>
+
+<div class="viewcode-block" id="Unversioned.date">
+<a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.date">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">date</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -307,7 +320,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">date</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Unversioned.exists"><a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.exists">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">exists</span><span class="p">(</span>
+
+<div class="viewcode-block" id="Unversioned.exists">
+<a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.exists">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">exists</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -352,7 +368,10 @@
             <span class="n">suppress_backend_errors</span><span class="o">=</span><span class="n">suppress_backend_errors</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="Unversioned.get_archive"><a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.get_archive">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_archive</span><span class="p">(</span>
+
+<div class="viewcode-block" id="Unversioned.get_archive">
+<a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.get_archive">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_archive</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -423,11 +442,15 @@
             <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="Unversioned.get_file"><a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.get_file">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_file</span><span class="p">(</span>
+
+<div class="viewcode-block" id="Unversioned.get_file">
+<a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.get_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -454,6 +477,7 @@
 <span class="sd">        Args:</span>
 <span class="sd">            src_path: path to file on backend</span>
 <span class="sd">            dst_path: destination path to local file</span>
+<span class="sd">            num_workers: number of parallel jobs</span>
 <span class="sd">            validate: verify file was successfully</span>
 <span class="sd">                retrieved from the backend</span>
 <span class="sd">            verbose: show debug messages</span>
@@ -486,11 +510,15 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span>
             <span class="n">src_path</span><span class="p">,</span>
             <span class="n">dst_path</span><span class="p">,</span>
+            <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">,</span>
             <span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">,</span>
             <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="Unversioned.ls"><a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.ls">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">ls</span><span class="p">(</span>
+
+<div class="viewcode-block" id="Unversioned.ls">
+<a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.ls">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ls</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -561,11 +589,15 @@
             <span class="n">suppress_backend_errors</span><span class="o">=</span><span class="n">suppress_backend_errors</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="Unversioned.move_file"><a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.move_file">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">move_file</span><span class="p">(</span>
+
+<div class="viewcode-block" id="Unversioned.move_file">
+<a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.move_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">move_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
@@ -592,6 +624,7 @@
 <span class="sd">        Args:</span>
 <span class="sd">            src_path: source path to file on backend</span>
 <span class="sd">            dst_path: destination path to file on backend</span>
+<span class="sd">            num_workers: number of parallel jobs</span>
 <span class="sd">            validate: verify file was successfully moved</span>
 <span class="sd">            verbose: show debug messages</span>
 
@@ -622,11 +655,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">move_file</span><span class="p">(</span>
             <span class="n">src_path</span><span class="p">,</span>
             <span class="n">dst_path</span><span class="p">,</span>
+            <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">,</span>
             <span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">,</span>
             <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="Unversioned.owner"><a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.owner">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">owner</span><span class="p">(</span>
+
+<div class="viewcode-block" id="Unversioned.owner">
+<a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.owner">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">owner</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -663,7 +700,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">owner</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Unversioned.put_archive"><a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.put_archive">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">put_archive</span><span class="p">(</span>
+
+<div class="viewcode-block" id="Unversioned.put_archive">
+<a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.put_archive">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">put_archive</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -741,7 +781,10 @@
             <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="Unversioned.put_file"><a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.put_file">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">put_file</span><span class="p">(</span>
+
+<div class="viewcode-block" id="Unversioned.put_file">
+<a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.put_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">put_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -799,7 +842,10 @@
             <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="Unversioned.remove_file"><a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.remove_file">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">remove_file</span><span class="p">(</span>
+
+<div class="viewcode-block" id="Unversioned.remove_file">
+<a class="viewcode-back" href="../../../../api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.remove_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">):</span>
@@ -828,7 +874,9 @@
 <span class="sd">            False</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">remove_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">remove_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+</div>
+
 </pre></div>
 
            </div>
@@ -844,7 +892,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2025/12/08 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/01/07 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -852,7 +900,7 @@
   <div role="contentinfo">
     <p>
         
-      &copy; 2021-2025 audEERING GmbH
+      &copy; 2021-2026 audEERING GmbH
     </p>
   </div> 
 
@@ -876,14 +924,11 @@
     
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
-        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-        <script src="../../../../_static/jquery.js"></script>
-        <script src="../../../../_static/underscore.js"></script>
-        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="../../../../_static/doctools.js"></script>
-        <script src="../../../../_static/sphinx_highlight.js"></script>
-        <script src="../../../../_static/clipboard.min.js"></script>
-        <script src="../../../../_static/copybutton.js"></script>
+        <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../../../../_static/copybutton.js?v=f281be69"></script>
     
 
   

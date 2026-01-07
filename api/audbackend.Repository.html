@@ -5,7 +5,8 @@
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>Repository &mdash; Documentation</title>
@@ -65,7 +66,7 @@
             
             
               <div class="version">
-                2.2.3
+                2.3.0
               </div>
             
           
@@ -153,11 +154,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="repository">
-<h1>Repository<a class="headerlink" href="#repository" title="Permalink to this heading">¶</a></h1>
+  <section id="repository">
+<h1>Repository<a class="headerlink" href="#repository" title="Link to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="audbackend.Repository">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">audbackend.</span></span><span class="sig-name descname"><span class="pre">Repository</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/repository.html#Repository"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Repository" title="Permalink to this definition">¶</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">audbackend.</span></span><span class="sig-name descname"><span class="pre">Repository</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/audbackend/core/repository.html#Repository"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#audbackend.Repository" title="Link to this definition">¶</a></dt>
 <dd><p>Repository object.</p>
 <p>It stores all information
 needed to address a repository:
@@ -174,44 +175,44 @@ that assign string names to backends,
 they should be provided by the application.</p>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – repository name</p></li>
-<li><p><strong>host</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – repository host</p></li>
-<li><p><strong>backend</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) – repository backend</p></li>
+<li><p><strong>name</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – repository name</p></li>
+<li><p><strong>host</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – repository host</p></li>
+<li><p><strong>backend</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – repository backend</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-<div class="section" id="backend">
-<h2>backend<a class="headerlink" href="#backend" title="Permalink to this heading">¶</a></h2>
+<section id="backend">
+<h2>backend<a class="headerlink" href="#backend" title="Link to this heading">¶</a></h2>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="audbackend.Repository.backend">
-<span class="sig-prename descclassname"><span class="pre">Repository.</span></span><span class="sig-name descname"><span class="pre">backend</span></span><a class="headerlink" href="#audbackend.Repository.backend" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">Repository.</span></span><span class="sig-name descname"><span class="pre">backend</span></span><a class="headerlink" href="#audbackend.Repository.backend" title="Link to this definition">¶</a></dt>
 <dd><p>Repository backend.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="host">
-<h2>host<a class="headerlink" href="#host" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="host">
+<h2>host<a class="headerlink" href="#host" title="Link to this heading">¶</a></h2>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="audbackend.Repository.host">
-<span class="sig-prename descclassname"><span class="pre">Repository.</span></span><span class="sig-name descname"><span class="pre">host</span></span><a class="headerlink" href="#audbackend.Repository.host" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">Repository.</span></span><span class="sig-name descname"><span class="pre">host</span></span><a class="headerlink" href="#audbackend.Repository.host" title="Link to this definition">¶</a></dt>
 <dd><p>Repository host.</p>
 </dd></dl>
 
-</div>
-<div class="section" id="name">
-<h2>name<a class="headerlink" href="#name" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="name">
+<h2>name<a class="headerlink" href="#name" title="Link to this heading">¶</a></h2>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="audbackend.Repository.name">
-<span class="sig-prename descclassname"><span class="pre">Repository.</span></span><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#audbackend.Repository.name" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">Repository.</span></span><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#audbackend.Repository.name" title="Link to this definition">¶</a></dt>
 <dd><p>Repository name.</p>
 </dd></dl>
 
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
@@ -236,7 +237,7 @@ they should be provided by the application.</p>
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2025/12/08 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/01/07 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -244,7 +245,7 @@ they should be provided by the application.</p>
   <div role="contentinfo">
     <p>
         
-      &copy; 2021-2025 audEERING GmbH
+      &copy; 2021-2026 audEERING GmbH
     </p>
   </div> 
 
@@ -268,14 +269,11 @@ they should be provided by the application.</p>
     
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
-        <script src="../_static/clipboard.min.js"></script>
-        <script src="../_static/copybutton.js"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../_static/copybutton.js?v=f281be69"></script>
     
 
   
