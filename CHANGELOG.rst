@@ -7,6 +7,20 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 2.3.0 (2026-01-07)
+--------------------------
+
+* Added: ``num_workers`` argument to
+  ``Backend.copy_file()``,
+  ``Backend.get_archive()``,
+  ``Backend.get_file()``,
+  ``Backend.move_file()``,
+  ``Interface.copy_file()``,
+  ``Interface.get_file()``,
+  ``Interface.move_file()``.
+  Argument is only applied on ``Minio`` backends
+
+
 Version 2.2.3 (2025-12-08)
 --------------------------
 
