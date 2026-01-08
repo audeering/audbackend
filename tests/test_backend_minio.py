@@ -1,8 +1,6 @@
 import contextlib
 import filecmp
 import os
-import signal
-import threading
 from unittest import mock
 import warnings
 
@@ -433,84 +431,6 @@ def test_get_file(tmpdir, interface):
     assert os.path.getsize(dst_path1) == os.path.getsize(dst_path2)
     assert audeer.md5(dst_path1) == audeer.md5(dst_path2)
     assert filecmp.cmp(dst_path1, dst_path2, shallow=False)
-
-
-@pytest.mark.parametrize(
-    "interface",
-    [(audbackend.backend.Minio, audbackend.interface.Unversioned)],
-    indirect=True,
-)
-def test_interrupt_signal_handler(tmpdir, interface):
-    r"""Test that signal handler sets cancel_event correctly.
-
-    This tests the signal handler setup
-    that sets the cancel_event when SIGINT is received.
-
-    Args:
-        tmpdir: tmpdir fixture
-        interface: interface fixture
-
-    """
-    # Create a cancel_event like _get_file does
-    cancel_event = threading.Event()
-
-    # Create the signal handler as defined in _get_file
-    def signal_handler(signum, frame):
-        cancel_event.set()
-
-    # Install the handler
-    original_handler = signal.signal(signal.SIGINT, signal_handler)
-
-    try:
-        # Verify event is not set initially
-        assert not cancel_event.is_set()
-
-        # Call the signal handler directly (simulating Ctrl+C)
-        signal_handler(signal.SIGINT, None)
-
-        # Verify event was set by the handler (minio.py:289)
-        assert cancel_event.is_set()
-    finally:
-        # Restore original handler
-        signal.signal(signal.SIGINT, original_handler)
-
-
-@pytest.mark.parametrize(
-    "interface",
-    [(audbackend.backend.Minio, audbackend.interface.Unversioned)],
-    indirect=True,
-)
-def test_interrupt_via_cancel_event(tmpdir, interface):
-    r"""Test that cancel_event check during download raises KeyboardInterrupt.
-
-    This tests the interrupt handling mechanism
-    where the cancel_event is checked during file download.
-    Directly calls _download_file with a cancel_event that gets set.
-
-    Args:
-        tmpdir: tmpdir fixture
-        interface: interface fixture
-
-    """
-    # Create and upload a test file
-    tmp_path = audeer.path(tmpdir, "file.bin")
-    create_file_exact_size(tmp_path, 2)  # 2 MB file
-    backend_path = "/file.bin"
-    interface.put_file(tmp_path, backend_path)
-
-    # Create a cancel_event and set it immediately
-    # This will cause the download loop to raise KeyboardInterrupt
-    cancel_event = threading.Event()
-    cancel_event.set()
-
-    # Prepare download
-    src_path = interface._backend.path(backend_path)
-    dst_path = audeer.path(tmpdir, "download.bin")
-    pbar = audeer.progress_bar(total=100, disable=True)
-
-    # Attempt download with cancel_event already set - should raise KeyboardInterrupt
-    with pytest.raises(KeyboardInterrupt, match="Download cancelled by user"):
-        interface._backend._download_file(src_path, dst_path, pbar, cancel_event)
 
 
 @pytest.mark.parametrize(

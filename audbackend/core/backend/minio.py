@@ -2,9 +2,7 @@ import configparser
 import getpass
 import mimetypes
 import os
-import signal
 import tempfile
-import threading
 import warnings
 
 import minio
@@ -337,15 +335,6 @@ class Minio(Base):
             object_name=src_path,
         ).size
 
-        # Create cancellation event for handling interrupts
-        cancel_event = threading.Event()
-
-        # Install signal handler to set cancel_event on Ctrl+C
-        def signal_handler(signum, frame):
-            cancel_event.set()  # pragma: no cover
-
-        original_handler = signal.signal(signal.SIGINT, signal_handler)
-
         # Setup progress bar
         desc = audeer.format_display_message(
             f"Download {os.path.basename(str(src_path))}",
@@ -357,7 +346,7 @@ class Minio(Base):
             if num_workers == 1:
                 # Simple single-threaded download
                 with pbar:
-                    self._download_file(src_path, dst_path, pbar, cancel_event)
+                    self._download_file(src_path, dst_path, pbar)
             else:
                 # Multi-threaded download with pre-allocated file
                 with open(dst_path, "wb") as f:
@@ -371,9 +360,7 @@ class Minio(Base):
                 for i in range(num_workers):
                     offset = i * chunk_size
                     length = chunk_size if i < num_workers - 1 else src_size - offset
-                    tasks.append(
-                        ([src_path, dst_path, pbar, cancel_event, offset, length], {})
-                    )
+                    tasks.append(([src_path, dst_path, pbar, offset, length], {}))
 
                 with pbar:
                     audeer.run_tasks(
@@ -384,16 +371,12 @@ class Minio(Base):
             if os.path.exists(dst_path):
                 os.remove(dst_path)
             raise
-        finally:
-            # Restore original signal handler
-            signal.signal(signal.SIGINT, original_handler)
 
     def _download_file(
         self,
         src_path: str,
         dst_path: str,
         pbar,
-        cancel_event: threading.Event = None,
         offset: int = 0,
         length: int | None = None,
     ):
@@ -416,9 +399,6 @@ class Minio(Base):
                     f.seek(offset)
 
                 while data := response.read(chunk_size):
-                    # Check if cancellation was requested
-                    if cancel_event and cancel_event.is_set():
-                        raise KeyboardInterrupt("Download cancelled by user")
                     f.write(data)
                     pbar.update(len(data))
         finally:
