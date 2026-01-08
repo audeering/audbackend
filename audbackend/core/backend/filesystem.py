@@ -122,6 +122,18 @@ class FileSystem(Base):
         src_path = self._expand(src_path)
         shutil.copy(src_path, dst_path)
 
+    def _get_file_stream(
+        self,
+        src_path: str,
+    ):
+        r"""Get file from backend as byte stream."""
+        src_path = self._expand(src_path)
+        chunk_size = 64 * 1024  # 64 KB
+
+        with open(src_path, "rb") as f:
+            while data := f.read(chunk_size):
+                yield data
+
     def _ls(
         self,
         path: str,

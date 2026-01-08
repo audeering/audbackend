@@ -271,6 +271,18 @@ class Artifactory(Base):
         src_path = self.path(src_path)
         _download(src_path, dst_path, verbose=verbose)
 
+    def _get_file_stream(
+        self,
+        src_path: str,
+    ):
+        r"""Get file from backend as byte stream."""
+        src_path = self.path(src_path)
+        chunk_size = 64 * 1024  # 64 KB
+
+        with src_path.open() as fp:
+            while data := fp.read(chunk_size):
+                yield data
+
     def _ls(
         self,
         path: str,

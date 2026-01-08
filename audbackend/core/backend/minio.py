@@ -409,6 +409,26 @@ class Minio(Base):
             response.close()
             response.release_conn()
 
+    def _get_file_stream(
+        self,
+        src_path: str,
+    ):
+        r"""Get file from backend as byte stream."""
+        src_path = self.path(src_path)
+        chunk_size = 64 * 1024  # 64 KB
+
+        response = self._client.get_object(
+            bucket_name=self.repository,
+            object_name=src_path,
+        )
+
+        try:
+            while data := response.read(chunk_size):
+                yield data
+        finally:
+            response.close()
+            response.release_conn()
+
     def _ls(
         self,
         path: str,
