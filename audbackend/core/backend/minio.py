@@ -5,6 +5,7 @@ import os
 import signal
 import tempfile
 import threading
+import warnings
 
 import minio
 import urllib3
@@ -91,16 +92,16 @@ class Minio(Base):
         #   - "read_timeout": seconds for read operations; None means no timeout
         #     (default: None)
         if "http_client" not in kwargs:
-            connect_timeout = config.get("connect_timeout", 10.0)
-            read_timeout = config.get("read_timeout", None)
-            # Convert string values from config file to appropriate types
-            if isinstance(connect_timeout, str):
-                connect_timeout = float(connect_timeout)
-            if isinstance(read_timeout, str):
-                if read_timeout.lower() == "none":
-                    read_timeout = None
-                else:
-                    read_timeout = float(read_timeout)
+            connect_timeout = _parse_timeout(
+                config.get("connect_timeout", 10.0),
+                name="connect_timeout",
+                default=10.0,
+            )
+            read_timeout = _parse_timeout(
+                config.get("read_timeout", None),
+                name="read_timeout",
+                default=None,
+            )
             timeout = urllib3.Timeout(connect=connect_timeout, read=read_timeout)
             kwargs["http_client"] = urllib3.PoolManager(timeout=timeout)
 
@@ -559,3 +560,42 @@ def _metadata(checksum: str):
         "checksum": checksum,
         "owner": getpass.getuser(),
     }
+
+
+def _parse_timeout(
+    value: str | float | None,
+    *,
+    name: str,
+    default: float | None,
+) -> float | None:
+    """Parse a timeout value from config.
+
+    Converts string values to float, handling "None" as Python None.
+    If parsing fails, logs a warning and returns the default value.
+
+    Args:
+        value: timeout value (string from config, float, or None)
+        name: name of the timeout setting (for warning messages)
+        default: default value to use if parsing fails
+
+    Returns:
+        parsed timeout value or default
+
+    """
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, str):
+        if value.lower() == "none":
+            return None
+        try:
+            return float(value)
+        except ValueError:
+            warnings.warn(
+                f"Invalid {name} value '{value}' in config, using default: {default}",
+                UserWarning,
+                stacklevel=4,
+            )
+            return default
+    return default

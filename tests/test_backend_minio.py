@@ -1,8 +1,10 @@
+import contextlib
 import filecmp
 import os
 import signal
 import threading
 from unittest import mock
+import warnings
 
 import minio
 import pytest
@@ -11,6 +13,30 @@ import urllib3
 import audeer
 
 import audbackend
+
+
+@contextlib.contextmanager
+def capture_minio_kwargs():
+    """Context manager to capture kwargs passed to minio.Minio constructor.
+
+    Yields a dictionary that will be populated with the kwargs
+    passed to minio.Minio.__init__.
+
+    Example:
+        with capture_minio_kwargs() as captured:
+            audbackend.backend.Minio(host, repo)
+        assert "http_client" in captured
+
+    """
+    captured_kwargs = {}
+    original_init = minio.Minio.__init__
+
+    def mock_init(self, *args, **kwargs):
+        captured_kwargs.update(kwargs)
+        original_init(self, *args, **kwargs)
+
+    with mock.patch.object(minio.Minio, "__init__", mock_init):
+        yield captured_kwargs
 
 
 def create_file_exact_size(filename, size_mb):
@@ -554,20 +580,12 @@ def test_custom_http_client_honored(tmpdir, hosts, hide_credentials):
     # Create a custom http_client
     custom_http_client = urllib3.PoolManager(timeout=urllib3.Timeout(connect=5.0))
 
-    # Capture the kwargs passed to minio.Minio
-    captured_kwargs = {}
-    original_minio_init = minio.Minio.__init__
-
-    def mock_minio_init(self, *args, **kwargs):
-        captured_kwargs.update(kwargs)
-        original_minio_init(self, *args, **kwargs)
-
-    with mock.patch.object(minio.Minio, "__init__", mock_minio_init):
+    with capture_minio_kwargs() as captured:
         audbackend.backend.Minio(host, "repository", http_client=custom_http_client)
 
     # Verify the custom http_client was passed through
-    assert "http_client" in captured_kwargs
-    assert captured_kwargs["http_client"] is custom_http_client
+    assert "http_client" in captured
+    assert captured["http_client"] is custom_http_client
 
 
 def test_default_timeout_configuration(tmpdir, hosts, hide_credentials):
@@ -594,20 +612,12 @@ def test_default_timeout_configuration(tmpdir, hosts, hide_credentials):
         fp.write("access_key = test\n")
         fp.write("secret_key = test\n")
 
-    # Capture the kwargs passed to minio.Minio
-    captured_kwargs = {}
-    original_minio_init = minio.Minio.__init__
-
-    def mock_minio_init(self, *args, **kwargs):
-        captured_kwargs.update(kwargs)
-        original_minio_init(self, *args, **kwargs)
-
-    with mock.patch.object(minio.Minio, "__init__", mock_minio_init):
+    with capture_minio_kwargs() as captured:
         audbackend.backend.Minio(host, "repository")
 
     # Verify an http_client was created
-    assert "http_client" in captured_kwargs
-    http_client = captured_kwargs["http_client"]
+    assert "http_client" in captured
+    http_client = captured["http_client"]
     assert isinstance(http_client, urllib3.PoolManager)
 
     # Verify the default timeout values
@@ -642,19 +652,11 @@ def test_custom_timeout_from_config(tmpdir, hosts, hide_credentials):
         fp.write("connect_timeout = 30.0\n")
         fp.write("read_timeout = 120.0\n")
 
-    # Capture the kwargs passed to minio.Minio
-    captured_kwargs = {}
-    original_minio_init = minio.Minio.__init__
-
-    def mock_minio_init(self, *args, **kwargs):
-        captured_kwargs.update(kwargs)
-        original_minio_init(self, *args, **kwargs)
-
-    with mock.patch.object(minio.Minio, "__init__", mock_minio_init):
+    with capture_minio_kwargs() as captured:
         audbackend.backend.Minio(host, "repository")
 
     # Verify the custom timeout values from config
-    http_client = captured_kwargs["http_client"]
+    http_client = captured["http_client"]
     timeout = http_client.connection_pool_kw.get("timeout")
     assert timeout.connect_timeout == 30.0
     assert timeout.read_timeout == 120.0
@@ -684,19 +686,52 @@ def test_none_read_timeout_from_config(tmpdir, hosts, hide_credentials):
         fp.write("connect_timeout = 15.0\n")
         fp.write("read_timeout = None\n")
 
-    # Capture the kwargs passed to minio.Minio
-    captured_kwargs = {}
-    original_minio_init = minio.Minio.__init__
-
-    def mock_minio_init(self, *args, **kwargs):
-        captured_kwargs.update(kwargs)
-        original_minio_init(self, *args, **kwargs)
-
-    with mock.patch.object(minio.Minio, "__init__", mock_minio_init):
+    with capture_minio_kwargs() as captured:
         audbackend.backend.Minio(host, "repository")
 
     # Verify read_timeout is None
-    http_client = captured_kwargs["http_client"]
+    http_client = captured["http_client"]
     timeout = http_client.connection_pool_kw.get("timeout")
     assert timeout.connect_timeout == 15.0
     assert timeout.read_timeout is None
+
+
+def test_invalid_timeout_warning(tmpdir, hosts, hide_credentials):
+    r"""Test that invalid timeout values emit a warning and use defaults.
+
+    When a non-numeric string is provided as a timeout value,
+    a warning should be emitted and the default value should be used.
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture
+
+    """
+    host = hosts["minio"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["MINIO_CONFIG_FILE"] = config_path
+
+    # Create config file with invalid timeout values
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("access_key = test\n")
+        fp.write("secret_key = test\n")
+        fp.write("connect_timeout = invalid\n")
+        fp.write("read_timeout = sixty\n")
+
+    with capture_minio_kwargs() as captured:
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            audbackend.backend.Minio(host, "repository")
+
+            # Verify warnings were emitted
+            assert len(w) == 2
+            assert "Invalid connect_timeout value 'invalid'" in str(w[0].message)
+            assert "Invalid read_timeout value 'sixty'" in str(w[1].message)
+
+    # Verify default timeout values were used
+    http_client = captured["http_client"]
+    timeout = http_client.connection_pool_kw.get("timeout")
+    assert timeout.connect_timeout == 10.0  # default
+    assert timeout.read_timeout is None  # default
