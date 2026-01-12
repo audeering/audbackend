@@ -7,6 +7,7 @@ import tempfile
 import threading
 
 import minio
+import urllib3
 
 import audeer
 
@@ -16,6 +17,10 @@ from audbackend.core.backend.base import Base
 
 class Minio(Base):
     r"""Backend for MinIO.
+
+    As default we a timeout of 10s,
+    provide a ``http_client`` object as ``kwargs``
+    to adjust it.
 
     Args:
         host: host address
@@ -71,6 +76,12 @@ class Minio(Base):
         if secure is None:
             config = self.get_config(host)
             secure = config.get("secure", True)
+
+        # Configure HTTP client with timeouts to prevent hanging downloads.
+        # Users can override by passing their own http_client in kwargs.
+        if "http_client" not in kwargs:
+            timeout = urllib3.Timeout(connect=10.0, read=10.0)
+            kwargs["http_client"] = urllib3.PoolManager(timeout=timeout)
 
         # Open MinIO client
         self._client = minio.Minio(
