@@ -1,13 +1,42 @@
+import contextlib
 import filecmp
 import os
 import signal
 import threading
+from unittest import mock
+import warnings
 
+import minio
 import pytest
+import urllib3
 
 import audeer
 
 import audbackend
+
+
+@contextlib.contextmanager
+def capture_minio_kwargs():
+    """Context manager to capture kwargs passed to minio.Minio constructor.
+
+    Yields a dictionary that will be populated with the kwargs
+    passed to minio.Minio.__init__.
+
+    Example:
+        with capture_minio_kwargs() as captured:
+            audbackend.backend.Minio(host, repo)
+        assert "http_client" in captured
+
+    """
+    captured_kwargs = {}
+    original_init = minio.Minio.__init__
+
+    def mock_init(self, *args, **kwargs):
+        captured_kwargs.update(kwargs)
+        original_init(self, *args, **kwargs)
+
+    with mock.patch.object(minio.Minio, "__init__", mock_init):
+        yield captured_kwargs
 
 
 def create_file_exact_size(filename, size_mb):
@@ -524,3 +553,185 @@ def test_interrupt_cleanup(tmpdir, interface, monkeypatch):
 
     # Verify cleanup happened
     assert not os.path.exists(dst_path)
+
+
+def test_custom_http_client_honored(tmpdir, hosts, hide_credentials):
+    r"""Test that custom http_client passed via kwargs is honored.
+
+    When a user provides their own http_client, the backend should use it
+    instead of creating a default one with timeouts.
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture
+
+    """
+    host = hosts["minio"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["MINIO_CONFIG_FILE"] = config_path
+
+    # Create minimal config file
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("access_key = test\n")
+        fp.write("secret_key = test\n")
+
+    # Create a custom http_client
+    custom_http_client = urllib3.PoolManager(timeout=urllib3.Timeout(connect=5.0))
+
+    with capture_minio_kwargs() as captured:
+        audbackend.backend.Minio(host, "repository", http_client=custom_http_client)
+
+    # Verify the custom http_client was passed through
+    assert "http_client" in captured
+    assert captured["http_client"] is custom_http_client
+
+
+def test_default_timeout_configuration(tmpdir, hosts, hide_credentials):
+    r"""Test that default timeout configuration is applied.
+
+    When no http_client is provided and no timeout config is set,
+    the backend should create an http_client with default timeouts:
+    - connect_timeout: 10.0
+    - read_timeout: None
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture
+
+    """
+    host = hosts["minio"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["MINIO_CONFIG_FILE"] = config_path
+
+    # Create minimal config file without timeout settings
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("access_key = test\n")
+        fp.write("secret_key = test\n")
+
+    with capture_minio_kwargs() as captured:
+        audbackend.backend.Minio(host, "repository")
+
+    # Verify an http_client was created
+    assert "http_client" in captured
+    http_client = captured["http_client"]
+    assert isinstance(http_client, urllib3.PoolManager)
+
+    # Verify the default timeout values
+    # The timeout is stored in connection_pool_kw
+    timeout = http_client.connection_pool_kw.get("timeout")
+    assert timeout is not None
+    assert timeout.connect_timeout == 10.0
+    assert timeout.read_timeout is None
+
+
+def test_custom_timeout_from_config(tmpdir, hosts, hide_credentials):
+    r"""Test that custom timeout values from config are honored.
+
+    When timeout values are specified in the config file,
+    they should be used instead of the defaults.
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture
+
+    """
+    host = hosts["minio"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["MINIO_CONFIG_FILE"] = config_path
+
+    # Create config file with custom timeout settings
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("access_key = test\n")
+        fp.write("secret_key = test\n")
+        fp.write("connect_timeout = 30.0\n")
+        fp.write("read_timeout = 120.0\n")
+
+    with capture_minio_kwargs() as captured:
+        audbackend.backend.Minio(host, "repository")
+
+    # Verify the custom timeout values from config
+    http_client = captured["http_client"]
+    timeout = http_client.connection_pool_kw.get("timeout")
+    assert timeout.connect_timeout == 30.0
+    assert timeout.read_timeout == 120.0
+
+
+def test_none_read_timeout_from_config(tmpdir, hosts, hide_credentials):
+    r"""Test that 'None' read_timeout from config is parsed correctly.
+
+    When read_timeout is set to 'None' in the config file,
+    it should be parsed as Python None.
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture
+
+    """
+    host = hosts["minio"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["MINIO_CONFIG_FILE"] = config_path
+
+    # Create config file with None read_timeout
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("access_key = test\n")
+        fp.write("secret_key = test\n")
+        fp.write("connect_timeout = 15.0\n")
+        fp.write("read_timeout = None\n")
+
+    with capture_minio_kwargs() as captured:
+        audbackend.backend.Minio(host, "repository")
+
+    # Verify read_timeout is None
+    http_client = captured["http_client"]
+    timeout = http_client.connection_pool_kw.get("timeout")
+    assert timeout.connect_timeout == 15.0
+    assert timeout.read_timeout is None
+
+
+def test_invalid_timeout_warning(tmpdir, hosts, hide_credentials):
+    r"""Test that invalid timeout values emit a warning and use defaults.
+
+    When a non-numeric string is provided as a timeout value,
+    a warning should be emitted and the default value should be used.
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture
+
+    """
+    host = hosts["minio"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["MINIO_CONFIG_FILE"] = config_path
+
+    # Create config file with invalid timeout values
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("access_key = test\n")
+        fp.write("secret_key = test\n")
+        fp.write("connect_timeout = invalid\n")
+        fp.write("read_timeout = sixty\n")
+
+    with capture_minio_kwargs() as captured:
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            audbackend.backend.Minio(host, "repository")
+
+            # Verify warnings were emitted
+            assert len(w) == 2
+            assert "Invalid connect_timeout value 'invalid'" in str(w[0].message)
+            assert "Invalid read_timeout value 'sixty'" in str(w[1].message)
+
+    # Verify default timeout values were used
+    http_client = captured["http_client"]
+    timeout = http_client.connection_pool_kw.get("timeout")
+    assert timeout.connect_timeout == 10.0  # default
+    assert timeout.read_timeout is None  # default

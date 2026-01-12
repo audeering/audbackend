@@ -5,8 +5,10 @@ import os
 import signal
 import tempfile
 import threading
+import warnings
 
 import minio
+import urllib3
 
 import audeer
 
@@ -16,6 +18,17 @@ from audbackend.core.backend.base import Base
 
 class Minio(Base):
     r"""Backend for MinIO.
+
+    HTTP timeouts can be configured via the config file
+    (see :meth:`get_config`):
+
+    * ``connect_timeout``: seconds for connection establishment (default: 10.0)
+    * ``read_timeout``: seconds for read operations; ``None`` means no timeout
+      (default: ``None``)
+
+    Alternatively,
+    provide a custom ``http_client`` object as ``kwargs``
+    to fully control connection behavior.
 
     Args:
         host: host address
@@ -68,9 +81,29 @@ class Minio(Base):
         if authentication is None:
             self.authentication = self.get_authentication(host)
 
+        config = self.get_config(host)
         if secure is None:
-            config = self.get_config(host)
             secure = config.get("secure", True)
+
+        # Configure HTTP client with timeouts to prevent hanging connections.
+        # Users can override by passing their own http_client in kwargs.
+        # Timeouts can be tuned via backend config:
+        #   - "connect_timeout": seconds for connection establishment (default: 10.0)
+        #   - "read_timeout": seconds for read operations; None means no timeout
+        #     (default: None)
+        if "http_client" not in kwargs:
+            connect_timeout = _parse_timeout(
+                config.get("connect_timeout", 10.0),
+                name="connect_timeout",
+                default=10.0,
+            )
+            read_timeout = _parse_timeout(
+                config.get("read_timeout", None),
+                name="read_timeout",
+                default=None,
+            )
+            timeout = urllib3.Timeout(connect=connect_timeout, read=read_timeout)
+            kwargs["http_client"] = urllib3.PoolManager(timeout=timeout)
 
         # Open MinIO client
         self._client = minio.Minio(
@@ -137,6 +170,21 @@ class Minio(Base):
             [play.min.io]
             access_key = "Q3AM3UQ867SPQQA43P2F"
             secret_key = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
+
+        Optional timeout settings can also be configured:
+
+        .. code-block:: ini
+
+            [play.min.io]
+            access_key = "Q3AM3UQ867SPQQA43P2F"
+            secret_key = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
+            connect_timeout = 10.0
+            read_timeout = 60.0
+
+        * ``connect_timeout``: seconds for connection establishment
+          (default: 10.0)
+        * ``read_timeout``: seconds for read operations;
+          use ``None`` for no timeout (default: ``None``)
 
         Args:
             host: hostname
@@ -512,3 +560,41 @@ def _metadata(checksum: str):
         "checksum": checksum,
         "owner": getpass.getuser(),
     }
+
+
+def _parse_timeout(
+    value: str | float | None,
+    *,
+    name: str,
+    default: float | None,
+) -> float | None:
+    """Parse a timeout value from config.
+
+    Converts string values to float, handling "None" as Python None.
+    If parsing fails, logs a warning and returns the default value.
+
+    Args:
+        value: timeout value (string from config, float, or None)
+        name: name of the timeout setting (for warning messages)
+        default: default value to use if parsing fails
+
+    Returns:
+        parsed timeout value or default
+
+    """
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, str):
+        if value.lower() == "none":
+            return None
+    try:
+        return float(value)
+    except ValueError:
+        warnings.warn(
+            f"Invalid {name} value '{value}' in config, using default: {default}",
+            UserWarning,
+            stacklevel=4,
+        )
+        return default
