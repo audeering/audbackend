@@ -2,8 +2,11 @@ import filecmp
 import os
 import signal
 import threading
+from unittest import mock
 
+import minio
 import pytest
+import urllib3
 
 import audeer
 
@@ -524,3 +527,176 @@ def test_interrupt_cleanup(tmpdir, interface, monkeypatch):
 
     # Verify cleanup happened
     assert not os.path.exists(dst_path)
+
+
+def test_custom_http_client_honored(tmpdir, hosts, hide_credentials):
+    r"""Test that custom http_client passed via kwargs is honored.
+
+    When a user provides their own http_client, the backend should use it
+    instead of creating a default one with timeouts.
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture
+
+    """
+    host = hosts["minio"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["MINIO_CONFIG_FILE"] = config_path
+
+    # Create minimal config file
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("access_key = test\n")
+        fp.write("secret_key = test\n")
+
+    # Create a custom http_client
+    custom_http_client = urllib3.PoolManager(timeout=urllib3.Timeout(connect=5.0))
+
+    # Capture the kwargs passed to minio.Minio
+    captured_kwargs = {}
+    original_minio_init = minio.Minio.__init__
+
+    def mock_minio_init(self, *args, **kwargs):
+        captured_kwargs.update(kwargs)
+        original_minio_init(self, *args, **kwargs)
+
+    with mock.patch.object(minio.Minio, "__init__", mock_minio_init):
+        audbackend.backend.Minio(host, "repository", http_client=custom_http_client)
+
+    # Verify the custom http_client was passed through
+    assert "http_client" in captured_kwargs
+    assert captured_kwargs["http_client"] is custom_http_client
+
+
+def test_default_timeout_configuration(tmpdir, hosts, hide_credentials):
+    r"""Test that default timeout configuration is applied.
+
+    When no http_client is provided and no timeout config is set,
+    the backend should create an http_client with default timeouts:
+    - connect_timeout: 10.0
+    - read_timeout: None
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture
+
+    """
+    host = hosts["minio"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["MINIO_CONFIG_FILE"] = config_path
+
+    # Create minimal config file without timeout settings
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("access_key = test\n")
+        fp.write("secret_key = test\n")
+
+    # Capture the kwargs passed to minio.Minio
+    captured_kwargs = {}
+    original_minio_init = minio.Minio.__init__
+
+    def mock_minio_init(self, *args, **kwargs):
+        captured_kwargs.update(kwargs)
+        original_minio_init(self, *args, **kwargs)
+
+    with mock.patch.object(minio.Minio, "__init__", mock_minio_init):
+        audbackend.backend.Minio(host, "repository")
+
+    # Verify an http_client was created
+    assert "http_client" in captured_kwargs
+    http_client = captured_kwargs["http_client"]
+    assert isinstance(http_client, urllib3.PoolManager)
+
+    # Verify the default timeout values
+    # The timeout is stored in connection_pool_kw
+    timeout = http_client.connection_pool_kw.get("timeout")
+    assert timeout is not None
+    assert timeout.connect_timeout == 10.0
+    assert timeout.read_timeout is None
+
+
+def test_custom_timeout_from_config(tmpdir, hosts, hide_credentials):
+    r"""Test that custom timeout values from config are honored.
+
+    When timeout values are specified in the config file,
+    they should be used instead of the defaults.
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture
+
+    """
+    host = hosts["minio"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["MINIO_CONFIG_FILE"] = config_path
+
+    # Create config file with custom timeout settings
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("access_key = test\n")
+        fp.write("secret_key = test\n")
+        fp.write("connect_timeout = 30.0\n")
+        fp.write("read_timeout = 120.0\n")
+
+    # Capture the kwargs passed to minio.Minio
+    captured_kwargs = {}
+    original_minio_init = minio.Minio.__init__
+
+    def mock_minio_init(self, *args, **kwargs):
+        captured_kwargs.update(kwargs)
+        original_minio_init(self, *args, **kwargs)
+
+    with mock.patch.object(minio.Minio, "__init__", mock_minio_init):
+        audbackend.backend.Minio(host, "repository")
+
+    # Verify the custom timeout values from config
+    http_client = captured_kwargs["http_client"]
+    timeout = http_client.connection_pool_kw.get("timeout")
+    assert timeout.connect_timeout == 30.0
+    assert timeout.read_timeout == 120.0
+
+
+def test_none_read_timeout_from_config(tmpdir, hosts, hide_credentials):
+    r"""Test that 'None' read_timeout from config is parsed correctly.
+
+    When read_timeout is set to 'None' in the config file,
+    it should be parsed as Python None.
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture
+
+    """
+    host = hosts["minio"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["MINIO_CONFIG_FILE"] = config_path
+
+    # Create config file with None read_timeout
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("access_key = test\n")
+        fp.write("secret_key = test\n")
+        fp.write("connect_timeout = 15.0\n")
+        fp.write("read_timeout = None\n")
+
+    # Capture the kwargs passed to minio.Minio
+    captured_kwargs = {}
+    original_minio_init = minio.Minio.__init__
+
+    def mock_minio_init(self, *args, **kwargs):
+        captured_kwargs.update(kwargs)
+        original_minio_init(self, *args, **kwargs)
+
+    with mock.patch.object(minio.Minio, "__init__", mock_minio_init):
+        audbackend.backend.Minio(host, "repository")
+
+    # Verify read_timeout is None
+    http_client = captured_kwargs["http_client"]
+    timeout = http_client.connection_pool_kw.get("timeout")
+    assert timeout.connect_timeout == 15.0
+    assert timeout.read_timeout is None

@@ -18,9 +18,16 @@ from audbackend.core.backend.base import Base
 class Minio(Base):
     r"""Backend for MinIO.
 
-    As default we a timeout of 10s,
-    provide a ``http_client`` object as ``kwargs``
-    to adjust it.
+    HTTP timeouts can be configured via the config file
+    (see :meth:`get_config`):
+
+    * ``connect_timeout``: seconds for connection establishment (default: 10.0)
+    * ``read_timeout``: seconds for read operations; ``None`` means no timeout
+      (default: ``None``)
+
+    Alternatively,
+    provide a custom ``http_client`` object as ``kwargs``
+    to fully control connection behavior.
 
     Args:
         host: host address
@@ -73,14 +80,28 @@ class Minio(Base):
         if authentication is None:
             self.authentication = self.get_authentication(host)
 
+        config = self.get_config(host)
         if secure is None:
-            config = self.get_config(host)
             secure = config.get("secure", True)
 
-        # Configure HTTP client with timeouts to prevent hanging downloads.
+        # Configure HTTP client with timeouts to prevent hanging connections.
         # Users can override by passing their own http_client in kwargs.
+        # Timeouts can be tuned via backend config:
+        #   - "connect_timeout": seconds for connection establishment (default: 10.0)
+        #   - "read_timeout": seconds for read operations; None means no timeout
+        #     (default: None)
         if "http_client" not in kwargs:
-            timeout = urllib3.Timeout(connect=10.0, read=10.0)
+            connect_timeout = config.get("connect_timeout", 10.0)
+            read_timeout = config.get("read_timeout", None)
+            # Convert string values from config file to appropriate types
+            if isinstance(connect_timeout, str):
+                connect_timeout = float(connect_timeout)
+            if isinstance(read_timeout, str):
+                if read_timeout.lower() == "none":
+                    read_timeout = None
+                else:
+                    read_timeout = float(read_timeout)
+            timeout = urllib3.Timeout(connect=connect_timeout, read=read_timeout)
             kwargs["http_client"] = urllib3.PoolManager(timeout=timeout)
 
         # Open MinIO client
@@ -148,6 +169,21 @@ class Minio(Base):
             [play.min.io]
             access_key = "Q3AM3UQ867SPQQA43P2F"
             secret_key = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
+
+        Optional timeout settings can also be configured:
+
+        .. code-block:: ini
+
+            [play.min.io]
+            access_key = "Q3AM3UQ867SPQQA43P2F"
+            secret_key = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
+            connect_timeout = 10.0
+            read_timeout = 60.0
+
+        * ``connect_timeout``: seconds for connection establishment
+          (default: 10.0)
+        * ``read_timeout``: seconds for read operations;
+          use ``None`` for no timeout (default: ``None``)
 
         Args:
             host: hostname
