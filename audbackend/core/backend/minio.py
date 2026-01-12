@@ -589,13 +589,12 @@ def _parse_timeout(
     if isinstance(value, str):
         if value.lower() == "none":
             return None
-        try:
-            return float(value)
-        except ValueError:
-            warnings.warn(
-                f"Invalid {name} value '{value}' in config, using default: {default}",
-                UserWarning,
-                stacklevel=4,
-            )
-            return default
-    return default
+    try:
+        return float(value)
+    except ValueError:
+        warnings.warn(
+            f"Invalid {name} value '{value}' in config, using default: {default}",
+            UserWarning,
+            stacklevel=4,
+        )
+        return default
