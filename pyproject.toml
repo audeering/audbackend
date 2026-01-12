@@ -73,7 +73,6 @@ dev = [
     'sphinx-audeering-theme >=1.2.1',
     'sphinx-autodoc-typehints',
     'sphinx-copybutton',
-    'stream-unzip >=0.0.99',
     'sybil',
     'toml',
 ]
