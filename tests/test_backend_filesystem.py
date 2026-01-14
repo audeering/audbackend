@@ -362,7 +362,7 @@ def test_streaming_zip_with_directory_entries(tmpdir, interface):
         zf.write(subdir, "subdir/")
         # Add files
         zf.write(audeer.path(src_root, "file1.txt"), "file1.txt")
-        zf.write(audeer.path(subdir, "file2.txt"), "subdir/file2.txt")
+        zf.write(audeer.path(subdir, "file2.txt"), os.path.join("subdir", "file2.txt"))
 
     # Verify the ZIP contains a directory entry
     with zipfile.ZipFile(archive_path, "r") as zf:
@@ -378,8 +378,8 @@ def test_streaming_zip_with_directory_entries(tmpdir, interface):
 
     # Verify files were extracted (directory entry should be skipped)
     assert "file1.txt" in extracted
-    assert "subdir/file2.txt" in extracted
-    assert "subdir/" not in extracted  # Directory entry should not be in result
+    assert os.path.join("subdir", "file2.txt") in extracted
+    assert f"subdir{os.sep}" not in extracted  # Directory entry should not be in result
 
     # Verify actual files exist
     assert os.path.exists(audeer.path(dst_root, "file1.txt"))

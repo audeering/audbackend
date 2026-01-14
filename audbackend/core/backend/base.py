@@ -642,7 +642,7 @@ class Base:
                             f.write(chunk)
 
                     # Store relative path (consistent with audeer.extract_archive)
-                    extracted_files.append(file_name.replace(os.sep, "/"))
+                    extracted_files.append(file_name.replace("/", os.sep))
 
                 # Validate checksum if requested
                 if validate:
