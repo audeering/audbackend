@@ -10,13 +10,13 @@ import audeer
 
 
 # stream-unzip is optional (not available on Python 3.14+)
-try:
+try:  # pragma: no Linux cover
     from stream_unzip import TruncatedDataError
     from stream_unzip import UnfinishedIterationError
     from stream_unzip import stream_unzip
 
     STREAM_UNZIP_AVAILABLE = True
-except ImportError:
+except ImportError:  # pragma: no cover
     STREAM_UNZIP_AVAILABLE = False
 
 from audbackend.core import utils
