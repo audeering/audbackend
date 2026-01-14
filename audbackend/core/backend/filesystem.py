@@ -134,6 +134,14 @@ class FileSystem(Base):
             while data := f.read(chunk_size):
                 yield data
 
+    def _size(
+        self,
+        path: str,
+    ) -> int:
+        r"""Get size of file on backend."""
+        path = self._expand(path)
+        return os.path.getsize(path)
+
     def _ls(
         self,
         path: str,

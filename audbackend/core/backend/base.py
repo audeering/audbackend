@@ -592,11 +592,27 @@ class Base:
         extracted_files = []
         md5_hash = hashlib.md5() if validate else None
 
+        # Try to get file size for progress bar
+        src_size = None
+        if hasattr(self, "_size"):
+            try:
+                src_size = self._size(src_path)
+            except Exception:
+                pass
+
+        # Setup progress bar
+        desc = audeer.format_display_message(
+            f"Download {os.path.basename(src_path)}",
+            pbar=verbose,
+        )
+        pbar = audeer.progress_bar(total=src_size, desc=desc, disable=not verbose)
+
         def stream_with_hash():
             """Wrap stream to compute hash while streaming."""
             for chunk in self._get_file_stream(src_path):
                 if md5_hash is not None:
                     md5_hash.update(chunk)
+                pbar.update(len(chunk))
                 yield chunk
 
         def cleanup_on_failure():
@@ -610,46 +626,47 @@ class Base:
                         os.remove(full_path)
 
         try:
-            for file_name, file_size, unzipped_chunks in stream_unzip(
-                stream_with_hash()
-            ):
-                # Decode file name and handle path
-                file_name = file_name.decode("utf-8")
+            with pbar:
+                for file_name, file_size, unzipped_chunks in stream_unzip(
+                    stream_with_hash()
+                ):
+                    # Decode file name and handle path
+                    file_name = file_name.decode("utf-8")
 
-                # Skip directory entries
-                if file_name.endswith("/"):
-                    continue
+                    # Skip directory entries
+                    if file_name.endswith("/"):
+                        continue
 
-                # Construct destination path
-                dst_path = audeer.path(dst_root, file_name)
+                    # Construct destination path
+                    dst_path = audeer.path(dst_root, file_name)
 
-                # Create parent directories if needed
-                audeer.mkdir(os.path.dirname(dst_path))
+                    # Create parent directories if needed
+                    audeer.mkdir(os.path.dirname(dst_path))
 
-                # Write file content
-                with open(dst_path, "wb") as f:
-                    for chunk in unzipped_chunks:
-                        f.write(chunk)
+                    # Write file content
+                    with open(dst_path, "wb") as f:
+                        for chunk in unzipped_chunks:
+                            f.write(chunk)
 
-                # Store relative path (consistent with audeer.extract_archive)
-                extracted_files.append(file_name)
+                    # Store relative path (consistent with audeer.extract_archive)
+                    extracted_files.append(file_name)
 
-            # Validate checksum if requested
-            if validate:
-                expected_checksum = self.checksum(src_path)
-                actual_checksum = md5_hash.hexdigest()
+                # Validate checksum if requested
+                if validate:
+                    expected_checksum = self.checksum(src_path)
+                    actual_checksum = md5_hash.hexdigest()
 
-                if actual_checksum != expected_checksum:
-                    cleanup_on_failure()
-                    raise InterruptedError(
-                        f"Execution is interrupted because "
-                        f"{src_path} "
-                        f"has checksum "
-                        f"'{actual_checksum}' "
-                        "when the expected checksum is "
-                        f"'{expected_checksum}'. "
-                        f"The extracted files have been removed."
-                    )
+                    if actual_checksum != expected_checksum:
+                        cleanup_on_failure()
+                        raise InterruptedError(
+                            f"Execution is interrupted because "
+                            f"{src_path} "
+                            f"has checksum "
+                            f"'{actual_checksum}' "
+                            "when the expected checksum is "
+                            f"'{expected_checksum}'. "
+                            f"The extracted files have been removed."
+                        )
 
         except (zipfile.BadZipFile, TruncatedDataError, UnfinishedIterationError) as ex:
             cleanup_on_failure()
