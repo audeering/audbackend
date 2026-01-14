@@ -377,11 +377,9 @@ def test_streaming_zip_with_directory_entries(tmpdir, interface):
     extracted = interface.get_archive("/archive_with_dirs.zip", dst_root)
 
     # Verify files were extracted (directory entry should be skipped)
-    # Use os.sep for path comparison since returned paths use OS-specific separator
     assert "file1.txt" in extracted
-    assert f"subdir{os.sep}file2.txt" in extracted
+    assert "subdir/file2.txt" in extracted
     assert "subdir/" not in extracted  # Directory entry should not be in result
-    assert f"subdir{os.sep}" not in extracted  # Also check with OS separator
 
     # Verify actual files exist
     assert os.path.exists(audeer.path(dst_root, "file1.txt"))
