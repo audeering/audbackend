@@ -767,3 +767,27 @@ def test_invalid_timeout_warning(tmpdir, hosts, hide_credentials):
     timeout = http_client.connection_pool_kw.get("timeout")
     assert timeout.connect_timeout == 10.0  # default
     assert timeout.read_timeout is None  # default
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.Minio, audbackend.interface.Versioned)],
+    indirect=True,
+)
+def test_size(tmpdir, interface):
+    """Test _size method returns correct file size."""
+    # Create a file with known content
+    content = "Hello World!" * 1000  # ~12KB
+    src_path = audeer.path(tmpdir, "test.txt")
+    with open(src_path, "w") as f:
+        f.write(content)
+    expected_size = os.path.getsize(src_path)
+
+    # Upload file to backend
+    interface.put_file(src_path, "/test.txt", "1.0.0")
+
+    # Get size from backend
+    backend_path = interface._path_with_version("/test.txt", "1.0.0")
+    actual_size = interface.backend._size(backend_path)
+
+    assert actual_size == expected_size
