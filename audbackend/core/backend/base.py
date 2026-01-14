@@ -1302,7 +1302,7 @@ class Base:
     def _size(
         self,
         path: str,
-    ) -> int:
+    ) -> int:  # pragma: no cover
         r"""Get size of file on backend."""
         raise NotImplementedError()
 
