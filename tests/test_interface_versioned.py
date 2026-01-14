@@ -104,9 +104,6 @@ def test_archive(tmpdir, tree, archive, files, tmp_root, interface, expected):
     if tmp_root is not None:
         tmp_root = audeer.path(tmpdir, tmp_root)
 
-    if os.name == "nt":
-        expected = [file.replace("/", os.sep) for file in expected]
-
     # if a tmp_root is given but does not exist,
     # put_archive() should fail
     if tmp_root is not None:
