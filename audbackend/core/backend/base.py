@@ -592,13 +592,8 @@ class Base:
         extracted_files = []
         md5_hash = hashlib.md5() if validate else None
 
-        # Try to get file size for progress bar
-        src_size = None
-        if hasattr(self, "_size"):
-            try:
-                src_size = self._size(src_path)
-            except Exception:
-                pass
+        # Get file size for progress bar
+        src_size = self._size(src_path) if verbose else None
 
         # Setup progress bar
         desc = audeer.format_display_message(
