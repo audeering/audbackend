@@ -1299,6 +1299,13 @@ class Base:
         """
         return utils.BACKEND_SEPARATOR
 
+    def _size(
+        self,
+        path: str,
+    ) -> int:
+        r"""Get size of file on backend."""
+        raise NotImplementedError()
+
     def split(
         self,
         path: str,
