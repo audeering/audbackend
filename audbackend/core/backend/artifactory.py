@@ -283,6 +283,14 @@ class Artifactory(Base):
             while data := fp.read(chunk_size):
                 yield data
 
+    def _size(
+        self,
+        path: str,
+    ) -> int:
+        r"""Get size of file on backend."""
+        path = self.path(path)
+        return artifactory.ArtifactoryPath.stat(path).size
+
     def _ls(
         self,
         path: str,
