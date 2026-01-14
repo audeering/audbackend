@@ -1,8 +1,11 @@
 from collections.abc import Iterator
 from collections.abc import Sequence
+import errno
 import fnmatch
+import hashlib
 import inspect
 import os
+import shutil
 import tempfile
 import zipfile
 
@@ -572,13 +575,8 @@ class Base:
         Extracts files during download without storing the archive locally.
 
         """
-        import hashlib
-        import shutil
-
         # Validate dst_root is not an existing file
         if os.path.exists(dst_root) and not os.path.isdir(dst_root):
-            import errno
-
             raise NotADirectoryError(
                 errno.ENOTDIR,
                 os.strerror(errno.ENOTDIR),
