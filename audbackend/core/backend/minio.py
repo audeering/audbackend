@@ -414,8 +414,9 @@ class Minio(Base):
         src_path: str,
     ):
         r"""Get file from backend as byte stream."""
+        from audbackend.core.backend.base import STREAM_CHUNK_SIZE
+
         src_path = self.path(src_path)
-        chunk_size = 64 * 1024  # 64 KB
 
         response = self._client.get_object(
             bucket_name=self.repository,
@@ -423,7 +424,7 @@ class Minio(Base):
         )
 
         try:
-            while data := response.read(chunk_size):
+            while data := response.read(STREAM_CHUNK_SIZE):
                 yield data
         finally:
             response.close()

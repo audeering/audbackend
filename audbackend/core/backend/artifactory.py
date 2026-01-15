@@ -276,11 +276,12 @@ class Artifactory(Base):
         src_path: str,
     ):
         r"""Get file from backend as byte stream."""
-        src_path = self.path(src_path)
-        chunk_size = 64 * 1024  # 64 KB
+        from audbackend.core.backend.base import STREAM_CHUNK_SIZE
 
-        with src_path.open() as fp:
-            while data := fp.read(chunk_size):
+        src_path = self.path(src_path)
+
+        with src_path.open("r") as fp:
+            while data := fp.read(STREAM_CHUNK_SIZE):
                 yield data
 
     def _size(
