@@ -791,3 +791,56 @@ def test_size(tmpdir, interface):
     actual_size = interface.backend._size(backend_path)
 
     assert actual_size == expected_size
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.Minio, audbackend.interface.Unversioned)],
+    indirect=True,
+)
+def test_get_archive_streaming(tmpdir, interface):
+    """Test get_archive with streaming extraction verifies _get_file_stream.
+
+    This test verifies that _get_file_stream() returns bytes correctly,
+    which is required for streaming ZIP extraction and checksum computation.
+
+    """
+    # Skip if stream-unzip is not available
+    try:
+        from stream_unzip import stream_unzip  # noqa: F401
+    except ImportError:
+        pytest.skip("stream-unzip not available")
+
+    # Create source files
+    src_root = audeer.path(tmpdir, "src")
+    audeer.mkdir(src_root)
+    with open(audeer.path(src_root, "file1.txt"), "w") as f:
+        f.write("content of file 1")
+    with open(audeer.path(src_root, "file2.txt"), "w") as f:
+        f.write("content of file 2")
+
+    # Create ZIP archive
+    archive_path = audeer.path(tmpdir, "archive.zip")
+    audeer.create_archive(src_root, None, archive_path)
+
+    # Upload archive to backend
+    interface.put_file(archive_path, "/archive.zip")
+
+    # Extract using streaming (this exercises _get_file_stream)
+    dst_root = audeer.path(tmpdir, "dst")
+    extracted = interface.get_archive("/archive.zip", dst_root)
+
+    # Verify files were extracted correctly
+    assert sorted(extracted) == ["file1.txt", "file2.txt"]
+    with open(audeer.path(dst_root, "file1.txt")) as f:
+        assert f.read() == "content of file 1"
+    with open(audeer.path(dst_root, "file2.txt")) as f:
+        assert f.read() == "content of file 2"
+
+    # Also test with validation to verify checksum computation works
+    # (requires _get_file_stream to return bytes for md5.update())
+    dst_root_validated = audeer.path(tmpdir, "dst_validated")
+    extracted_validated = interface.get_archive(
+        "/archive.zip", dst_root_validated, validate=True
+    )
+    assert sorted(extracted_validated) == ["file1.txt", "file2.txt"]
