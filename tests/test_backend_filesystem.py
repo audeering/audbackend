@@ -422,7 +422,6 @@ def test_streaming_zip_with_directory_entries(tmpdir, interface):
 @pytest.mark.parametrize(
     "interface",
     [(audbackend.backend.FileSystem, audbackend.interface.Versioned)],
-    [(audbackend.backend.FileSystem, audbackend.interface.Unversioned)],
     indirect=True,
 )
 def test_size(tmpdir, interface):
