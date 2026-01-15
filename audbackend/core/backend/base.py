@@ -26,6 +26,9 @@ from audbackend.core import utils
 from audbackend.core.errors import BackendError
 
 
+# Default chunk size for streaming file operations (64 KB)
+STREAM_CHUNK_SIZE = 64 * 1024
+
 backend_not_opened_error = (
     "Call 'Backend.open()' to establish a connection to the repository first."
 )
@@ -540,9 +543,29 @@ class Base:
                 verbose=verbose,
             )
 
-        # For other archive types
-        # (or ZIP without stream-unzip),
-        # download first then extract
+        return self._get_archive_via_tempfile(
+            src_path,
+            dst_root,
+            tmp_root=tmp_root,
+            validate=validate,
+            verbose=verbose,
+        )
+
+    def _get_archive_via_tempfile(
+        self,
+        src_path: str,
+        dst_root: str,
+        *,
+        tmp_root: str | None,
+        validate: bool,
+        verbose: bool,
+    ) -> list[str]:
+        r"""Get archive via temporary file download and extraction.
+
+        Downloads the archive to a temporary location,
+        then extracts it to the destination.
+
+        """
         with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
             tmp_dir = audeer.path(tmp, os.path.basename(dst_root))
             local_archive = os.path.join(
@@ -561,6 +584,26 @@ class Base:
                 dst_root,
                 verbose=verbose,
             )
+
+    def _cleanup_extracted(
+        self,
+        dst_root: str,
+        dst_root_existed: bool,
+        extracted_files: list[str],
+    ) -> None:
+        r"""Remove extracted files and optionally the destination directory.
+
+        If we created the destination directory and it didn't exist before,
+        remove it entirely. Otherwise, only remove the files we extracted.
+
+        """
+        if not dst_root_existed and os.path.exists(dst_root):
+            shutil.rmtree(dst_root)
+        else:
+            for file_name in extracted_files:
+                full_path = audeer.path(dst_root, file_name)
+                if os.path.exists(full_path):
+                    os.remove(full_path)
 
     def _get_archive_streaming(
         self,
@@ -608,16 +651,6 @@ class Base:
                 pbar.update(len(chunk))
                 yield chunk
 
-        def cleanup_on_failure():
-            """Remove extracted files and directory if we created it."""
-            if not dst_root_existed and os.path.exists(dst_root):
-                shutil.rmtree(dst_root)
-            else:
-                for file_name in extracted_files:
-                    full_path = audeer.path(dst_root, file_name)
-                    if os.path.exists(full_path):
-                        os.remove(full_path)
-
         try:
             with pbar:
                 for file_name, file_size, unzipped_chunks in stream_unzip(
@@ -650,7 +683,9 @@ class Base:
                     actual_checksum = md5_hash.hexdigest()
 
                     if actual_checksum != expected_checksum:
-                        cleanup_on_failure()
+                        self._cleanup_extracted(
+                            dst_root, dst_root_existed, extracted_files
+                        )
                         raise InterruptedError(
                             f"Execution is interrupted because "
                             f"{src_path} "
@@ -662,8 +697,12 @@ class Base:
                         )
 
         except (zipfile.BadZipFile, TruncatedDataError, UnfinishedIterationError) as ex:
-            cleanup_on_failure()
+            self._cleanup_extracted(dst_root, dst_root_existed, extracted_files)
             raise RuntimeError(f"Broken archive: {src_path}") from ex
+        except Exception:
+            # Clean up on any unexpected error (network errors, etc.)
+            self._cleanup_extracted(dst_root, dst_root_existed, extracted_files)
+            raise
 
         return extracted_files
 

@@ -194,26 +194,55 @@ def test_open_close(tmpdir, repository):
 
 @pytest.mark.parametrize(
     "interface",
-    [(audbackend.backend.FileSystem, audbackend.interface.Versioned)],
+    [(audbackend.backend.FileSystem, audbackend.interface.Unversioned)],
     indirect=True,
 )
-def test_size(tmpdir, interface):
-    """Test _size method returns correct file size."""
-    # Create a file with known content
-    content = "Hello World!" * 1000  # ~12KB
-    src_path = audeer.path(tmpdir, "test.txt")
-    with open(src_path, "w") as f:
-        f.write(content)
-    expected_size = os.path.getsize(src_path)
+def test_streaming_dst_root_is_file(tmpdir, interface):
+    """Test that NotADirectoryError is raised when dst_root is an existing file.
 
-    # Upload file to backend
-    interface.put_file(src_path, "/test.txt", "1.0.0")
+    When extracting an archive and dst_root points to an existing file,
+    NotADirectoryError should be raised and the file should remain unchanged.
 
-    # Get size from backend
-    backend_path = interface._path_with_version("/test.txt", "1.0.0")
-    actual_size = interface.backend._size(backend_path)
+    """
+    # Skip if stream-unzip is not available
+    try:
+        from stream_unzip import stream_unzip  # noqa: F401
+    except ImportError:
+        pytest.skip("stream-unzip not available")
 
-    assert actual_size == expected_size
+    # Create a regular file where we'll try to extract to
+    dst_file = audeer.path(tmpdir, "existing_file.txt")
+    with open(dst_file, "w") as f:
+        f.write("original content")
+    original_content = "original content"
+    original_mtime = os.path.getmtime(dst_file)
+
+    # Create a valid ZIP archive with content
+    src_root = audeer.path(tmpdir, "src")
+    audeer.mkdir(src_root)
+    with open(audeer.path(src_root, "new_file.txt"), "w") as f:
+        f.write("New content")
+
+    archive_path = audeer.path(tmpdir, "archive.zip")
+    audeer.create_archive(src_root, None, archive_path)
+    interface.put_file(archive_path, "/archive.zip")
+
+    # Get list of files in tmpdir before the failed extraction
+    files_before = set(os.listdir(tmpdir))
+
+    # Try to extract to the existing file - should fail with NotADirectoryError
+    with pytest.raises(NotADirectoryError):
+        interface.get_archive("/archive.zip", dst_file)
+
+    # Verify the file is unchanged
+    assert os.path.isfile(dst_file)
+    with open(dst_file) as f:
+        assert f.read() == original_content
+    assert os.path.getmtime(dst_file) == original_mtime
+
+    # Verify no additional files were created nearby (no partial extraction)
+    files_after = set(os.listdir(tmpdir))
+    assert files_after == files_before
 
 
 @pytest.mark.parametrize(

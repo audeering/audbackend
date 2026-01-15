@@ -127,11 +127,12 @@ class FileSystem(Base):
         src_path: str,
     ):
         r"""Get file from backend as byte stream."""
+        from audbackend.core.backend.base import STREAM_CHUNK_SIZE
+
         src_path = self._expand(src_path)
-        chunk_size = 64 * 1024  # 64 KB
 
         with open(src_path, "rb") as f:
-            while data := f.read(chunk_size):
+            while data := f.read(STREAM_CHUNK_SIZE):
                 yield data
 
     def _size(
