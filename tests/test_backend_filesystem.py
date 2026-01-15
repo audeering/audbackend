@@ -417,3 +417,28 @@ def test_streaming_zip_with_directory_entries(tmpdir, interface):
         assert f.read() == "content1"
     with open(audeer.path(dst_root, "subdir", "file2.txt")) as f:
         assert f.read() == "content2"
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.FileSystem, audbackend.interface.Versioned)],
+    [(audbackend.backend.FileSystem, audbackend.interface.Unversioned)],
+    indirect=True,
+)
+def test_size(tmpdir, interface):
+    """Test _size method returns correct file size."""
+    # Create a file with known content
+    content = "Hello World!" * 1000  # ~12KB
+    src_path = audeer.path(tmpdir, "test.txt")
+    with open(src_path, "w") as f:
+        f.write(content)
+    expected_size = os.path.getsize(src_path)
+
+    # Upload file to backend
+    interface.put_file(src_path, "/test.txt", "1.0.0")
+
+    # Get size from backend
+    backend_path = interface._path_with_version("/test.txt", "1.0.0")
+    actual_size = interface.backend._size(backend_path)
+
+    assert actual_size == expected_size
