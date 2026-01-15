@@ -618,7 +618,8 @@ class Base:
         Extracts files during download without storing the archive locally.
 
         """
-        # Validate dst_root is not an existing file
+        # Validate dst_root is not an existing file,
+        # raise same error as audeer.extract_archive()
         if os.path.exists(dst_root) and not os.path.isdir(dst_root):
             raise NotADirectoryError(
                 errno.ENOTDIR,
