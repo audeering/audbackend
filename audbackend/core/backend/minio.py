@@ -405,6 +405,27 @@ class Minio(Base):
             response.close()
             response.release_conn()
 
+    def _get_file_stream(
+        self,
+        src_path: str,
+    ):
+        r"""Get file from backend as byte stream."""
+        from audbackend.core.backend.base import STREAM_CHUNK_SIZE
+
+        src_path = self.path(src_path)
+
+        response = self._client.get_object(
+            bucket_name=self.repository,
+            object_name=src_path,
+        )
+
+        try:
+            while data := response.read(STREAM_CHUNK_SIZE):
+                yield data
+        finally:
+            response.close()
+            response.release_conn()
+
     def _ls(
         self,
         path: str,

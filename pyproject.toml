@@ -35,6 +35,7 @@ requires-python = '>=3.10'
 dependencies = [
     'audeer >=2.3.1',
     'pywin32; sys_platform == "win32"',
+    'stream-unzip >=0.0.99; python_version < "3.14"',
 ]
 # Get version dynamically from git
 # (needs setuptools_scm tools config below)

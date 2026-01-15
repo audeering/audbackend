@@ -271,6 +271,27 @@ class Artifactory(Base):
         src_path = self.path(src_path)
         _download(src_path, dst_path, verbose=verbose)
 
+    def _get_file_stream(
+        self,
+        src_path: str,
+    ):
+        r"""Get file from backend as byte stream."""
+        from audbackend.core.backend.base import STREAM_CHUNK_SIZE
+
+        src_path = self.path(src_path)
+
+        with src_path.open("r") as fp:
+            while data := fp.read(STREAM_CHUNK_SIZE):
+                yield data
+
+    def _size(
+        self,
+        path: str,
+    ) -> int:
+        r"""Get size of file on backend."""
+        path = self.path(path)
+        return artifactory.ArtifactoryPath.stat(path).size
+
     def _ls(
         self,
         path: str,
