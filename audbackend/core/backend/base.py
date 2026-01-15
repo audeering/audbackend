@@ -13,7 +13,7 @@ import audeer
 
 
 # stream-unzip is optional (not available on Python 3.14+)
-try:  # pragma: no Linux cover
+try:
     from stream_unzip import TruncatedDataError
     from stream_unzip import UnfinishedIterationError
     from stream_unzip import stream_unzip
