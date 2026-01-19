@@ -463,6 +463,7 @@ class Base:
         dst_root: str,
         *,
         tmp_root: str = None,
+        num_workers: int = 1,
         validate: bool = False,
         verbose: bool = False,
     ) -> list[str]:
@@ -471,8 +472,11 @@ class Base:
         For ZIP archives,
         streaming extraction is used
         if ``stream-unzip`` is installed,
-        which extracts files during download
-        without storing the archive locally.
+        and ``num_workers=1``.
+        It extracts files during download
+        without storing the archive locally,
+        and is recommended to use
+        as it is faster in most cases.
 
         For other archive types
         (or ZIP without ``stream-unzip``),
@@ -500,6 +504,7 @@ class Base:
             tmp_root: directory under which archive is temporarily extracted.
                 Defaults to temporary directory of system.
                 Not used for ZIP archives when ``stream-unzip`` is available.
+            num_workers: number of parallel jobs
             validate: verify archive was successfully
                 retrieved from the backend
             verbose: show debug messages
@@ -535,7 +540,11 @@ class Base:
                 pass
 
         # Use streaming extraction for ZIP files if stream-unzip is available
-        if src_path.lower().endswith(".zip") and STREAM_UNZIP_AVAILABLE:
+        if (
+            src_path.lower().endswith(".zip")
+            and num_workers == 1
+            and STREAM_UNZIP_AVAILABLE
+        ):
             return self._get_archive_streaming(
                 src_path,
                 dst_root,
@@ -547,6 +556,7 @@ class Base:
             src_path,
             dst_root,
             tmp_root=tmp_root,
+            num_workers=num_workers,
             validate=validate,
             verbose=verbose,
         )
@@ -557,6 +567,7 @@ class Base:
         dst_root: str,
         *,
         tmp_root: str | None,
+        num_workers: int,
         validate: bool,
         verbose: bool,
     ) -> list[str]:
@@ -575,6 +586,7 @@ class Base:
             self.get_file(
                 src_path,
                 local_archive,
+                num_workers=num_workers,
                 validate=validate,
                 verbose=verbose,
             )
