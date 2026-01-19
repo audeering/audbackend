@@ -217,6 +217,7 @@ class Unversioned(Base):
         dst_root: str,
         *,
         tmp_root: str = None,
+        num_workers: int = 1,
         validate: bool = False,
         verbose: bool = False,
     ) -> list[str]:
@@ -241,6 +242,7 @@ class Unversioned(Base):
             dst_root: local destination directory
             tmp_root: directory under which archive is temporarily extracted.
                 Defaults to temporary directory of system
+            num_workers: number of parallel jobs
             validate: verify archive was successfully
                 retrieved from the backend
             verbose: show debug messages
@@ -278,6 +280,7 @@ class Unversioned(Base):
             src_path,
             dst_root,
             tmp_root=tmp_root,
+            num_workers=num_workers,
             validate=validate,
             verbose=verbose,
         )

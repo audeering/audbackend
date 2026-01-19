@@ -260,6 +260,7 @@ class Versioned(Base):
         version: str,
         *,
         tmp_root: str = None,
+        num_workers: int = 1,
         validate: bool = False,
         verbose: bool = False,
     ) -> list[str]:
@@ -283,6 +284,7 @@ class Versioned(Base):
             src_path: path to archive on backend
             dst_root: local destination directory
             version: version string
+            num_workers: number of parallel jobs
             tmp_root: directory under which archive is temporarily extracted.
                 Defaults to temporary directory of system
             validate: verify archive was successfully
@@ -325,6 +327,7 @@ class Versioned(Base):
             src_path_with_version,
             dst_root,
             tmp_root=tmp_root,
+            num_workers=num_workers,
             validate=validate,
             verbose=verbose,
         )
