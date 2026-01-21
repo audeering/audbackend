@@ -494,8 +494,19 @@ def test_multiworker_no_file_truncation(tmpdir, interface):
     original_get_object = interface._backend._client.get_object
 
     def mock_get_object(bucket_name, object_name, offset=0, length=None):
-        # Return data for the requested range
-        data = b"A" * (length or chunk_size)
+        # Validate parameters to catch regressions in how _download_file
+        # performs ranged requests
+        assert offset >= 0, f"get_object called with negative offset: {offset}"
+        assert length is not None, "get_object called without length"
+        assert length > 0, f"get_object called with non-positive length: {length}"
+
+        # For this test, we expect worker 0's parameters
+        assert offset == 0, f"Expected offset=0 for worker 0, got {offset}"
+        assert length == chunk_size, f"Expected length={chunk_size}, got {length}"
+
+        # Generate data that depends on offset so misuse of ranges is observable.
+        # Each byte is (offset + i) % 256.
+        data = bytes((offset + i) % 256 for i in range(length))
         return MockResponse(data)
 
     interface._backend._client.get_object = mock_get_object
@@ -521,10 +532,14 @@ def test_multiworker_no_file_truncation(tmpdir, interface):
             f"worker 0 should use 'r+b' mode to preserve the pre-allocated file."
         )
 
-        # Verify the first chunk was written correctly
+        # Verify the first chunk was written correctly with offset-dependent data
+        expected_content = bytes((0 + i) % 256 for i in range(chunk_size))
         with open(dst_path, "rb") as f:
             content = f.read(chunk_size)
-        assert content == b"A" * chunk_size, "First chunk not written correctly"
+        assert content == expected_content, (
+            f"First chunk not written correctly. "
+            f"Expected {expected_content[:20]!r}..., got {content[:20]!r}..."
+        )
 
     finally:
         interface._backend._client.get_object = original_get_object
