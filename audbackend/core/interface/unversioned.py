@@ -223,7 +223,23 @@ class Unversioned(Base):
     ) -> list[str]:
         r"""Get archive from backend and extract.
 
-        The archive type is derived from the extension of ``src_path``.
+        For ZIP archives,
+        streaming extraction is used
+        if ``stream-unzip`` is installed,
+        and ``num_workers=1``.
+        It extracts files during download
+        without storing the archive locally,
+        and is recommended
+        as it is faster in most cases.
+        For uncompressed ZIP archives,
+        we recommend using ``num_workers=5`` instead
+        on backends that support multiple workers
+        (e.g. :class:`audbackend.backend.Minio`).
+
+        For other archive types
+        (or ZIP without ``stream-unzip``),
+        the archive is downloaded first
+        and then extracted.
         See :func:`audeer.extract_archive` for supported extensions.
 
         If ``dst_root`` does not exist,
@@ -236,6 +252,9 @@ class Unversioned(Base):
         If it fails,
         the retrieved archive is removed and
         an :class:`InterruptedError` is raised.
+        Note that for ZIP archives with streaming extraction,
+        the checksum is computed from the downloaded stream,
+        which requires the full archive to be processed.
 
         Args:
             src_path: path to archive on backend
