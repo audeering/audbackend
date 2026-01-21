@@ -394,7 +394,11 @@ class Minio(Base):
         )
 
         try:
-            with open(dst_path, "r+b" if offset else "wb") as f:
+            # When length is not None, we're in multi-worker mode
+            # and the file is already pre-allocated, so use r+b for all workers.
+            # When length is None, we're in single-worker mode and use wb.
+            mode = "r+b" if length is not None else "wb"
+            with open(dst_path, mode) as f:
                 if offset:
                     f.seek(offset)
 
