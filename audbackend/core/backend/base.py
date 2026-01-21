@@ -475,8 +475,12 @@ class Base:
         and ``num_workers=1``.
         It extracts files during download
         without storing the archive locally,
-        and is recommended to use
+        and is recommended
         as it is faster in most cases.
+        For uncompressed ZIP archives,
+        we recommend using ``num_workers=5`` instead
+        on backends that support multiple workers
+        (e.g. :class:`audbackend.backend.Minio`).
 
         For other archive types
         (or ZIP without ``stream-unzip``),
