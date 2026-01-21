@@ -438,6 +438,103 @@ def test_get_file(tmpdir, interface):
     [(audbackend.backend.Minio, audbackend.interface.Unversioned)],
     indirect=True,
 )
+def test_multiworker_no_file_truncation(tmpdir, interface):
+    r"""Test that multi-worker download doesn't truncate pre-allocated file.
+
+    This is a regression test for a bug where worker 0 (offset=0) would open
+    the destination file with "wb" mode, truncating the pre-allocated file.
+
+    In multi-worker mode, the file is pre-allocated to full size before workers
+    start downloading. When length parameter is provided to _download_file
+    (indicating multi-worker mode), all workers including worker 0 should use
+    "r+b" mode to preserve the pre-allocated file.
+
+    The test mocks the network response and directly calls _download_file
+    to verify the file is not truncated when called with length parameter.
+
+    Args:
+        tmpdir: tmpdir fixture
+        interface: interface fixture
+
+    """
+    dst_path = audeer.path(tmpdir, "test_file.bin")
+    file_size = 1000  # 1000 bytes
+    chunk_size = 500  # Each worker handles 500 bytes
+
+    # Pre-allocate the file (mimicking _get_file behavior for multi-worker)
+    with open(dst_path, "wb") as f:
+        f.truncate(file_size)
+
+    # Verify pre-allocation worked
+    assert os.path.getsize(dst_path) == file_size, "Pre-allocation failed"
+
+    # Create a mock response that returns the expected data
+    class MockResponse:
+        def __init__(self, data):
+            self._data = data
+            self._pos = 0
+
+        def read(self, size):
+            result = self._data[self._pos : self._pos + size]
+            self._pos += len(result)
+            return result
+
+        def close(self):
+            pass
+
+        def release_conn(self):
+            pass
+
+    # Create mock progress bar
+    class MockPbar:
+        def update(self, n):
+            pass
+
+    # Mock the minio client's get_object to return our test data
+    original_get_object = interface._backend._client.get_object
+
+    def mock_get_object(bucket_name, object_name, offset=0, length=None):
+        # Return data for the requested range
+        data = b"A" * (length or chunk_size)
+        return MockResponse(data)
+
+    interface._backend._client.get_object = mock_get_object
+
+    try:
+        # Call _download_file with offset=0 and length (multi-worker mode)
+        # This should NOT truncate the pre-allocated file
+        interface._backend._download_file(
+            src_path="/test.bin",
+            dst_path=dst_path,
+            pbar=MockPbar(),
+            offset=0,
+            length=chunk_size,  # length provided = multi-worker mode
+        )
+
+        # Verify file was NOT truncated - it should still be the pre-allocated size
+        # or larger (if the write extended it)
+        size_after_download = os.path.getsize(dst_path)
+        assert size_after_download >= file_size, (
+            f"File was truncated! Size after download: {size_after_download}, "
+            f"expected at least: {file_size}. "
+            f"In multi-worker mode (when length is provided), "
+            f"worker 0 should use 'r+b' mode to preserve the pre-allocated file."
+        )
+
+        # Verify the first chunk was written correctly
+        with open(dst_path, "rb") as f:
+            content = f.read(chunk_size)
+        assert content == b"A" * chunk_size, "First chunk not written correctly"
+
+    finally:
+        interface._backend._client.get_object = original_get_object
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.Minio, audbackend.interface.Unversioned)],
+    indirect=True,
+)
 def test_interrupt_cleanup(tmpdir, interface, monkeypatch):
     r"""Test that KeyboardInterrupt cleans up partial file.
 
