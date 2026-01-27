@@ -124,7 +124,7 @@ class SingleFolder(audbackend.backend.Base):
     def _get_file_stream(
         self,
         src_path: str,
-    ):
+    ) -> Iterator[bytes]:
         with self.Map(self._path, self._lock) as m:
             src_file = m[src_path][0]
         chunk_size = 64 * 1024  # 64 KB

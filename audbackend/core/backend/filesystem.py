@@ -125,7 +125,7 @@ class FileSystem(Base):
     def _get_file_stream(
         self,
         src_path: str,
-    ):
+    ) -> Iterator[bytes]:
         r"""Get file from backend as byte stream."""
         from audbackend.core.backend.base import STREAM_CHUNK_SIZE
 
