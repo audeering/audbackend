@@ -1,3 +1,4 @@
+from collections.abc import Iterator
 import os
 
 import artifactory
