@@ -477,16 +477,19 @@ class Base:
         without storing the archive locally,
         and is recommended
         as it is faster in most cases.
-        For uncompressed ZIP archives,
-        we recommend using ``num_workers=5`` instead
-        on backends that support multiple workers
-        (e.g. :class:`audbackend.backend.Minio`).
 
         For other archive types
         (or ZIP without ``stream-unzip``),
         the archive is downloaded first
         and then extracted.
         See :func:`audeer.extract_archive` for supported extensions.
+
+        Getting uncompressed archives
+        will be faster using multiple workers,
+        on backends that support this
+        (e.g. :class:`audbackend.backend.Minio`).
+        We recommend ``num_workers=5``
+        as more workers show diminishing returns.
 
         If ``dst_root`` does not exist,
         it is created.
