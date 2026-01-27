@@ -252,9 +252,6 @@ class Unversioned(Base):
         If it fails,
         the retrieved archive is removed and
         an :class:`InterruptedError` is raised.
-        Note that for ZIP archives with streaming extraction,
-        the checksum is computed from the downloaded stream,
-        which requires the full archive to be processed.
 
         Args:
             src_path: path to archive on backend
