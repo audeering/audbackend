@@ -5,3 +5,6 @@ exclude_lines =
 omit =
     audbackend/core/api.py
     audbackend/core/backend/artifactory.py
+    audbackend/core/backend/base.py
+    audbackend/core/backend/filesystem.py 
+    audbackend/core/backend/minio.py

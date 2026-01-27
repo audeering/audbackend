@@ -1,3 +1,4 @@
+from collections.abc import Iterator
 import datetime
 import os
 import shutil
@@ -121,6 +122,27 @@ class FileSystem(Base):
         r"""Get file from backend."""
         src_path = self._expand(src_path)
         shutil.copy(src_path, dst_path)
+
+    def _get_file_stream(
+        self,
+        src_path: str,
+    ) -> Iterator[bytes]:
+        r"""Get file from backend as byte stream."""
+        from audbackend.core.backend.base import STREAM_CHUNK_SIZE
+
+        src_path = self._expand(src_path)
+
+        with open(src_path, "rb") as f:
+            while data := f.read(STREAM_CHUNK_SIZE):
+                yield data
+
+    def _size(
+        self,
+        path: str,
+    ) -> int:
+        r"""Get size of file on backend."""
+        path = self._expand(path)
+        return os.path.getsize(path)
 
     def _ls(
         self,
