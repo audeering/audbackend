@@ -12,7 +12,7 @@ Version 2.3.1 (2026-02-01)
 
 * Added: streaming ZIP extraction in ``get_archive()``
   on all backends for Python <3.14;
-  ~2x speed up
+  provides ~2x speed up
 * Added: dependency on ``stream-unzip>=0.0.99``
 * Added: default 10s timeout for ``audbackend.backend.Minio``;
   can be changed in config file
