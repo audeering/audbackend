@@ -217,13 +217,23 @@ class Unversioned(Base):
         dst_root: str,
         *,
         tmp_root: str = None,
+        num_workers: int = 1,
         validate: bool = False,
         verbose: bool = False,
     ) -> list[str]:
         r"""Get archive from backend and extract.
 
-        The archive type is derived from the extension of ``src_path``.
-        See :func:`audeer.extract_archive` for supported extensions.
+        For ZIP archives,
+        streaming extraction is used
+        if ``stream-unzip`` is installed,
+        and ``num_workers=1``.
+        It extracts files during download
+        without storing the archive locally.
+
+        For uncompressed archives
+        or archives that do not support streaming extraction,
+        the archive is downloaded first and then extracted.
+        In that case we recommend setting ``num_workers=5`` for best performance.
 
         If ``dst_root`` does not exist,
         it is created.
@@ -241,6 +251,7 @@ class Unversioned(Base):
             dst_root: local destination directory
             tmp_root: directory under which archive is temporarily extracted.
                 Defaults to temporary directory of system
+            num_workers: number of parallel jobs
             validate: verify archive was successfully
                 retrieved from the backend
             verbose: show debug messages
@@ -278,6 +289,7 @@ class Unversioned(Base):
             src_path,
             dst_root,
             tmp_root=tmp_root,
+            num_workers=num_workers,
             validate=validate,
             verbose=verbose,
         )

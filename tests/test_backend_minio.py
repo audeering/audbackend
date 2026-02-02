@@ -767,3 +767,80 @@ def test_invalid_timeout_warning(tmpdir, hosts, hide_credentials):
     timeout = http_client.connection_pool_kw.get("timeout")
     assert timeout.connect_timeout == 10.0  # default
     assert timeout.read_timeout is None  # default
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.Minio, audbackend.interface.Versioned)],
+    indirect=True,
+)
+def test_size(tmpdir, interface):
+    """Test _size method returns correct file size."""
+    # Create a file with known content
+    content = "Hello World!" * 1000  # ~12KB
+    src_path = audeer.path(tmpdir, "test.txt")
+    with open(src_path, "w") as f:
+        f.write(content)
+    expected_size = os.path.getsize(src_path)
+
+    # Upload file to backend
+    interface.put_file(src_path, "/test.txt", "1.0.0")
+
+    # Get size from backend
+    backend_path = interface._path_with_version("/test.txt", "1.0.0")
+    actual_size = interface.backend._size(backend_path)
+
+    assert actual_size == expected_size
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.Minio, audbackend.interface.Unversioned)],
+    indirect=True,
+)
+def test_get_archive_streaming(tmpdir, interface):
+    """Test get_archive with streaming extraction verifies _get_file_stream.
+
+    This test verifies that _get_file_stream() returns bytes correctly,
+    which is required for streaming ZIP extraction and checksum computation.
+
+    """
+    # Skip if stream-unzip is not available
+    try:
+        from stream_unzip import stream_unzip  # noqa: F401
+    except ImportError:
+        pytest.skip("stream-unzip not available")
+
+    # Create source files
+    src_root = audeer.path(tmpdir, "src")
+    audeer.mkdir(src_root)
+    with open(audeer.path(src_root, "file1.txt"), "w") as f:
+        f.write("content of file 1")
+    with open(audeer.path(src_root, "file2.txt"), "w") as f:
+        f.write("content of file 2")
+
+    # Create ZIP archive
+    archive_path = audeer.path(tmpdir, "archive.zip")
+    audeer.create_archive(src_root, None, archive_path)
+
+    # Upload archive to backend
+    interface.put_file(archive_path, "/archive.zip")
+
+    # Extract using streaming (this exercises _get_file_stream)
+    dst_root = audeer.path(tmpdir, "dst")
+    extracted = interface.get_archive("/archive.zip", dst_root)
+
+    # Verify files were extracted correctly
+    assert sorted(extracted) == ["file1.txt", "file2.txt"]
+    with open(audeer.path(dst_root, "file1.txt")) as f:
+        assert f.read() == "content of file 1"
+    with open(audeer.path(dst_root, "file2.txt")) as f:
+        assert f.read() == "content of file 2"
+
+    # Also test with validation to verify checksum computation works
+    # (requires _get_file_stream to return bytes for md5.update())
+    dst_root_validated = audeer.path(tmpdir, "dst_validated")
+    extracted_validated = interface.get_archive(
+        "/archive.zip", dst_root_validated, validate=True
+    )
+    assert sorted(extracted_validated) == ["file1.txt", "file2.txt"]

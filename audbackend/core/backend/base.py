@@ -1,14 +1,33 @@
+from collections.abc import Iterator
 from collections.abc import Sequence
+import errno
 import fnmatch
+import hashlib
 import inspect
 import os
+import shutil
 import tempfile
+import zipfile
 
 import audeer
+
+
+# stream-unzip is optional (not available on Python 3.14+)
+try:
+    from stream_unzip import TruncatedDataError
+    from stream_unzip import UnfinishedIterationError
+    from stream_unzip import stream_unzip
+
+    STREAM_UNZIP_AVAILABLE = True
+except ImportError:  # pragma: no cover
+    STREAM_UNZIP_AVAILABLE = False
 
 from audbackend.core import utils
 from audbackend.core.errors import BackendError
 
+
+# Default chunk size for streaming file operations (64 KB)
+STREAM_CHUNK_SIZE = 64 * 1024
 
 backend_not_opened_error = (
     "Call 'Backend.open()' to establish a connection to the repository first."
@@ -450,8 +469,17 @@ class Base:
     ) -> list[str]:
         r"""Get archive from backend and extract.
 
-        The archive type is derived from the extension of ``src_path``.
-        See :func:`audeer.extract_archive` for supported extensions.
+        For ZIP archives,
+        streaming extraction is used
+        if ``stream-unzip`` is installed,
+        and ``num_workers=1``.
+        It extracts files during download
+        without storing the archive locally.
+
+        For uncompressed archives
+        or archives that do not support streaming extraction,
+        the archive is downloaded first and then extracted.
+        In that case we recommend setting ``num_workers=5`` for best performance.
 
         If ``dst_root`` does not exist,
         it is created.
@@ -461,14 +489,15 @@ class Base:
         ``src_path`` and the retrieved archive
         have the same checksum.
         If it fails,
-        the retrieved archive is removed and
+        the extracted files are removed and
         an :class:`InterruptedError` is raised.
 
         Args:
             src_path: path to archive on backend
             dst_root: local destination directory
             tmp_root: directory under which archive is temporarily extracted.
-                Defaults to temporary directory of system
+                Defaults to temporary directory of system.
+                Not used for ZIP archives when ``stream-unzip`` is available.
             num_workers: number of parallel jobs
             validate: verify archive was successfully
                 retrieved from the backend
@@ -498,10 +527,54 @@ class Base:
 
         src_path = utils.check_path(src_path)
 
+        # Validate tmp_root if specified
+        # (use TemporaryDirectory to get consistent error format)
+        if tmp_root is not None:
+            with tempfile.TemporaryDirectory(dir=tmp_root):
+                pass
+
+        # Use streaming extraction for ZIP files if stream-unzip is available
+        if (
+            src_path.lower().endswith(".zip")
+            and num_workers == 1
+            and STREAM_UNZIP_AVAILABLE
+        ):
+            return self._get_archive_streaming(
+                src_path,
+                dst_root,
+                validate=validate,
+                verbose=verbose,
+            )
+
+        return self._get_archive_via_tempfile(
+            src_path,
+            dst_root,
+            tmp_root=tmp_root,
+            num_workers=num_workers,
+            validate=validate,
+            verbose=verbose,
+        )
+
+    def _get_archive_via_tempfile(
+        self,
+        src_path: str,
+        dst_root: str,
+        *,
+        tmp_root: str | None,
+        num_workers: int,
+        validate: bool,
+        verbose: bool,
+    ) -> list[str]:
+        r"""Get archive via temporary file download and extraction.
+
+        Downloads the archive to a temporary location,
+        then extracts it to the destination.
+
+        """
         with tempfile.TemporaryDirectory(dir=tmp_root) as tmp:
-            tmp_root = audeer.path(tmp, os.path.basename(dst_root))
+            tmp_dir = audeer.path(tmp, os.path.basename(dst_root))
             local_archive = os.path.join(
-                tmp_root,
+                tmp_dir,
                 os.path.basename(src_path),
             )
             self.get_file(
@@ -518,6 +591,128 @@ class Base:
                 verbose=verbose,
             )
 
+    def _cleanup_extracted(
+        self,
+        dst_root: str,
+        dst_root_existed: bool,
+        extracted_files: list[str],
+    ) -> None:
+        r"""Remove extracted files and optionally the destination directory.
+
+        If we created the destination directory and it didn't exist before,
+        remove it entirely. Otherwise, only remove the files we extracted.
+
+        """
+        if not dst_root_existed and os.path.exists(dst_root):
+            shutil.rmtree(dst_root)
+        else:
+            for file_name in extracted_files:
+                full_path = audeer.path(dst_root, file_name)
+                if os.path.exists(full_path):
+                    os.remove(full_path)
+
+    def _get_archive_streaming(
+        self,
+        src_path: str,
+        dst_root: str,
+        *,
+        validate: bool = False,
+        verbose: bool = False,
+    ) -> list[str]:
+        r"""Get ZIP archive from backend with streaming extraction.
+
+        Extracts files during download without storing the archive locally.
+
+        """
+        # Validate dst_root is not an existing file,
+        # raise same error as audeer.extract_archive()
+        if os.path.exists(dst_root) and not os.path.isdir(dst_root):
+            raise NotADirectoryError(
+                errno.ENOTDIR,
+                os.strerror(errno.ENOTDIR),
+                dst_root,
+            )
+
+        # Track if we created the destination directory
+        dst_root_existed = os.path.exists(dst_root)
+        audeer.mkdir(dst_root)
+
+        extracted_files = []
+        md5_hash = hashlib.md5() if validate else None
+
+        # Get file size for progress bar
+        src_size = self._size(src_path) if verbose else None
+
+        # Setup progress bar
+        desc = audeer.format_display_message(
+            f"Download {os.path.basename(src_path)}",
+            pbar=verbose,
+        )
+        pbar = audeer.progress_bar(total=src_size, desc=desc, disable=not verbose)
+
+        def stream_with_hash():
+            """Wrap stream to compute hash while streaming."""
+            for chunk in self._get_file_stream(src_path):
+                if md5_hash is not None:
+                    md5_hash.update(chunk)
+                pbar.update(len(chunk))
+                yield chunk
+
+        try:
+            with pbar:
+                for file_name, file_size, unzipped_chunks in stream_unzip(
+                    stream_with_hash()
+                ):
+                    # Decode file name and handle path
+                    file_name = file_name.decode("utf-8")
+
+                    # Skip directory entries
+                    if file_name.endswith("/"):
+                        continue
+
+                    # Construct destination path
+                    dst_path = audeer.path(dst_root, file_name)
+
+                    # Create parent directories if needed
+                    audeer.mkdir(os.path.dirname(dst_path))
+
+                    # Write file content
+                    with open(dst_path, "wb") as f:
+                        for chunk in unzipped_chunks:
+                            f.write(chunk)
+
+                    # Store relative path (consistent with audeer.extract_archive)
+                    extracted_files.append(file_name.replace("/", os.sep))
+
+                # Validate checksum if requested
+                if validate:
+                    expected_checksum = self.checksum(src_path)
+                    actual_checksum = md5_hash.hexdigest()
+
+                    if actual_checksum != expected_checksum:
+                        self._cleanup_extracted(
+                            dst_root, dst_root_existed, extracted_files
+                        )
+                        raise InterruptedError(
+                            f"Execution is interrupted because "
+                            f"{src_path} "
+                            f"has checksum "
+                            f"'{actual_checksum}' "
+                            "when the expected checksum is "
+                            f"'{expected_checksum}'. "
+                            f"The extracted files have been removed."
+                        )
+
+        except (zipfile.BadZipFile, TruncatedDataError, UnfinishedIterationError) as ex:
+            self._cleanup_extracted(dst_root, dst_root_existed, extracted_files)
+            raise RuntimeError(f"Broken archive: {src_path}") from ex
+        except Exception:
+            # Clean up on any unexpected error (network errors, etc.)
+            self._cleanup_extracted(dst_root, dst_root_existed, extracted_files)
+            raise
+
+        return extracted_files
+
     def _get_file(
         self,
         src_path: str,
@@ -526,6 +721,17 @@ class Base:
         verbose: bool,
     ):  # pragma: no cover
         r"""Get file from backend."""
+        raise NotImplementedError()
+
+    def _get_file_stream(
+        self,
+        src_path: str,
+    ) -> Iterator[bytes]:  # pragma: no cover
+        r"""Get file from backend as byte stream.
+
+        This method should return an iterator that yields chunks of bytes.
+
+        """
         raise NotImplementedError()
 
     def get_file(
@@ -1138,6 +1344,13 @@ class Base:
 
         """
         return utils.BACKEND_SEPARATOR
+
+    def _size(
+        self,
+        path: str,
+    ) -> int:  # pragma: no cover
+        r"""Get size of file on backend."""
+        raise NotImplementedError()
 
     def split(
         self,

@@ -1,4 +1,5 @@
 import os
+import zipfile
 
 import pytest
 
@@ -189,3 +190,307 @@ def test_open_close(tmpdir, repository):
     audbackend.backend.FileSystem.create(host, repository)
     backend.open()
     backend.close()
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.FileSystem, audbackend.interface.Unversioned)],
+    indirect=True,
+)
+def test_get_archive_streaming(tmpdir, interface):
+    """Test get_archive with streaming extraction verifies _get_file_stream.
+
+    This test verifies that _get_file_stream() returns bytes correctly,
+    which is required for streaming ZIP extraction and checksum computation.
+
+    """
+    # Skip if stream-unzip is not available
+    try:
+        from stream_unzip import stream_unzip  # noqa: F401
+    except ImportError:
+        pytest.skip("stream-unzip not available")
+
+    # Create source files
+    src_root = audeer.path(tmpdir, "src")
+    audeer.mkdir(src_root)
+    with open(audeer.path(src_root, "file1.txt"), "w") as f:
+        f.write("content of file 1")
+    with open(audeer.path(src_root, "file2.txt"), "w") as f:
+        f.write("content of file 2")
+
+    # Create ZIP archive
+    archive_path = audeer.path(tmpdir, "archive.zip")
+    audeer.create_archive(src_root, None, archive_path)
+
+    # Upload archive to backend
+    interface.put_file(archive_path, "/archive.zip")
+
+    # Extract using streaming (this exercises _get_file_stream)
+    dst_root = audeer.path(tmpdir, "dst")
+    extracted = interface.get_archive("/archive.zip", dst_root)
+
+    # Verify files were extracted correctly
+    assert sorted(extracted) == ["file1.txt", "file2.txt"]
+    with open(audeer.path(dst_root, "file1.txt")) as f:
+        assert f.read() == "content of file 1"
+    with open(audeer.path(dst_root, "file2.txt")) as f:
+        assert f.read() == "content of file 2"
+
+    # Also test with validation to verify checksum computation works
+    # (requires _get_file_stream to return bytes for md5.update())
+    dst_root_validated = audeer.path(tmpdir, "dst_validated")
+    extracted_validated = interface.get_archive(
+        "/archive.zip", dst_root_validated, validate=True
+    )
+    assert sorted(extracted_validated) == ["file1.txt", "file2.txt"]
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.FileSystem, audbackend.interface.Unversioned)],
+    indirect=True,
+)
+def test_streaming_dst_root_is_file(tmpdir, interface):
+    """Test that NotADirectoryError is raised when dst_root is an existing file.
+
+    When extracting an archive and dst_root points to an existing file,
+    NotADirectoryError should be raised and the file should remain unchanged.
+
+    """
+    # Skip if stream-unzip is not available
+    try:
+        from stream_unzip import stream_unzip  # noqa: F401
+    except ImportError:
+        pytest.skip("stream-unzip not available")
+
+    # Create a regular file where we'll try to extract to
+    dst_file = audeer.path(tmpdir, "existing_file.txt")
+    with open(dst_file, "w") as f:
+        f.write("original content")
+    original_content = "original content"
+    original_mtime = os.path.getmtime(dst_file)
+
+    # Create a valid ZIP archive with content
+    src_root = audeer.path(tmpdir, "src")
+    audeer.mkdir(src_root)
+    with open(audeer.path(src_root, "new_file.txt"), "w") as f:
+        f.write("New content")
+
+    archive_path = audeer.path(tmpdir, "archive.zip")
+    audeer.create_archive(src_root, None, archive_path)
+    interface.put_file(archive_path, "/archive.zip")
+
+    # Get list of files in tmpdir before the failed extraction
+    files_before = set(os.listdir(tmpdir))
+
+    # Try to extract to the existing file - should fail with NotADirectoryError
+    with pytest.raises(NotADirectoryError):
+        interface.get_archive("/archive.zip", dst_file)
+
+    # Verify the file is unchanged
+    assert os.path.isfile(dst_file)
+    with open(dst_file) as f:
+        assert f.read() == original_content
+    assert os.path.getmtime(dst_file) == original_mtime
+
+    # Verify no additional files were created nearby (no partial extraction)
+    files_after = set(os.listdir(tmpdir))
+    assert files_after == files_before
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.FileSystem, audbackend.interface.Unversioned)],
+    indirect=True,
+)
+def test_streaming_cleanup_existing_directory(tmpdir, interface):
+    """Test cleanup removes only extracted files when dst_root already exists.
+
+    When extracting a malformed archive to an existing directory fails,
+    only the extracted files should be removed, not the entire directory
+    or pre-existing files.
+
+    """
+    # Skip if stream-unzip is not available
+    try:
+        from stream_unzip import stream_unzip  # noqa: F401
+    except ImportError:
+        pytest.skip("stream-unzip not available")
+
+    # Create destination directory with pre-existing file
+    dst_root = audeer.path(tmpdir, "existing_dir")
+    audeer.mkdir(dst_root)
+    pre_existing_file = audeer.path(dst_root, "pre_existing.txt")
+    with open(pre_existing_file, "w") as f:
+        f.write("I was here before")
+
+    # Create and upload a malformed ZIP archive
+    malformed_zip = audeer.path(tmpdir, "malformed.zip")
+    audeer.touch(malformed_zip)  # Empty file, not a valid ZIP
+    interface.put_file(malformed_zip, "/malformed.zip")
+
+    # Try to extract - should fail
+    with pytest.raises(RuntimeError, match="Broken archive"):
+        interface.get_archive("/malformed.zip", dst_root)
+
+    # Verify pre-existing file still exists
+    assert os.path.exists(pre_existing_file)
+    with open(pre_existing_file) as f:
+        assert f.read() == "I was here before"
+
+    # Verify destination directory still exists
+    assert os.path.isdir(dst_root)
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.FileSystem, audbackend.interface.Unversioned)],
+    indirect=True,
+)
+def test_streaming_cleanup_extracted_files(tmpdir, interface):
+    """Test cleanup removes extracted files on validation failure.
+
+    When extracting an archive to an existing directory fails due to
+    checksum validation, the extracted files should be removed but
+    pre-existing files should remain.
+
+    """
+    # Skip if stream-unzip is not available
+    try:
+        from stream_unzip import stream_unzip  # noqa: F401
+    except ImportError:
+        pytest.skip("stream-unzip not available")
+
+    # Create destination directory with pre-existing file
+    dst_root = audeer.path(tmpdir, "existing_dir")
+    audeer.mkdir(dst_root)
+    pre_existing_file = audeer.path(dst_root, "pre_existing.txt")
+    with open(pre_existing_file, "w") as f:
+        f.write("I was here before")
+
+    # Create a valid ZIP archive with content
+    src_root = audeer.path(tmpdir, "src")
+    audeer.mkdir(src_root)
+    with open(audeer.path(src_root, "new_file.txt"), "w") as f:
+        f.write("New content")
+
+    archive_path = audeer.path(tmpdir, "archive.zip")
+    audeer.create_archive(src_root, None, archive_path)
+    interface.put_file(archive_path, "/archive.zip")
+
+    # Mock checksum to force validation failure after extraction
+    original_checksum = interface.backend.checksum
+
+    def bad_checksum(path):
+        if path.endswith(".zip"):
+            return "bad_checksum_value"
+        return original_checksum(path)
+
+    interface.backend.checksum = bad_checksum
+
+    # Try to extract with validation - should fail after extraction
+    with pytest.raises(InterruptedError, match="checksum"):
+        interface.get_archive("/archive.zip", dst_root, validate=True)
+
+    # Restore original checksum
+    interface.backend.checksum = original_checksum
+
+    # Verify pre-existing file still exists
+    assert os.path.exists(pre_existing_file)
+    with open(pre_existing_file) as f:
+        assert f.read() == "I was here before"
+
+    # Verify extracted file was cleaned up
+    extracted_file = audeer.path(dst_root, "new_file.txt")
+    assert not os.path.exists(extracted_file)
+
+    # Verify destination directory still exists
+    assert os.path.isdir(dst_root)
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.FileSystem, audbackend.interface.Unversioned)],
+    indirect=True,
+)
+def test_streaming_zip_with_directory_entries(tmpdir, interface):
+    """Test streaming extraction handles ZIP archives with directory entries.
+
+    Some ZIP tools create archives with explicit directory entries
+    (entries ending with '/'). These should be skipped during extraction
+    while still extracting the files within those directories.
+
+    """
+    # Skip if stream-unzip is not available
+    try:
+        from stream_unzip import stream_unzip  # noqa: F401
+    except ImportError:
+        pytest.skip("stream-unzip not available")
+
+    # Create source files with subdirectory
+    src_root = audeer.path(tmpdir, "src")
+    audeer.mkdir(src_root)
+    subdir = audeer.path(src_root, "subdir")
+    audeer.mkdir(subdir)
+    with open(audeer.path(src_root, "file1.txt"), "w") as f:
+        f.write("content1")
+    with open(audeer.path(subdir, "file2.txt"), "w") as f:
+        f.write("content2")
+
+    # Create ZIP with explicit directory entries (unlike audeer.create_archive)
+    archive_path = audeer.path(tmpdir, "archive_with_dirs.zip")
+    with zipfile.ZipFile(archive_path, "w") as zf:
+        # Add directory entry explicitly
+        zf.write(subdir, "subdir/")
+        # Add files
+        zf.write(audeer.path(src_root, "file1.txt"), "file1.txt")
+        zf.write(audeer.path(subdir, "file2.txt"), os.path.join("subdir", "file2.txt"))
+
+    # Verify the ZIP contains a directory entry
+    with zipfile.ZipFile(archive_path, "r") as zf:
+        names = zf.namelist()
+        assert "subdir/" in names  # Directory entry exists
+
+    # Upload archive
+    interface.put_file(archive_path, "/archive_with_dirs.zip")
+
+    # Extract using streaming
+    dst_root = audeer.path(tmpdir, "dst")
+    extracted = interface.get_archive("/archive_with_dirs.zip", dst_root)
+
+    # Verify files were extracted (directory entry should be skipped)
+    assert "file1.txt" in extracted
+    assert os.path.join("subdir", "file2.txt") in extracted
+    assert f"subdir{os.sep}" not in extracted  # Directory entry should not be in result
+
+    # Verify actual files exist
+    assert os.path.exists(audeer.path(dst_root, "file1.txt"))
+    assert os.path.exists(audeer.path(dst_root, "subdir", "file2.txt"))
+    with open(audeer.path(dst_root, "file1.txt")) as f:
+        assert f.read() == "content1"
+    with open(audeer.path(dst_root, "subdir", "file2.txt")) as f:
+        assert f.read() == "content2"
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.FileSystem, audbackend.interface.Versioned)],
+    indirect=True,
+)
+def test_size(tmpdir, interface):
+    """Test _size method returns correct file size."""
+    # Create a file with known content
+    content = "Hello World!" * 1000  # ~12KB
+    src_path = audeer.path(tmpdir, "test.txt")
+    with open(src_path, "w") as f:
+        f.write(content)
+    expected_size = os.path.getsize(src_path)
+
+    # Upload file to backend
+    interface.put_file(src_path, "/test.txt", "1.0.0")
+
+    # Get size from backend
+    backend_path = interface._path_with_version("/test.txt", "1.0.0")
+    actual_size = interface.backend._size(backend_path)
+
+    assert actual_size == expected_size
