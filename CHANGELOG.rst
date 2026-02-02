@@ -16,7 +16,7 @@ Version 2.3.1 (2026-02-01)
 * Added: dependency on ``stream-unzip>=0.0.99``
 * Added: default 10s timeout for ``audbackend.backend.Minio``;
   can be changed in config file
-* Fixed: avoid hanging of ``audbackend.backend.Minio``
+* Fixed: avoid hangs in ``audbackend.backend.Minio``
 * Fixed: avoid file corruption when using ``num_workers>1``
   in ``audbackend.backend.Minio.get_file()``
 
