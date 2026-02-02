@@ -271,22 +271,12 @@ class Versioned(Base):
         if ``stream-unzip`` is installed,
         and ``num_workers=1``.
         It extracts files during download
-        without storing the archive locally,
-        and is recommended
-        as it is faster in most cases.
+        without storing the archive locally.
 
-        For other archive types
-        (or ZIP without ``stream-unzip``),
-        the archive is downloaded first
-        and then extracted.
-        See :func:`audeer.extract_archive` for supported extensions.
-
-        Getting uncompressed archives
-        will be faster using multiple workers,
-        on backends that support this
-        (e.g. :class:`audbackend.backend.Minio`).
-        We recommend ``num_workers=5``
-        as more workers show diminishing returns.
+        For uncompressed archives
+        or archives that do not support streaming extraction,
+        the archive is downloaded first and then extracted.
+        In that case we recommend setting ``num_workers=5`` for best performance.
 
         If ``dst_root`` does not exist,
         it is created.
