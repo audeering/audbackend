@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                2.3.0
+                2.3.1
               </div>
             
           
@@ -420,13 +420,23 @@
         <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">tmp_root</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get archive from backend and extract.</span>
 
-<span class="sd">        The archive type is derived from the extension of ``src_path``.</span>
-<span class="sd">        See :func:`audeer.extract_archive` for supported extensions.</span>
+<span class="sd">        For ZIP archives,</span>
+<span class="sd">        streaming extraction is used</span>
+<span class="sd">        if ``stream-unzip`` is installed,</span>
+<span class="sd">        and ``num_workers=1``.</span>
+<span class="sd">        It extracts files during download</span>
+<span class="sd">        without storing the archive locally.</span>
+
+<span class="sd">        For uncompressed archives</span>
+<span class="sd">        or archives that do not support streaming extraction,</span>
+<span class="sd">        the archive is downloaded first and then extracted.</span>
+<span class="sd">        In that case we recommend setting ``num_workers=5`` for best performance.</span>
 
 <span class="sd">        If ``dst_root`` does not exist,</span>
 <span class="sd">        it is created.</span>
@@ -443,6 +453,7 @@
 <span class="sd">            src_path: path to archive on backend</span>
 <span class="sd">            dst_root: local destination directory</span>
 <span class="sd">            version: version string</span>
+<span class="sd">            num_workers: number of parallel jobs</span>
 <span class="sd">            tmp_root: directory under which archive is temporarily extracted.</span>
 <span class="sd">                Defaults to temporary directory of system</span>
 <span class="sd">            validate: verify archive was successfully</span>
@@ -485,6 +496,7 @@
             <span class="n">src_path_with_version</span><span class="p">,</span>
             <span class="n">dst_root</span><span class="p">,</span>
             <span class="n">tmp_root</span><span class="o">=</span><span class="n">tmp_root</span><span class="p">,</span>
+            <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">,</span>
             <span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">,</span>
             <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
         <span class="p">)</span></div>
@@ -1153,7 +1165,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/01/07 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/02/03 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>

@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                2.3.0
+                2.3.1
               </div>
             
           
@@ -142,17 +142,36 @@
            <div itemprop="articleBody">
             
   <h1>Source code for audbackend.core.backend.base</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">errno</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">fnmatch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">zipfile</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">audeer</span>
+
+
+<span class="c1"># stream-unzip is optional (not available on Python 3.14+)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">stream_unzip</span><span class="w"> </span><span class="kn">import</span> <span class="n">TruncatedDataError</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">stream_unzip</span><span class="w"> </span><span class="kn">import</span> <span class="n">UnfinishedIterationError</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">stream_unzip</span><span class="w"> </span><span class="kn">import</span> <span class="n">stream_unzip</span>
+
+    <span class="n">STREAM_UNZIP_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="n">STREAM_UNZIP_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">audbackend.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">audbackend.core.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">BackendError</span>
 
+
+<span class="c1"># Default chunk size for streaming file operations (64 KB)</span>
+<span class="n">STREAM_CHUNK_SIZE</span> <span class="o">=</span> <span class="mi">64</span> <span class="o">*</span> <span class="mi">1024</span>
 
 <span class="n">backend_not_opened_error</span> <span class="o">=</span> <span class="p">(</span>
     <span class="s2">&quot;Call &#39;Backend.open()&#39; to establish a connection to the repository first.&quot;</span>
@@ -619,8 +638,17 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get archive from backend and extract.</span>
 
-<span class="sd">        The archive type is derived from the extension of ``src_path``.</span>
-<span class="sd">        See :func:`audeer.extract_archive` for supported extensions.</span>
+<span class="sd">        For ZIP archives,</span>
+<span class="sd">        streaming extraction is used</span>
+<span class="sd">        if ``stream-unzip`` is installed,</span>
+<span class="sd">        and ``num_workers=1``.</span>
+<span class="sd">        It extracts files during download</span>
+<span class="sd">        without storing the archive locally.</span>
+
+<span class="sd">        For uncompressed archives</span>
+<span class="sd">        or archives that do not support streaming extraction,</span>
+<span class="sd">        the archive is downloaded first and then extracted.</span>
+<span class="sd">        In that case we recommend setting ``num_workers=5`` for best performance.</span>
 
 <span class="sd">        If ``dst_root`` does not exist,</span>
 <span class="sd">        it is created.</span>
@@ -630,14 +658,15 @@
 <span class="sd">        ``src_path`` and the retrieved archive</span>
 <span class="sd">        have the same checksum.</span>
 <span class="sd">        If it fails,</span>
-<span class="sd">        the retrieved archive is removed and</span>
+<span class="sd">        the extracted files are removed and</span>
 <span class="sd">        an :class:`InterruptedError` is raised.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            src_path: path to archive on backend</span>
 <span class="sd">            dst_root: local destination directory</span>
 <span class="sd">            tmp_root: directory under which archive is temporarily extracted.</span>
-<span class="sd">                Defaults to temporary directory of system</span>
+<span class="sd">                Defaults to temporary directory of system.</span>
+<span class="sd">                Not used for ZIP archives when ``stream-unzip`` is available.</span>
 <span class="sd">            num_workers: number of parallel jobs</span>
 <span class="sd">            validate: verify archive was successfully</span>
 <span class="sd">                retrieved from the backend</span>
@@ -667,10 +696,55 @@
 
         <span class="n">src_path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_path</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
 
+        <span class="c1"># Validate tmp_root if specified</span>
+        <span class="c1"># (use TemporaryDirectory to get consistent error format)</span>
+        <span class="k">if</span> <span class="n">tmp_root</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">tmp_root</span><span class="p">):</span>
+                <span class="k">pass</span>
+
+        <span class="c1"># Use streaming extraction for ZIP files if stream-unzip is available</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">src_path</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.zip&quot;</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">num_workers</span> <span class="o">==</span> <span class="mi">1</span>
+            <span class="ow">and</span> <span class="n">STREAM_UNZIP_AVAILABLE</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_archive_streaming</span><span class="p">(</span>
+                <span class="n">src_path</span><span class="p">,</span>
+                <span class="n">dst_root</span><span class="p">,</span>
+                <span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">,</span>
+                <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_archive_via_tempfile</span><span class="p">(</span>
+            <span class="n">src_path</span><span class="p">,</span>
+            <span class="n">dst_root</span><span class="p">,</span>
+            <span class="n">tmp_root</span><span class="o">=</span><span class="n">tmp_root</span><span class="p">,</span>
+            <span class="n">num_workers</span><span class="o">=</span><span class="n">num_workers</span><span class="p">,</span>
+            <span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_archive_via_tempfile</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">dst_root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">tmp_root</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get archive via temporary file download and extraction.</span>
+
+<span class="sd">        Downloads the archive to a temporary location,</span>
+<span class="sd">        then extracts it to the destination.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">tmp_root</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
-            <span class="n">tmp_root</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">dst_root</span><span class="p">))</span>
+            <span class="n">tmp_dir</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">dst_root</span><span class="p">))</span>
             <span class="n">local_archive</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                <span class="n">tmp_root</span><span class="p">,</span>
+                <span class="n">tmp_dir</span><span class="p">,</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">src_path</span><span class="p">),</span>
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span>
@@ -685,8 +759,129 @@
                 <span class="n">local_archive</span><span class="p">,</span>
                 <span class="n">dst_root</span><span class="p">,</span>
                 <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
-            <span class="p">)</span></div>
+            <span class="p">)</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_cleanup_extracted</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">dst_root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">dst_root_existed</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">extracted_files</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Remove extracted files and optionally the destination directory.</span>
+
+<span class="sd">        If we created the destination directory and it didn&#39;t exist before,</span>
+<span class="sd">        remove it entirely. Otherwise, only remove the files we extracted.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dst_root_existed</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dst_root</span><span class="p">):</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">dst_root</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">file_name</span> <span class="ow">in</span> <span class="n">extracted_files</span><span class="p">:</span>
+                <span class="n">full_path</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">dst_root</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">full_path</span><span class="p">):</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">full_path</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_archive_streaming</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">dst_root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get ZIP archive from backend with streaming extraction.</span>
+
+<span class="sd">        Extracts files during download without storing the archive locally.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Validate dst_root is not an existing file,</span>
+        <span class="c1"># raise same error as audeer.extract_archive()</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dst_root</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">dst_root</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">NotADirectoryError</span><span class="p">(</span>
+                <span class="n">errno</span><span class="o">.</span><span class="n">ENOTDIR</span><span class="p">,</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="o">.</span><span class="n">ENOTDIR</span><span class="p">),</span>
+                <span class="n">dst_root</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Track if we created the destination directory</span>
+        <span class="n">dst_root_existed</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dst_root</span><span class="p">)</span>
+        <span class="n">audeer</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">dst_root</span><span class="p">)</span>
+
+        <span class="n">extracted_files</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">md5_hash</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">()</span> <span class="k">if</span> <span class="n">validate</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="c1"># Get file size for progress bar</span>
+        <span class="n">src_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_size</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span> <span class="k">if</span> <span class="n">verbose</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="c1"># Setup progress bar</span>
+        <span class="n">desc</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">format_display_message</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Download </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">pbar</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">pbar</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">progress_bar</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="n">src_size</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="n">desc</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">verbose</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">stream_with_hash</span><span class="p">():</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Wrap stream to compute hash while streaming.&quot;&quot;&quot;</span>
+            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_file_stream</span><span class="p">(</span><span class="n">src_path</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">md5_hash</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">md5_hash</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+                <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">chunk</span><span class="p">))</span>
+                <span class="k">yield</span> <span class="n">chunk</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">pbar</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">file_size</span><span class="p">,</span> <span class="n">unzipped_chunks</span> <span class="ow">in</span> <span class="n">stream_unzip</span><span class="p">(</span>
+                    <span class="n">stream_with_hash</span><span class="p">()</span>
+                <span class="p">):</span>
+                    <span class="c1"># Decode file name and handle path</span>
+                    <span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+
+                    <span class="c1"># Skip directory entries</span>
+                    <span class="k">if</span> <span class="n">file_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
+                        <span class="k">continue</span>
+
+                    <span class="c1"># Construct destination path</span>
+                    <span class="n">dst_path</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">dst_root</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
+
+                    <span class="c1"># Create parent directories if needed</span>
+                    <span class="n">audeer</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">dst_path</span><span class="p">))</span>
+
+                    <span class="c1"># Write file content</span>
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dst_path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">unzipped_chunks</span><span class="p">:</span>
+                            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+
+                    <span class="c1"># Store relative path (consistent with audeer.extract_archive)</span>
+                    <span class="n">extracted_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">))</span>
+
+                <span class="c1"># Validate checksum if requested</span>
+                <span class="k">if</span> <span class="n">validate</span><span class="p">:</span>
+                    <span class="n">expected_checksum</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">checksum</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
+                    <span class="n">actual_checksum</span> <span class="o">=</span> <span class="n">md5_hash</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+
+                    <span class="k">if</span> <span class="n">actual_checksum</span> <span class="o">!=</span> <span class="n">expected_checksum</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_cleanup_extracted</span><span class="p">(</span>
+                            <span class="n">dst_root</span><span class="p">,</span> <span class="n">dst_root_existed</span><span class="p">,</span> <span class="n">extracted_files</span>
+                        <span class="p">)</span>
+                        <span class="k">raise</span> <span class="ne">InterruptedError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Execution is interrupted because &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">src_path</span><span class="si">}</span><span class="s2"> &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;has checksum &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">actual_checksum</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                            <span class="s2">&quot;when the expected checksum is &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">expected_checksum</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;The extracted files have been removed.&quot;</span>
+                        <span class="p">)</span>
+
+        <span class="k">except</span> <span class="p">(</span><span class="n">zipfile</span><span class="o">.</span><span class="n">BadZipFile</span><span class="p">,</span> <span class="n">TruncatedDataError</span><span class="p">,</span> <span class="n">UnfinishedIterationError</span><span class="p">)</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cleanup_extracted</span><span class="p">(</span><span class="n">dst_root</span><span class="p">,</span> <span class="n">dst_root_existed</span><span class="p">,</span> <span class="n">extracted_files</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Broken archive: </span><span class="si">{</span><span class="n">src_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">ex</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="c1"># Clean up on any unexpected error (network errors, etc.)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cleanup_extracted</span><span class="p">(</span><span class="n">dst_root</span><span class="p">,</span> <span class="n">dst_root_existed</span><span class="p">,</span> <span class="n">extracted_files</span><span class="p">)</span>
+            <span class="k">raise</span>
+
+        <span class="k">return</span> <span class="n">extracted_files</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -696,6 +891,17 @@
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="p">):</span>  <span class="c1"># pragma: no cover</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get file from backend.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_file_stream</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]:</span>  <span class="c1"># pragma: no cover</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get file from backend as byte stream.</span>
+
+<span class="sd">        This method should return an iterator that yields chunks of bytes.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
 <div class="viewcode-block" id="Base.get_file">
@@ -1336,6 +1542,13 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">utils</span><span class="o">.</span><span class="n">BACKEND_SEPARATOR</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_size</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get size of file on backend.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
 <div class="viewcode-block" id="Base.split">
 <a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.split">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">split</span><span class="p">(</span>
@@ -1378,7 +1591,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/01/07 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/02/03 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>

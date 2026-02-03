@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                2.3.0
+                2.3.1
               </div>
             
           
@@ -142,15 +142,16 @@
            <div itemprop="articleBody">
             
   <h1>Source code for audbackend.core.backend.minio</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">configparser</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterator</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">configparser</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">getpass</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">mimetypes</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">signal</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">minio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">urllib3</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">audeer</span>
 
@@ -162,6 +163,17 @@
 <a class="viewcode-back" href="../../../../api/audbackend.backend.Minio.html#audbackend.backend.Minio">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Minio</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Backend for MinIO.</span>
+
+<span class="sd">    HTTP timeouts can be configured via the config file</span>
+<span class="sd">    (see :meth:`get_config`):</span>
+
+<span class="sd">    * ``connect_timeout``: seconds for connection establishment (default: 10.0)</span>
+<span class="sd">    * ``read_timeout``: seconds for read operations; ``None`` means no timeout</span>
+<span class="sd">      (default: ``None``)</span>
+
+<span class="sd">    Alternatively,</span>
+<span class="sd">    provide a custom ``http_client`` object as ``kwargs``</span>
+<span class="sd">    to fully control connection behavior.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        host: host address</span>
@@ -214,9 +226,29 @@
         <span class="k">if</span> <span class="n">authentication</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">authentication</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_authentication</span><span class="p">(</span><span class="n">host</span><span class="p">)</span>
 
+        <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="n">host</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">secure</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="n">host</span><span class="p">)</span>
             <span class="n">secure</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;secure&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Configure HTTP client with timeouts to prevent hanging connections.</span>
+        <span class="c1"># Users can override by passing their own http_client in kwargs.</span>
+        <span class="c1"># Timeouts can be tuned via backend config:</span>
+        <span class="c1">#   - &quot;connect_timeout&quot;: seconds for connection establishment (default: 10.0)</span>
+        <span class="c1">#   - &quot;read_timeout&quot;: seconds for read operations; None means no timeout</span>
+        <span class="c1">#     (default: None)</span>
+        <span class="k">if</span> <span class="s2">&quot;http_client&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">connect_timeout</span> <span class="o">=</span> <span class="n">_parse_timeout</span><span class="p">(</span>
+                <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;connect_timeout&quot;</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">),</span>
+                <span class="n">name</span><span class="o">=</span><span class="s2">&quot;connect_timeout&quot;</span><span class="p">,</span>
+                <span class="n">default</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">read_timeout</span> <span class="o">=</span> <span class="n">_parse_timeout</span><span class="p">(</span>
+                <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;read_timeout&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="n">name</span><span class="o">=</span><span class="s2">&quot;read_timeout&quot;</span><span class="p">,</span>
+                <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">timeout</span> <span class="o">=</span> <span class="n">urllib3</span><span class="o">.</span><span class="n">Timeout</span><span class="p">(</span><span class="n">connect</span><span class="o">=</span><span class="n">connect_timeout</span><span class="p">,</span> <span class="n">read</span><span class="o">=</span><span class="n">read_timeout</span><span class="p">)</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;http_client&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">urllib3</span><span class="o">.</span><span class="n">PoolManager</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
 
         <span class="c1"># Open MinIO client</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">minio</span><span class="o">.</span><span class="n">Minio</span><span class="p">(</span>
@@ -288,6 +320,21 @@
 <span class="sd">            [play.min.io]</span>
 <span class="sd">            access_key = &quot;Q3AM3UQ867SPQQA43P2F&quot;</span>
 <span class="sd">            secret_key = &quot;zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG&quot;</span>
+
+<span class="sd">        Optional timeout settings can also be configured:</span>
+
+<span class="sd">        .. code-block:: ini</span>
+
+<span class="sd">            [play.min.io]</span>
+<span class="sd">            access_key = &quot;Q3AM3UQ867SPQQA43P2F&quot;</span>
+<span class="sd">            secret_key = &quot;zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG&quot;</span>
+<span class="sd">            connect_timeout = 10.0</span>
+<span class="sd">            read_timeout = 60.0</span>
+
+<span class="sd">        * ``connect_timeout``: seconds for connection establishment</span>
+<span class="sd">          (default: 10.0)</span>
+<span class="sd">        * ``read_timeout``: seconds for read operations;</span>
+<span class="sd">          use ``None`` for no timeout (default: ``None``)</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            host: hostname</span>
@@ -444,15 +491,6 @@
             <span class="n">object_name</span><span class="o">=</span><span class="n">src_path</span><span class="p">,</span>
         <span class="p">)</span><span class="o">.</span><span class="n">size</span>
 
-        <span class="c1"># Create cancellation event for handling interrupts</span>
-        <span class="n">cancel_event</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
-
-        <span class="c1"># Install signal handler to set cancel_event on Ctrl+C</span>
-        <span class="k">def</span><span class="w"> </span><span class="nf">signal_handler</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
-            <span class="n">cancel_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>  <span class="c1"># pragma: no cover</span>
-
-        <span class="n">original_handler</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="n">signal_handler</span><span class="p">)</span>
-
         <span class="c1"># Setup progress bar</span>
         <span class="n">desc</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">format_display_message</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Download </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">src_path</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
@@ -464,7 +502,7 @@
             <span class="k">if</span> <span class="n">num_workers</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="c1"># Simple single-threaded download</span>
                 <span class="k">with</span> <span class="n">pbar</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_download_file</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">,</span> <span class="n">pbar</span><span class="p">,</span> <span class="n">cancel_event</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_download_file</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">,</span> <span class="n">pbar</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># Multi-threaded download with pre-allocated file</span>
                 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dst_path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -478,9 +516,7 @@
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_workers</span><span class="p">):</span>
                     <span class="n">offset</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">chunk_size</span>
                     <span class="n">length</span> <span class="o">=</span> <span class="n">chunk_size</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">num_workers</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">src_size</span> <span class="o">-</span> <span class="n">offset</span>
-                    <span class="n">tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="p">([</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">,</span> <span class="n">pbar</span><span class="p">,</span> <span class="n">cancel_event</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">length</span><span class="p">],</span> <span class="p">{})</span>
-                    <span class="p">)</span>
+                    <span class="n">tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(([</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">,</span> <span class="n">pbar</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">length</span><span class="p">],</span> <span class="p">{}))</span>
 
                 <span class="k">with</span> <span class="n">pbar</span><span class="p">:</span>
                     <span class="n">audeer</span><span class="o">.</span><span class="n">run_tasks</span><span class="p">(</span>
@@ -491,16 +527,12 @@
             <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dst_path</span><span class="p">):</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span>
             <span class="k">raise</span>
-        <span class="k">finally</span><span class="p">:</span>
-            <span class="c1"># Restore original signal handler</span>
-            <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="n">original_handler</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_download_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">dst_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">pbar</span><span class="p">,</span>
-        <span class="n">cancel_event</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
@@ -518,16 +550,38 @@
         <span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dst_path</span><span class="p">,</span> <span class="s2">&quot;r+b&quot;</span> <span class="k">if</span> <span class="n">offset</span> <span class="k">else</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="c1"># When length is not None, we&#39;re in multi-worker mode</span>
+            <span class="c1"># and the file is already pre-allocated, so use r+b for all workers.</span>
+            <span class="c1"># When length is None, we&#39;re in single-worker mode and use wb.</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;r+b&quot;</span> <span class="k">if</span> <span class="n">length</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;wb&quot;</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dst_path</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">offset</span><span class="p">:</span>
                     <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
 
                 <span class="k">while</span> <span class="n">data</span> <span class="o">:=</span> <span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">chunk_size</span><span class="p">):</span>
-                    <span class="c1"># Check if cancellation was requested</span>
-                    <span class="k">if</span> <span class="n">cancel_event</span> <span class="ow">and</span> <span class="n">cancel_event</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
-                        <span class="k">raise</span> <span class="ne">KeyboardInterrupt</span><span class="p">(</span><span class="s2">&quot;Download cancelled by user&quot;</span><span class="p">)</span>
                     <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
                     <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">release_conn</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_file_stream</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get file from backend as byte stream.&quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">audbackend.core.backend.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">STREAM_CHUNK_SIZE</span>
+
+        <span class="n">src_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span>
+            <span class="n">bucket_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">,</span>
+            <span class="n">object_name</span><span class="o">=</span><span class="n">src_path</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">while</span> <span class="n">data</span> <span class="o">:=</span> <span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">STREAM_CHUNK_SIZE</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">data</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="n">response</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="n">response</span><span class="o">.</span><span class="n">release_conn</span><span class="p">()</span>
@@ -671,6 +725,44 @@
         <span class="s2">&quot;checksum&quot;</span><span class="p">:</span> <span class="n">checksum</span><span class="p">,</span>
         <span class="s2">&quot;owner&quot;</span><span class="p">:</span> <span class="n">getpass</span><span class="o">.</span><span class="n">getuser</span><span class="p">(),</span>
     <span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_timeout</span><span class="p">(</span>
+    <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">default</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a timeout value from config.</span>
+
+<span class="sd">    Converts string values to float, handling &quot;None&quot; as Python None.</span>
+<span class="sd">    If parsing fails, logs a warning and returns the default value.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        value: timeout value (string from config, float, or None)</span>
+<span class="sd">        name: name of the timeout setting (for warning messages)</span>
+<span class="sd">        default: default value to use if parsing fails</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        parsed timeout value or default</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Invalid </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> value &#39;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&#39; in config, using default: </span><span class="si">{</span><span class="n">default</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="ne">UserWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">default</span>
 </pre></div>
 
            </div>
@@ -686,7 +778,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/01/07 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/02/03 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
