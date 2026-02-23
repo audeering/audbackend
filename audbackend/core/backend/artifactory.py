@@ -199,7 +199,7 @@ class Artifactory(Base):
 
         .. code-block:: ini
 
-            [https://artifactory.example.com/artifactory]
+            [artifactory.example.com/artifactory]
             pool_connections = 10
             pool_maxsize = 100
             max_retries = 3
