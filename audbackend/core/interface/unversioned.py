@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 import os  # noqa: F401
+from typing import Callable
 
 from audbackend.core.interface.base import Base
 
@@ -363,6 +364,70 @@ class Unversioned(Base):
             validate=validate,
             verbose=verbose,
         )
+
+    def get_files(
+        self,
+        files: Sequence[tuple[str, str]],
+        *,
+        max_concurrent: int = 50,
+        progress_callback: Callable[[str, str], None] | None = None,
+        verbose: bool = False,
+    ) -> list[str]:
+        r"""Download multiple files concurrently.
+
+        This method provides efficient concurrent downloads
+        for bulk operations with many files.
+        If the backend supports async downloads,
+        it uses asyncio to manage concurrent downloads.
+        Otherwise, it falls back to sequential downloads.
+
+        Args:
+            files: sequence of (src_path, dst_path) tuples where
+                src_path is the path on the backend (must start with ``/``)
+                and dst_path is the local destination path
+            max_concurrent: maximum number of concurrent downloads (default: 50).
+                Higher values increase throughput but also memory usage.
+                Only used if backend supports async downloads
+            progress_callback: optional callback called with (src_path, dst_path)
+                after each successful download
+            verbose: if ``True``, show progress bar
+
+        Returns:
+            list of successfully downloaded local file paths
+
+        Raises:
+            BackendError: if an error is raised on the backend
+            RuntimeError: if backend was not opened
+
+        Examples:
+            >>> files = [
+            ...     ("/file1.txt", "local1.txt"),
+            ...     ("/file2.txt", "local2.txt"),
+            ... ]
+            >>> interface.get_files(files)
+            ['...local1.txt', '...local2.txt']
+
+        """
+        if not files:
+            return []
+
+        # Use async download if backend supports it
+        if hasattr(self._backend, "get_files_async"):
+            return self._backend.get_files_async(
+                files,
+                max_concurrent=max_concurrent,
+                progress_callback=progress_callback,
+                verbose=verbose,
+            )
+
+        # Fallback to sequential download
+        downloaded = []
+        for src_path, dst_path in files:
+            result = self.backend.get_file(src_path, dst_path, verbose=verbose)
+            if progress_callback:
+                progress_callback(src_path, dst_path)
+            downloaded.append(result)
+        return downloaded
 
     def ls(
         self,

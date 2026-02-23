@@ -1,9 +1,14 @@
+from __future__ import annotations
+
+import asyncio
 from collections.abc import Iterator
+from collections.abc import Sequence
 import configparser
 import getpass
 import mimetypes
 import os
 import tempfile
+from typing import Callable
 import warnings
 
 import minio
@@ -13,6 +18,7 @@ import audeer
 
 from audbackend.core import utils
 from audbackend.core.backend.base import Base
+from audbackend.core.errors import BackendError
 
 
 class Minio(Base):
@@ -594,6 +600,141 @@ class Minio(Base):
             object_name=path,
         ).size
         return size
+
+    def get_files_async(
+        self,
+        files: Sequence[tuple[str, str]],
+        *,
+        max_concurrent: int = 50,
+        progress_callback: Callable[[str, str], None] | None = None,
+        verbose: bool = False,
+    ) -> list[str]:
+        r"""Download multiple files concurrently using asyncio.
+
+        This method provides efficient concurrent downloads for bulk operations
+        with many files. It uses asyncio to manage concurrent downloads,
+        reducing thread overhead compared to thread-based parallelism.
+
+        Args:
+            files: sequence of (src_path, dst_path) tuples where
+                src_path is the path on the backend (must start with /)
+                and dst_path is the local destination path
+            max_concurrent: maximum number of concurrent downloads (default: 50).
+                Higher values increase throughput but also memory usage
+            progress_callback: optional callback called with (src_path, dst_path)
+                after each successful download
+            verbose: if ``True``, show progress bar
+
+        Returns:
+            list of successfully downloaded local file paths
+
+        Raises:
+            BackendError: if backend is not opened
+
+        Example:
+            >>> files = [
+            ...     ("/data/file1.txt", "/local/file1.txt"),
+            ...     ("/data/file2.txt", "/local/file2.txt"),
+            ... ]
+            >>> with backend:
+            ...     downloaded = backend.get_files_async(files, max_concurrent=100)
+
+        """
+        if not self.opened:
+            raise BackendError(RuntimeError("Backend not opened"))
+
+        return asyncio.run(
+            self._get_files_async(
+                files,
+                max_concurrent=max_concurrent,
+                progress_callback=progress_callback,
+                verbose=verbose,
+            )
+        )
+
+    async def _get_files_async(
+        self,
+        files: Sequence[tuple[str, str]],
+        *,
+        max_concurrent: int = 50,
+        progress_callback: Callable[[str, str], None] | None = None,
+        verbose: bool = False,
+    ) -> list[str]:
+        r"""Internal async implementation for concurrent file downloads."""
+        semaphore = asyncio.Semaphore(max_concurrent)
+        downloaded = []
+        errors = []
+
+        # Setup progress bar
+        pbar = audeer.progress_bar(
+            total=len(files),
+            desc="Download files (async)",
+            disable=not verbose,
+        )
+
+        async def download_one(src_path: str, dst_path: str) -> str | None:
+            """Download a single file with semaphore limiting."""
+            async with semaphore:
+                try:
+                    # Run the sync download in a thread pool
+                    await asyncio.to_thread(
+                        self._download_single_file,
+                        src_path,
+                        dst_path,
+                    )
+                    if progress_callback:
+                        progress_callback(src_path, dst_path)
+                    pbar.update(1)
+                    return dst_path
+                except Exception as e:
+                    errors.append((src_path, str(e)))
+                    pbar.update(1)
+                    return None
+
+        with pbar:
+            # Create all download tasks
+            tasks = [download_one(src, dst) for src, dst in files]
+            # Run all tasks concurrently
+            results = await asyncio.gather(*tasks)
+
+        # Collect successful downloads
+        downloaded = [r for r in results if r is not None]
+
+        if errors and verbose:
+            print(f"Warning: {len(errors)} files failed to download")
+
+        return downloaded
+
+    def _download_single_file(
+        self,
+        src_path: str,
+        dst_path: str,
+    ) -> None:
+        r"""Download a single file without progress bar.
+
+        This is a simplified version of _get_file for use in async contexts.
+
+        """
+        src_path = self.path(src_path)
+
+        # Ensure destination directory exists
+        dst_dir = os.path.dirname(dst_path)
+        if dst_dir:
+            os.makedirs(dst_dir, exist_ok=True)
+
+        # Download file
+        response = self._client.get_object(
+            bucket_name=self.repository,
+            object_name=src_path,
+        )
+
+        try:
+            with open(dst_path, "wb") as f:
+                for chunk in response.stream(64 * 1024):  # 64 KB chunks
+                    f.write(chunk)
+        finally:
+            response.close()
+            response.release_conn()
 
 
 def _metadata(checksum: str):

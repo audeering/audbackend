@@ -1,6 +1,7 @@
 from collections.abc import Sequence
 import fnmatch
 import os
+from typing import Callable
 
 import audeer
 
@@ -415,6 +416,82 @@ class Versioned(Base):
             validate=validate,
             verbose=verbose,
         )
+
+    def get_files(
+        self,
+        files: Sequence[tuple[str, str, str]],
+        *,
+        max_concurrent: int = 50,
+        progress_callback: Callable[[str, str], None] | None = None,
+        verbose: bool = False,
+    ) -> list[str]:
+        r"""Download multiple files concurrently.
+
+        This method provides efficient concurrent downloads
+        for bulk operations with many files.
+        If the backend supports async downloads,
+        it uses asyncio to manage concurrent downloads.
+        Otherwise, it falls back to sequential downloads.
+
+        Args:
+            files: sequence of (src_path, dst_path, version) tuples where
+                src_path is the path on the backend (must start with ``/``),
+                dst_path is the local destination path,
+                and version is the version string
+            max_concurrent: maximum number of concurrent downloads (default: 50).
+                Higher values increase throughput but also memory usage.
+                Only used if backend supports async downloads
+            progress_callback: optional callback called with (src_path, dst_path)
+                after each successful download
+            verbose: if ``True``, show progress bar
+
+        Returns:
+            list of successfully downloaded local file paths
+
+        Raises:
+            BackendError: if an error is raised on the backend
+            ValueError: if ``src_path`` does not start with ``'/'``,
+                ends on ``'/'``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``version`` is empty or
+                does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
+
+        Examples:
+            >>> files = [
+            ...     ("/file1.txt", "local1.txt", "1.0.0"),
+            ...     ("/file2.txt", "local2.txt", "1.0.0"),
+            ... ]
+            >>> interface.get_files(files)
+            ['...local1.txt', '...local2.txt']
+
+        """
+        if not files:
+            return []
+
+        # Convert paths to include version
+        backend_files = [
+            (self._path_with_version(src_path, version), dst_path)
+            for src_path, dst_path, version in files
+        ]
+
+        # Use async download if backend supports it
+        if hasattr(self._backend, "get_files_async"):
+            return self._backend.get_files_async(
+                backend_files,
+                max_concurrent=max_concurrent,
+                progress_callback=progress_callback,
+                verbose=verbose,
+            )
+
+        # Fallback to sequential download
+        downloaded = []
+        for (src_path, dst_path), (orig_src, _, _) in zip(backend_files, files):
+            result = self.backend.get_file(src_path, dst_path, verbose=verbose)
+            if progress_callback:
+                progress_callback(orig_src, dst_path)
+            downloaded.append(result)
+        return downloaded
 
     def latest_version(
         self,
