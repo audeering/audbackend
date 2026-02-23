@@ -838,6 +838,37 @@ def test_custom_pool_from_config(tmpdir, hosts, hide_credentials):
     assert http_client.connection_pool_kw.get("block") is True
 
 
+def test_pool_block_false_from_config(tmpdir, hosts, hide_credentials):
+    r"""Test that pool_block = false is parsed correctly.
+
+    When pool_block is set to 'false' (or '0', 'no', 'off') in the config file,
+    it should be parsed as Python False.
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture
+
+    """
+    host = hosts["minio"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["MINIO_CONFIG_FILE"] = config_path
+
+    # Create config file with pool_block = false
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("access_key = test\n")
+        fp.write("secret_key = test\n")
+        fp.write("pool_block = false\n")
+
+    with capture_minio_kwargs() as captured:
+        audbackend.backend.Minio(host, "repository")
+
+    # Verify pool_block is False
+    http_client = captured["http_client"]
+    assert http_client.connection_pool_kw.get("block") is False
+
+
 def test_invalid_pool_warning(tmpdir, hosts, hide_credentials):
     r"""Test that invalid pool values emit a warning and use defaults.
 
