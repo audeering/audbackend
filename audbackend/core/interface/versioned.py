@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import Sequence
 import fnmatch
 import os
@@ -341,6 +342,141 @@ class Versioned(Base):
             validate=validate,
             verbose=verbose,
         )
+
+    def get_archives(
+        self,
+        archives: Sequence[tuple[str, str, str]],
+        *,
+        tmp_root: str = None,
+        num_workers: int = 1,
+        validate: bool = False,
+        max_concurrent: int = 50,
+        progress_callback: Callable[[str, str], None] | None = None,
+        verbose: bool = False,
+    ) -> list[list[str]]:
+        r"""Download and extract multiple archives concurrently.
+
+        This method provides efficient concurrent downloads
+        for bulk operations with many archives.
+        It uses asyncio to download and extract archives in parallel.
+
+        Args:
+            archives: sequence of (src_path, dst_root, version) tuples where
+                src_path is the path to archive on backend (must start with ``/``),
+                dst_root is the local destination directory,
+                and version is the version string
+            tmp_root: directory under which archives are temporarily extracted.
+                Defaults to temporary directory of system
+            num_workers: number of parallel jobs for extraction of each archive
+            validate: verify archives were successfully
+                retrieved from the backend
+            max_concurrent: maximum number of concurrent downloads (default: 50).
+                Higher values increase throughput but also memory usage
+            progress_callback: optional callback called with (src_path, dst_root)
+                after each successful download and extraction
+            verbose: if ``True``, show progress bar
+
+        Returns:
+            list of lists containing extracted files for each archive
+
+        Raises:
+            BackendError: if an error is raised on the backend
+            ValueError: if ``src_path`` does not start with ``'/'``,
+                ends on ``'/'``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
+            ValueError: if ``version`` is empty or
+                does not match ``'[A-Za-z0-9._-]+'``
+            RuntimeError: if backend was not opened
+
+        Examples:
+            >>> archives = [
+            ...     ("/archive1.zip", "dst1/", "1.0.0"),
+            ...     ("/archive2.zip", "dst2/", "1.0.0"),
+            ... ]
+            >>> interface.get_archives(archives)
+            [['file1.txt'], ['file2.txt']]
+
+        """
+        if not archives:
+            return []
+
+        return asyncio.run(
+            self._get_archives_async(
+                archives,
+                tmp_root=tmp_root,
+                num_workers=num_workers,
+                validate=validate,
+                max_concurrent=max_concurrent,
+                progress_callback=progress_callback,
+                verbose=verbose,
+            )
+        )
+
+    async def _get_archives_async(
+        self,
+        archives: Sequence[tuple[str, str, str]],
+        *,
+        tmp_root: str = None,
+        num_workers: int = 1,
+        validate: bool = False,
+        max_concurrent: int = 50,
+        progress_callback: Callable[[str, str], None] | None = None,
+        verbose: bool = False,
+    ) -> list[list[str]]:
+        r"""Internal async implementation for concurrent archive downloads."""
+        semaphore = asyncio.Semaphore(max_concurrent)
+        results = []
+        errors = []
+
+        # Setup progress bar
+        pbar = audeer.progress_bar(
+            total=len(archives),
+            desc="Download archives",
+            disable=not verbose,
+        )
+
+        async def download_one(
+            src_path: str,
+            dst_root: str,
+            version: str,
+        ) -> list[str] | None:
+            """Download and extract a single archive with semaphore limiting."""
+            async with semaphore:
+                try:
+                    # Convert path to include version
+                    src_path_with_version = self._path_with_version(src_path, version)
+                    # Run the sync get_archive in a thread pool
+                    extracted = await asyncio.to_thread(
+                        self.backend.get_archive,
+                        src_path_with_version,
+                        dst_root,
+                        tmp_root=tmp_root,
+                        num_workers=num_workers,
+                        validate=validate,
+                        verbose=False,  # Disable per-archive verbose
+                    )
+                    if progress_callback:
+                        progress_callback(src_path, dst_root)
+                    pbar.update(1)
+                    return extracted
+                except Exception as e:
+                    errors.append((src_path, str(e)))
+                    pbar.update(1)
+                    return None
+
+        with pbar:
+            # Create all download tasks
+            tasks = [download_one(src, dst, ver) for src, dst, ver in archives]
+            # Run all tasks concurrently
+            results = await asyncio.gather(*tasks)
+
+        # Filter out failed downloads
+        successful_results = [r for r in results if r is not None]
+
+        if errors and verbose:
+            print(f"Warning: {len(errors)} archives failed to download")
+
+        return successful_results
 
     def get_file(
         self,
