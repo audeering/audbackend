@@ -3,6 +3,9 @@ from audbackend import interface
 from audbackend.core.backend.base import Base as Backend  # legacy
 from audbackend.core.backend.filesystem import FileSystem  # legacy
 from audbackend.core.errors import BackendError
+from audbackend.core.http2 import HTTP2_AVAILABLE
+from audbackend.core.http2 import Http2Downloader
+from audbackend.core.http2 import is_http2_available
 from audbackend.core.repository import Repository
 
 # Import optional backends (legacy)

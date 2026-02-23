@@ -48,9 +48,13 @@ artifactory = [
 minio = [
     'minio !=7.2.19',
 ]
+http2 = [
+    'httpx[http2] >=0.25.0',
+]
 all = [
     'dohq-artifactory >=1.0.1; python_version < "3.14"',
     'minio',
+    'httpx[http2] >=0.25.0',
 ]
 
 
@@ -65,6 +69,7 @@ dev = [
     'audeer >=2.2.1',
     'audformat',
     'dohq-artifactory >=1.0.1; python_version < "3.14"',
+    'httpx[http2] >=0.25.0',
     'minio',
     'pytest',
     'pytest-cov',
