@@ -565,9 +565,7 @@ class Versioned(Base):
 
         This method provides efficient concurrent downloads
         for bulk operations with many files.
-        If the backend supports async downloads,
-        it uses asyncio to manage concurrent downloads.
-        Otherwise, it falls back to sequential downloads.
+        It uses asyncio to download files in parallel.
 
         Args:
             files: sequence of (src_path, dst_path, version) tuples where
@@ -575,8 +573,7 @@ class Versioned(Base):
                 dst_path is the local destination path,
                 and version is the version string
             max_concurrent: maximum number of concurrent downloads (default: 50).
-                Higher values increase throughput but also memory usage.
-                Only used if backend supports async downloads
+                Higher values increase throughput but also memory usage
             progress_callback: optional callback called with (src_path, dst_path)
                 after each successful download
             verbose: if ``True``, show progress bar
@@ -605,29 +602,74 @@ class Versioned(Base):
         if not files:
             return []
 
-        # Convert paths to include version
-        backend_files = [
-            (self._path_with_version(src_path, version), dst_path)
-            for src_path, dst_path, version in files
-        ]
-
-        # Use async download if backend supports it
-        if hasattr(self._backend, "get_files_async"):
-            return self._backend.get_files_async(
-                backend_files,
+        return asyncio.run(
+            self._get_files_async(
+                files,
                 max_concurrent=max_concurrent,
                 progress_callback=progress_callback,
                 verbose=verbose,
             )
+        )
 
-        # Fallback to sequential download
-        downloaded = []
-        for (src_path, dst_path), (orig_src, _, _) in zip(backend_files, files):
-            result = self.backend.get_file(src_path, dst_path, verbose=verbose)
-            if progress_callback:
-                progress_callback(orig_src, dst_path)
-            downloaded.append(result)
-        return downloaded
+    async def _get_files_async(
+        self,
+        files: Sequence[tuple[str, str, str]],
+        *,
+        max_concurrent: int = 50,
+        progress_callback: Callable[[str, str], None] | None = None,
+        verbose: bool = False,
+    ) -> list[str]:
+        r"""Internal async implementation for concurrent file downloads."""
+        semaphore = asyncio.Semaphore(max_concurrent)
+        results = []
+        errors = []
+
+        # Setup progress bar
+        pbar = audeer.progress_bar(
+            total=len(files),
+            desc="Download files",
+            disable=not verbose,
+        )
+
+        async def download_one(
+            src_path: str,
+            dst_path: str,
+            version: str,
+        ) -> str | None:
+            """Download a single file with semaphore limiting."""
+            async with semaphore:
+                try:
+                    # Convert path to include version
+                    src_path_with_version = self._path_with_version(src_path, version)
+                    # Run the sync get_file in a thread pool
+                    result = await asyncio.to_thread(
+                        self.backend.get_file,
+                        src_path_with_version,
+                        dst_path,
+                        verbose=False,  # Disable per-file verbose
+                    )
+                    if progress_callback:
+                        progress_callback(src_path, dst_path)
+                    pbar.update(1)
+                    return result
+                except Exception as e:
+                    errors.append((src_path, str(e)))
+                    pbar.update(1)
+                    return None
+
+        with pbar:
+            # Create all download tasks
+            tasks = [download_one(src, dst, ver) for src, dst, ver in files]
+            # Run all tasks concurrently
+            results = await asyncio.gather(*tasks)
+
+        # Filter out failed downloads
+        successful_results = [r for r in results if r is not None]
+
+        if errors and verbose:
+            print(f"Warning: {len(errors)} files failed to download")
+
+        return successful_results
 
     def latest_version(
         self,
