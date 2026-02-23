@@ -409,6 +409,8 @@ def test_default_pool_configuration(tmpdir, hosts, hide_credentials):
 
     # Check that HTTPAdapter was mounted with default settings
     adapter = backend._session.get_adapter("https://")
+    # Check that HTTPAdapter was mounted with default settings
+    adapter = backend._session.get_adapter("https://")
     assert adapter._pool_connections == 10
     assert adapter._pool_maxsize == 10
     # Default retry configuration: no automatic retries
