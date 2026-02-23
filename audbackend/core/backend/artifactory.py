@@ -1,7 +1,6 @@
 from collections.abc import Iterator
 import configparser
 import os
-import warnings
 
 import artifactory
 import dohq_artifactory
@@ -184,10 +183,10 @@ class Artifactory(Base):
     def get_config(cls, host: str) -> dict:
         """Configuration of Artifactory server.
 
-        The default path of the config file is
-        :file:`~/.config/audbackend/artifactory.cfg`.
-        It can be overwritten with the environment variable
-        ``ARTIFACTORY_POOL_CONFIG_FILE``.
+        The default path of the config file
+        (:file:`~/.artifactory_python.cfg`)
+        can be overwritten with the environment variable
+        ``ARTIFACTORY_CONFIG_FILE``.
 
         If no config file can be found,
         or no entry for the requested host,
@@ -219,8 +218,8 @@ class Artifactory(Base):
 
         """
         config_file = os.getenv(
-            "ARTIFACTORY_POOL_CONFIG_FILE",
-            "~/.config/audbackend/artifactory.cfg",
+            "ARTIFACTORY_CONFIG_FILE",
+            artifactory.default_config_path,
         )
         config_file = audeer.path(config_file)
 
@@ -404,17 +403,17 @@ class Artifactory(Base):
         #   - "pool_maxsize": max connections per pool (default: 10)
         #   - "max_retries": max retries per connection (default: 0)
         config = self.get_config(self.host)
-        pool_connections = _parse_int(
+        pool_connections = utils.parse_config_int(
             config.get("pool_connections", 10),
             name="pool_connections",
             default=10,
         )
-        pool_maxsize = _parse_int(
+        pool_maxsize = utils.parse_config_int(
             config.get("pool_maxsize", 10),
             name="pool_maxsize",
             default=10,
         )
-        max_retries = _parse_int(
+        max_retries = utils.parse_config_int(
             config.get("max_retries", 0),
             name="max_retries",
             default=0,
@@ -480,36 +479,3 @@ class Artifactory(Base):
         r"""Remove file from backend."""
         path = self.path(path)
         path.unlink()
-
-
-def _parse_int(
-    value: str | int,
-    *,
-    name: str,
-    default: int,
-) -> int:
-    """Parse an integer value from config.
-
-    Converts string values to int.
-    If parsing fails, logs a warning and returns the default value.
-
-    Args:
-        value: integer value (string from config or int)
-        name: name of the setting (for warning messages)
-        default: default value to use if parsing fails
-
-    Returns:
-        parsed integer value or default
-
-    """
-    if isinstance(value, int):
-        return value
-    try:
-        return int(value)
-    except (ValueError, TypeError):
-        warnings.warn(
-            f"Invalid {name} value '{value}' in config, using default: {default}",
-            UserWarning,
-            stacklevel=4,
-        )
-        return default

@@ -112,12 +112,12 @@ class Minio(Base):
                 default=None,
             )
             timeout = urllib3.Timeout(connect=connect_timeout, read=read_timeout)
-            num_pools = _parse_int(
+            num_pools = utils.parse_config_int(
                 config.get("num_pools", 10),
                 name="num_pools",
                 default=10,
             )
-            pool_maxsize = _parse_int(
+            pool_maxsize = utils.parse_config_int(
                 config.get("pool_maxsize", 10),
                 name="pool_maxsize",
                 default=10,
@@ -644,39 +644,6 @@ def _parse_bool(
         stacklevel=4,
     )
     return default
-
-
-def _parse_int(
-    value: str | int,
-    *,
-    name: str,
-    default: int,
-) -> int:
-    """Parse an integer value from config.
-
-    Converts string values to int.
-    If parsing fails, logs a warning and returns the default value.
-
-    Args:
-        value: integer value (string from config or int)
-        name: name of the setting (for warning messages)
-        default: default value to use if parsing fails
-
-    Returns:
-        parsed integer value or default
-
-    """
-    if isinstance(value, int):
-        return value
-    try:
-        return int(value)
-    except (ValueError, TypeError):
-        warnings.warn(
-            f"Invalid {name} value '{value}' in config, using default: {default}",
-            UserWarning,
-            stacklevel=4,
-        )
-        return default
 
 
 def _parse_timeout(

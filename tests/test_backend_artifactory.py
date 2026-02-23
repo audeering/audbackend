@@ -17,7 +17,6 @@ def hide_credentials():
         "ARTIFACTORY_USERNAME",
         "ARTIFACTORY_API_KEY",
         "ARTIFACTORY_CONFIG_FILE",
-        "ARTIFACTORY_POOL_CONFIG_FILE",
     ]:
         defaults[key] = os.environ.get(key, None)
 
@@ -344,7 +343,7 @@ def test_get_config(tmpdir, hosts, hide_credentials):
     """
     host = hosts["artifactory"]
     config_path = audeer.path(tmpdir, "config.cfg")
-    os.environ["ARTIFACTORY_POOL_CONFIG_FILE"] = config_path
+    os.environ["ARTIFACTORY_CONFIG_FILE"] = config_path
 
     # config file does not exist
     config = audbackend.backend.Artifactory.get_config(host)
@@ -396,7 +395,7 @@ def test_default_pool_configuration(tmpdir, hosts, hide_credentials):
     """
     host = hosts["artifactory"]
     config_path = audeer.path(tmpdir, "config.cfg")
-    os.environ["ARTIFACTORY_POOL_CONFIG_FILE"] = config_path
+    os.environ["ARTIFACTORY_CONFIG_FILE"] = config_path
 
     # Create empty config file
     audeer.touch(config_path)
@@ -412,6 +411,8 @@ def test_default_pool_configuration(tmpdir, hosts, hide_credentials):
     adapter = backend._session.get_adapter("https://")
     assert adapter._pool_connections == 10
     assert adapter._pool_maxsize == 10
+    # Default retry configuration: no automatic retries
+    assert adapter.max_retries.total == 0
 
     backend.close()
 
@@ -430,7 +431,7 @@ def test_custom_pool_from_config(tmpdir, hosts, hide_credentials):
     """
     host = hosts["artifactory"]
     config_path = audeer.path(tmpdir, "config.cfg")
-    os.environ["ARTIFACTORY_POOL_CONFIG_FILE"] = config_path
+    os.environ["ARTIFACTORY_CONFIG_FILE"] = config_path
 
     # Create config file with custom pool settings
     with open(config_path, "w") as fp:
@@ -468,7 +469,7 @@ def test_invalid_pool_warning(tmpdir, hosts, hide_credentials):
     """
     host = hosts["artifactory"]
     config_path = audeer.path(tmpdir, "config.cfg")
-    os.environ["ARTIFACTORY_POOL_CONFIG_FILE"] = config_path
+    os.environ["ARTIFACTORY_CONFIG_FILE"] = config_path
 
     # Create config file with invalid pool values
     with open(config_path, "w") as fp:
