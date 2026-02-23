@@ -769,6 +769,117 @@ def test_invalid_timeout_warning(tmpdir, hosts, hide_credentials):
     assert timeout.read_timeout is None  # default
 
 
+def test_default_pool_configuration(tmpdir, hosts, hide_credentials):
+    r"""Test that default connection pool configuration is applied.
+
+    When no pool config is set, the backend should create an http_client
+    with default pool settings:
+    - num_pools: 10
+    - pool_maxsize: 10
+    - pool_block: False
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture
+
+    """
+    host = hosts["minio"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["MINIO_CONFIG_FILE"] = config_path
+
+    # Create minimal config file without pool settings
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("access_key = test\n")
+        fp.write("secret_key = test\n")
+
+    with capture_minio_kwargs() as captured:
+        audbackend.backend.Minio(host, "repository")
+
+    # Verify default pool values
+    http_client = captured["http_client"]
+    assert isinstance(http_client, urllib3.PoolManager)
+    assert http_client.connection_pool_kw.get("maxsize") == 10
+    assert http_client.connection_pool_kw.get("block") is False
+
+
+def test_custom_pool_from_config(tmpdir, hosts, hide_credentials):
+    r"""Test that custom connection pool values from config are honored.
+
+    When pool values are specified in the config file,
+    they should be used instead of the defaults.
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture
+
+    """
+    host = hosts["minio"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["MINIO_CONFIG_FILE"] = config_path
+
+    # Create config file with custom pool settings
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("access_key = test\n")
+        fp.write("secret_key = test\n")
+        fp.write("num_pools = 20\n")
+        fp.write("pool_maxsize = 100\n")
+        fp.write("pool_block = true\n")
+
+    with capture_minio_kwargs() as captured:
+        audbackend.backend.Minio(host, "repository")
+
+    # Verify the custom pool values from config
+    http_client = captured["http_client"]
+    assert http_client.connection_pool_kw.get("maxsize") == 100
+    assert http_client.connection_pool_kw.get("block") is True
+
+
+def test_invalid_pool_warning(tmpdir, hosts, hide_credentials):
+    r"""Test that invalid pool values emit a warning and use defaults.
+
+    When a non-numeric string is provided as a pool value,
+    a warning should be emitted and the default value should be used.
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture
+
+    """
+    host = hosts["minio"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["MINIO_CONFIG_FILE"] = config_path
+
+    # Create config file with invalid pool values
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("access_key = test\n")
+        fp.write("secret_key = test\n")
+        fp.write("num_pools = invalid\n")
+        fp.write("pool_maxsize = large\n")
+        fp.write("pool_block = maybe\n")
+
+    with capture_minio_kwargs() as captured:
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            audbackend.backend.Minio(host, "repository")
+
+            # Verify warnings were emitted for invalid values
+            warning_messages = [str(warning.message) for warning in w]
+            assert any("Invalid num_pools" in msg for msg in warning_messages)
+            assert any("Invalid pool_maxsize" in msg for msg in warning_messages)
+            assert any("Invalid pool_block" in msg for msg in warning_messages)
+
+    # Verify default pool values were used
+    http_client = captured["http_client"]
+    assert http_client.connection_pool_kw.get("maxsize") == 10  # default
+    assert http_client.connection_pool_kw.get("block") is False  # default
+
+
 @pytest.mark.parametrize(
     "interface",
     [(audbackend.backend.Minio, audbackend.interface.Versioned)],

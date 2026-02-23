@@ -18,12 +18,18 @@ from audbackend.core.backend.base import Base
 class Minio(Base):
     r"""Backend for MinIO.
 
-    HTTP timeouts can be configured via the config file
-    (see :meth:`get_config`):
+    HTTP timeouts and connection pool settings can be configured
+    via the config file (see :meth:`get_config`):
 
     * ``connect_timeout``: seconds for connection establishment (default: 10.0)
     * ``read_timeout``: seconds for read operations; ``None`` means no timeout
       (default: ``None``)
+    * ``num_pools``: number of connection pools to cache (default: 10)
+    * ``pool_maxsize``: max connections per pool (default: 10)
+    * ``pool_block``: block when pool is full (default: ``false``)
+
+    For bulk operations downloading many files in parallel,
+    increase ``pool_maxsize`` to match the number of workers.
 
     Alternatively,
     provide a custom ``http_client`` object as ``kwargs``
@@ -84,12 +90,16 @@ class Minio(Base):
         if secure is None:
             secure = config.get("secure", True)
 
-        # Configure HTTP client with timeouts to prevent hanging connections.
+        # Configure HTTP client with timeouts and connection pooling.
         # Users can override by passing their own http_client in kwargs.
-        # Timeouts can be tuned via backend config:
+        # Settings can be tuned via backend config:
         #   - "connect_timeout": seconds for connection establishment (default: 10.0)
         #   - "read_timeout": seconds for read operations; None means no timeout
         #     (default: None)
+        #   - "num_pools": number of connection pools to cache (default: 10)
+        #   - "pool_maxsize": max connections per pool (default: 10)
+        #   - "pool_block": block when pool is full instead of creating new
+        #     connection (default: False)
         if "http_client" not in kwargs:
             connect_timeout = _parse_timeout(
                 config.get("connect_timeout", 10.0),
@@ -102,7 +112,27 @@ class Minio(Base):
                 default=None,
             )
             timeout = urllib3.Timeout(connect=connect_timeout, read=read_timeout)
-            kwargs["http_client"] = urllib3.PoolManager(timeout=timeout)
+            num_pools = _parse_int(
+                config.get("num_pools", 10),
+                name="num_pools",
+                default=10,
+            )
+            pool_maxsize = _parse_int(
+                config.get("pool_maxsize", 10),
+                name="pool_maxsize",
+                default=10,
+            )
+            pool_block = _parse_bool(
+                config.get("pool_block", False),
+                name="pool_block",
+                default=False,
+            )
+            kwargs["http_client"] = urllib3.PoolManager(
+                timeout=timeout,
+                num_pools=num_pools,
+                maxsize=pool_maxsize,
+                block=pool_block,
+            )
 
         # Open MinIO client
         self._client = minio.Minio(
@@ -170,7 +200,7 @@ class Minio(Base):
             access_key = "Q3AM3UQ867SPQQA43P2F"
             secret_key = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
 
-        Optional timeout settings can also be configured:
+        Optional timeout and connection pool settings can also be configured:
 
         .. code-block:: ini
 
@@ -179,11 +209,24 @@ class Minio(Base):
             secret_key = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
             connect_timeout = 10.0
             read_timeout = 60.0
+            num_pools = 10
+            pool_maxsize = 100
+            pool_block = false
+
+        Timeout settings:
 
         * ``connect_timeout``: seconds for connection establishment
           (default: 10.0)
         * ``read_timeout``: seconds for read operations;
           use ``None`` for no timeout (default: ``None``)
+
+        Connection pool settings (for bulk operations with many files):
+
+        * ``num_pools``: number of connection pools to cache (default: 10)
+        * ``pool_maxsize``: maximum number of connections per pool.
+          Increase this for parallel downloads of many files (default: 10)
+        * ``pool_block``: if ``true``, block and wait when pool is exhausted
+          instead of creating a new connection outside the pool (default: ``false``)
 
         Args:
             host: hostname
@@ -566,6 +609,74 @@ def _metadata(checksum: str):
         "checksum": checksum,
         "owner": getpass.getuser(),
     }
+
+
+def _parse_bool(
+    value: str | bool,
+    *,
+    name: str,
+    default: bool,
+) -> bool:
+    """Parse a boolean value from config.
+
+    Converts string values to bool, handling common boolean strings.
+    If parsing fails, logs a warning and returns the default value.
+
+    Args:
+        value: boolean value (string from config or bool)
+        name: name of the setting (for warning messages)
+        default: default value to use if parsing fails
+
+    Returns:
+        parsed boolean value or default
+
+    """
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        if value.lower() in ("true", "1", "yes", "on"):
+            return True
+        if value.lower() in ("false", "0", "no", "off"):
+            return False
+    warnings.warn(
+        f"Invalid {name} value '{value}' in config, using default: {default}",
+        UserWarning,
+        stacklevel=4,
+    )
+    return default
+
+
+def _parse_int(
+    value: str | int,
+    *,
+    name: str,
+    default: int,
+) -> int:
+    """Parse an integer value from config.
+
+    Converts string values to int.
+    If parsing fails, logs a warning and returns the default value.
+
+    Args:
+        value: integer value (string from config or int)
+        name: name of the setting (for warning messages)
+        default: default value to use if parsing fails
+
+    Returns:
+        parsed integer value or default
+
+    """
+    if isinstance(value, int):
+        return value
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        warnings.warn(
+            f"Invalid {name} value '{value}' in config, using default: {default}",
+            UserWarning,
+            stacklevel=4,
+        )
+        return default
 
 
 def _parse_timeout(
