@@ -4,6 +4,7 @@ import errno
 import os
 import re
 import time
+import warnings
 
 from audbackend.core.errors import BackendError
 
@@ -148,3 +149,36 @@ def raise_is_a_directory(path: str):
         os.strerror(errno.EISDIR),
         path,
     )
+
+
+def parse_config_int(
+    value: str | int,
+    *,
+    name: str,
+    default: int,
+) -> int:
+    """Parse an integer value from config.
+
+    Converts string values to int.
+    If parsing fails, logs a warning and returns the default value.
+
+    Args:
+        value: integer value (string from config or int)
+        name: name of the setting (for warning messages)
+        default: default value to use if parsing fails
+
+    Returns:
+        parsed integer value or default
+
+    """
+    if isinstance(value, int):
+        return value
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        warnings.warn(
+            f"Invalid {name} value '{value}' in config, using default: {default}",
+            UserWarning,
+            stacklevel=4,
+        )
+        return default
