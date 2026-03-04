@@ -7,6 +7,13 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 2.3.2 (2026-03-04)
+--------------------------
+
+* Fixed: depend on ``stream-unzip>=0.0.101``
+  as ``0.0.100`` is broken under Linux
+
+
 Version 2.3.1 (2026-02-01)
 --------------------------
 
