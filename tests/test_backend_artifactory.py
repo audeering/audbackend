@@ -1,4 +1,6 @@
 import os
+from unittest import mock
+import warnings
 
 import pytest
 
@@ -325,3 +327,177 @@ def test_get_archive_streaming(tmpdir, interface):
         "/archive.zip", dst_root_validated, validate=True
     )
     assert sorted(extracted_validated) == ["file1.txt", "file2.txt"]
+
+
+def test_get_config(tmpdir, hosts, hide_credentials):
+    r"""Test parsing of connection pool configuration.
+
+    The `get_config()` class method is responsible
+    for parsing an Artifactory backend config file.
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture
+
+    """
+    host = hosts["artifactory"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["ARTIFACTORY_CONFIG_FILE"] = config_path
+
+    # config file does not exist
+    config = audbackend.backend.Artifactory.get_config(host)
+    assert config == {}
+
+    # config file is empty
+    audeer.touch(config_path)
+    config = audbackend.backend.Artifactory.get_config(host)
+    assert config == {}
+
+    # config file has different host
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}.abc]\n")
+    config = audbackend.backend.Artifactory.get_config(host)
+    assert config == {}
+
+    # config file entry without variables
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+    config = audbackend.backend.Artifactory.get_config(host)
+    assert config == {}
+
+    # config file entry with pool variables
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("pool_connections = 20\n")
+        fp.write("pool_maxsize = 100\n")
+        fp.write("max_retries = 3\n")
+    config = audbackend.backend.Artifactory.get_config(host)
+    assert config["pool_connections"] == "20"
+    assert config["pool_maxsize"] == "100"
+    assert config["max_retries"] == "3"
+
+
+def test_default_pool_configuration(tmpdir, hosts, hide_credentials):
+    r"""Test that default connection pool configuration is applied.
+
+    When no pool config is set, the backend should create a session
+    with default pool settings:
+    - pool_connections: 10
+    - pool_maxsize: 10
+    - max_retries: 0
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture
+
+    """
+    host = hosts["artifactory"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["ARTIFACTORY_CONFIG_FILE"] = config_path
+
+    # Create empty config file
+    audeer.touch(config_path)
+
+    backend = audbackend.backend.Artifactory(host, "repository")
+
+    # Mock find_repository to avoid actual network call
+    with mock.patch("artifactory.ArtifactoryPath.find_repository") as mock_find:
+        mock_find.return_value = mock.MagicMock()
+        backend.open()
+
+    # Check that HTTPAdapter was mounted with default settings
+    adapter = backend._session.get_adapter("https://")
+    # Check that HTTPAdapter was mounted with default settings
+    adapter = backend._session.get_adapter("https://")
+    assert adapter._pool_connections == 10
+    assert adapter._pool_maxsize == 10
+    # Default retry configuration: no automatic retries
+    assert adapter.max_retries.total == 0
+
+    backend.close()
+
+
+def test_custom_pool_from_config(tmpdir, hosts, hide_credentials):
+    r"""Test that custom connection pool values from config are honored.
+
+    When pool values are specified in the config file,
+    they should be used instead of the defaults.
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture
+
+    """
+    host = hosts["artifactory"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["ARTIFACTORY_CONFIG_FILE"] = config_path
+
+    # Create config file with custom pool settings
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("pool_connections = 20\n")
+        fp.write("pool_maxsize = 100\n")
+        fp.write("max_retries = 5\n")
+
+    backend = audbackend.backend.Artifactory(host, "repository")
+
+    # Mock find_repository to avoid actual network call
+    with mock.patch("artifactory.ArtifactoryPath.find_repository") as mock_find:
+        mock_find.return_value = mock.MagicMock()
+        backend.open()
+
+    # Check that HTTPAdapter was mounted with custom settings
+    adapter = backend._session.get_adapter("https://")
+    assert adapter._pool_connections == 20
+    assert adapter._pool_maxsize == 100
+
+    backend.close()
+
+
+def test_invalid_pool_warning(tmpdir, hosts, hide_credentials):
+    r"""Test that invalid pool values emit a warning and use defaults.
+
+    When a non-numeric string is provided as a pool value,
+    a warning should be emitted and the default value should be used.
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture
+
+    """
+    host = hosts["artifactory"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["ARTIFACTORY_CONFIG_FILE"] = config_path
+
+    # Create config file with invalid pool values
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("pool_connections = invalid\n")
+        fp.write("pool_maxsize = large\n")
+        fp.write("max_retries = many\n")
+
+    backend = audbackend.backend.Artifactory(host, "repository")
+
+    # Mock find_repository to avoid actual network call
+    with mock.patch("artifactory.ArtifactoryPath.find_repository") as mock_find:
+        mock_find.return_value = mock.MagicMock()
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            backend.open()
+
+            # Verify warnings were emitted for invalid values
+            warning_messages = [str(warning.message) for warning in w]
+            assert any("Invalid pool_connections" in msg for msg in warning_messages)
+            assert any("Invalid pool_maxsize" in msg for msg in warning_messages)
+            assert any("Invalid max_retries" in msg for msg in warning_messages)
+
+    # Verify default pool values were used
+    adapter = backend._session.get_adapter("https://")
+    assert adapter._pool_connections == 10  # default
+    assert adapter._pool_maxsize == 10  # default
+
+    backend.close()

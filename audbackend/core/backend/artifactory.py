@@ -1,9 +1,11 @@
 from collections.abc import Iterator
+import configparser
 import os
 
 import artifactory
 import dohq_artifactory
 import requests
+from requests.adapters import HTTPAdapter
 
 import audeer
 
@@ -69,6 +71,16 @@ def _download(
 
 class Artifactory(Base):
     r"""Backend for Artifactory.
+
+    Connection pool settings can be configured
+    via the config file (see :meth:`get_config`):
+
+    * ``pool_connections``: number of connection pools to cache (default: 10)
+    * ``pool_maxsize``: max connections per pool (default: 10)
+    * ``max_retries``: max retries per connection (default: 0)
+
+    For bulk operations downloading many files in parallel,
+    increase ``pool_maxsize`` to match the number of workers.
 
     Args:
         host: host address
@@ -166,6 +178,62 @@ class Artifactory(Base):
             api_key = ""
 
         return username, api_key
+
+    @classmethod
+    def get_config(cls, host: str) -> dict:
+        """Configuration of Artifactory server.
+
+        The default path of the config file
+        (:file:`~/.artifactory_python.cfg`)
+        can be overwritten with the environment variable
+        ``ARTIFACTORY_CONFIG_FILE``.
+
+        If no config file can be found,
+        or no entry for the requested host,
+        an empty dictionary is returned.
+
+        The config file
+        expects one section per host,
+        e.g.
+
+        .. code-block:: ini
+
+            [artifactory.example.com/artifactory]
+            pool_connections = 10
+            pool_maxsize = 100
+            max_retries = 3
+
+        Connection pool settings (for bulk operations with many files):
+
+        * ``pool_connections``: number of connection pools to cache (default: 10)
+        * ``pool_maxsize``: maximum number of connections per pool.
+          Increase this for parallel downloads of many files (default: 10)
+        * ``max_retries``: maximum number of retries per connection (default: 0)
+
+        Args:
+            host: hostname
+
+        Returns:
+            config entries as dictionary
+
+        """
+        config_file = os.getenv(
+            "ARTIFACTORY_CONFIG_FILE",
+            artifactory.default_config_path,
+        )
+        config_file = audeer.path(config_file)
+
+        if os.path.exists(config_file):
+            config = configparser.ConfigParser(allow_no_value=True)
+            config.read(config_file)
+            try:
+                config = dict(config.items(host))
+            except configparser.NoSectionError:
+                config = {}
+        else:
+            config = {}
+
+        return config
 
     def _checksum(
         self,
@@ -327,6 +395,37 @@ class Artifactory(Base):
         r"""Open connection to backend."""
         self._session = requests.Session()
         self._session.auth = self.authentication
+
+        # Configure connection pooling for better performance
+        # with parallel downloads of many files.
+        # Settings can be tuned via backend config:
+        #   - "pool_connections": number of pools to cache (default: 10)
+        #   - "pool_maxsize": max connections per pool (default: 10)
+        #   - "max_retries": max retries per connection (default: 0)
+        config = self.get_config(self.host)
+        pool_connections = utils.parse_config_int(
+            config.get("pool_connections", 10),
+            name="pool_connections",
+            default=10,
+        )
+        pool_maxsize = utils.parse_config_int(
+            config.get("pool_maxsize", 10),
+            name="pool_maxsize",
+            default=10,
+        )
+        max_retries = utils.parse_config_int(
+            config.get("max_retries", 0),
+            name="max_retries",
+            default=0,
+        )
+        adapter = HTTPAdapter(
+            pool_connections=pool_connections,
+            pool_maxsize=pool_maxsize,
+            max_retries=max_retries,
+        )
+        self._session.mount("https://", adapter)
+        self._session.mount("http://", adapter)
+
         path = artifactory.ArtifactoryPath(self.host, session=self._session)
         self._repo = path.find_repository(self.repository)
         if self._repo is None:
