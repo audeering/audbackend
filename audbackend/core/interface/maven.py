@@ -251,6 +251,71 @@ class Maven(Versioned):
 
         return paths_and_versions
 
+    def versions(
+        self,
+        path: str,
+        *,
+        suppress_backend_errors: bool = False,
+    ) -> list[str]:
+        r"""Versions of a file.
+
+        Args:
+            path: path to file on backend
+            suppress_backend_errors: if set to ``True``,
+                silently catch errors raised on the backend
+                and return an empty list
+
+        Returns:
+            list of versions in ascending order
+
+        Raises:
+            BackendError: if ``suppress_backend_errors`` is ``False``
+                and an error is raised on the backend,
+                e.g. ``path`` does not exist
+            ValueError: if ``path`` does not start with ``'/'``,
+                ends on ``'/'``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
+
+        ..
+            >>> interface = Maven(filesystem)
+
+        Examples:
+            >>> file = "src.txt"
+            >>> interface.put_file(file, "/file.txt", "1.0.0")
+            >>> interface.put_file(file, "/file.txt", "2.0.0")
+            >>> interface.versions("/file.txt")
+            ['1.0.0', '2.0.0']
+
+        """
+        utils.check_path(path)
+
+        root, name = self.split(path)
+        base, ext = self._split_ext(name)
+
+        # Maven stores files as /<root>/<base>/<version>/<base>-<version><ext>
+        # so version folders are under /<root>/<base>/
+        base_dir = self.join(root, base) + "/"
+
+        dirs = self.backend.ls_dirs(
+            base_dir,
+            suppress_backend_errors=suppress_backend_errors,
+        )
+
+        vs = []
+        for d in dirs:
+            versioned_file = self.join(root, base, d, f"{base}-{d}{ext}")
+            if self.backend.exists(versioned_file):
+                vs.append(d)
+
+        if not vs and not suppress_backend_errors:
+            try:
+                utils.raise_file_not_found_error(path)
+            except FileNotFoundError as ex:
+                raise BackendError(ex)
+
+        return audeer.sort_versions(vs)
+
     def _split_ext(
         self,
         name: str,
