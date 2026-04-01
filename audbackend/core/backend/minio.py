@@ -1,5 +1,6 @@
 from collections.abc import Iterator
 import configparser
+import errno
 import getpass
 import mimetypes
 import os
@@ -443,6 +444,35 @@ class Minio(Base):
             recursive=True,
         )
         return [self._collapse(obj.object_name) for obj in objects]
+
+    def _ls_dirs(
+        self,
+        path: str,
+    ) -> list[str]:
+        r"""List immediate subdirectory names under sub-path."""
+        path = self.path(path)
+        objects = list(
+            self._client.list_objects(
+                bucket_name=self.repository,
+                prefix=path,
+                recursive=False,
+            )
+        )
+        if not objects:
+            raise FileNotFoundError(
+                errno.ENOENT,
+                os.strerror(errno.ENOENT),
+                path,
+            )
+        dirs = []
+        for obj in objects:
+            if obj.is_dir:
+                # obj.object_name ends with "/",
+                # e.g. "sub/1.0.0/"
+                # We strip trailing "/" and take the last component
+                name = obj.object_name.rstrip("/").split("/")[-1]
+                dirs.append(name)
+        return dirs
 
     def _move_file(
         self,

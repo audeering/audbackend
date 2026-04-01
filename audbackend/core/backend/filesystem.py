@@ -1,5 +1,6 @@
 from collections.abc import Iterator
 import datetime
+import errno
 import os
 import shutil
 
@@ -161,6 +162,22 @@ class FileSystem(Base):
         paths = [self._collapse(path) for path in paths]
 
         return paths
+
+    def _ls_dirs(
+        self,
+        path: str,
+    ) -> list[str]:
+        r"""List immediate subdirectory names under sub-path."""
+        path = self._expand(path)
+        if not os.path.exists(path):
+            raise FileNotFoundError(
+                errno.ENOENT,
+                os.strerror(errno.ENOENT),
+                path,
+            )
+
+        dirs = [entry.name for entry in os.scandir(path) if entry.is_dir()]
+        return dirs
 
     def _move_file(
         self,

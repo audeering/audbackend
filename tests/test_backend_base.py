@@ -115,6 +115,8 @@ def test_errors(tmpdir, backend):
     with pytest.raises(RuntimeError, match=error_msg):
         backend.ls(path)
     with pytest.raises(RuntimeError, match=error_msg):
+        backend.ls_dirs("/")
+    with pytest.raises(RuntimeError, match=error_msg):
         backend.move_file(src_path, dst_path)
     with pytest.raises(RuntimeError, match=error_msg):
         backend.owner(path)

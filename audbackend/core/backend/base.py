@@ -872,6 +872,41 @@ class Base:
         """
         raise NotImplementedError()
 
+    def _ls_dirs(
+        self,
+        path: str,
+    ) -> list[str]:
+        r"""List immediate subdirectory names under sub-path.
+
+        Raises ``FileNotFoundError``
+        if ``path`` does not exist.
+
+        The default implementation derives subdirectories
+        from :meth:`_ls` results.
+        Backends that support efficient directory listing
+        (e.g. S3 delimiter queries)
+        can override this method.
+
+        """
+        paths = self._ls(path)
+        if not paths:
+            raise FileNotFoundError(
+                errno.ENOENT,
+                os.strerror(errno.ENOENT),
+                path,
+            )
+        # Extract the first path component after the prefix
+        # e.g. for path="/sub/" and file="/sub/1.0.0/file.txt"
+        # we extract "1.0.0"
+        prefix_depth = path.count(self.sep) - 1  # -1 for leading sep
+        dirs = set()
+        for p in paths:
+            parts = p.split(self.sep)
+            # parts[0] is empty (leading sep), so actual parts start at [1]
+            if len(parts) > prefix_depth + 1:
+                dirs.add(parts[prefix_depth + 1])
+        return list(dirs)
+
     def ls(
         self,
         path: str = "/",
@@ -955,6 +990,57 @@ class Base:
             paths = [p for p in paths if fnmatch.fnmatch(os.path.basename(p), pattern)]
 
         return paths
+
+    def ls_dirs(
+        self,
+        path: str = "/",
+        *,
+        suppress_backend_errors: bool = False,
+    ) -> list[str]:
+        r"""List subdirectories on backend.
+
+        Returns a sorted list of immediate subdirectory names
+        under the given sub-path.
+        Only direct child directories are returned,
+        not files or nested subdirectories.
+
+        Args:
+            path: sub-path
+                (must end with ``'/'``)
+                on backend
+            suppress_backend_errors: if set to ``True``,
+                silently catch errors raised on the backend
+                and return an empty list
+
+        Returns:
+            list of subdirectory names
+
+        Raises:
+            BackendError: if ``suppress_backend_errors`` is ``False``
+                and an error is raised on the backend,
+                e.g. ``path`` does not exist
+            ValueError: if ``path`` does not start with ``'/'``,
+                does not end with ``'/'``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
+
+        """
+        if not self.opened:
+            raise RuntimeError(backend_not_opened_error)
+
+        path = utils.check_path(path, allow_sub_path=True)
+
+        if not path.endswith("/"):
+            raise ValueError(f"path must end with '/', got: '{path}'")
+
+        dirs = utils.call_function_on_backend(
+            self._ls_dirs,
+            path,
+            suppress_backend_errors=suppress_backend_errors,
+            fallback_return_value=[],
+        )
+
+        return sorted(dirs)
 
     def _move_file(
         self,
