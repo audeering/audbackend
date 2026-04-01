@@ -844,3 +844,27 @@ def test_get_archive_streaming(tmpdir, interface):
         "/archive.zip", dst_root_validated, validate=True
     )
     assert sorted(extracted_validated) == ["file1.txt", "file2.txt"]
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.Minio, audbackend.interface.Versioned)],
+    indirect=True,
+)
+def test_ls_dirs(tmpdir, interface):
+    """Test _ls_dirs on MinIO backend."""
+    src_path = audeer.path(tmpdir, "test.txt")
+    audeer.touch(src_path)
+
+    interface.put_file(src_path, "/sub/file.txt", "1.0.0")
+    interface.put_file(src_path, "/sub/file.txt", "2.0.0")
+
+    backend = interface.backend
+
+    # List subdirectories
+    dirs = backend.ls_dirs("/sub/")
+    assert dirs == ["1.0.0", "2.0.0"]
+
+    # Non-existent path raises BackendError
+    with pytest.raises(audbackend.BackendError):
+        backend.ls_dirs("/nonexistent/")

@@ -351,6 +351,13 @@ def test_versions(tmpdir, interface):
         interface.versions(dst_path)
     assert not interface.versions(dst_path, suppress_backend_errors=True)
 
+    # Base dir exists but file with different extension,
+    # so versions for our file should still raise
+    other_path = "/file.other"
+    interface.put_file(src_path, other_path, "1.0.0")
+    with pytest.raises(audbackend.BackendError):
+        interface.versions(dst_path)
+
     # v1
     interface.put_file(src_path, dst_path, "1.0.0")
     assert interface.versions(dst_path) == ["1.0.0"]
