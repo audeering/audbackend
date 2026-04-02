@@ -339,12 +339,13 @@ def test_ls_dirs(tmpdir, interface):
 
     interface.put_file(src_path, "/sub/file.txt", "1.0.0")
     interface.put_file(src_path, "/sub/file.txt", "2.0.0")
+    interface.put_file(src_path, "/sub/subsub/file.txt", "3.0.0")
 
     backend = interface.backend
 
     # List subdirectories
     dirs = backend.ls_dirs("/sub/")
-    assert dirs == ["1.0.0", "2.0.0"]
+    assert dirs == ["1.0.0", "2.0.0", "subsub"]
 
     # Non-existent path raises BackendError
     with pytest.raises(audbackend.BackendError):
