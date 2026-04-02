@@ -169,7 +169,7 @@ class FileSystem(Base):
     ) -> list[str]:
         r"""List immediate subdirectory names under sub-path."""
         path = self._expand(path)
-        if not os.path.exists(path):
+        if not os.path.isdir(path):
             raise FileNotFoundError(
                 errno.ENOENT,
                 os.strerror(errno.ENOENT),
