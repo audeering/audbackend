@@ -205,6 +205,20 @@ def test_default_ls_dirs_edge_cases():
     assert backend.ls_dirs("/sub/") == ["a"]
 
 
+def test_default_ls_dirs_leaf_directory():
+    """Leaf directory with files but no subdirs returns empty list."""
+    backend = DummyLsBackend(
+        {
+            "/sub/1.0.0/": [
+                "/sub/1.0.0/file.txt",
+                "/sub/1.0.0/other.txt",
+            ],
+        }
+    )
+    backend.open()
+    assert backend.ls_dirs("/sub/1.0.0/") == []
+
+
 def test_default_ls_dirs_raises_file_not_found():
     """_ls_dirs raises FileNotFoundError when _ls returns an empty list."""
     backend = DummyLsBackend(
