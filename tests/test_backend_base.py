@@ -190,6 +190,21 @@ def test_default_ls_dirs_derived_from_deeper_paths():
     assert backend.ls_dirs("/a/") == ["b"]
 
 
+def test_default_ls_dirs_edge_cases():
+    """Cover edge cases: non-matching prefix and path itself in _ls results."""
+    backend = DummyLsBackend(
+        {
+            "/sub/": [
+                "/sub/",
+                "/other/file.txt",
+                "/sub/a/file.txt",
+            ],
+        }
+    )
+    backend.open()
+    assert backend.ls_dirs("/sub/") == ["a"]
+
+
 def test_default_ls_dirs_raises_file_not_found():
     """_ls_dirs raises FileNotFoundError when _ls returns an empty list."""
     backend = DummyLsBackend(
