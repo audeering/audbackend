@@ -895,16 +895,23 @@ class Base:
                 os.strerror(errno.ENOENT),
                 path,
             )
-        # Extract the first path component after the prefix
-        # e.g. for path="/sub/" and file="/sub/1.0.0/file.txt"
-        # we extract "1.0.0"
-        prefix_depth = path.count(self.sep) - 1  # -1 for leading sep
-        dirs = set()
+
+        sep = self.sep
+        if not path.endswith(sep):
+            path = path + sep
+        prefix_len = len(path)
+
+        dirs: set[str] = set()
         for p in paths:
-            parts = p.split(self.sep)
-            # parts[0] is empty (leading sep), so actual parts start at [1]
-            if len(parts) > prefix_depth + 1:
-                dirs.add(parts[prefix_depth + 1])
+            if not p.startswith(path):
+                continue
+            rest = p[prefix_len:]
+            if not rest:
+                continue
+            first, found_sep, _ = rest.partition(sep)
+            if first and found_sep:
+                dirs.add(first)
+
         return list(dirs)
 
     def ls(
