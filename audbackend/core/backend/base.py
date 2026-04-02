@@ -897,8 +897,6 @@ class Base:
             )
 
         sep = self.sep
-        if not path.endswith(sep):
-            path = path + sep
         prefix_len = len(path)
 
         dirs: set[str] = set()
