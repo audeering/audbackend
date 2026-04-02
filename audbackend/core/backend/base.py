@@ -910,6 +910,7 @@ class Base:
             if first and found_sep:
                 dirs.add(first)
 
+        # Path exists (has files) but no subdirectories
         return list(dirs)
 
     def ls(
