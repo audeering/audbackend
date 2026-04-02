@@ -940,10 +940,8 @@ class Versioned(Base):
         utils.check_path(path)
 
         root, file = self.split(path)
-        root_dir = root if root.endswith("/") else root + "/"
-
         dirs = self.backend.ls_dirs(
-            root_dir,
+            root,
             suppress_backend_errors=suppress_backend_errors,
         )
 
