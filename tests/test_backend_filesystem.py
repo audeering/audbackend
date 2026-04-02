@@ -509,10 +509,12 @@ def test_ls_dirs(tmpdir, interface):
     # Upload files to create directory structure:
     # /sub/1.0.0/file.txt
     # /sub/2.0.0/file.txt
-    # /other/1.0.0/file.txt
+    # /sub/other/1.0.0/file.txt
+    # /other/sub/1.0.0/file.txt
     interface.put_file(src_path, "/sub/file.txt", "1.0.0")
     interface.put_file(src_path, "/sub/file.txt", "2.0.0")
-    interface.put_file(src_path, "/other/file.txt", "1.0.0")
+    interface.put_file(src_path, "/sub/other/file.txt", "3.0.0")
+    interface.put_file(src_path, "/other/sub/file.txt", "4.0.0")
 
     backend = interface.backend
 
@@ -522,14 +524,24 @@ def test_ls_dirs(tmpdir, interface):
 
     # List subdirectories under /sub/
     dirs = backend.ls_dirs("/sub/")
-    assert dirs == ["1.0.0", "2.0.0"]
+    assert dirs == ["1.0.0", "2.0.0", "other"]
+
+    # List subdirectories under /sub/other/
+    dirs = backend.ls_dirs("/sub/other/")
+    assert dirs == ["3.0.0"]
 
     # List subdirectories under /other/
     dirs = backend.ls_dirs("/other/")
-    assert dirs == ["1.0.0"]
+    assert dirs == ["sub"]
+
+    # List subdirectories under /other/sub/
+    dirs = backend.ls_dirs("/other/sub/")
+    assert dirs == ["4.0.0"]
 
     # List subdirectories under a leaf directory (no subdirs)
     dirs = backend.ls_dirs("/sub/1.0.0/")
+    assert dirs == []
+    dirs = backend.ls_dirs("/sub/other/3.0.0/")
     assert dirs == []
 
     # Path must end with "/"
