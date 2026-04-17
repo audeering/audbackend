@@ -229,3 +229,14 @@ def test_default_ls_dirs_raises_file_not_found():
     backend.open()
     with pytest.raises(audbackend.BackendError):
         backend.ls_dirs("/empty/")
+
+
+def test_default_ls_dirs_suppress_backend_errors():
+    """ls_dirs returns an empty list without raising when errors are suppressed."""
+    backend = DummyLsBackend(
+        {
+            "/empty/": [],
+        }
+    )
+    backend.open()
+    assert backend.ls_dirs("/empty/", suppress_backend_errors=True) == []
