@@ -288,7 +288,7 @@ class Maven(Versioned):
             ['1.0.0', '2.0.0']
 
         """
-        utils.check_path(path)
+        path = utils.check_path(path)
 
         root, name = self.split(path)
         base, ext = self._split_ext(name)
