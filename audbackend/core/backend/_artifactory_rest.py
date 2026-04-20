@@ -119,13 +119,9 @@ class ArtifactoryRestClient:
         each chunk (for progress bars).
         """
         with self.session.get(self._file_url(path), stream=True) as response:
-            if response.status_code == 404:
-                raise FileNotFoundError(path)
             response.raise_for_status()
             with open(dst_path, "wb") as fp:
                 for data in response.iter_content(chunk_size=chunk_size):
-                    if not data:
-                        continue
                     fp.write(data)
                     if on_chunk is not None:
                         on_chunk(len(data))
@@ -138,12 +134,8 @@ class ArtifactoryRestClient:
     ) -> Iterator[bytes]:
         """Yield byte chunks for streaming reads."""
         with self.session.get(self._file_url(path), stream=True) as response:
-            if response.status_code == 404:
-                raise FileNotFoundError(path)
             response.raise_for_status()
-            for data in response.iter_content(chunk_size=chunk_size):
-                if data:
-                    yield data
+            yield from response.iter_content(chunk_size=chunk_size)
 
     def upload(
         self,
@@ -186,14 +178,6 @@ class ArtifactoryRestClient:
         url = f"{self.host}/api/{action}/{_quote(src)}"
         response = self.session.post(url, params={"to": dst})
         response.raise_for_status()
-        # Artifactory may return 200 with ERROR-level messages on partial failure.
-        try:
-            data = response.json()
-        except ValueError:
-            return
-        for message in data.get("messages", []):
-            if str(message.get("level", "")).upper() == "ERROR":
-                raise OSError(message.get("message", f"{action} failed"))
 
     def list_files(self, sub_path: str) -> list[str]:
         """Recursively list files under ``sub_path``.
@@ -219,7 +203,10 @@ class ArtifactoryRestClient:
     # ------------------------------------------------------------------
 
     def repository_exists(self) -> bool:
-        response = self.session.get(self._repo_url())
+        # ``/api/repositories/{repo}`` returns 400 on some Artifactory
+        # versions when the repo does not exist; ``/api/storage/{repo}``
+        # reliably returns 404.
+        response = self.session.get(self._storage_url())
         if response.status_code == 404:
             return False
         response.raise_for_status()
@@ -236,6 +223,4 @@ class ArtifactoryRestClient:
 
     def delete_repository(self) -> None:
         response = self.session.delete(self._repo_url())
-        if response.status_code == 404:
-            raise FileNotFoundError(self.repository)
         response.raise_for_status()

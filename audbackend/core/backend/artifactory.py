@@ -1,70 +1,61 @@
 from collections.abc import Iterator
+import configparser
 import os
 
-import artifactory
-import dohq_artifactory
 import requests
 
 import audeer
 
 from audbackend.core import utils
+from audbackend.core.backend._artifactory_rest import ArtifactoryRestClient
 from audbackend.core.backend.base import Base
 
 
-def _deploy(
+DEFAULT_CONFIG_PATH = "~/.artifactory_python.cfg"
+
+
+def _download_with_progress(
+    client: ArtifactoryRestClient,
     src_path: str,
-    dst_path: artifactory.ArtifactoryPath,
-    checksum: str,
+    dst_path: str,
     *,
     verbose: bool = False,
 ):
-    r"""Deploy local file as an artifact."""
-    if verbose:  # pragma: no cover
-        desc = audeer.format_display_message(
-            f"Deploy {src_path}",
-            pbar=False,
-        )
-        print(desc, end="\r")
-
-    if not dst_path.parent.exists():
-        dst_path.parent.mkdir()
-
-    with open(src_path, "rb") as fd:
-        dst_path.deploy(fd, md5=checksum, quote_parameters=True)
-
-    if verbose:  # pragma: no cover
-        # Clear progress line
-        print(audeer.format_display_message(" ", pbar=False), end="\r")
-
-
-def _download(
-    src_path: artifactory.ArtifactoryPath,
-    dst_path: str,
-    *,
-    chunk: int = 4 * 1024,
-    verbose=False,
-):
-    r"""Download an artifact."""
-    src_size = artifactory.ArtifactoryPath.stat(src_path).size
+    r"""Download an artifact via the REST client with an optional progress bar."""
+    src_size = client.stat(src_path)["size"]
 
     with audeer.progress_bar(total=src_size, disable=not verbose) as pbar:
         desc = audeer.format_display_message(
-            f"Download {os.path.basename(str(src_path))}",
+            f"Download {os.path.basename(src_path)}",
             pbar=True,
         )
         pbar.set_description_str(desc)
         pbar.refresh()
 
-        dst_size = 0
-        with src_path.open() as src_fp:
-            with open(dst_path, "wb") as dst_fp:
-                while src_size > dst_size:
-                    data = src_fp.read(chunk)
-                    n_data = len(data)
-                    if n_data > 0:
-                        dst_fp.write(data)
-                        dst_size += n_data
-                        pbar.update(n_data)
+        client.download(src_path, dst_path, on_chunk=pbar.update)
+
+
+def _find_config_entry(
+    config: configparser.ConfigParser,
+    host: str,
+) -> dict | None:
+    r"""Look up a host entry in an Artifactory Python config file.
+
+    Tries the host as-is, with the scheme stripped,
+    and each of those with any trailing slash removed.
+    """
+    candidates = {host, host.rstrip("/")}
+    for scheme in ("https://", "http://"):
+        if host.startswith(scheme):
+            without_scheme = host[len(scheme) :]
+            candidates.add(without_scheme)
+            candidates.add(without_scheme.rstrip("/"))
+            break
+
+    for candidate in candidates:
+        if config.has_section(candidate):
+            return dict(config.items(candidate))
+    return None
 
 
 class Artifactory(Base):
@@ -91,11 +82,10 @@ class Artifactory(Base):
         if authentication is None:
             self.authentication = self.get_authentication(host)
 
-        # Store ArtifactoryPath object to the repository,
-        # when opening the backend.
-        self._repo = None
+        # REST client bound to the repository; populated in _open().
+        self._client = None
 
-        # Store request.Session as handed to ArtifactoryPath
+        # Session used by the client; owned here so _close can release it.
         self._session = None
 
     @classmethod
@@ -146,19 +136,20 @@ class Artifactory(Base):
         api_key = os.getenv("ARTIFACTORY_API_KEY", None)
         config_file = os.getenv(
             "ARTIFACTORY_CONFIG_FILE",
-            artifactory.default_config_path,
+            os.path.expanduser(DEFAULT_CONFIG_PATH),
         )
         config_file = audeer.path(config_file)
 
         if os.path.exists(config_file) and (api_key is None or username is None):
-            config = artifactory.read_config(config_file)
-            config_entry = artifactory.get_config_entry(config, host)
+            config = configparser.ConfigParser()
+            config.read(config_file)
+            entry = _find_config_entry(config, host)
 
-            if config_entry is not None:
+            if entry is not None:
                 if username is None:
-                    username = config_entry.get("username", None)
+                    username = entry.get("username", None)
                 if api_key is None:
-                    api_key = config_entry.get("password", None)
+                    api_key = entry.get("password", None)
 
         if username is None:
             username = "anonymous"
@@ -167,44 +158,16 @@ class Artifactory(Base):
 
         return username, api_key
 
-    def _checksum(
-        self,
-        path: str,
-    ) -> str:
+    def _checksum(self, path: str) -> str:
         r"""MD5 checksum of file on backend."""
-        path = self.path(path)
-        checksum = artifactory.ArtifactoryPath.stat(path).md5
-        return checksum
+        return self._client.stat(path)["md5"]
 
-    def _close(
-        self,
-    ):
-        r"""Close connection to repository.
-
-        An error should be raised,
-        if the connection to the backend
-        cannot be closed.
-
-        """
+    def _close(self):
+        r"""Close connection to repository."""
         if self._session is not None:
             self._session.close()
-
-    def _collapse(
-        self,
-        path,
-    ):
-        r"""Convert to virtual path.
-
-        <host>/<repository>/<path>
-        ->
-        /<path>
-
-        """
-        # Requires dohq-artifactory>=1.0.0,
-        # before length was one longer
-        path = path[len(str(self.path("/"))) :]
-        path = path.replace("/", self.sep)
-        return path
+        self._session = None
+        self._client = None
 
     def _copy_file(
         self,
@@ -214,52 +177,31 @@ class Artifactory(Base):
         verbose: bool,
     ):
         r"""Copy file on backend."""
-        src_path = self.path(src_path)
-        dst_path = self.path(dst_path)
-        if not dst_path.parent.exists():
-            dst_path.parent.mkdir()
-        src_path.copy(dst_path)
+        self._client.copy(src_path, dst_path)
 
-    def _create(
-        self,
-    ):
+    def _create(self):
         r"""Create repository."""
         with requests.Session() as session:
             session.auth = self.authentication
-            path = artifactory.ArtifactoryPath(self.host, session=session)
-            repo = dohq_artifactory.RepositoryLocal(
-                path,
-                self.repository,
-                package_type=dohq_artifactory.RepositoryLocal.GENERIC,
-            )
-            if repo.path.exists():
-                utils.raise_file_exists_error(str(repo.path))
-            repo.create()
+            client = ArtifactoryRestClient(self.host, self.repository, session)
+            if client.repository_exists():
+                utils.raise_file_exists_error(self.repository)
+            client.create_repository()
 
-    def _date(
-        self,
-        path: str,
-    ) -> str:
+    def _date(self, path: str) -> str:
         r"""Get last modification date of file on backend."""
-        path = self.path(path)
-        date = path.stat().mtime
-        date = utils.date_format(date)
-        return date
+        return utils.date_format(self._client.stat(path)["mtime"])
 
-    def _delete(
-        self,
-    ):
+    def _delete(self):
         r"""Delete repository and all its content."""
-        with self:
-            self._repo.delete()
+        with requests.Session() as session:
+            session.auth = self.authentication
+            client = ArtifactoryRestClient(self.host, self.repository, session)
+            client.delete_repository()
 
-    def _exists(
-        self,
-        path: str,
-    ) -> bool:
+    def _exists(self, path: str) -> bool:
         r"""Check if file exists on backend."""
-        path = self.path(path)
-        return path.exists()
+        return self._client.exists(path)
 
     def _get_file(
         self,
@@ -269,43 +211,17 @@ class Artifactory(Base):
         verbose: bool,
     ):
         r"""Get file from backend."""
-        src_path = self.path(src_path)
-        _download(src_path, dst_path, verbose=verbose)
+        _download_with_progress(self._client, src_path, dst_path, verbose=verbose)
 
-    def _get_file_stream(
-        self,
-        src_path: str,
-    ) -> Iterator[bytes]:
+    def _get_file_stream(self, src_path: str) -> Iterator[bytes]:
         r"""Get file from backend as byte stream."""
         from audbackend.core.backend.base import STREAM_CHUNK_SIZE
 
-        src_path = self.path(src_path)
+        yield from self._client.stream(src_path, chunk_size=STREAM_CHUNK_SIZE)
 
-        with src_path.open("r") as fp:
-            while data := fp.read(STREAM_CHUNK_SIZE):
-                yield data
-
-    def _size(
-        self,
-        path: str,
-    ) -> int:
-        r"""Get size of file on backend."""
-        path = self.path(path)
-        return artifactory.ArtifactoryPath.stat(path).size
-
-    def _ls(
-        self,
-        path: str,
-    ) -> list[str]:
+    def _ls(self, path: str) -> list[str]:
         r"""List all files under sub-path."""
-        path = self.path(path)
-        if not path.exists():
-            return []
-
-        paths = [str(x) for x in path.glob("**/*") if x.is_file()]
-        paths = [self._collapse(path) for path in paths]
-
-        return paths
+        return self._client.list_files(path)
 
     def _move_file(
         self,
@@ -315,52 +231,36 @@ class Artifactory(Base):
         verbose: bool,
     ):
         r"""Move file on backend."""
-        src_path = self.path(src_path)
-        dst_path = self.path(dst_path)
-        if not dst_path.parent.exists():
-            dst_path.parent.mkdir()
-        src_path.move(dst_path)
+        self._client.move(src_path, dst_path)
 
-    def _open(
-        self,
-    ):
+    def _open(self):
         r"""Open connection to backend."""
         self._session = requests.Session()
         self._session.auth = self.authentication
-        path = artifactory.ArtifactoryPath(self.host, session=self._session)
-        self._repo = path.find_repository(self.repository)
-        if self._repo is None:
+        self._client = ArtifactoryRestClient(self.host, self.repository, self._session)
+        if not self._client.repository_exists():
             utils.raise_file_not_found_error(self.repository)
 
-    def _owner(
-        self,
-        path: str,
-    ) -> str:
+    def _owner(self, path: str) -> str:
         r"""Get owner of file on backend."""
-        path = self.path(path)
-        owner = path.stat().modified_by
-        return owner
+        return self._client.stat(path)["modified_by"]
 
-    def path(
-        self,
-        path: str,
-    ) -> artifactory.ArtifactoryPath:
+    def path(self, path: str) -> str:
         r"""Convert to backend path.
 
-        This extends the relative ``path`` on the backend
-        by :attr:`host` and :attr:`repository`,
-        and returns an :class:`artifactory.ArtifactoryPath` object.
+        Extends the relative ``path`` on the backend
+        by :attr:`host` and :attr:`repository`
+        and returns a full URL as a string.
 
         Args:
             path: path on backend
 
         Returns:
-            Artifactory path object
+            full URL to the artifact on the backend
 
         """
         path = path.replace(self.sep, "/").removeprefix("/")
-        # path -> host/repository/path
-        return self._repo / path
+        return f"{self.host.rstrip('/')}/{self.repository}/{path}"
 
     def _put_file(
         self,
@@ -370,13 +270,22 @@ class Artifactory(Base):
         verbose: bool,
     ):
         r"""Put file to backend."""
-        dst_path = self.path(dst_path)
-        _deploy(src_path, dst_path, checksum, verbose=verbose)
+        if verbose:  # pragma: no cover
+            desc = audeer.format_display_message(
+                f"Deploy {src_path}",
+                pbar=False,
+            )
+            print(desc, end="\r")
 
-    def _remove_file(
-        self,
-        path: str,
-    ):
+        self._client.upload(src_path, dst_path, md5=checksum)
+
+        if verbose:  # pragma: no cover
+            print(audeer.format_display_message(" ", pbar=False), end="\r")
+
+    def _remove_file(self, path: str):
         r"""Remove file from backend."""
-        path = self.path(path)
-        path.unlink()
+        self._client.delete(path)
+
+    def _size(self, path: str) -> int:
+        r"""Get size of file on backend."""
+        return self._client.stat(path)["size"]
