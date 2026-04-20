@@ -119,13 +119,9 @@ class ArtifactoryRestClient:
         each chunk (for progress bars).
         """
         with self.session.get(self._file_url(path), stream=True) as response:
-            if response.status_code == 404:
-                raise FileNotFoundError(path)
             response.raise_for_status()
             with open(dst_path, "wb") as fp:
                 for data in response.iter_content(chunk_size=chunk_size):
-                    if not data:
-                        continue
                     fp.write(data)
                     if on_chunk is not None:
                         on_chunk(len(data))
@@ -138,12 +134,8 @@ class ArtifactoryRestClient:
     ) -> Iterator[bytes]:
         """Yield byte chunks for streaming reads."""
         with self.session.get(self._file_url(path), stream=True) as response:
-            if response.status_code == 404:
-                raise FileNotFoundError(path)
             response.raise_for_status()
-            for data in response.iter_content(chunk_size=chunk_size):
-                if data:
-                    yield data
+            yield from response.iter_content(chunk_size=chunk_size)
 
     def upload(
         self,
@@ -186,14 +178,6 @@ class ArtifactoryRestClient:
         url = f"{self.host}/api/{action}/{_quote(src)}"
         response = self.session.post(url, params={"to": dst})
         response.raise_for_status()
-        # Artifactory may return 200 with ERROR-level messages on partial failure.
-        try:
-            data = response.json()
-        except ValueError:
-            return
-        for message in data.get("messages", []):
-            if str(message.get("level", "")).upper() == "ERROR":
-                raise OSError(message.get("message", f"{action} failed"))
 
     def list_files(self, sub_path: str) -> list[str]:
         """Recursively list files under ``sub_path``.
@@ -214,12 +198,35 @@ class ArtifactoryRestClient:
         # Each 'uri' is relative to the queried sub_path and starts with '/'.
         return [f"{prefix}{entry['uri']}" for entry in data.get("files", [])]
 
+    def list_dirs(self, sub_path: str) -> list[str]:
+        """List immediate subdirectory names under ``sub_path``.
+
+        Returns the names of direct child folders (non-recursive).
+        The repository root always exists, so an empty repository
+        returns an empty list. Raises :class:`FileNotFoundError` if
+        ``sub_path`` does not exist.
+        """
+        response = self.session.get(self._storage_url(sub_path))
+        if response.status_code == 404:
+            raise FileNotFoundError(sub_path)
+        response.raise_for_status()
+        data = response.json()
+        # Each child 'uri' starts with '/' and is marked as folder or file.
+        return [
+            child["uri"].lstrip("/")
+            for child in data.get("children", [])
+            if child.get("folder", False)
+        ]
+
     # ------------------------------------------------------------------
     # Repository admin
     # ------------------------------------------------------------------
 
     def repository_exists(self) -> bool:
-        response = self.session.get(self._repo_url())
+        # ``/api/repositories/{repo}`` returns 400 on some Artifactory
+        # versions when the repo does not exist; ``/api/storage/{repo}``
+        # reliably returns 404.
+        response = self.session.get(self._storage_url())
         if response.status_code == 404:
             return False
         response.raise_for_status()
@@ -236,6 +243,4 @@ class ArtifactoryRestClient:
 
     def delete_repository(self) -> None:
         response = self.session.delete(self._repo_url())
-        if response.status_code == 404:
-            raise FileNotFoundError(self.repository)
         response.raise_for_status()
