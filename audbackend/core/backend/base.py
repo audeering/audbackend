@@ -464,8 +464,7 @@ class Base:
 
         For ZIP archives,
         streaming extraction is used
-        if ``stream-unzip`` is installed,
-        and ``num_workers=1``.
+        when ``num_workers=1``.
         It extracts files during download
         without storing the archive locally.
 
@@ -490,7 +489,8 @@ class Base:
             dst_root: local destination directory
             tmp_root: directory under which archive is temporarily extracted.
                 Defaults to temporary directory of system.
-                Not used for ZIP archives when ``stream-unzip`` is available.
+                Only relevant if streaming extraction is not used,
+                which is the case for ``num_workers>1``
             num_workers: number of parallel jobs
             validate: verify archive was successfully
                 retrieved from the backend

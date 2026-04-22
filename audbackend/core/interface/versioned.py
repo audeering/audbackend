@@ -268,8 +268,7 @@ class Versioned(Base):
 
         For ZIP archives,
         streaming extraction is used
-        if ``stream-unzip`` is installed,
-        and ``num_workers=1``.
+        when ``num_workers=1``.
         It extracts files during download
         without storing the archive locally.
 
@@ -295,7 +294,9 @@ class Versioned(Base):
             version: version string
             num_workers: number of parallel jobs
             tmp_root: directory under which archive is temporarily extracted.
-                Defaults to temporary directory of system
+                Defaults to temporary directory of system.
+                Only relevant if streaming extraction is not used,
+                which is the case for ``num_workers>1``
             validate: verify archive was successfully
                 retrieved from the backend
             verbose: show debug messages
