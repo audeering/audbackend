@@ -526,7 +526,7 @@ class Base:
             with tempfile.TemporaryDirectory(dir=tmp_root):
                 pass
 
-        # Use streaming extraction for ZIP files if stream-unzip is available
+        # Use streaming extraction for ZIP files
         if src_path.lower().endswith(".zip") and num_workers == 1:
             return self._get_archive_streaming(
                 src_path,
