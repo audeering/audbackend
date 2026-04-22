@@ -9,18 +9,11 @@ import shutil
 import tempfile
 import zipfile
 
+from stream_unzip import TruncatedDataError
+from stream_unzip import UnfinishedIterationError
+from stream_unzip import stream_unzip
+
 import audeer
-
-
-# stream-unzip is optional (not available on Python 3.14+)
-try:
-    from stream_unzip import TruncatedDataError
-    from stream_unzip import UnfinishedIterationError
-    from stream_unzip import stream_unzip
-
-    STREAM_UNZIP_AVAILABLE = True
-except ImportError:  # pragma: no cover
-    STREAM_UNZIP_AVAILABLE = False
 
 from audbackend.core import utils
 from audbackend.core.errors import BackendError
@@ -534,11 +527,7 @@ class Base:
                 pass
 
         # Use streaming extraction for ZIP files if stream-unzip is available
-        if (
-            src_path.lower().endswith(".zip")
-            and num_workers == 1
-            and STREAM_UNZIP_AVAILABLE
-        ):
+        if src_path.lower().endswith(".zip") and num_workers == 1:
             return self._get_archive_streaming(
                 src_path,
                 dst_root,
