@@ -33,7 +33,7 @@ Full run (creates and deletes a throwaway repository):
 
     uv run python benchmark/benchmark_artifactory.py \
         --label main-dohq \
-        --runs 5 \
+        --runs 20 \
         --output benchmark/results/main-dohq.md
 
 Quick smoke test (small sizes, 2 runs, ~1 min):
@@ -57,12 +57,12 @@ Useful flags:
    sync deps (`uv sync`), and run:
 
         uv run python benchmark/benchmark_artifactory.py \
-            --label main-dohq --output benchmark/results/main-dohq.md
+            --label main-dohq --runs 20 --output benchmark/results/main-dohq.md
 
 2. Check out the branch with the new implementation, sync deps, and run:
 
         uv run python benchmark/benchmark_artifactory.py \
-            --label rest --output benchmark/results/rest.md
+            --label rest --runs 20 --output benchmark/results/rest.md
 
 3. Compare the two markdown tables. The merge criterion for the
    migration is: **no median time worse than the baseline by more than
