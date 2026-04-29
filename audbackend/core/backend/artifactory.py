@@ -242,7 +242,8 @@ class Artifactory(Base):
 
     def _date(self, path: str) -> str:
         r"""Get last modification date of file on backend."""
-        return utils.date_format(self._client.stat(path)["mtime"])
+        mtime = self._client.stat(path)["mtime"]
+        return utils.date_format(mtime) if mtime else ""
 
     def _delete(self):
         r"""Delete repository and all its content."""
