@@ -25,6 +25,7 @@ import requests
 
 DOWNLOAD_CHUNK_SIZE = 4 * 1024
 STREAM_CHUNK_SIZE = 64 * 1024
+DEFAULT_TIMEOUT = 60.0
 
 
 def _quote(path: str) -> str:
@@ -44,6 +45,11 @@ class ArtifactoryRestClient:
 
     The caller owns the :class:`requests.Session` (auth, connection
     pooling, close). The client only issues requests.
+
+    ``timeout`` is forwarded to every HTTP request and accepts the
+    same values as :mod:`requests` (a float for a combined
+    connect/read timeout, a ``(connect, read)`` tuple, or ``None``
+    to wait indefinitely).
     """
 
     def __init__(
@@ -51,10 +57,13 @@ class ArtifactoryRestClient:
         host: str,
         repository: str,
         session: requests.Session,
+        *,
+        timeout: float | tuple[float, float] | None = DEFAULT_TIMEOUT,
     ):
         self.host = host.rstrip("/")
         self.repository = repository
         self.session = session
+        self.timeout = timeout
 
     # ------------------------------------------------------------------
     # URL builders
@@ -81,7 +90,7 @@ class ArtifactoryRestClient:
 
         Raises :class:`FileNotFoundError` if the path does not exist.
         """
-        response = self.session.get(self._storage_url(path))
+        response = self.session.get(self._storage_url(path), timeout=self.timeout)
         if response.status_code == 404:
             raise FileNotFoundError(path)
         response.raise_for_status()
@@ -96,7 +105,7 @@ class ArtifactoryRestClient:
         }
 
     def exists(self, path: str) -> bool:
-        response = self.session.get(self._storage_url(path))
+        response = self.session.get(self._storage_url(path), timeout=self.timeout)
         if response.status_code == 404:
             return False
         response.raise_for_status()
@@ -119,7 +128,11 @@ class ArtifactoryRestClient:
         ``on_chunk`` is called with the number of bytes written after
         each chunk (for progress bars).
         """
-        with self.session.get(self._file_url(path), stream=True) as response:
+        with self.session.get(
+            self._file_url(path),
+            stream=True,
+            timeout=self.timeout,
+        ) as response:
             response.raise_for_status()
             with open(dst_path, "wb") as fp:
                 for data in response.iter_content(chunk_size=chunk_size):
@@ -134,7 +147,11 @@ class ArtifactoryRestClient:
         chunk_size: int = STREAM_CHUNK_SIZE,
     ) -> Iterator[bytes]:
         """Yield byte chunks for streaming reads."""
-        with self.session.get(self._file_url(path), stream=True) as response:
+        with self.session.get(
+            self._file_url(path),
+            stream=True,
+            timeout=self.timeout,
+        ) as response:
             response.raise_for_status()
             yield from response.iter_content(chunk_size=chunk_size)
 
@@ -154,6 +171,7 @@ class ArtifactoryRestClient:
                 self._file_url(dst_path),
                 data=fp,
                 headers=headers,
+                timeout=self.timeout,
             )
         response.raise_for_status()
 
@@ -162,7 +180,7 @@ class ArtifactoryRestClient:
     # ------------------------------------------------------------------
 
     def delete(self, path: str) -> None:
-        response = self.session.delete(self._file_url(path))
+        response = self.session.delete(self._file_url(path), timeout=self.timeout)
         if response.status_code == 404:
             raise FileNotFoundError(path)
         response.raise_for_status()
@@ -177,7 +195,7 @@ class ArtifactoryRestClient:
         src = f"{self.repository}/{src_path.lstrip('/')}"
         dst = f"/{self.repository}/{dst_path.lstrip('/')}"
         url = f"{self.host}/api/{action}/{_quote(src)}"
-        response = self.session.post(url, params={"to": dst})
+        response = self.session.post(url, params={"to": dst}, timeout=self.timeout)
         response.raise_for_status()
 
     def list_files(self, sub_path: str) -> list[str]:
@@ -191,6 +209,7 @@ class ArtifactoryRestClient:
         response = self.session.get(
             self._storage_url(prefix),
             params={"list": "", "deep": 1, "listFolders": 0},
+            timeout=self.timeout,
         )
         if response.status_code == 404:
             return []
@@ -207,7 +226,7 @@ class ArtifactoryRestClient:
         # ``/api/repositories/{repo}`` returns 400 on some Artifactory
         # versions when the repo does not exist; ``/api/storage/{repo}``
         # reliably returns 404.
-        response = self.session.get(self._storage_url())
+        response = self.session.get(self._storage_url(), timeout=self.timeout)
         if response.status_code == 404:
             return False
         response.raise_for_status()
@@ -219,9 +238,9 @@ class ArtifactoryRestClient:
             "rclass": "local",
             "packageType": package_type,
         }
-        response = self.session.put(self._repo_url(), json=body)
+        response = self.session.put(self._repo_url(), json=body, timeout=self.timeout)
         response.raise_for_status()
 
     def delete_repository(self) -> None:
-        response = self.session.delete(self._repo_url())
+        response = self.session.delete(self._repo_url(), timeout=self.timeout)
         response.raise_for_status()

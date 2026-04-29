@@ -7,11 +7,16 @@ import requests
 import audeer
 
 from audbackend.core import utils
+from audbackend.core.backend._artifactory_rest import DEFAULT_TIMEOUT
 from audbackend.core.backend._artifactory_rest import ArtifactoryRestClient
 from audbackend.core.backend.base import Base
 
 
 DEFAULT_CONFIG_PATH = "~/.artifactory_python.cfg"
+
+# Sentinel for "use the default / environment variable"
+# so a caller can still pass ``timeout=None`` to disable timeouts.
+_TIMEOUT_UNSET = object()
 
 
 def _download_with_progress(
@@ -61,12 +66,27 @@ def _find_config_entry(
 class Artifactory(Base):
     r"""Backend for Artifactory.
 
+    HTTP requests use a default timeout of 60 seconds to avoid hanging
+    on a stalled server or connection. The default can be overridden
+    by passing ``timeout`` to the constructor or by setting the
+    ``ARTIFACTORY_TIMEOUT`` environment variable. The value is forwarded
+    to :mod:`requests` and accepts a float (combined connect/read
+    timeout), a ``(connect, read)`` tuple, or ``None`` (wait
+    indefinitely).
+
     Args:
         host: host address
         repository: repository name
         authentication: username, password / API key / access token tuple.
             If ``None``,
             it requests it by calling :meth:`get_authentication`
+        timeout: HTTP timeout in seconds applied to every request.
+            Pass ``None`` to disable the timeout entirely.
+            If the argument is omitted,
+            the value is read from the ``ARTIFACTORY_TIMEOUT``
+            environment variable
+            (use ``"none"`` to disable),
+            falling back to ``60.0`` if the variable is unset.
 
     """  # noqa: E501
 
@@ -76,17 +96,40 @@ class Artifactory(Base):
         repository: str,
         *,
         authentication: tuple[str, str] = None,
+        timeout: float | tuple[float, float] | None = _TIMEOUT_UNSET,
     ):
         super().__init__(host, repository, authentication=authentication)
 
         if authentication is None:
             self.authentication = self.get_authentication(host)
 
+        if timeout is _TIMEOUT_UNSET:
+            timeout = self._timeout_from_env()
+        self.timeout = timeout
+
         # REST client bound to the repository; populated in _open().
         self._client = None
 
         # Session used by the client; owned here so _close can release it.
         self._session = None
+
+    @staticmethod
+    def _timeout_from_env() -> float | None:
+        r"""Read ``ARTIFACTORY_TIMEOUT`` from the environment.
+
+        Returns the default timeout if the variable is unset
+        or cannot be parsed as a float.
+        ``"none"`` (case-insensitive) disables the timeout.
+        """
+        raw = os.getenv("ARTIFACTORY_TIMEOUT")
+        if raw is None:
+            return DEFAULT_TIMEOUT
+        if raw.strip().lower() == "none":
+            return None
+        try:
+            return float(raw)
+        except ValueError:
+            return DEFAULT_TIMEOUT
 
     @classmethod
     def get_authentication(cls, host: str) -> tuple[str, str]:
@@ -183,7 +226,12 @@ class Artifactory(Base):
         r"""Create repository."""
         with requests.Session() as session:
             session.auth = self.authentication
-            client = ArtifactoryRestClient(self.host, self.repository, session)
+            client = ArtifactoryRestClient(
+                self.host,
+                self.repository,
+                session,
+                timeout=self.timeout,
+            )
             if client.repository_exists():
                 utils.raise_file_exists_error(self.repository)
             client.create_repository()
@@ -196,7 +244,12 @@ class Artifactory(Base):
         r"""Delete repository and all its content."""
         with requests.Session() as session:
             session.auth = self.authentication
-            client = ArtifactoryRestClient(self.host, self.repository, session)
+            client = ArtifactoryRestClient(
+                self.host,
+                self.repository,
+                session,
+                timeout=self.timeout,
+            )
             client.delete_repository()
 
     def _exists(self, path: str) -> bool:
@@ -237,7 +290,12 @@ class Artifactory(Base):
         r"""Open connection to backend."""
         self._session = requests.Session()
         self._session.auth = self.authentication
-        self._client = ArtifactoryRestClient(self.host, self.repository, self._session)
+        self._client = ArtifactoryRestClient(
+            self.host,
+            self.repository,
+            self._session,
+            timeout=self.timeout,
+        )
         if not self._client.repository_exists():
             utils.raise_file_not_found_error(self.repository)
 

@@ -1,10 +1,12 @@
 import os
+from unittest import mock
 
 import pytest
 
 import audeer
 
 import audbackend
+from audbackend.core.backend._artifactory_rest import ArtifactoryRestClient
 
 
 @pytest.fixture(scope="function", autouse=False)
@@ -15,6 +17,7 @@ def hide_credentials():
         "ARTIFACTORY_USERNAME",
         "ARTIFACTORY_API_KEY",
         "ARTIFACTORY_CONFIG_FILE",
+        "ARTIFACTORY_TIMEOUT",
     ]:
         defaults[key] = os.environ.get(key, None)
 
@@ -353,3 +356,128 @@ def test_get_archive_streaming(tmpdir, interface):
         "/archive.zip", dst_root_validated, validate=True
     )
     assert sorted(extracted_validated) == ["file1.txt", "file2.txt"]
+
+
+def test_default_timeout(hide_credentials):
+    """Default HTTP timeout is 60 seconds."""
+    backend = audbackend.backend.Artifactory("https://example.com", "repository")
+    assert backend.timeout == 60.0
+
+
+def test_constructor_timeout(hide_credentials):
+    """Constructor argument overrides the default."""
+    backend = audbackend.backend.Artifactory(
+        "https://example.com", "repository", timeout=30.0
+    )
+    assert backend.timeout == 30.0
+
+
+def test_constructor_timeout_disables(hide_credentials):
+    """``timeout=None`` disables the HTTP timeout, even if the env var is set."""
+    os.environ["ARTIFACTORY_TIMEOUT"] = "30"
+    backend = audbackend.backend.Artifactory(
+        "https://example.com", "repository", timeout=None
+    )
+    assert backend.timeout is None
+
+
+def test_env_timeout(hide_credentials):
+    """``ARTIFACTORY_TIMEOUT`` env var sets the timeout."""
+    os.environ["ARTIFACTORY_TIMEOUT"] = "45"
+    backend = audbackend.backend.Artifactory("https://example.com", "repository")
+    assert backend.timeout == 45.0
+
+
+def test_env_timeout_none(hide_credentials):
+    """``ARTIFACTORY_TIMEOUT=none`` disables the timeout."""
+    os.environ["ARTIFACTORY_TIMEOUT"] = "None"
+    backend = audbackend.backend.Artifactory("https://example.com", "repository")
+    assert backend.timeout is None
+
+
+def test_env_timeout_invalid(hide_credentials):
+    """Invalid ``ARTIFACTORY_TIMEOUT`` falls back to the default."""
+    os.environ["ARTIFACTORY_TIMEOUT"] = "not-a-number"
+    backend = audbackend.backend.Artifactory("https://example.com", "repository")
+    assert backend.timeout == 60.0
+
+
+@pytest.mark.parametrize(
+    "method, args",
+    [
+        ("stat", ("/path",)),
+        ("exists", ("/path",)),
+        ("delete", ("/path",)),
+        ("copy", ("/src", "/dst")),
+        ("move", ("/src", "/dst")),
+        ("list_files", ("/sub",)),
+        ("repository_exists", ()),
+        ("create_repository", ()),
+        ("delete_repository", ()),
+    ],
+)
+def test_rest_client_timeout_propagated(method, args):
+    """Every REST call forwards ``timeout`` to the underlying session."""
+    session = mock.MagicMock()
+    response = mock.MagicMock()
+    response.status_code = 200
+    response.json.return_value = {"size": 0, "checksums": {}, "files": []}
+    session.get.return_value = response
+    session.put.return_value = response
+    session.post.return_value = response
+    session.delete.return_value = response
+
+    client = ArtifactoryRestClient("https://example.com", "repo", session, timeout=42.0)
+    getattr(client, method)(*args)
+
+    # Exactly one of the verbs is invoked per method; check that one.
+    invoked = [
+        verb
+        for verb in (session.get, session.put, session.post, session.delete)
+        if verb.called
+    ]
+    assert len(invoked) == 1
+    assert invoked[0].call_args.kwargs["timeout"] == 42.0
+
+
+def test_rest_client_timeout_propagated_streaming():
+    """Streaming reads forward ``timeout`` to the session."""
+    session = mock.MagicMock()
+    response = mock.MagicMock()
+    response.status_code = 200
+    response.iter_content.return_value = iter([])
+    session.get.return_value.__enter__.return_value = response
+
+    client = ArtifactoryRestClient("https://example.com", "repo", session, timeout=42.0)
+    list(client.stream("/path"))
+
+    assert session.get.call_args.kwargs["timeout"] == 42.0
+
+
+def test_rest_client_timeout_propagated_download(tmpdir):
+    """``download`` forwards ``timeout`` to the session."""
+    session = mock.MagicMock()
+    response = mock.MagicMock()
+    response.status_code = 200
+    response.iter_content.return_value = iter([b"data"])
+    session.get.return_value.__enter__.return_value = response
+
+    client = ArtifactoryRestClient("https://example.com", "repo", session, timeout=42.0)
+    dst = audeer.path(tmpdir, "out.bin")
+    client.download("/path", dst)
+
+    assert session.get.call_args.kwargs["timeout"] == 42.0
+
+
+def test_rest_client_timeout_propagated_upload(tmpdir):
+    """``upload`` forwards ``timeout`` to the session."""
+    session = mock.MagicMock()
+    response = mock.MagicMock()
+    response.status_code = 200
+    session.put.return_value = response
+
+    src = audeer.touch(audeer.path(tmpdir, "src.bin"))
+    client = ArtifactoryRestClient("https://example.com", "repo", session, timeout=42.0)
+    client.upload(src, "/path")
+
+    assert session.put.call_args.kwargs["timeout"] == 42.0
