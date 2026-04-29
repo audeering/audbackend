@@ -105,7 +105,7 @@ class ArtifactoryRestClient:
         }
 
     def exists(self, path: str) -> bool:
-        response = self.session.head(self._file_url(path), timeout=self.timeout)
+        response = self.session.get(self._storage_url(path), timeout=self.timeout)
         if response.status_code == 404:
             return False
         response.raise_for_status()
