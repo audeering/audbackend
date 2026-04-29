@@ -104,7 +104,7 @@ def bench_put_file(backend, local_file, size_label, runs, results):
     timings = []
     for i in range(runs):
         dst = f"/put/{size_label}/run_{i}.bin"
-        timings.append(time_op(lambda: backend.put_file(local_file, dst)))
+        timings.append(time_op(lambda d=dst: backend.put_file(local_file, d)))
     results.append(Result("put_file", size_label, 1, "", runs, timings))
 
 
@@ -118,7 +118,11 @@ def bench_get_file(
         if os.path.exists(dst):
             os.remove(dst)
         timings.append(
-            time_op(lambda: backend.get_file(remote_file, dst, num_workers=num_workers))
+            time_op(
+                lambda d=dst, nw=num_workers: backend.get_file(
+                    remote_file, d, num_workers=nw
+                )
+            )
         )
     results.append(Result("get_file", size_label, num_workers, "", runs, timings))
 
@@ -140,7 +144,7 @@ def bench_copy_file(backend, src, runs, results):
     timings = []
     for i in range(runs):
         dst = f"/copy/run_{i}.bin"
-        timings.append(time_op(lambda: backend.copy_file(src, dst)))
+        timings.append(time_op(lambda d=dst: backend.copy_file(src, d)))
     results.append(Result("copy_file", "1MB", 1, "", runs, timings))
 
 
@@ -151,7 +155,7 @@ def bench_move_file(backend, local_file, runs, results):
         src = f"/move/src_{i}.bin"
         dst = f"/move/dst_{i}.bin"
         backend.put_file(local_file, src)
-        timings.append(time_op(lambda: backend.move_file(src, dst)))
+        timings.append(time_op(lambda s=src, d=dst: backend.move_file(s, d)))
     results.append(Result("move_file", "1MB", 1, "", runs, timings))
 
 
@@ -161,7 +165,7 @@ def bench_remove_file(backend, local_file, runs, results):
     for i in range(runs):
         path = f"/remove/run_{i}.bin"
         backend.put_file(local_file, path)
-        timings.append(time_op(lambda: backend.remove_file(path)))
+        timings.append(time_op(lambda p=path: backend.remove_file(p)))
     results.append(Result("remove_file", "1MB", 1, "", runs, timings))
 
 
@@ -169,7 +173,7 @@ def bench_put_archive(backend, src_root, runs, results):
     timings = []
     for i in range(runs):
         dst = f"/archive/put_{i}.zip"
-        timings.append(time_op(lambda: backend.put_archive(src_root, dst)))
+        timings.append(time_op(lambda d=dst: backend.put_archive(src_root, d)))
     results.append(Result("put_archive", "1MB", 1, "zip", runs, timings))
 
 
@@ -178,7 +182,9 @@ def bench_get_archive(backend, remote_archive, tmpdir, runs, results):
     for i in range(runs):
         dst_root = audeer.path(tmpdir, f"get_archive_{i}")
         audeer.mkdir(dst_root)
-        timings.append(time_op(lambda: backend.get_archive(remote_archive, dst_root)))
+        timings.append(
+            time_op(lambda d=dst_root: backend.get_archive(remote_archive, d))
+        )
     results.append(Result("get_archive", "1MB", 1, "zip", runs, timings))
 
 
