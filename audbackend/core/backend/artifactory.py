@@ -49,15 +49,19 @@ def _find_config_entry(
     Tries the host as-is, with the scheme stripped,
     and each of those with any trailing slash removed.
     """
-    candidates = {host, host.rstrip("/")}
+    candidates = [host, host.rstrip("/")]
     for scheme in ("https://", "http://"):
         if host.startswith(scheme):
             without_scheme = host[len(scheme) :]
-            candidates.add(without_scheme)
-            candidates.add(without_scheme.rstrip("/"))
+            candidates.append(without_scheme)
+            candidates.append(without_scheme.rstrip("/"))
             break
 
+    seen = set()
     for candidate in candidates:
+        if candidate in seen:
+            continue
+        seen.add(candidate)
         if config.has_section(candidate):
             return dict(config.items(candidate))
     return None
