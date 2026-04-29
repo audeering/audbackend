@@ -279,6 +279,40 @@ def test_size(tmpdir, interface):
     [(audbackend.backend.Artifactory, audbackend.interface.Unversioned)],
     indirect=True,
 )
+def test_copy_move_into_missing_subdir(tmpdir, interface):
+    """Test that copy_file and move_file create missing parent directories.
+
+    JFrog ``/api/copy`` and ``/api/move`` endpoints
+    auto-create intermediate folders.
+    This test locks in that behavior
+    so a regression on the server side
+    or a change to the request shape
+    would be caught.
+
+    """
+    src_path = audeer.touch(audeer.path(tmpdir, "file.txt"))
+    interface.put_file(src_path, "/file.txt")
+
+    # copy into a not-yet-existing subdirectory
+    copy_dst = "/new-copy-dir/sub/copied.txt"
+    assert not interface.exists(copy_dst)
+    interface.copy_file("/file.txt", copy_dst)
+    assert interface.exists("/file.txt")
+    assert interface.exists(copy_dst)
+
+    # move into a different not-yet-existing subdirectory
+    move_dst = "/new-move-dir/sub/moved.txt"
+    assert not interface.exists(move_dst)
+    interface.move_file("/file.txt", move_dst)
+    assert not interface.exists("/file.txt")
+    assert interface.exists(move_dst)
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.Artifactory, audbackend.interface.Unversioned)],
+    indirect=True,
+)
 def test_get_archive_streaming(tmpdir, interface):
     """Test get_archive with streaming extraction verifies _get_file_stream.
 
