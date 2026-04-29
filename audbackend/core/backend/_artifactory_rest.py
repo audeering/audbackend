@@ -127,12 +127,16 @@ class ArtifactoryRestClient:
 
         ``on_chunk`` is called with the number of bytes written after
         each chunk (for progress bars).
+
+        Raises :class:`FileNotFoundError` if ``path`` does not exist.
         """
         with self.session.get(
             self._file_url(path),
             stream=True,
             timeout=self.timeout,
         ) as response:
+            if response.status_code == 404:
+                raise FileNotFoundError(path)
             response.raise_for_status()
             with open(dst_path, "wb") as fp:
                 for data in response.iter_content(chunk_size=chunk_size):
@@ -146,12 +150,17 @@ class ArtifactoryRestClient:
         *,
         chunk_size: int = STREAM_CHUNK_SIZE,
     ) -> Iterator[bytes]:
-        """Yield byte chunks for streaming reads."""
+        """Yield byte chunks for streaming reads.
+
+        Raises :class:`FileNotFoundError` if ``path`` does not exist.
+        """
         with self.session.get(
             self._file_url(path),
             stream=True,
             timeout=self.timeout,
         ) as response:
+            if response.status_code == 404:
+                raise FileNotFoundError(path)
             response.raise_for_status()
             yield from response.iter_content(chunk_size=chunk_size)
 
@@ -186,9 +195,17 @@ class ArtifactoryRestClient:
         response.raise_for_status()
 
     def copy(self, src_path: str, dst_path: str) -> None:
+        """Server-side copy.
+
+        Raises :class:`FileNotFoundError` if ``src_path`` does not exist.
+        """
         self._copy_or_move("copy", src_path, dst_path)
 
     def move(self, src_path: str, dst_path: str) -> None:
+        """Server-side move.
+
+        Raises :class:`FileNotFoundError` if ``src_path`` does not exist.
+        """
         self._copy_or_move("move", src_path, dst_path)
 
     def _copy_or_move(self, action: str, src_path: str, dst_path: str) -> None:
@@ -196,6 +213,8 @@ class ArtifactoryRestClient:
         dst = f"/{self.repository}/{dst_path.lstrip('/')}"
         url = f"{self.host}/api/{action}/{_quote(src)}"
         response = self.session.post(url, params={"to": dst}, timeout=self.timeout)
+        if response.status_code == 404:
+            raise FileNotFoundError(src_path)
         response.raise_for_status()
 
     def list_files(self, sub_path: str) -> list[str]:

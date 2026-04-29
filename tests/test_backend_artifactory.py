@@ -481,3 +481,55 @@ def test_rest_client_timeout_propagated_upload(tmpdir):
     client.upload(src, "/path")
 
     assert session.put.call_args.kwargs["timeout"] == 42.0
+
+
+@pytest.mark.parametrize("method", ["stat", "delete"])
+def test_rest_client_404_raises_file_not_found(method):
+    """``stat`` and ``delete`` map a 404 to :class:`FileNotFoundError`."""
+    session = mock.MagicMock()
+    response = mock.MagicMock()
+    response.status_code = 404
+    session.get.return_value = response
+    session.delete.return_value = response
+
+    client = ArtifactoryRestClient("https://example.com", "repo", session)
+    with pytest.raises(FileNotFoundError, match="/missing"):
+        getattr(client, method)("/missing")
+
+
+def test_rest_client_404_raises_file_not_found_download(tmpdir):
+    """``download`` maps a 404 to :class:`FileNotFoundError`."""
+    session = mock.MagicMock()
+    response = mock.MagicMock()
+    response.status_code = 404
+    session.get.return_value.__enter__.return_value = response
+
+    client = ArtifactoryRestClient("https://example.com", "repo", session)
+    dst = audeer.path(tmpdir, "out.bin")
+    with pytest.raises(FileNotFoundError, match="/missing"):
+        client.download("/missing", dst)
+
+
+def test_rest_client_404_raises_file_not_found_stream():
+    """``stream`` maps a 404 to :class:`FileNotFoundError`."""
+    session = mock.MagicMock()
+    response = mock.MagicMock()
+    response.status_code = 404
+    session.get.return_value.__enter__.return_value = response
+
+    client = ArtifactoryRestClient("https://example.com", "repo", session)
+    with pytest.raises(FileNotFoundError, match="/missing"):
+        list(client.stream("/missing"))
+
+
+@pytest.mark.parametrize("action", ["copy", "move"])
+def test_rest_client_404_raises_file_not_found_copy_move(action):
+    """``copy`` and ``move`` map a 404 to :class:`FileNotFoundError` for the source."""
+    session = mock.MagicMock()
+    response = mock.MagicMock()
+    response.status_code = 404
+    session.post.return_value = response
+
+    client = ArtifactoryRestClient("https://example.com", "repo", session)
+    with pytest.raises(FileNotFoundError, match="/missing-src"):
+        getattr(client, action)("/missing-src", "/dst")
