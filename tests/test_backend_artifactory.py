@@ -73,6 +73,56 @@ def test_authentication(tmpdir, hosts, hide_credentials):
         backend.open()
 
 
+@pytest.mark.parametrize(
+    "section, lookup",
+    [
+        # section as-is matches lookup
+        (
+            "https://server.example.com/artifactory",
+            "https://server.example.com/artifactory",
+        ),
+        # trailing slash in lookup, stripped section
+        (
+            "https://server.example.com/artifactory",
+            "https://server.example.com/artifactory/",
+        ),
+        # section without scheme, lookup with https scheme
+        ("server.example.com/artifactory", "https://server.example.com/artifactory"),
+        # section without scheme, lookup with http scheme
+        ("server.example.com/artifactory", "http://server.example.com/artifactory"),
+        # section without scheme or trailing slash, lookup with both
+        ("server.example.com/artifactory", "https://server.example.com/artifactory/"),
+    ],
+)
+def test_authentication_host_normalization(tmpdir, hide_credentials, section, lookup):
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["ARTIFACTORY_CONFIG_FILE"] = config_path
+
+    with open(config_path, "w") as fp:
+        fp.write(f"[{section}]\n")
+        fp.write("username = user\n")
+        fp.write("password = secret\n")
+
+    assert audbackend.backend.Artifactory.get_authentication(lookup) == (
+        "user",
+        "secret",
+    )
+
+
+def test_authentication_host_no_match(tmpdir, hide_credentials):
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["ARTIFACTORY_CONFIG_FILE"] = config_path
+
+    with open(config_path, "w") as fp:
+        fp.write("[other.example.com/artifactory]\n")
+        fp.write("username = user\n")
+        fp.write("password = secret\n")
+
+    assert audbackend.backend.Artifactory.get_authentication(
+        "https://server.example.com/artifactory"
+    ) == ("anonymous", "")
+
+
 @pytest.mark.parametrize("host", [pytest.HOSTS["artifactory"]])
 @pytest.mark.parametrize("repository", [f"unittest-{pytest.UID}-{audeer.uid()[:8]}"])
 def test_create_delete_repositories(host, repository):
