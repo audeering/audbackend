@@ -254,6 +254,8 @@ class Artifactory(Base):
                 session,
                 timeout=self.timeout,
             )
+            if not client.repository_exists():
+                utils.raise_file_not_found_error(self.repository)
             client.delete_repository()
 
     def _exists(self, path: str) -> bool:
