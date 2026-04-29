@@ -423,6 +423,7 @@ def test_rest_client_timeout_propagated(method, args):
     response.status_code = 200
     response.json.return_value = {"size": 0, "checksums": {}, "files": []}
     session.get.return_value = response
+    session.head.return_value = response
     session.put.return_value = response
     session.post.return_value = response
     session.delete.return_value = response
@@ -433,7 +434,13 @@ def test_rest_client_timeout_propagated(method, args):
     # Exactly one of the verbs is invoked per method; check that one.
     invoked = [
         verb
-        for verb in (session.get, session.put, session.post, session.delete)
+        for verb in (
+            session.get,
+            session.head,
+            session.put,
+            session.post,
+            session.delete,
+        )
         if verb.called
     ]
     assert len(invoked) == 1
