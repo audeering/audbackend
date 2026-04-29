@@ -131,6 +131,9 @@ def test_create_delete_repositories(host, repository):
         # Repository exists already
         audbackend.backend.Artifactory.create(host, repository)
     audbackend.backend.Artifactory.delete(host, repository)
+    with pytest.raises(audbackend.BackendError):
+        # Repository does not exist anymore
+        audbackend.backend.Artifactory.delete(host, repository)
 
 
 @pytest.mark.parametrize("host", [pytest.HOSTS["artifactory"]])
@@ -406,6 +409,13 @@ def test_get_archive_streaming(tmpdir, interface):
         "/archive.zip", dst_root_validated, validate=True
     )
     assert sorted(extracted_validated) == ["file1.txt", "file2.txt"]
+
+
+def test_timeout_unset_repr():
+    """The ``_TIMEOUT_UNSET`` sentinel has a readable ``repr``."""
+    from audbackend.core.backend.artifactory import _TIMEOUT_UNSET
+
+    assert repr(_TIMEOUT_UNSET) == "<UNSET>"
 
 
 def test_default_timeout(hide_credentials):
