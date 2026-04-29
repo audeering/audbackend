@@ -87,10 +87,11 @@ class ArtifactoryRestClient:
         response.raise_for_status()
         data = response.json()
         checksums = data.get("checksums") or {}
+        last_modified = data.get("lastModified")
         return {
             "size": int(data.get("size", 0)),
             "md5": checksums.get("md5", ""),
-            "mtime": _parse_iso(data["lastModified"]),
+            "mtime": _parse_iso(last_modified) if last_modified else None,
             "modified_by": data.get("modifiedBy", ""),
         }
 
