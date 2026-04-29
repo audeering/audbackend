@@ -14,9 +14,15 @@ from audbackend.core.backend.base import Base
 
 DEFAULT_CONFIG_PATH = "~/.artifactory_python.cfg"
 
+
 # Sentinel for "use the default / environment variable"
 # so a caller can still pass ``timeout=None`` to disable timeouts.
-_TIMEOUT_UNSET = object()
+class _TimeoutUnset:
+    def __repr__(self) -> str:
+        return "<UNSET>"
+
+
+_TIMEOUT_UNSET = _TimeoutUnset()
 
 
 def _download_with_progress(
@@ -100,7 +106,7 @@ class Artifactory(Base):
         repository: str,
         *,
         authentication: tuple[str, str] = None,
-        timeout: float | tuple[float, float] | None = _TIMEOUT_UNSET,
+        timeout: float | tuple[float, float] | None | _TimeoutUnset = _TIMEOUT_UNSET,
     ):
         super().__init__(host, repository, authentication=authentication)
 
