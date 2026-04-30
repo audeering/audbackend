@@ -1,10 +1,12 @@
 import os
+from unittest import mock
 
 import pytest
 
 import audeer
 
 import audbackend
+from audbackend.core.backend._artifactory_rest import ArtifactoryRestClient
 
 
 @pytest.fixture(scope="function", autouse=False)
@@ -15,6 +17,7 @@ def hide_credentials():
         "ARTIFACTORY_USERNAME",
         "ARTIFACTORY_API_KEY",
         "ARTIFACTORY_CONFIG_FILE",
+        "ARTIFACTORY_TIMEOUT",
     ]:
         defaults[key] = os.environ.get(key, None)
 
@@ -70,6 +73,56 @@ def test_authentication(tmpdir, hosts, hide_credentials):
         backend.open()
 
 
+@pytest.mark.parametrize(
+    "section, lookup",
+    [
+        # section as-is matches lookup
+        (
+            "https://server.example.com/artifactory",
+            "https://server.example.com/artifactory",
+        ),
+        # trailing slash in lookup, stripped section
+        (
+            "https://server.example.com/artifactory",
+            "https://server.example.com/artifactory/",
+        ),
+        # section without scheme, lookup with https scheme
+        ("server.example.com/artifactory", "https://server.example.com/artifactory"),
+        # section without scheme, lookup with http scheme
+        ("server.example.com/artifactory", "http://server.example.com/artifactory"),
+        # section without scheme or trailing slash, lookup with both
+        ("server.example.com/artifactory", "https://server.example.com/artifactory/"),
+    ],
+)
+def test_authentication_host_normalization(tmpdir, hide_credentials, section, lookup):
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["ARTIFACTORY_CONFIG_FILE"] = config_path
+
+    with open(config_path, "w") as fp:
+        fp.write(f"[{section}]\n")
+        fp.write("username = user\n")
+        fp.write("password = secret\n")
+
+    assert audbackend.backend.Artifactory.get_authentication(lookup) == (
+        "user",
+        "secret",
+    )
+
+
+def test_authentication_host_no_match(tmpdir, hide_credentials):
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["ARTIFACTORY_CONFIG_FILE"] = config_path
+
+    with open(config_path, "w") as fp:
+        fp.write("[other.example.com/artifactory]\n")
+        fp.write("username = user\n")
+        fp.write("password = secret\n")
+
+    assert audbackend.backend.Artifactory.get_authentication(
+        "https://server.example.com/artifactory"
+    ) == ("anonymous", "")
+
+
 @pytest.mark.parametrize("host", [pytest.HOSTS["artifactory"]])
 @pytest.mark.parametrize("repository", [f"unittest-{pytest.UID}-{audeer.uid()[:8]}"])
 def test_create_delete_repositories(host, repository):
@@ -78,6 +131,9 @@ def test_create_delete_repositories(host, repository):
         # Repository exists already
         audbackend.backend.Artifactory.create(host, repository)
     audbackend.backend.Artifactory.delete(host, repository)
+    with pytest.raises(audbackend.BackendError):
+        # Repository does not exist anymore
+        audbackend.backend.Artifactory.delete(host, repository)
 
 
 @pytest.mark.parametrize("host", [pytest.HOSTS["artifactory"]])
@@ -279,6 +335,40 @@ def test_size(tmpdir, interface):
     [(audbackend.backend.Artifactory, audbackend.interface.Unversioned)],
     indirect=True,
 )
+def test_copy_move_into_missing_subdir(tmpdir, interface):
+    """Test that copy_file and move_file create missing parent directories.
+
+    JFrog ``/api/copy`` and ``/api/move`` endpoints
+    auto-create intermediate folders.
+    This test locks in that behavior
+    so a regression on the server side
+    or a change to the request shape
+    would be caught.
+
+    """
+    src_path = audeer.touch(audeer.path(tmpdir, "file.txt"))
+    interface.put_file(src_path, "/file.txt")
+
+    # copy into a not-yet-existing subdirectory
+    copy_dst = "/new-copy-dir/sub/copied.txt"
+    assert not interface.exists(copy_dst)
+    interface.copy_file("/file.txt", copy_dst)
+    assert interface.exists("/file.txt")
+    assert interface.exists(copy_dst)
+
+    # move into a different not-yet-existing subdirectory
+    move_dst = "/new-move-dir/sub/moved.txt"
+    assert not interface.exists(move_dst)
+    interface.move_file("/file.txt", move_dst)
+    assert not interface.exists("/file.txt")
+    assert interface.exists(move_dst)
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.Artifactory, audbackend.interface.Unversioned)],
+    indirect=True,
+)
 def test_get_archive_streaming(tmpdir, interface):
     """Test get_archive with streaming extraction verifies _get_file_stream.
 
@@ -319,3 +409,187 @@ def test_get_archive_streaming(tmpdir, interface):
         "/archive.zip", dst_root_validated, validate=True
     )
     assert sorted(extracted_validated) == ["file1.txt", "file2.txt"]
+
+
+def test_timeout_unset_repr():
+    """The ``_TIMEOUT_UNSET`` sentinel has a readable ``repr``."""
+    from audbackend.core.backend.artifactory import _TIMEOUT_UNSET
+
+    assert repr(_TIMEOUT_UNSET) == "<UNSET>"
+
+
+def test_default_timeout(hide_credentials):
+    """Default HTTP timeout is 60 seconds."""
+    backend = audbackend.backend.Artifactory("https://example.com", "repository")
+    assert backend.timeout == 60.0
+
+
+def test_constructor_timeout(hide_credentials):
+    """Constructor argument overrides the default."""
+    backend = audbackend.backend.Artifactory(
+        "https://example.com", "repository", timeout=30.0
+    )
+    assert backend.timeout == 30.0
+
+
+def test_constructor_timeout_disables(hide_credentials):
+    """``timeout=None`` disables the HTTP timeout, even if the env var is set."""
+    os.environ["ARTIFACTORY_TIMEOUT"] = "30"
+    backend = audbackend.backend.Artifactory(
+        "https://example.com", "repository", timeout=None
+    )
+    assert backend.timeout is None
+
+
+def test_env_timeout(hide_credentials):
+    """``ARTIFACTORY_TIMEOUT`` env var sets the timeout."""
+    os.environ["ARTIFACTORY_TIMEOUT"] = "45"
+    backend = audbackend.backend.Artifactory("https://example.com", "repository")
+    assert backend.timeout == 45.0
+
+
+def test_env_timeout_none(hide_credentials):
+    """``ARTIFACTORY_TIMEOUT=none`` disables the timeout."""
+    os.environ["ARTIFACTORY_TIMEOUT"] = "None"
+    backend = audbackend.backend.Artifactory("https://example.com", "repository")
+    assert backend.timeout is None
+
+
+def test_env_timeout_invalid(hide_credentials):
+    """Invalid ``ARTIFACTORY_TIMEOUT`` falls back to the default."""
+    os.environ["ARTIFACTORY_TIMEOUT"] = "not-a-number"
+    backend = audbackend.backend.Artifactory("https://example.com", "repository")
+    assert backend.timeout == 60.0
+
+
+@pytest.mark.parametrize(
+    "method, args",
+    [
+        ("stat", ("/path",)),
+        ("exists", ("/path",)),
+        ("delete", ("/path",)),
+        ("copy", ("/src", "/dst")),
+        ("move", ("/src", "/dst")),
+        ("list_files", ("/sub",)),
+        ("repository_exists", ()),
+        ("create_repository", ()),
+        ("delete_repository", ()),
+    ],
+)
+def test_rest_client_timeout_propagated(method, args):
+    """Every REST call forwards ``timeout`` to the underlying session."""
+    session = mock.MagicMock()
+    response = mock.MagicMock()
+    response.status_code = 200
+    response.json.return_value = {"size": 0, "checksums": {}, "files": []}
+    session.get.return_value = response
+    session.put.return_value = response
+    session.post.return_value = response
+    session.delete.return_value = response
+
+    client = ArtifactoryRestClient("https://example.com", "repo", session, timeout=42.0)
+    getattr(client, method)(*args)
+
+    # Exactly one of the verbs is invoked per method; check that one.
+    invoked = [
+        verb
+        for verb in (session.get, session.put, session.post, session.delete)
+        if verb.called
+    ]
+    assert len(invoked) == 1
+    assert invoked[0].call_args.kwargs["timeout"] == 42.0
+
+
+def test_rest_client_timeout_propagated_streaming():
+    """Streaming reads forward ``timeout`` to the session."""
+    session = mock.MagicMock()
+    response = mock.MagicMock()
+    response.status_code = 200
+    response.iter_content.return_value = iter([])
+    session.get.return_value.__enter__.return_value = response
+
+    client = ArtifactoryRestClient("https://example.com", "repo", session, timeout=42.0)
+    list(client.stream("/path"))
+
+    assert session.get.call_args.kwargs["timeout"] == 42.0
+
+
+def test_rest_client_timeout_propagated_download(tmpdir):
+    """``download`` forwards ``timeout`` to the session."""
+    session = mock.MagicMock()
+    response = mock.MagicMock()
+    response.status_code = 200
+    response.iter_content.return_value = iter([b"data"])
+    session.get.return_value.__enter__.return_value = response
+
+    client = ArtifactoryRestClient("https://example.com", "repo", session, timeout=42.0)
+    dst = audeer.path(tmpdir, "out.bin")
+    client.download("/path", dst)
+
+    assert session.get.call_args.kwargs["timeout"] == 42.0
+
+
+def test_rest_client_timeout_propagated_upload(tmpdir):
+    """``upload`` forwards ``timeout`` to the session."""
+    session = mock.MagicMock()
+    response = mock.MagicMock()
+    response.status_code = 200
+    session.put.return_value = response
+
+    src = audeer.touch(audeer.path(tmpdir, "src.bin"))
+    client = ArtifactoryRestClient("https://example.com", "repo", session, timeout=42.0)
+    client.upload(src, "/path")
+
+    assert session.put.call_args.kwargs["timeout"] == 42.0
+
+
+@pytest.mark.parametrize("method", ["stat", "delete"])
+def test_rest_client_404_raises_file_not_found(method):
+    """``stat`` and ``delete`` map a 404 to :class:`FileNotFoundError`."""
+    session = mock.MagicMock()
+    response = mock.MagicMock()
+    response.status_code = 404
+    session.get.return_value = response
+    session.delete.return_value = response
+
+    client = ArtifactoryRestClient("https://example.com", "repo", session)
+    with pytest.raises(FileNotFoundError, match="/missing"):
+        getattr(client, method)("/missing")
+
+
+def test_rest_client_404_raises_file_not_found_download(tmpdir):
+    """``download`` maps a 404 to :class:`FileNotFoundError`."""
+    session = mock.MagicMock()
+    response = mock.MagicMock()
+    response.status_code = 404
+    session.get.return_value.__enter__.return_value = response
+
+    client = ArtifactoryRestClient("https://example.com", "repo", session)
+    dst = audeer.path(tmpdir, "out.bin")
+    with pytest.raises(FileNotFoundError, match="/missing"):
+        client.download("/missing", dst)
+
+
+def test_rest_client_404_raises_file_not_found_stream():
+    """``stream`` maps a 404 to :class:`FileNotFoundError`."""
+    session = mock.MagicMock()
+    response = mock.MagicMock()
+    response.status_code = 404
+    session.get.return_value.__enter__.return_value = response
+
+    client = ArtifactoryRestClient("https://example.com", "repo", session)
+    with pytest.raises(FileNotFoundError, match="/missing"):
+        list(client.stream("/missing"))
+
+
+@pytest.mark.parametrize("action", ["copy", "move"])
+def test_rest_client_404_raises_file_not_found_copy_move(action):
+    """``copy`` and ``move`` map a 404 to :class:`FileNotFoundError` for the source."""
+    session = mock.MagicMock()
+    response = mock.MagicMock()
+    response.status_code = 404
+    session.post.return_value = response
+
+    client = ArtifactoryRestClient("https://example.com", "repo", session)
+    with pytest.raises(FileNotFoundError, match="/missing-src"):
+        getattr(client, action)("/missing-src", "/dst")

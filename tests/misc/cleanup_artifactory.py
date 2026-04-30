@@ -4,7 +4,6 @@
 # NOTE: it is important to only call this script
 # when no test pipeline is running
 
-import artifactory
 import requests
 
 import audbackend
@@ -21,12 +20,13 @@ if r.status_code == 200:
     repos = [repo for repo in repos if repo.startswith("unittest-")]
     length = len(repos)
     # Delete leftover repositories
-    path = artifactory.ArtifactoryPath(host, auth=authentication)
     for n, repo in enumerate(repos):
         try:
-            repo_path = path.find_repository(repo)
-            if repo_path is not None:
-                repo_path.delete()
+            response = requests.delete(
+                f"{host}/api/repositories/{repo}",
+                auth=authentication,
+            )
+            response.raise_for_status()
             print(f"{n + 1:4.0f} / {length:4.0f} Deleted {repo}")
         except Exception:
             raise RuntimeError(
