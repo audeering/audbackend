@@ -9,18 +9,11 @@ import shutil
 import tempfile
 import zipfile
 
+from stream_unzip import TruncatedDataError
+from stream_unzip import UnfinishedIterationError
+from stream_unzip import stream_unzip
+
 import audeer
-
-
-# stream-unzip is optional (not available on Python 3.14+)
-try:
-    from stream_unzip import TruncatedDataError
-    from stream_unzip import UnfinishedIterationError
-    from stream_unzip import stream_unzip
-
-    STREAM_UNZIP_AVAILABLE = True
-except ImportError:  # pragma: no cover
-    STREAM_UNZIP_AVAILABLE = False
 
 from audbackend.core import utils
 from audbackend.core.errors import BackendError
@@ -471,8 +464,7 @@ class Base:
 
         For ZIP archives,
         streaming extraction is used
-        if ``stream-unzip`` is installed,
-        and ``num_workers=1``.
+        when ``num_workers=1``.
         It extracts files during download
         without storing the archive locally.
 
@@ -497,7 +489,8 @@ class Base:
             dst_root: local destination directory
             tmp_root: directory under which archive is temporarily extracted.
                 Defaults to temporary directory of system.
-                Not used for ZIP archives when ``stream-unzip`` is available.
+                Only relevant if streaming extraction is not used,
+                which is the case for ``num_workers>1``
             num_workers: number of parallel jobs
             validate: verify archive was successfully
                 retrieved from the backend
@@ -533,12 +526,8 @@ class Base:
             with tempfile.TemporaryDirectory(dir=tmp_root):
                 pass
 
-        # Use streaming extraction for ZIP files if stream-unzip is available
-        if (
-            src_path.lower().endswith(".zip")
-            and num_workers == 1
-            and STREAM_UNZIP_AVAILABLE
-        ):
+        # Use streaming extraction for ZIP files
+        if src_path.lower().endswith(".zip") and num_workers == 1:
             return self._get_archive_streaming(
                 src_path,
                 dst_root,

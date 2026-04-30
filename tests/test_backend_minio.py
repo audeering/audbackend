@@ -805,12 +805,6 @@ def test_get_archive_streaming(tmpdir, interface):
     which is required for streaming ZIP extraction and checksum computation.
 
     """
-    # Skip if stream-unzip is not available
-    try:
-        from stream_unzip import stream_unzip  # noqa: F401
-    except ImportError:
-        pytest.skip("stream-unzip not available")
-
     # Create source files
     src_root = audeer.path(tmpdir, "src")
     audeer.mkdir(src_root)

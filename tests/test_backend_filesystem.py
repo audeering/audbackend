@@ -204,12 +204,6 @@ def test_get_archive_streaming(tmpdir, interface):
     which is required for streaming ZIP extraction and checksum computation.
 
     """
-    # Skip if stream-unzip is not available
-    try:
-        from stream_unzip import stream_unzip  # noqa: F401
-    except ImportError:
-        pytest.skip("stream-unzip not available")
-
     # Create source files
     src_root = audeer.path(tmpdir, "src")
     audeer.mkdir(src_root)
@@ -257,12 +251,6 @@ def test_streaming_dst_root_is_file(tmpdir, interface):
     NotADirectoryError should be raised and the file should remain unchanged.
 
     """
-    # Skip if stream-unzip is not available
-    try:
-        from stream_unzip import stream_unzip  # noqa: F401
-    except ImportError:
-        pytest.skip("stream-unzip not available")
-
     # Create a regular file where we'll try to extract to
     dst_file = audeer.path(tmpdir, "existing_file.txt")
     with open(dst_file, "w") as f:
@@ -311,12 +299,6 @@ def test_streaming_cleanup_existing_directory(tmpdir, interface):
     or pre-existing files.
 
     """
-    # Skip if stream-unzip is not available
-    try:
-        from stream_unzip import stream_unzip  # noqa: F401
-    except ImportError:
-        pytest.skip("stream-unzip not available")
-
     # Create destination directory with pre-existing file
     dst_root = audeer.path(tmpdir, "existing_dir")
     audeer.mkdir(dst_root)
@@ -355,12 +337,6 @@ def test_streaming_cleanup_extracted_files(tmpdir, interface):
     pre-existing files should remain.
 
     """
-    # Skip if stream-unzip is not available
-    try:
-        from stream_unzip import stream_unzip  # noqa: F401
-    except ImportError:
-        pytest.skip("stream-unzip not available")
-
     # Create destination directory with pre-existing file
     dst_root = audeer.path(tmpdir, "existing_dir")
     audeer.mkdir(dst_root)
@@ -421,12 +397,6 @@ def test_streaming_zip_with_directory_entries(tmpdir, interface):
     while still extracting the files within those directories.
 
     """
-    # Skip if stream-unzip is not available
-    try:
-        from stream_unzip import stream_unzip  # noqa: F401
-    except ImportError:
-        pytest.skip("stream-unzip not available")
-
     # Create source files with subdirectory
     src_root = audeer.path(tmpdir, "src")
     audeer.mkdir(src_root)
