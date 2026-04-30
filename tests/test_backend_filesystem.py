@@ -464,3 +464,67 @@ def test_size(tmpdir, interface):
     actual_size = interface.backend._size(backend_path)
 
     assert actual_size == expected_size
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.FileSystem, audbackend.interface.Versioned)],
+    indirect=True,
+)
+def test_ls_dirs(tmpdir, interface):
+    """Test ls_dirs returns immediate subdirectory names."""
+    src_path = audeer.path(tmpdir, "test.txt")
+    audeer.touch(src_path)
+
+    # Upload files to create directory structure:
+    # /sub/1.0.0/file.txt
+    # /sub/2.0.0/file.txt
+    # /sub/other/1.0.0/file.txt
+    # /other/sub/1.0.0/file.txt
+    interface.put_file(src_path, "/sub/file.txt", "1.0.0")
+    interface.put_file(src_path, "/sub/file.txt", "2.0.0")
+    interface.put_file(src_path, "/sub/other/file.txt", "3.0.0")
+    interface.put_file(src_path, "/other/sub/file.txt", "4.0.0")
+
+    backend = interface.backend
+
+    # List subdirectories at root
+    dirs = backend.ls_dirs("/")
+    assert dirs == ["other", "sub"]
+
+    # List subdirectories under /sub/
+    dirs = backend.ls_dirs("/sub/")
+    assert dirs == ["1.0.0", "2.0.0", "other"]
+
+    # List subdirectories under /sub/other/
+    dirs = backend.ls_dirs("/sub/other/")
+    assert dirs == ["3.0.0"]
+
+    # List subdirectories under /other/
+    dirs = backend.ls_dirs("/other/")
+    assert dirs == ["sub"]
+
+    # List subdirectories under /other/sub/
+    dirs = backend.ls_dirs("/other/sub/")
+    assert dirs == ["4.0.0"]
+
+    # List subdirectories under a leaf directory (no subdirs)
+    dirs = backend.ls_dirs("/sub/1.0.0/")
+    assert dirs == []
+    dirs = backend.ls_dirs("/sub/other/3.0.0/")
+    assert dirs == []
+
+    # Path must end with "/"
+    with pytest.raises(ValueError, match="path must end with '/'"):
+        backend.ls_dirs("/sub")
+
+    # Non-existent path raises BackendError
+    with pytest.raises(audbackend.BackendError):
+        backend.ls_dirs("/nonexistent/")
+
+    # suppress_backend_errors returns empty list on error
+    dirs = backend.ls_dirs(
+        "/nonexistent/",
+        suppress_backend_errors=True,
+    )
+    assert dirs == []

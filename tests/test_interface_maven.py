@@ -334,6 +334,39 @@ def test_ls(tmpdir, interface, files, path, latest, pattern, expected):
     ) == sorted(expected)
 
 
+@pytest.mark.parametrize(
+    "interface",
+    backend_interface_combinations,
+    indirect=True,
+)
+def test_versions(tmpdir, interface):
+    """Test Maven.versions() using ls_dirs."""
+    src_path = audeer.path(tmpdir, "~")
+    audeer.touch(src_path)
+
+    dst_path = "/file.txt"
+
+    # Non-existent file raises BackendError
+    with pytest.raises(audbackend.BackendError):
+        interface.versions(dst_path)
+    assert not interface.versions(dst_path, suppress_backend_errors=True)
+
+    # Base dir exists but file with different extension,
+    # so versions for our file should still raise
+    other_path = "/file.other"
+    interface.put_file(src_path, other_path, "1.0.0")
+    with pytest.raises(audbackend.BackendError):
+        interface.versions(dst_path)
+
+    # v1
+    interface.put_file(src_path, dst_path, "1.0.0")
+    assert interface.versions(dst_path) == ["1.0.0"]
+
+    # v2
+    interface.put_file(src_path, dst_path, "2.0.0")
+    assert interface.versions(dst_path) == ["1.0.0", "2.0.0"]
+
+
 def test_repr():
     interface = audbackend.interface.Maven(
         audbackend.backend.FileSystem("host", "repo")
