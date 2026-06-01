@@ -940,10 +940,25 @@ class Versioned(Base):
         """
         utils.check_path(path)
 
-        paths = self.ls(path, suppress_backend_errors=suppress_backend_errors)
-        vs = [v for _, v in paths]
+        root, file = self.split(path)
+        dirs = self.backend.ls_dirs(
+            root,
+            suppress_backend_errors=suppress_backend_errors,
+        )
 
-        return vs
+        vs = []
+        for d in dirs:
+            versioned_path = self.join(root, d, file)
+            if self.backend.exists(versioned_path):
+                vs.append(d)
+
+        if not vs and not suppress_backend_errors:
+            try:
+                utils.raise_file_not_found_error(path)
+            except FileNotFoundError as ex:
+                raise BackendError(ex)
+
+        return audeer.sort_versions(vs)
 
     def _path_with_version(
         self,

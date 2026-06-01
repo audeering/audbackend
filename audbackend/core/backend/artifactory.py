@@ -1,4 +1,5 @@
 from collections.abc import Iterator
+import errno
 import os
 
 import artifactory
@@ -306,6 +307,23 @@ class Artifactory(Base):
         paths = [self._collapse(path) for path in paths]
 
         return paths
+
+    def _ls_dirs(
+        self,
+        path: str,
+    ) -> list[str]:
+        r"""List immediate subdirectory names under sub-path."""
+        path = self.path(path)
+        if not path.exists():
+            raise FileNotFoundError(
+                errno.ENOENT,
+                os.strerror(errno.ENOENT),
+                str(path),
+            )
+
+        # Iterating ArtifactoryPath yields immediate children
+        dirs = [x.name for x in path if x.is_dir()]
+        return dirs
 
     def _move_file(
         self,

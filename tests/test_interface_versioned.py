@@ -1207,7 +1207,7 @@ def test_validate(tmpdir):
         )
     assert not interface.exists("/remote.zip", "1.0.0")
     interface.put_archive(
-        ".",
+        tmpdir,
         "/remote.zip",
         "1.0.0",
         validate=True,
