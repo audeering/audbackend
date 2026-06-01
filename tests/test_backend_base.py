@@ -219,6 +219,17 @@ def test_default_ls_dirs_leaf_directory():
     assert backend.ls_dirs("/sub/1.0.0/") == []
 
 
+def test_default_ls_dirs_empty_root():
+    """ls_dirs returns an empty list for the root of an empty repository."""
+    backend = DummyLsBackend(
+        {
+            "/": [],
+        }
+    )
+    backend.open()
+    assert backend.ls_dirs("/") == []
+
+
 def test_default_ls_dirs_raises_file_not_found():
     """_ls_dirs raises FileNotFoundError when _ls returns an empty list."""
     backend = DummyLsBackend(
