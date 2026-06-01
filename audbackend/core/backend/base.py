@@ -878,8 +878,11 @@ class Base:
     ) -> list[str]:
         r"""List immediate subdirectory names under sub-path.
 
+        Returns an empty list for the root ``'/'``,
+        which always exists
+        (an empty repository has no subdirectories).
         Raises ``FileNotFoundError``
-        if ``path`` does not exist.
+        if any other ``path`` does not exist.
 
         The default implementation derives subdirectories
         from :meth:`_ls` results.
@@ -890,6 +893,8 @@ class Base:
         """
         paths = self._ls(path)
         if not paths:
+            if path == "/":
+                return []
             raise FileNotFoundError(
                 errno.ENOENT,
                 os.strerror(errno.ENOENT),
@@ -1039,25 +1044,12 @@ class Base:
         if not path.endswith("/"):
             raise ValueError(f"path must end with '/', got: '{path}'")
 
-        try:
-            dirs = utils.call_function_on_backend(
-                self._ls_dirs,
-                path,
-                suppress_backend_errors=suppress_backend_errors,
-                fallback_return_value=[],
-            )
-        except BackendError as ex:
-            # The root always exists,
-            # so an empty repository
-            # simply has no subdirectories.
-            # Backends signal a non-existing path
-            # with a ``FileNotFoundError``,
-            # but for the root
-            # we return an empty list instead,
-            # mirroring the behavior of ls().
-            if path == "/" and isinstance(ex.exception, FileNotFoundError):
-                return []
-            raise
+        dirs = utils.call_function_on_backend(
+            self._ls_dirs,
+            path,
+            suppress_backend_errors=suppress_backend_errors,
+            fallback_return_value=[],
+        )
 
         return sorted(dirs)
 

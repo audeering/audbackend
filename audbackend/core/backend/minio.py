@@ -450,19 +450,23 @@ class Minio(Base):
         path: str,
     ) -> list[str]:
         r"""List immediate subdirectory names under sub-path."""
-        path = self.path(path)
+        prefix = self.path(path)
         objects = list(
             self._client.list_objects(
                 bucket_name=self.repository,
-                prefix=path,
+                prefix=prefix,
                 recursive=False,
             )
         )
         if not objects:
+            # The root always exists,
+            # so an empty repository has no subdirectories.
+            if path == "/":
+                return []
             raise FileNotFoundError(
                 errno.ENOENT,
                 os.strerror(errno.ENOENT),
-                path,
+                prefix,
             )
         dirs = []
         for obj in objects:
