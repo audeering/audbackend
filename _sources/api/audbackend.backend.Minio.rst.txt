@@ -66,6 +66,10 @@ ls\(\)
 ------
 .. automethod:: Minio.ls
     
+ls\_dirs\(\)
+------------
+.. automethod:: Minio.ls_dirs
+    
 move\_file\(\)
 --------------
 .. automethod:: Minio.move_file

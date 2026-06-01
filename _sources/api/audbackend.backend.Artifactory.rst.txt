@@ -62,6 +62,10 @@ ls\(\)
 ------
 .. automethod:: Artifactory.ls
     
+ls\_dirs\(\)
+------------
+.. automethod:: Artifactory.ls_dirs
+    
 move\_file\(\)
 --------------
 .. automethod:: Artifactory.move_file

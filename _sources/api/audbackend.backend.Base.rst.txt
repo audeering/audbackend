@@ -58,6 +58,10 @@ ls\(\)
 ------
 .. automethod:: Base.ls
     
+ls\_dirs\(\)
+------------
+.. automethod:: Base.ls_dirs
+    
 move\_file\(\)
 --------------
 .. automethod:: Base.move_file

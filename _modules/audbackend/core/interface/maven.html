@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                2.3.2
+                2.4.0
               </div>
             
           
@@ -400,6 +400,74 @@
         <span class="k">return</span> <span class="n">paths_and_versions</span></div>
 
 
+<div class="viewcode-block" id="Maven.versions">
+<a class="viewcode-back" href="../../../../api/audbackend.interface.Maven.html#audbackend.interface.Maven.versions">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">versions</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">suppress_backend_errors</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Versions of a file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: path to file on backend</span>
+<span class="sd">            suppress_backend_errors: if set to ``True``,</span>
+<span class="sd">                silently catch errors raised on the backend</span>
+<span class="sd">                and return an empty list</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list of versions in ascending order</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            BackendError: if ``suppress_backend_errors`` is ``False``</span>
+<span class="sd">                and an error is raised on the backend,</span>
+<span class="sd">                e.g. ``path`` does not exist</span>
+<span class="sd">            ValueError: if ``path`` does not start with ``&#39;/&#39;``,</span>
+<span class="sd">                ends on ``&#39;/&#39;``,</span>
+<span class="sd">                or does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            RuntimeError: if backend was not opened</span>
+
+<span class="sd">        ..</span>
+<span class="sd">            &gt;&gt;&gt; interface = Maven(filesystem)</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_file(file, &quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_file(file, &quot;/file.txt&quot;, &quot;2.0.0&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; interface.versions(&quot;/file.txt&quot;)</span>
+<span class="sd">            [&#39;1.0.0&#39;, &#39;2.0.0&#39;]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="n">root</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">base</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_ext</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="c1"># Maven stores files as /&lt;root&gt;/&lt;base&gt;/&lt;version&gt;/&lt;base&gt;-&lt;version&gt;&lt;ext&gt;</span>
+        <span class="c1"># so version folders are under /&lt;root&gt;/&lt;base&gt;/</span>
+        <span class="n">base_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">base</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+
+        <span class="n">dirs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">ls_dirs</span><span class="p">(</span>
+            <span class="n">base_dir</span><span class="p">,</span>
+            <span class="n">suppress_backend_errors</span><span class="o">=</span><span class="n">suppress_backend_errors</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">vs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dirs</span><span class="p">:</span>
+            <span class="n">versioned_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">base</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">d</span><span class="si">}{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">versioned_file</span><span class="p">):</span>
+                <span class="n">vs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">vs</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">suppress_backend_errors</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">utils</span><span class="o">.</span><span class="n">raise_file_not_found_error</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">FileNotFoundError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">BackendError</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">audeer</span><span class="o">.</span><span class="n">sort_versions</span><span class="p">(</span><span class="n">vs</span><span class="p">)</span></div>
+
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_split_ext</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -461,7 +529,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/03/04 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/06/01 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -502,6 +570,7 @@
 
   
 
+  <script type="text/javascript" src="../../../../_static/js/jquery.js"></script>
   <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
 
   <script type="text/javascript">

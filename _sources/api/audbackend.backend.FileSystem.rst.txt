@@ -58,6 +58,10 @@ ls\(\)
 ------
 .. automethod:: FileSystem.ls
     
+ls\_dirs\(\)
+------------
+.. automethod:: FileSystem.ls_dirs
+    
 move\_file\(\)
 --------------
 .. automethod:: FileSystem.move_file

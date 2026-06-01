@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                2.3.2
+                2.4.0
               </div>
             
           
@@ -153,18 +153,11 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">zipfile</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">stream_unzip</span><span class="w"> </span><span class="kn">import</span> <span class="n">TruncatedDataError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">stream_unzip</span><span class="w"> </span><span class="kn">import</span> <span class="n">UnfinishedIterationError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">stream_unzip</span><span class="w"> </span><span class="kn">import</span> <span class="n">stream_unzip</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">audeer</span>
-
-
-<span class="c1"># stream-unzip is optional (not available on Python 3.14+)</span>
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">stream_unzip</span><span class="w"> </span><span class="kn">import</span> <span class="n">TruncatedDataError</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">stream_unzip</span><span class="w"> </span><span class="kn">import</span> <span class="n">UnfinishedIterationError</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">stream_unzip</span><span class="w"> </span><span class="kn">import</span> <span class="n">stream_unzip</span>
-
-    <span class="n">STREAM_UNZIP_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
-    <span class="n">STREAM_UNZIP_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">audbackend.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">utils</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">audbackend.core.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">BackendError</span>
@@ -640,8 +633,7 @@
 
 <span class="sd">        For ZIP archives,</span>
 <span class="sd">        streaming extraction is used</span>
-<span class="sd">        if ``stream-unzip`` is installed,</span>
-<span class="sd">        and ``num_workers=1``.</span>
+<span class="sd">        when ``num_workers=1``.</span>
 <span class="sd">        It extracts files during download</span>
 <span class="sd">        without storing the archive locally.</span>
 
@@ -666,7 +658,8 @@
 <span class="sd">            dst_root: local destination directory</span>
 <span class="sd">            tmp_root: directory under which archive is temporarily extracted.</span>
 <span class="sd">                Defaults to temporary directory of system.</span>
-<span class="sd">                Not used for ZIP archives when ``stream-unzip`` is available.</span>
+<span class="sd">                Only relevant if streaming extraction is not used,</span>
+<span class="sd">                which is the case for ``num_workers&gt;1``</span>
 <span class="sd">            num_workers: number of parallel jobs</span>
 <span class="sd">            validate: verify archive was successfully</span>
 <span class="sd">                retrieved from the backend</span>
@@ -702,12 +695,8 @@
             <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">tmp_root</span><span class="p">):</span>
                 <span class="k">pass</span>
 
-        <span class="c1"># Use streaming extraction for ZIP files if stream-unzip is available</span>
-        <span class="k">if</span> <span class="p">(</span>
-            <span class="n">src_path</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.zip&quot;</span><span class="p">)</span>
-            <span class="ow">and</span> <span class="n">num_workers</span> <span class="o">==</span> <span class="mi">1</span>
-            <span class="ow">and</span> <span class="n">STREAM_UNZIP_AVAILABLE</span>
-        <span class="p">):</span>
+        <span class="c1"># Use streaming extraction for ZIP files</span>
+        <span class="k">if</span> <span class="n">src_path</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.zip&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">num_workers</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_archive_streaming</span><span class="p">(</span>
                 <span class="n">src_path</span><span class="p">,</span>
                 <span class="n">dst_root</span><span class="p">,</span>
@@ -1048,6 +1037,52 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ls_dirs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;List immediate subdirectory names under sub-path.</span>
+
+<span class="sd">        Returns an empty list for the root ``&#39;/&#39;``,</span>
+<span class="sd">        which always exists</span>
+<span class="sd">        (an empty repository has no subdirectories).</span>
+<span class="sd">        Raises ``FileNotFoundError``</span>
+<span class="sd">        if any other ``path`` does not exist.</span>
+
+<span class="sd">        The default implementation derives subdirectories</span>
+<span class="sd">        from :meth:`_ls` results.</span>
+<span class="sd">        Backends that support efficient directory listing</span>
+<span class="sd">        (e.g. S3 delimiter queries)</span>
+<span class="sd">        can override this method.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ls</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">paths</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">path</span> <span class="o">==</span> <span class="s2">&quot;/&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[]</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+                <span class="n">errno</span><span class="o">.</span><span class="n">ENOENT</span><span class="p">,</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">strerror</span><span class="p">(</span><span class="n">errno</span><span class="o">.</span><span class="n">ENOENT</span><span class="p">),</span>
+                <span class="n">path</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">sep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sep</span>
+        <span class="n">prefix_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="n">dirs</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">rest</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">prefix_len</span><span class="p">:]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">rest</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">first</span><span class="p">,</span> <span class="n">found_sep</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">rest</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">first</span> <span class="ow">and</span> <span class="n">found_sep</span><span class="p">:</span>
+                <span class="n">dirs</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">first</span><span class="p">)</span>
+
+        <span class="c1"># Path exists (has files) but no subdirectories</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">dirs</span><span class="p">)</span>
+
 <div class="viewcode-block" id="Base.ls">
 <a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.ls">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">ls</span><span class="p">(</span>
@@ -1133,6 +1168,60 @@
             <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span> <span class="k">if</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">fnmatch</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">p</span><span class="p">),</span> <span class="n">pattern</span><span class="p">)]</span>
 
         <span class="k">return</span> <span class="n">paths</span></div>
+
+
+<div class="viewcode-block" id="Base.ls_dirs">
+<a class="viewcode-back" href="../../../../api/audbackend.backend.Base.html#audbackend.backend.Base.ls_dirs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ls_dirs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">suppress_backend_errors</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;List subdirectories on backend.</span>
+
+<span class="sd">        Returns a sorted list of immediate subdirectory names</span>
+<span class="sd">        under the given sub-path.</span>
+<span class="sd">        Only direct child directories are returned,</span>
+<span class="sd">        not files or nested subdirectories.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: sub-path</span>
+<span class="sd">                (must end with ``&#39;/&#39;``)</span>
+<span class="sd">                on backend</span>
+<span class="sd">            suppress_backend_errors: if set to ``True``,</span>
+<span class="sd">                silently catch errors raised on the backend</span>
+<span class="sd">                and return an empty list</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list of subdirectory names</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            BackendError: if ``suppress_backend_errors`` is ``False``</span>
+<span class="sd">                and an error is raised on the backend,</span>
+<span class="sd">                e.g. ``path`` does not exist</span>
+<span class="sd">            ValueError: if ``path`` does not start with ``&#39;/&#39;``,</span>
+<span class="sd">                does not end with ``&#39;/&#39;``,</span>
+<span class="sd">                or does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            RuntimeError: if backend was not opened</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">opened</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">backend_not_opened_error</span><span class="p">)</span>
+
+        <span class="n">path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_path</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">allow_sub_path</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;path must end with &#39;/&#39;, got: &#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+
+        <span class="n">dirs</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">call_function_on_backend</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ls_dirs</span><span class="p">,</span>
+            <span class="n">path</span><span class="p">,</span>
+            <span class="n">suppress_backend_errors</span><span class="o">=</span><span class="n">suppress_backend_errors</span><span class="p">,</span>
+            <span class="n">fallback_return_value</span><span class="o">=</span><span class="p">[],</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dirs</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_move_file</span><span class="p">(</span>
@@ -1591,7 +1680,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/03/04 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/06/01 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -1632,6 +1721,7 @@
 
   
 
+  <script type="text/javascript" src="../../../../_static/js/jquery.js"></script>
   <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
 
   <script type="text/javascript">

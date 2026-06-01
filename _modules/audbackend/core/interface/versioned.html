@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                2.3.2
+                2.4.0
               </div>
             
           
@@ -428,8 +428,7 @@
 
 <span class="sd">        For ZIP archives,</span>
 <span class="sd">        streaming extraction is used</span>
-<span class="sd">        if ``stream-unzip`` is installed,</span>
-<span class="sd">        and ``num_workers=1``.</span>
+<span class="sd">        when ``num_workers=1``.</span>
 <span class="sd">        It extracts files during download</span>
 <span class="sd">        without storing the archive locally.</span>
 
@@ -455,7 +454,9 @@
 <span class="sd">            version: version string</span>
 <span class="sd">            num_workers: number of parallel jobs</span>
 <span class="sd">            tmp_root: directory under which archive is temporarily extracted.</span>
-<span class="sd">                Defaults to temporary directory of system</span>
+<span class="sd">                Defaults to temporary directory of system.</span>
+<span class="sd">                Only relevant if streaming extraction is not used,</span>
+<span class="sd">                which is the case for ``num_workers&gt;1``</span>
 <span class="sd">            validate: verify archive was successfully</span>
 <span class="sd">                retrieved from the backend</span>
 <span class="sd">            verbose: show debug messages</span>
@@ -1126,10 +1127,25 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">utils</span><span class="o">.</span><span class="n">check_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
-        <span class="n">paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">suppress_backend_errors</span><span class="o">=</span><span class="n">suppress_backend_errors</span><span class="p">)</span>
-        <span class="n">vs</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">]</span>
+        <span class="n">root</span><span class="p">,</span> <span class="n">file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">dirs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">ls_dirs</span><span class="p">(</span>
+            <span class="n">root</span><span class="p">,</span>
+            <span class="n">suppress_backend_errors</span><span class="o">=</span><span class="n">suppress_backend_errors</span><span class="p">,</span>
+        <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">vs</span></div>
+        <span class="n">vs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dirs</span><span class="p">:</span>
+            <span class="n">versioned_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">versioned_path</span><span class="p">):</span>
+                <span class="n">vs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">vs</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">suppress_backend_errors</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">utils</span><span class="o">.</span><span class="n">raise_file_not_found_error</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">FileNotFoundError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">BackendError</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">audeer</span><span class="o">.</span><span class="n">sort_versions</span><span class="p">(</span><span class="n">vs</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_path_with_version</span><span class="p">(</span>
@@ -1165,7 +1181,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/03/04 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/06/01 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -1206,6 +1222,7 @@
 
   
 
+  <script type="text/javascript" src="../../../../_static/js/jquery.js"></script>
   <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
 
   <script type="text/javascript">

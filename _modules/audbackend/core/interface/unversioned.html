@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                2.3.2
+                2.4.0
               </div>
             
           
@@ -385,8 +385,7 @@
 
 <span class="sd">        For ZIP archives,</span>
 <span class="sd">        streaming extraction is used</span>
-<span class="sd">        if ``stream-unzip`` is installed,</span>
-<span class="sd">        and ``num_workers=1``.</span>
+<span class="sd">        when ``num_workers=1``.</span>
 <span class="sd">        It extracts files during download</span>
 <span class="sd">        without storing the archive locally.</span>
 
@@ -410,7 +409,9 @@
 <span class="sd">            src_path: path to archive on backend</span>
 <span class="sd">            dst_root: local destination directory</span>
 <span class="sd">            tmp_root: directory under which archive is temporarily extracted.</span>
-<span class="sd">                Defaults to temporary directory of system</span>
+<span class="sd">                Defaults to temporary directory of system.</span>
+<span class="sd">                Only relevant if streaming extraction is not used,</span>
+<span class="sd">                which is the case for ``num_workers&gt;1``</span>
 <span class="sd">            num_workers: number of parallel jobs</span>
 <span class="sd">            validate: verify archive was successfully</span>
 <span class="sd">                retrieved from the backend</span>
@@ -904,7 +905,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/03/04 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/06/01 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
@@ -945,6 +946,7 @@
 
   
 
+  <script type="text/javascript" src="../../../../_static/js/jquery.js"></script>
   <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
 
   <script type="text/javascript">
