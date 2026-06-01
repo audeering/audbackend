@@ -1039,12 +1039,25 @@ class Base:
         if not path.endswith("/"):
             raise ValueError(f"path must end with '/', got: '{path}'")
 
-        dirs = utils.call_function_on_backend(
-            self._ls_dirs,
-            path,
-            suppress_backend_errors=suppress_backend_errors,
-            fallback_return_value=[],
-        )
+        try:
+            dirs = utils.call_function_on_backend(
+                self._ls_dirs,
+                path,
+                suppress_backend_errors=suppress_backend_errors,
+                fallback_return_value=[],
+            )
+        except BackendError as ex:
+            # The root always exists,
+            # so an empty repository
+            # simply has no subdirectories.
+            # Backends signal a non-existing path
+            # with a ``FileNotFoundError``,
+            # but for the root
+            # we return an empty list instead,
+            # mirroring the behavior of ls().
+            if path == "/" and isinstance(ex.exception, FileNotFoundError):
+                return []
+            raise
 
         return sorted(dirs)
 
