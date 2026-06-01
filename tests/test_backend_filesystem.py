@@ -501,6 +501,19 @@ def test_size(tmpdir, interface):
     [(audbackend.backend.FileSystem, audbackend.interface.Versioned)],
     indirect=True,
 )
+def test_ls_empty_repository(tmpdir, interface):
+    """Test ls and ls_dirs return an empty list for an empty repository."""
+    backend = interface.backend
+
+    assert backend.ls("/") == []
+    assert backend.ls_dirs("/") == []
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.FileSystem, audbackend.interface.Versioned)],
+    indirect=True,
+)
 def test_ls_dirs(tmpdir, interface):
     """Test ls_dirs returns immediate subdirectory names."""
     src_path = audeer.path(tmpdir, "test.txt")

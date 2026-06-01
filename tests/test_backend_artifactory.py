@@ -332,6 +332,19 @@ def test_get_archive_streaming(tmpdir, interface):
     [(audbackend.backend.Artifactory, audbackend.interface.Versioned)],
     indirect=True,
 )
+def test_ls_empty_repository(tmpdir, interface):
+    """Test ls and ls_dirs return an empty list for an empty repository."""
+    backend = interface.backend
+
+    assert backend.ls("/") == []
+    assert backend.ls_dirs("/") == []
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.Artifactory, audbackend.interface.Versioned)],
+    indirect=True,
+)
 def test_ls_dirs(tmpdir, interface):
     """Test _ls_dirs on Artifactory backend."""
     src_path = audeer.path(tmpdir, "test.txt")
