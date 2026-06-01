@@ -7,6 +7,14 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 2.4.0 (2026-06-01)
+--------------------------
+
+* Added: ``Backend.ls_dirs()`` to list folders under given path
+* Changed: enable ``stream-unzip`` under all Python versions
+* Changed: exclude ``tests/`` and ``docs/`` folders from the Python package
+
+
 Version 2.3.2 (2026-03-04)
 --------------------------
 
