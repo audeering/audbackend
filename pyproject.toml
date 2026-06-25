@@ -45,7 +45,7 @@ minio = [
     'minio !=7.2.19',
 ]
 all = [
-    'minio',
+    'audbackend[minio]',
 ]
 
 
