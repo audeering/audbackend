@@ -7,12 +7,11 @@ authors = [
     {name = 'Hagen Wierstorf', email = 'hwierstorf@audeering.com'},
     {name = 'Christian Geng', email = 'cgeng@audeering.com'},
 ]
-description = 'Backends to access Artifactory and local file system'
+description = 'Backends to access MinIO/S3 and local file system'
 readme = 'README.rst'
 license = 'MIT'
 license-files = ['LICENSE']
 keywords = [
-    'artifactory',
     'filesystem',
     'minio',
     's3',
@@ -42,14 +41,10 @@ dependencies = [
 dynamic = ['version']
 
 [project.optional-dependencies]
-artifactory = [
-    'dohq-artifactory >=1.0.1; python_version < "3.14"',
-]
 minio = [
     'minio !=7.2.19',
 ]
 all = [
-    'dohq-artifactory >=1.0.1; python_version < "3.14"',
     'minio',
 ]
 
@@ -64,7 +59,6 @@ documentation = 'https://audeering.github.io/audbackend/'
 dev = [
     'audeer >=2.2.1',
     'audformat',
-    'dohq-artifactory >=1.0.1; python_version < "3.14"',
     'minio',
     'pytest',
     'pytest-cov',
