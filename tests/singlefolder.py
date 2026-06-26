@@ -159,6 +159,7 @@ class SingleFolder(audbackend.backend.Base):
         src_path: str,
         dst_path: str,
         checksum: str,
+        owner: str,
         verbose: bool,
     ):
         with self.Map(self._path, self._lock) as m:
