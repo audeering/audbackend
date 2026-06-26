@@ -213,9 +213,16 @@ class FileSystem(Base):
         src_path: str,
         dst_path: str,
         checksum: str,
+        owner: str,
         verbose: bool,
     ):
-        r"""Put file to backend."""
+        r"""Put file to backend.
+
+        ``owner`` is ignored,
+        as the owner is derived
+        from the file system.
+
+        """
         dst_path = self._expand(dst_path)
         audeer.mkdir(os.path.dirname(dst_path))
         shutil.copy(src_path, dst_path)

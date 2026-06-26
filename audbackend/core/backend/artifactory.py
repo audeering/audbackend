@@ -385,9 +385,16 @@ class Artifactory(Base):
         src_path: str,
         dst_path: str,
         checksum: str,
+        owner: str,
         verbose: bool,
     ):
-        r"""Put file to backend."""
+        r"""Put file to backend.
+
+        ``owner`` is ignored,
+        as Artifactory derives the owner
+        from the user uploading the file.
+
+        """
         dst_path = self.path(dst_path)
         _deploy(src_path, dst_path, checksum, verbose=verbose)
 

@@ -264,7 +264,7 @@ class Minio(Base):
             with tempfile.TemporaryDirectory() as tmp_dir:
                 tmp_path = audeer.path(tmp_dir, os.path.basename(src_path))
                 self._get_file(src_path, tmp_path, num_workers, verbose)
-                self._put_file(tmp_path, dst_path, checksum, verbose)
+                self._put_file(tmp_path, dst_path, checksum, None, verbose)
         else:
             self._client.copy_object(
                 bucket_name=self.repository,
@@ -534,6 +534,7 @@ class Minio(Base):
         src_path: str,
         dst_path: str,
         checksum: str,
+        owner: str,
         verbose: bool,
     ):
         r"""Put file to backend."""
@@ -551,7 +552,7 @@ class Minio(Base):
             object_name=dst_path,
             file_path=src_path,
             content_type=content_type,
-            metadata=_metadata(checksum),
+            metadata=_metadata(checksum, owner),
         )
 
         if verbose:  # pragma: no cover
@@ -587,18 +588,24 @@ class Minio(Base):
         return size
 
 
-def _metadata(checksum: str):
-    """Dictionary with owner entry.
+def _metadata(checksum: str, owner: str = None):
+    """Dictionary with checksum and owner entries.
 
     When uploaded as metadata to MinIO,
-    it can be accessed under ``stat_object(...).metadata["x-amz-meta-owner"]``.
+    the owner can be accessed under
+    ``stat_object(...).metadata["x-amz-meta-owner"]``.
 
     Args:
         checksum: checksum to be stored in metadata
+        owner: owner to be stored in metadata.
+            If ``None`` or empty,
+            the current user is used
     """
+    if not owner:
+        owner = getpass.getuser()
     return {
         "checksum": checksum,
-        "owner": getpass.getuser(),
+        "owner": owner,
     }
 
 
