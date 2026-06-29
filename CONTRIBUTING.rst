@@ -97,21 +97,10 @@ You can run tests with pytest_::
     uv run pytest
 
 Some of the tests need access
-to the ``unittests-public`` repository
-on https://audeering.jfrog.io,
-which means you first need
-to have a user account there.
-Alternatively you might submit a pull request to Github
-that has saved the credentials
-and can execute the tests.
-
-It might be that the cleanup process
-after or during the tests
-fails.
-To remove leftover files on the Artifactory server
-run::
-
-    uv run tests/misc/cleanup_artifactory.py
+to the public MinIO server
+at https://play.min.io,
+for which credentials are provided
+automatically by the test fixtures.
 
 .. _pytest: https://pytest.org
 

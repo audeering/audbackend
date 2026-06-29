@@ -22,13 +22,3 @@ e.g. :class:`audbackend.backend.Minio`:
 .. code-block:: bash
 
     $ uv pip install audbackend[minio]
-    
-or :class:`audbackend.backend.Artifactory`:
-
-.. code-block:: bash
-
-    $ uv pip install audbackend[artifactory]
-
-Note,
-in Python 3.14 the :class:`audbackend.backend.Artifactory`
-backend is not available at the moment.

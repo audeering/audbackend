@@ -5,12 +5,6 @@ from audbackend.core.backend.filesystem import FileSystem  # legacy
 from audbackend.core.errors import BackendError
 from audbackend.core.repository import Repository
 
-# Import optional backends (legacy)
-try:
-    from audbackend.core.backend.artifactory import Artifactory
-except ImportError:  # pragma: no cover
-    pass
-
 
 __all__ = []
 
