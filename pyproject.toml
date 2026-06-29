@@ -105,7 +105,7 @@ addopts = '''
     --cov-report term-missing
     --cov-report xml
     --ignore=tests/misc/
-    --ignore=tests/test_backend_filesystem_only.py
+    --ignore=tests/test_minimal_install.py
 '''
 
 
