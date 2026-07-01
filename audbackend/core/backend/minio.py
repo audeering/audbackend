@@ -153,7 +153,7 @@ class Minio(Base):
 
         """
         config = cls.get_config(host)
-        suffix = re.sub(r"[^A-Za-z0-9]", "_", host).upper()
+        suffix = _host_env_suffix(host)
         access_key = os.getenv(
             f"MINIO_ACCESS_KEY_{suffix}",
             os.getenv("MINIO_ACCESS_KEY", config.get("access_key")),
@@ -617,6 +617,24 @@ def _metadata(checksum: str):
         "checksum": checksum,
         "owner": getpass.getuser(),
     }
+
+
+def _host_env_suffix(host: str) -> str:
+    """Environment variable suffix for a host.
+
+    Uppercases the hostname
+    and replaces every non-alphanumeric character
+    with an underscore,
+    e.g. ``play.min.io`` becomes ``PLAY_MIN_IO``.
+
+    Args:
+        host: hostname
+
+    Returns:
+        environment variable suffix
+
+    """
+    return re.sub(r"[^A-Za-z0-9]", "_", host).upper()
 
 
 def _parse_timeout(

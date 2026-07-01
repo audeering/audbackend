@@ -1,7 +1,6 @@
 import contextlib
 import filecmp
 import os
-import re
 from unittest import mock
 import warnings
 
@@ -12,6 +11,7 @@ import urllib3
 import audeer
 
 import audbackend
+from audbackend.core.backend.minio import _host_env_suffix
 
 
 @contextlib.contextmanager
@@ -127,7 +127,7 @@ def test_authentication_host_specific(tmpdir, hosts, hide_credentials):
 
     """
     host = hosts["minio"]
-    suffix = re.sub(r"[^A-Za-z0-9]", "_", host).upper()
+    suffix = _host_env_suffix(host)
 
     # config file provides credentials for the host
     config_path = audeer.path(tmpdir, "config.cfg")
@@ -161,6 +161,48 @@ def test_authentication_host_specific(tmpdir, hosts, hide_credentials):
         ):
             backend = audbackend.backend.Minio(host, "repository")
             assert backend.authentication == ("host-key", "host-secret")
+
+
+@pytest.mark.parametrize(
+    "host, expected_suffix",
+    [
+        ("play.min.io", "PLAY_MIN_IO"),
+        (
+            "s3.dualstack.eu-north-1.amazonaws.com",
+            "S3_DUALSTACK_EU_NORTH_1_AMAZONAWS_COM",
+        ),
+        ("localhost:9000", "LOCALHOST_9000"),
+        ("192.168.0.1", "192_168_0_1"),
+    ],
+)
+def test_authentication_host_suffix(hide_credentials, host, expected_suffix):
+    r"""Host-specific credentials are read for the correct env var names.
+
+    Verifies both the computed suffix and that the resulting
+    ``MINIO_ACCESS_KEY_<SUFFIX>``/``MINIO_SECRET_KEY_<SUFFIX>``
+    environment variables are picked up by
+    :meth:`audbackend.backend.Minio.get_authentication`,
+    so future changes to the normalization can't silently break this.
+
+    Args:
+        hide_credentials: fixture removing global credentials
+        host: hostname
+        expected_suffix: expected environment variable suffix
+
+    """
+    assert _host_env_suffix(host) == expected_suffix
+
+    with mock.patch.dict(
+        os.environ,
+        {
+            f"MINIO_ACCESS_KEY_{expected_suffix}": "host-key",
+            f"MINIO_SECRET_KEY_{expected_suffix}": "host-secret",
+        },
+    ):
+        assert audbackend.backend.Minio.get_authentication(host) == (
+            "host-key",
+            "host-secret",
+        )
 
 
 @pytest.mark.parametrize(
