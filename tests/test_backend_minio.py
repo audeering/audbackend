@@ -11,6 +11,7 @@ import urllib3
 import audeer
 
 import audbackend
+from audbackend.core.backend.minio import _host_env_suffix
 
 
 @contextlib.contextmanager
@@ -109,6 +110,99 @@ def test_authentication(tmpdir, hosts, hide_credentials):
     assert backend.authentication == ("bad", "bad")
     with pytest.raises(audbackend.BackendError):
         backend.open()
+
+
+def test_authentication_host_specific(tmpdir, hosts, hide_credentials):
+    r"""Host-specific environment variables take precedence.
+
+    ``MINIO_ACCESS_KEY_<HOST>`` and ``MINIO_SECRET_KEY_<HOST>``
+    allow to provide different credentials per host,
+    and win over the global ``MINIO_ACCESS_KEY``/``MINIO_SECRET_KEY``
+    and the config file.
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: fixture removing global credentials
+
+    """
+    host = hosts["minio"]
+    suffix = _host_env_suffix(host)
+
+    # config file provides credentials for the host
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["MINIO_CONFIG_FILE"] = config_path
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("access_key = config-key\n")
+        fp.write("secret_key = config-secret\n")
+
+    backend = audbackend.backend.Minio(host, "repository")
+    assert backend.authentication == ("config-key", "config-secret")
+
+    # global environment variables win over the config file
+    with mock.patch.dict(
+        os.environ,
+        {
+            "MINIO_ACCESS_KEY": "global-key",
+            "MINIO_SECRET_KEY": "global-secret",
+        },
+    ):
+        backend = audbackend.backend.Minio(host, "repository")
+        assert backend.authentication == ("global-key", "global-secret")
+
+        # host-specific environment variables win over the global ones
+        with mock.patch.dict(
+            os.environ,
+            {
+                f"MINIO_ACCESS_KEY_{suffix}": "host-key",
+                f"MINIO_SECRET_KEY_{suffix}": "host-secret",
+            },
+        ):
+            backend = audbackend.backend.Minio(host, "repository")
+            assert backend.authentication == ("host-key", "host-secret")
+
+
+@pytest.mark.parametrize(
+    "host, expected_suffix",
+    [
+        ("play.min.io", "PLAY_MIN_IO"),
+        (
+            "s3.dualstack.eu-north-1.amazonaws.com",
+            "S3_DUALSTACK_EU_NORTH_1_AMAZONAWS_COM",
+        ),
+        ("localhost:9000", "LOCALHOST_9000"),
+        ("192.168.0.1", "192_168_0_1"),
+    ],
+)
+def test_authentication_host_suffix(hide_credentials, host, expected_suffix):
+    r"""Host-specific credentials are read for the correct env var names.
+
+    Verifies both the computed suffix and that the resulting
+    ``MINIO_ACCESS_KEY_<SUFFIX>``/``MINIO_SECRET_KEY_<SUFFIX>``
+    environment variables are picked up by
+    :meth:`audbackend.backend.Minio.get_authentication`,
+    so future changes to the normalization can't silently break this.
+
+    Args:
+        hide_credentials: fixture removing global credentials
+        host: hostname
+        expected_suffix: expected environment variable suffix
+
+    """
+    assert _host_env_suffix(host) == expected_suffix
+
+    with mock.patch.dict(
+        os.environ,
+        {
+            f"MINIO_ACCESS_KEY_{expected_suffix}": "host-key",
+            f"MINIO_SECRET_KEY_{expected_suffix}": "host-secret",
+        },
+    ):
+        assert audbackend.backend.Minio.get_authentication(host) == (
+            "host-key",
+            "host-secret",
+        )
 
 
 @pytest.mark.parametrize(
