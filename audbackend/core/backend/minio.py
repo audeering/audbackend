@@ -124,16 +124,13 @@ class Minio(Base):
 
         To get the authentication tuple,
         the function looks first
-        for host-specific environment variables,
-        namely
+        for the host-specific environment variables
         ``MINIO_ACCESS_KEY_<HOST>`` and
         ``MINIO_SECRET_KEY_<HOST>``,
         where ``<HOST>`` is the uppercased hostname
         with every non-alphanumeric character
         replaced by an underscore,
         e.g. ``play.min.io`` becomes ``PLAY_MIN_IO``.
-        This allows to use different credentials
-        for different hosts.
         If those are not set,
         the function falls back
         to the two environment variables
