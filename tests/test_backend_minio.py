@@ -1,6 +1,7 @@
 import contextlib
 import filecmp
 import os
+import re
 from unittest import mock
 import warnings
 
@@ -109,6 +110,58 @@ def test_authentication(tmpdir, hosts, hide_credentials):
     assert backend.authentication == ("bad", "bad")
     with pytest.raises(audbackend.BackendError):
         backend.open()
+
+
+def test_authentication_host_specific(tmpdir, hosts, hide_credentials):
+    r"""Host-specific environment variables take precedence.
+
+    ``MINIO_ACCESS_KEY_<HOST>`` and ``MINIO_SECRET_KEY_<HOST>``
+    allow to provide different credentials per host,
+    and win over the global ``MINIO_ACCESS_KEY``/``MINIO_SECRET_KEY``
+    and the config file,
+    see https://github.com/audeering/audbackend/issues/298.
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: fixture removing global credentials
+
+    """
+    host = hosts["minio"]
+    suffix = re.sub(r"[^A-Za-z0-9]", "_", host).upper()
+
+    # config file provides credentials for the host
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["MINIO_CONFIG_FILE"] = config_path
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("access_key = config-key\n")
+        fp.write("secret_key = config-secret\n")
+
+    backend = audbackend.backend.Minio(host, "repository")
+    assert backend.authentication == ("config-key", "config-secret")
+
+    # global environment variables win over the config file
+    with mock.patch.dict(
+        os.environ,
+        {
+            "MINIO_ACCESS_KEY": "global-key",
+            "MINIO_SECRET_KEY": "global-secret",
+        },
+    ):
+        backend = audbackend.backend.Minio(host, "repository")
+        assert backend.authentication == ("global-key", "global-secret")
+
+        # host-specific environment variables win over the global ones
+        with mock.patch.dict(
+            os.environ,
+            {
+                f"MINIO_ACCESS_KEY_{suffix}": "host-key",
+                f"MINIO_SECRET_KEY_{suffix}": "host-secret",
+            },
+        ):
+            backend = audbackend.backend.Minio(host, "repository")
+            assert backend.authentication == ("host-key", "host-secret")
 
 
 @pytest.mark.parametrize(

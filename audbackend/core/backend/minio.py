@@ -4,6 +4,7 @@ import errno
 import getpass
 import mimetypes
 import os
+import re
 import tempfile
 import warnings
 
@@ -123,7 +124,19 @@ class Minio(Base):
 
         To get the authentication tuple,
         the function looks first
-        for the two environment variables
+        for host-specific environment variables,
+        namely
+        ``MINIO_ACCESS_KEY_<HOST>`` and
+        ``MINIO_SECRET_KEY_<HOST>``,
+        where ``<HOST>`` is the uppercased hostname
+        with every non-alphanumeric character
+        replaced by an underscore,
+        e.g. ``play.min.io`` becomes ``PLAY_MIN_IO``.
+        This allows to use different credentials
+        for different hosts.
+        If those are not set,
+        the function falls back
+        to the two environment variables
         ``MINIO_ACCESS_KEY`` and
         ``MINIO_SECRET_KEY``.
         Otherwise,
@@ -143,8 +156,15 @@ class Minio(Base):
 
         """
         config = cls.get_config(host)
-        access_key = os.getenv("MINIO_ACCESS_KEY", config.get("access_key"))
-        secret_key = os.getenv("MINIO_SECRET_KEY", config.get("secret_key"))
+        suffix = re.sub(r"[^A-Za-z0-9]", "_", host).upper()
+        access_key = os.getenv(
+            f"MINIO_ACCESS_KEY_{suffix}",
+            os.getenv("MINIO_ACCESS_KEY", config.get("access_key")),
+        )
+        secret_key = os.getenv(
+            f"MINIO_SECRET_KEY_{suffix}",
+            os.getenv("MINIO_SECRET_KEY", config.get("secret_key")),
+        )
 
         return access_key, secret_key
 
