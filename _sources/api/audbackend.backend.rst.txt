@@ -12,7 +12,6 @@ backends are supported:
     :toctree:
     :nosignatures:
 
-    Artifactory
     FileSystem
     Minio
 

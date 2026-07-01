@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                2.4.0
+                3.0.0
               </div>
             
           
@@ -107,6 +107,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#version-3-0-0-2026-07-01">Version 3.0.0 (2026-07-01)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-2-4-0-2026-06-01">Version 2.4.0 (2026-06-01)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-2-3-2-2026-03-04">Version 2.3.2 (2026-03-04)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-2-3-1-2026-02-01">Version 2.3.1 (2026-02-01)</a></li>
@@ -186,6 +187,17 @@
 <p>All notable changes to this project will be documented in this file.</p>
 <p>The format is based on <a class="reference external" href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,
 and this project adheres to <a class="reference external" href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<section id="version-3-0-0-2026-07-01">
+<h2>Version 3.0.0 (2026-07-01)<a class="headerlink" href="#version-3-0-0-2026-07-01" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Added: support host specific environment variables
+<code class="docutils literal notranslate"><span class="pre">MINIO_ACCESS_KEY_&lt;HOST&gt;</span></code>
+and <code class="docutils literal notranslate"><span class="pre">MINIO_SECRET_KEY_&lt;HOST&gt;</span></code>
+in <code class="docutils literal notranslate"><span class="pre">audbackend.backend.Minio.get_auhtentication()</span></code></p></li>
+<li><p>Removed: the Artifactory backend
+<code class="docutils literal notranslate"><span class="pre">audbackend.backend.Artifactory</span></code></p></li>
+</ul>
+</section>
 <section id="version-2-4-0-2026-06-01">
 <h2>Version 2.4.0 (2026-06-01)<a class="headerlink" href="#version-2-4-0-2026-06-01" title="Link to this heading">¶</a></h2>
 <ul class="simple">
@@ -640,7 +652,7 @@ and explains Artifactory server access for running tests</p></li>
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/06/01 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/07/01 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>

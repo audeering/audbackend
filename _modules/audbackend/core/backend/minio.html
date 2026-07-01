@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                2.4.0
+                3.0.0
               </div>
             
           
@@ -148,6 +148,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">getpass</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">mimetypes</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
@@ -271,7 +272,16 @@
 
 <span class="sd">        To get the authentication tuple,</span>
 <span class="sd">        the function looks first</span>
-<span class="sd">        for the two environment variables</span>
+<span class="sd">        for the host-specific environment variables</span>
+<span class="sd">        ``MINIO_ACCESS_KEY_&lt;HOST&gt;`` and</span>
+<span class="sd">        ``MINIO_SECRET_KEY_&lt;HOST&gt;``,</span>
+<span class="sd">        where ``&lt;HOST&gt;`` is the uppercased hostname</span>
+<span class="sd">        with every non-alphanumeric character</span>
+<span class="sd">        replaced by an underscore,</span>
+<span class="sd">        e.g. ``play.min.io`` becomes ``PLAY_MIN_IO``.</span>
+<span class="sd">        If those are not set,</span>
+<span class="sd">        the function falls back</span>
+<span class="sd">        to the two environment variables</span>
 <span class="sd">        ``MINIO_ACCESS_KEY`` and</span>
 <span class="sd">        ``MINIO_SECRET_KEY``.</span>
 <span class="sd">        Otherwise,</span>
@@ -291,8 +301,15 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">config</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="n">host</span><span class="p">)</span>
-        <span class="n">access_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;MINIO_ACCESS_KEY&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;access_key&quot;</span><span class="p">))</span>
-        <span class="n">secret_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;MINIO_SECRET_KEY&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;secret_key&quot;</span><span class="p">))</span>
+        <span class="n">suffix</span> <span class="o">=</span> <span class="n">_host_env_suffix</span><span class="p">(</span><span class="n">host</span><span class="p">)</span>
+        <span class="n">access_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;MINIO_ACCESS_KEY_</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;MINIO_ACCESS_KEY&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;access_key&quot;</span><span class="p">)),</span>
+        <span class="p">)</span>
+        <span class="n">secret_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;MINIO_SECRET_KEY_</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;MINIO_SECRET_KEY&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;secret_key&quot;</span><span class="p">)),</span>
+        <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">access_key</span><span class="p">,</span> <span class="n">secret_key</span></div>
 
@@ -761,6 +778,24 @@
     <span class="p">}</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_host_env_suffix</span><span class="p">(</span><span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Environment variable suffix for a host.</span>
+
+<span class="sd">    Uppercases the hostname</span>
+<span class="sd">    and replaces every non-alphanumeric character</span>
+<span class="sd">    with an underscore,</span>
+<span class="sd">    e.g. ``play.min.io`` becomes ``PLAY_MIN_IO``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        host: hostname</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        environment variable suffix</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[^A-Za-z0-9]&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="n">host</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_parse_timeout</span><span class="p">(</span>
     <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -812,7 +847,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/06/01 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/07/01 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>

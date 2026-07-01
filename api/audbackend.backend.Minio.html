@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                2.4.0
+                3.0.0
               </div>
             
           
@@ -101,7 +101,6 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="audbackend.html">audbackend</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="audbackend.backend.html">audbackend.backend</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="audbackend.backend.Artifactory.html">Artifactory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="audbackend.backend.FileSystem.html">FileSystem</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Minio</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#authentication">authentication</a></li>
@@ -529,7 +528,16 @@ retrieved from the backend</p></li>
 as tuple.</p>
 <p>To get the authentication tuple,
 the function looks first
-for the two environment variables
+for the host-specific environment variables
+<code class="docutils literal notranslate"><span class="pre">MINIO_ACCESS_KEY_&lt;HOST&gt;</span></code> and
+<code class="docutils literal notranslate"><span class="pre">MINIO_SECRET_KEY_&lt;HOST&gt;</span></code>,
+where <code class="docutils literal notranslate"><span class="pre">&lt;HOST&gt;</span></code> is the uppercased hostname
+with every non-alphanumeric character
+replaced by an underscore,
+e.g. <code class="docutils literal notranslate"><span class="pre">play.min.io</span></code> becomes <code class="docutils literal notranslate"><span class="pre">PLAY_MIN_IO</span></code>.
+If those are not set,
+the function falls back
+to the two environment variables
 <code class="docutils literal notranslate"><span class="pre">MINIO_ACCESS_KEY</span></code> and
 <code class="docutils literal notranslate"><span class="pre">MINIO_SECRET_KEY</span></code>.
 Otherwise,
@@ -1120,7 +1128,7 @@ put on the backend</p></li>
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/06/01 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/07/01 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>

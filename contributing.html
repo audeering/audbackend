@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                2.4.0
+                3.0.0
               </div>
             
           
@@ -224,21 +224,10 @@ in the directory <code class="file docutils literal notranslate"><span class="pr
 </pre></div>
 </div>
 <p>Some of the tests need access
-to the <code class="docutils literal notranslate"><span class="pre">unittests-public</span></code> repository
-on <a class="reference external" href="https://audeering.jfrog.io">https://audeering.jfrog.io</a>,
-which means you first need
-to have a user account there.
-Alternatively you might submit a pull request to Github
-that has saved the credentials
-and can execute the tests.</p>
-<p>It might be that the cleanup process
-after or during the tests
-fails.
-To remove leftover files on the Artifactory server
-run:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">uv</span> <span class="n">run</span> <span class="n">tests</span><span class="o">/</span><span class="n">misc</span><span class="o">/</span><span class="n">cleanup_artifactory</span><span class="o">.</span><span class="n">py</span>
-</pre></div>
-</div>
+to the public MinIO server
+at <a class="reference external" href="https://play.min.io">https://play.min.io</a>,
+for which credentials are provided
+automatically by the test fixtures.</p>
 </section>
 <section id="creating-a-new-release">
 <h2>Creating a New Release<a class="headerlink" href="#creating-a-new-release" title="Link to this heading">¶</a></h2>
@@ -275,7 +264,7 @@ run:</p>
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/06/01 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/07/01 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
