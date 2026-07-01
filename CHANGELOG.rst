@@ -7,6 +7,17 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 3.0.0 (2026-07-01)
+--------------------------
+
+* Added: support host specific environment variables
+  ``MINIO_ACCESS_KEY_<HOST>``
+  and ``MINIO_SECRET_KEY_<HOST>``
+  in ``audbackend.backend.Minio.get_auhtentication()``
+* Removed: the Artifactory backend
+  ``audbackend.backend.Artifactory``
+
+
 Version 2.4.0 (2026-06-01)
 --------------------------
 
