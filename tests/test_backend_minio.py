@@ -118,8 +118,7 @@ def test_authentication_host_specific(tmpdir, hosts, hide_credentials):
     ``MINIO_ACCESS_KEY_<HOST>`` and ``MINIO_SECRET_KEY_<HOST>``
     allow to provide different credentials per host,
     and win over the global ``MINIO_ACCESS_KEY``/``MINIO_SECRET_KEY``
-    and the config file,
-    see https://github.com/audeering/audbackend/issues/298.
+    and the config file.
 
     Args:
         tmpdir: tmpdir fixture
