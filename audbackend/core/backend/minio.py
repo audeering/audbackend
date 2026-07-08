@@ -8,6 +8,7 @@ import re
 import tempfile
 import warnings
 
+import certifi
 import minio
 import urllib3
 
@@ -92,6 +93,9 @@ class Minio(Base):
         #   - "connect_timeout": seconds for connection establishment (default: 10.0)
         #   - "read_timeout": seconds for read operations; None means no timeout
         #     (default: None)
+        #
+        # The client verifies TLS certificates against the ``certifi`` CA bundle
+        # matching the default client of ``minio.Minio``.
         if "http_client" not in kwargs:
             connect_timeout = _parse_timeout(
                 config.get("connect_timeout", 10.0),
@@ -104,7 +108,11 @@ class Minio(Base):
                 default=None,
             )
             timeout = urllib3.Timeout(connect=connect_timeout, read=read_timeout)
-            kwargs["http_client"] = urllib3.PoolManager(timeout=timeout)
+            kwargs["http_client"] = urllib3.PoolManager(
+                timeout=timeout,
+                cert_reqs="CERT_REQUIRED",
+                ca_certs=os.environ.get("SSL_CERT_FILE") or certifi.where(),
+            )
 
         # Open MinIO client
         self._client = minio.Minio(
