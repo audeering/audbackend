@@ -5,6 +5,7 @@ import getpass
 import mimetypes
 import os
 import re
+import ssl
 import tempfile
 import warnings
 
@@ -116,7 +117,7 @@ class Minio(Base):
             timeout = urllib3.Timeout(connect=connect_timeout, read=read_timeout)
             kwargs["http_client"] = urllib3.PoolManager(
                 timeout=timeout,
-                cert_reqs="CERT_REQUIRED",
+                cert_reqs=ssl.CERT_REQUIRED,
                 ca_certs=os.environ.get("SSL_CERT_FILE") or certifi.where(),
             )
 

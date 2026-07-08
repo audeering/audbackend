@@ -1,6 +1,7 @@
 import contextlib
 import filecmp
 import os
+import ssl
 from unittest import mock
 import warnings
 
@@ -799,7 +800,7 @@ def test_default_ca_certificates(tmpdir, hosts, hide_credentials):
     # Verify certificate verification is enforced
     # against the certifi CA bundle
     # instead of the operating system trust store
-    assert http_client.connection_pool_kw.get("cert_reqs") == "CERT_REQUIRED"
+    assert http_client.connection_pool_kw.get("cert_reqs") == ssl.CERT_REQUIRED
     assert http_client.connection_pool_kw.get("ca_certs") == certifi.where()
 
 
@@ -835,7 +836,7 @@ def test_ssl_cert_file_override(tmpdir, hosts, hide_credentials):
         audbackend.backend.Minio(host, "repository")
 
     http_client = captured["http_client"]
-    assert http_client.connection_pool_kw.get("cert_reqs") == "CERT_REQUIRED"
+    assert http_client.connection_pool_kw.get("cert_reqs") == ssl.CERT_REQUIRED
     assert http_client.connection_pool_kw.get("ca_certs") == ca_bundle
 
 
