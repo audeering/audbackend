@@ -94,8 +94,9 @@ class Minio(Base):
         #   - "read_timeout": seconds for read operations; None means no timeout
         #     (default: None)
         #
-        # The client verifies TLS certificates against the ``certifi`` CA bundle
-        # matching the default client of ``minio.Minio``.
+        # The client verifies TLS certificates against the CA bundle specified
+        # via ``SSL_CERT_FILE`` when set; otherwise it falls back to the
+        # ``certifi`` CA bundle, matching the default client of ``minio.Minio``.
         if "http_client" not in kwargs:
             connect_timeout = _parse_timeout(
                 config.get("connect_timeout", 10.0),
