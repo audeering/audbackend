@@ -4,6 +4,7 @@ import os
 from unittest import mock
 import warnings
 
+import certifi
 import minio
 import pytest
 import urllib3
@@ -752,6 +753,54 @@ def test_default_timeout_configuration(tmpdir, hosts, hide_credentials):
     assert timeout is not None
     assert timeout.connect_timeout == 10.0
     assert timeout.read_timeout is None
+
+
+def test_default_ca_certificates(tmpdir, hosts, hide_credentials):
+    r"""Test that the default http_client verifies TLS via a CA bundle.
+
+    When no http_client is provided,
+    the backend creates one itself.
+    That client must verify TLS certificates
+    against an explicit CA bundle
+    (the ``certifi`` bundle, or ``SSL_CERT_FILE`` if set),
+    exactly like the default client of ``minio.Minio``.
+    Otherwise it falls back to the operating system trust store,
+    which is empty on minimal environments
+    (e.g. Windows containers),
+    causing every request to fail
+    with ``CERTIFICATE_VERIFY_FAILED``,
+    see https://github.com/audeering/audbackend/issues/301.
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture
+
+    """
+    host = hosts["minio"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["MINIO_CONFIG_FILE"] = config_path
+
+    # Create minimal config file without timeout settings
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("access_key = test\n")
+        fp.write("secret_key = test\n")
+
+    with capture_minio_kwargs() as captured:
+        audbackend.backend.Minio(host, "repository")
+
+    # Verify an http_client was created
+    assert "http_client" in captured
+    http_client = captured["http_client"]
+    assert isinstance(http_client, urllib3.PoolManager)
+
+    # Verify certificate verification is enforced
+    # against an explicit CA bundle
+    # instead of the operating system trust store
+    expected_ca_certs = os.environ.get("SSL_CERT_FILE") or certifi.where()
+    assert http_client.connection_pool_kw.get("cert_reqs") == "CERT_REQUIRED"
+    assert http_client.connection_pool_kw.get("ca_certs") == expected_ca_certs
 
 
 def test_custom_timeout_from_config(tmpdir, hosts, hide_credentials):
