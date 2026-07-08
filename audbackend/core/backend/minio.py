@@ -36,7 +36,7 @@ class Minio(Base):
     For secure connections,
     TLS certificates are verified
     against the ``certifi`` CA bundle,
-    or the file given by the ``SSL_CERT_FILE`` environment variable if set.
+    or the file given by the ``SSL_CERT_FILE`` environment variable.
 
     Args:
         host: host address
@@ -100,9 +100,10 @@ class Minio(Base):
         #   - "read_timeout": seconds for read operations; None means no timeout
         #     (default: None)
         #
-        # The client verifies TLS certificates against the CA bundle specified
-        # via ``SSL_CERT_FILE`` when set; otherwise it falls back to the
-        # ``certifi`` CA bundle, matching the default client of ``minio.Minio``.
+        # Let http_client verify TLS certificates
+        # against the CA bundle
+        # specified via ``SSL_CERT_FILE`` or ``certifi`` CA bundle,
+        # matching the default client of ``minio.Minio``.
         if "http_client" not in kwargs:
             connect_timeout = _parse_timeout(
                 config.get("connect_timeout", 10.0),
