@@ -32,6 +32,11 @@ class Minio(Base):
     provide a custom ``http_client`` object as ``kwargs``
     to fully control connection behavior.
 
+    For secure connections,
+    TLS certificates are verified
+    against the ``certifi`` CA bundle,
+    or the file given by the ``SSL_CERT_FILE`` environment variable if set.
+
     Args:
         host: host address
         repository: repository name
