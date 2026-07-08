@@ -766,22 +766,21 @@ def test_default_ca_certificates(tmpdir, hosts, hide_credentials):
     against the ``certifi`` CA bundle,
     exactly like the default client of ``minio.Minio``.
     Otherwise it falls back to the operating system trust store,
-    which is empty on minimal environments
+    which is empty and can fail on minimal environments
     (e.g. Windows containers),
-    causing every request to fail
-    with ``CERTIFICATE_VERIFY_FAILED``,
     see https://github.com/audeering/audbackend/issues/301.
 
     Args:
         tmpdir: tmpdir fixture
         hosts: hosts fixture
-        hide_credentials: hide_credentials fixture
+        hide_credentials: hide_credentials fixture,
+            includes SSL_CERT_FILE,
+            so we test ``certifi`` here
 
     """
     host = hosts["minio"]
     config_path = audeer.path(tmpdir, "config.cfg")
     os.environ["MINIO_CONFIG_FILE"] = config_path
-    # hide_credentials removes SSL_CERT_FILE, so the certifi bundle is expected
 
     # Create minimal config file without timeout settings
     with open(config_path, "w") as fp:
@@ -799,7 +798,6 @@ def test_default_ca_certificates(tmpdir, hosts, hide_credentials):
 
     # Verify certificate verification is enforced
     # against the certifi CA bundle
-    # instead of the operating system trust store
     assert http_client.connection_pool_kw.get("cert_reqs") == ssl.CERT_REQUIRED
     assert http_client.connection_pool_kw.get("ca_certs") == certifi.where()
 
