@@ -1,9 +1,11 @@
 import contextlib
 import filecmp
 import os
+import ssl
 from unittest import mock
 import warnings
 
+import certifi
 import minio
 import pytest
 import urllib3
@@ -58,6 +60,7 @@ def hide_credentials():
             "MINIO_ACCESS_KEY",
             "MINIO_SECRET_KEY",
             "MINIO_CONFIG_FILE",
+            "SSL_CERT_FILE",
         ]
     }
     for key, value in defaults.items():
@@ -752,6 +755,87 @@ def test_default_timeout_configuration(tmpdir, hosts, hide_credentials):
     assert timeout is not None
     assert timeout.connect_timeout == 10.0
     assert timeout.read_timeout is None
+
+
+def test_default_ca_certificates(tmpdir, hosts, hide_credentials):
+    r"""Test that the default http_client verifies TLS via the certifi bundle.
+
+    When no http_client is provided,
+    the backend creates one itself.
+    That client must verify TLS certificates
+    against the ``certifi`` CA bundle,
+    exactly like the default client of ``minio.Minio``.
+    Otherwise it falls back to the operating system trust store,
+    which is empty and can fail on minimal environments
+    (e.g. Windows containers),
+    see https://github.com/audeering/audbackend/issues/301.
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture,
+            includes SSL_CERT_FILE,
+            so we test ``certifi`` here
+
+    """
+    host = hosts["minio"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["MINIO_CONFIG_FILE"] = config_path
+
+    # Create minimal config file without timeout settings
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("access_key = test\n")
+        fp.write("secret_key = test\n")
+
+    with capture_minio_kwargs() as captured:
+        audbackend.backend.Minio(host, "repository")
+
+    # Verify an http_client was created
+    assert "http_client" in captured
+    http_client = captured["http_client"]
+    assert isinstance(http_client, urllib3.PoolManager)
+
+    # Verify certificate verification is enforced
+    # against the certifi CA bundle
+    assert http_client.connection_pool_kw.get("cert_reqs") == ssl.CERT_REQUIRED
+    assert http_client.connection_pool_kw.get("ca_certs") == certifi.where()
+
+
+def test_ssl_cert_file_override(tmpdir, hosts, hide_credentials):
+    r"""Test that ``SSL_CERT_FILE`` overrides the default CA bundle.
+
+    When the ``SSL_CERT_FILE`` environment variable is set,
+    the default http_client verifies TLS certificates
+    against that file instead of the ``certifi`` bundle,
+    matching the default client of ``minio.Minio``.
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture
+
+    """
+    host = hosts["minio"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["MINIO_CONFIG_FILE"] = config_path
+
+    # Point SSL_CERT_FILE at a custom CA bundle
+    ca_bundle = audeer.touch(audeer.path(tmpdir, "ca.pem"))
+    os.environ["SSL_CERT_FILE"] = ca_bundle
+
+    # Create minimal config file without timeout settings
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("access_key = test\n")
+        fp.write("secret_key = test\n")
+
+    with capture_minio_kwargs() as captured:
+        audbackend.backend.Minio(host, "repository")
+
+    http_client = captured["http_client"]
+    assert http_client.connection_pool_kw.get("cert_reqs") == ssl.CERT_REQUIRED
+    assert http_client.connection_pool_kw.get("ca_certs") == ca_bundle
 
 
 def test_custom_timeout_from_config(tmpdir, hosts, hide_credentials):

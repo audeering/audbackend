@@ -5,9 +5,11 @@ import getpass
 import mimetypes
 import os
 import re
+import ssl
 import tempfile
 import warnings
 
+import certifi
 import minio
 import urllib3
 
@@ -30,6 +32,11 @@ class Minio(Base):
     Alternatively,
     provide a custom ``http_client`` object as ``kwargs``
     to fully control connection behavior.
+
+    For secure connections,
+    TLS certificates are verified
+    against the ``certifi`` CA bundle,
+    or the file given by the ``SSL_CERT_FILE`` environment variable.
 
     Args:
         host: host address
@@ -92,6 +99,11 @@ class Minio(Base):
         #   - "connect_timeout": seconds for connection establishment (default: 10.0)
         #   - "read_timeout": seconds for read operations; None means no timeout
         #     (default: None)
+        #
+        # Let http_client verify TLS certificates
+        # against the CA bundle
+        # specified via ``SSL_CERT_FILE`` or ``certifi`` CA bundle,
+        # matching the default client of ``minio.Minio``.
         if "http_client" not in kwargs:
             connect_timeout = _parse_timeout(
                 config.get("connect_timeout", 10.0),
@@ -104,7 +116,11 @@ class Minio(Base):
                 default=None,
             )
             timeout = urllib3.Timeout(connect=connect_timeout, read=read_timeout)
-            kwargs["http_client"] = urllib3.PoolManager(timeout=timeout)
+            kwargs["http_client"] = urllib3.PoolManager(
+                timeout=timeout,
+                cert_reqs=ssl.CERT_REQUIRED,
+                ca_certs=os.environ.get("SSL_CERT_FILE") or certifi.where(),
+            )
 
         # Open MinIO client
         self._client = minio.Minio(
