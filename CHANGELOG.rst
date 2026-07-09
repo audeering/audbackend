@@ -7,6 +7,12 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 3.0.1 (2026-07-09)
+--------------------------
+
+* Fixed: possible TLS certificate verification error in Minio backend
+
+
 Version 3.0.0 (2026-07-01)
 --------------------------
 
