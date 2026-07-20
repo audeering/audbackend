@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                3.0.1
+                3.0.2
               </div>
             
           
@@ -149,11 +149,9 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">mimetypes</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">ssl</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">certifi</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">minio</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">urllib3</span>
 
@@ -239,18 +237,21 @@
         <span class="k">if</span> <span class="n">secure</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">secure</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;secure&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
-        <span class="c1"># Configure HTTP client with timeouts to prevent hanging connections.</span>
-        <span class="c1"># Users can override by passing their own http_client in kwargs.</span>
+        <span class="c1"># Configure HTTP timeouts to prevent hanging connections.</span>
+        <span class="c1"># Users can override the whole client by passing their own</span>
+        <span class="c1"># ``http_client`` in kwargs.</span>
         <span class="c1"># Timeouts can be tuned via backend config:</span>
         <span class="c1">#   - &quot;connect_timeout&quot;: seconds for connection establishment (default: 10.0)</span>
         <span class="c1">#   - &quot;read_timeout&quot;: seconds for read operations; None means no timeout</span>
         <span class="c1">#     (default: None)</span>
         <span class="c1">#</span>
-        <span class="c1"># Let http_client verify TLS certificates</span>
-        <span class="c1"># against the CA bundle</span>
-        <span class="c1"># specified via ``SSL_CERT_FILE`` or ``certifi`` CA bundle,</span>
-        <span class="c1"># matching the default client of ``minio.Minio``.</span>
-        <span class="k">if</span> <span class="s2">&quot;http_client&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="c1"># We keep all other defaults from Minio,</span>
+        <span class="c1"># to avoid regressions like</span>
+        <span class="c1"># * CA error: https://github.com/audeering/audbackend/issues/301</span>
+        <span class="c1"># * 503 error: https://github.com/audeering/audbackend/issues/304</span>
+        <span class="c1">#</span>
+        <span class="n">create_default_client</span> <span class="o">=</span> <span class="s2">&quot;http_client&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span>
+        <span class="k">if</span> <span class="n">create_default_client</span><span class="p">:</span>
             <span class="n">connect_timeout</span> <span class="o">=</span> <span class="n">_parse_timeout</span><span class="p">(</span>
                 <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;connect_timeout&quot;</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">),</span>
                 <span class="n">name</span><span class="o">=</span><span class="s2">&quot;connect_timeout&quot;</span><span class="p">,</span>
@@ -262,11 +263,6 @@
                 <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">timeout</span> <span class="o">=</span> <span class="n">urllib3</span><span class="o">.</span><span class="n">Timeout</span><span class="p">(</span><span class="n">connect</span><span class="o">=</span><span class="n">connect_timeout</span><span class="p">,</span> <span class="n">read</span><span class="o">=</span><span class="n">read_timeout</span><span class="p">)</span>
-            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;http_client&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">urllib3</span><span class="o">.</span><span class="n">PoolManager</span><span class="p">(</span>
-                <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
-                <span class="n">cert_reqs</span><span class="o">=</span><span class="n">ssl</span><span class="o">.</span><span class="n">CERT_REQUIRED</span><span class="p">,</span>
-                <span class="n">ca_certs</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SSL_CERT_FILE&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">certifi</span><span class="o">.</span><span class="n">where</span><span class="p">(),</span>
-            <span class="p">)</span>
 
         <span class="c1"># Open MinIO client</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">minio</span><span class="o">.</span><span class="n">Minio</span><span class="p">(</span>
@@ -276,6 +272,9 @@
             <span class="n">secure</span><span class="o">=</span><span class="n">secure</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">create_default_client</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">_http</span><span class="o">.</span><span class="n">connection_pool_kw</span><span class="p">[</span><span class="s2">&quot;timeout&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">timeout</span>
 
 <div class="viewcode-block" id="Minio.get_authentication">
 <a class="viewcode-back" href="../../../../api/audbackend.backend.Minio.html#audbackend.backend.Minio.get_authentication">[docs]</a>
@@ -863,7 +862,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/07/09 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/07/20 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
