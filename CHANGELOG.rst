@@ -12,7 +12,7 @@ Version 3.0.2 (2026-07-20)
 
 * Changed: reuse ``minio.Minio`` defaults for connection
   in ``audbackend.backend.Minio``
-* Fixed: ``audbackend.backend.Minio`` now retries on 50x errors
+* Fixed: ``audbackend.backend.Minio`` now retries on 5xx errors (e.g. 500, 502, 503)
 
 
 Version 3.0.1 (2026-07-09)
