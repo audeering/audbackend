@@ -873,7 +873,7 @@ def test_default_retries_and_pool_size(tmpdir, hosts, hide_credentials):
     assert isinstance(retries, urllib3.Retry)
     assert retries.total == 5
     assert retries.backoff_factor == 0.2
-    assert list(retries.status_forcelist) == [500, 502, 503, 504]
+    assert set(retries.status_forcelist) == {500, 502, 503, 504}
 
 
 def test_custom_timeout_from_config(tmpdir, hosts, hide_credentials):
