@@ -5,11 +5,9 @@ import getpass
 import mimetypes
 import os
 import re
-import ssl
 import tempfile
 import warnings
 
-import certifi
 import minio
 import urllib3
 
@@ -93,18 +91,21 @@ class Minio(Base):
         if secure is None:
             secure = config.get("secure", True)
 
-        # Configure HTTP client with timeouts to prevent hanging connections.
-        # Users can override by passing their own http_client in kwargs.
+        # Configure HTTP timeouts to prevent hanging connections.
+        # Users can override the whole client by passing their own
+        # ``http_client`` in kwargs.
         # Timeouts can be tuned via backend config:
         #   - "connect_timeout": seconds for connection establishment (default: 10.0)
         #   - "read_timeout": seconds for read operations; None means no timeout
         #     (default: None)
         #
-        # Let http_client verify TLS certificates
-        # against the CA bundle
-        # specified via ``SSL_CERT_FILE`` or ``certifi`` CA bundle,
-        # matching the default client of ``minio.Minio``.
-        if "http_client" not in kwargs:
+        # We keep all other defaults from Minio,
+        # to avoid regressions like
+        # * CA error: https://github.com/audeering/audbackend/issues/301
+        # * 503 error: https://github.com/audeering/audbackend/issues/304
+        #
+        create_default_client = "http_client" not in kwargs
+        if create_default_client:
             connect_timeout = _parse_timeout(
                 config.get("connect_timeout", 10.0),
                 name="connect_timeout",
@@ -116,11 +117,6 @@ class Minio(Base):
                 default=None,
             )
             timeout = urllib3.Timeout(connect=connect_timeout, read=read_timeout)
-            kwargs["http_client"] = urllib3.PoolManager(
-                timeout=timeout,
-                cert_reqs=ssl.CERT_REQUIRED,
-                ca_certs=os.environ.get("SSL_CERT_FILE") or certifi.where(),
-            )
 
         # Open MinIO client
         self._client = minio.Minio(
@@ -130,6 +126,9 @@ class Minio(Base):
             secure=secure,
             **kwargs,
         )
+
+        if create_default_client:
+            self._client._http.connection_pool_kw["timeout"] = timeout
 
     @classmethod
     def get_authentication(cls, host: str) -> tuple[str, str]:
