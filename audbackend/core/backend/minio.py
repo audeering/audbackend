@@ -100,10 +100,11 @@ class Minio(Base):
         #   - "read_timeout": seconds for read operations; None means no timeout
         #     (default: None)
         #
-        # Let http_client verify TLS certificates
-        # against the CA bundle
-        # specified via ``SSL_CERT_FILE`` or ``certifi`` CA bundle,
-        # matching the default client of ``minio.Minio``.
+        # Ensure to still include all other defaults from Minio,
+        # to avoid regressions like
+        # * 503 error: https://github.com/audeering/audbackend/issues/304
+        # * CA error: https://github.com/audeering/audbackend/issues/301
+        #
         if "http_client" not in kwargs:
             connect_timeout = _parse_timeout(
                 config.get("connect_timeout", 10.0),
@@ -118,8 +119,14 @@ class Minio(Base):
             timeout = urllib3.Timeout(connect=connect_timeout, read=read_timeout)
             kwargs["http_client"] = urllib3.PoolManager(
                 timeout=timeout,
+                maxsize=10,
                 cert_reqs=ssl.CERT_REQUIRED,
                 ca_certs=os.environ.get("SSL_CERT_FILE") or certifi.where(),
+                retries=urllib3.Retry(
+                    total=5,
+                    backoff_factor=0.2,
+                    status_forcelist=[500, 502, 503, 504],
+                ),
             )
 
         # Open MinIO client

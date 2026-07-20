@@ -838,6 +838,44 @@ def test_ssl_cert_file_override(tmpdir, hosts, hide_credentials):
     assert http_client.connection_pool_kw.get("ca_certs") == ca_bundle
 
 
+def test_default_retries_and_pool_size(tmpdir, hosts, hide_credentials):
+    r"""Test that the default http_client mirrors ``minio.Minio`` defaults.
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture
+
+    """
+    host = hosts["minio"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["MINIO_CONFIG_FILE"] = config_path
+
+    # Create minimal config file without timeout settings
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("access_key = test\n")
+        fp.write("secret_key = test\n")
+
+    with capture_minio_kwargs() as captured:
+        audbackend.backend.Minio(host, "repository")
+
+    # Verify an http_client was created
+    assert "http_client" in captured
+    http_client = captured["http_client"]
+    assert isinstance(http_client, urllib3.PoolManager)
+
+    # Verify connection pool size matches minio.Minio default
+    assert http_client.connection_pool_kw.get("maxsize") == 10
+
+    # Verify retry policy matches minio.Minio default
+    retries = http_client.connection_pool_kw.get("retries")
+    assert isinstance(retries, urllib3.Retry)
+    assert retries.total == 5
+    assert retries.backoff_factor == 0.2
+    assert list(retries.status_forcelist) == [500, 502, 503, 504]
+
+
 def test_custom_timeout_from_config(tmpdir, hosts, hide_credentials):
     r"""Test that custom timeout values from config are honored.
 
