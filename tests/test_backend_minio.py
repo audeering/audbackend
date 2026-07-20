@@ -1,12 +1,9 @@
-import contextlib
 import filecmp
 import os
-import ssl
 from unittest import mock
 import warnings
 
 import certifi
-import minio
 import pytest
 import urllib3
 
@@ -16,28 +13,21 @@ import audbackend
 from audbackend.core.backend.minio import _host_env_suffix
 
 
-@contextlib.contextmanager
-def capture_minio_kwargs():
-    """Context manager to capture kwargs passed to minio.Minio constructor.
+def created_http_client(backend):
+    """urllib3 client created by a Minio backend.
 
-    Yields a dictionary that will be populated with the kwargs
-    passed to minio.Minio.__init__.
+    Reaches into the private ``minio.Minio`` attribute
+    that stores the HTTP client,
+    so tests can assert on its timeouts, pool size and retries.
 
-    Example:
-        with capture_minio_kwargs() as captured:
-            audbackend.backend.Minio(host, repo)
-        assert "http_client" in captured
+    Args:
+        backend: :class:`audbackend.backend.Minio` instance
+
+    Returns:
+        underlying ``urllib3.PoolManager``
 
     """
-    captured_kwargs = {}
-    original_init = minio.Minio.__init__
-
-    def mock_init(self, *args, **kwargs):
-        captured_kwargs.update(kwargs)
-        original_init(self, *args, **kwargs)
-
-    with mock.patch.object(minio.Minio, "__init__", mock_init):
-        yield captured_kwargs
+    return backend._client._http
 
 
 def create_file_exact_size(filename, size_mb):
@@ -709,12 +699,12 @@ def test_custom_http_client_honored(tmpdir, hosts, hide_credentials):
     # Create a custom http_client
     custom_http_client = urllib3.PoolManager(timeout=urllib3.Timeout(connect=5.0))
 
-    with capture_minio_kwargs() as captured:
-        audbackend.backend.Minio(host, "repository", http_client=custom_http_client)
+    backend = audbackend.backend.Minio(
+        host, "repository", http_client=custom_http_client
+    )
 
-    # Verify the custom http_client was passed through
-    assert "http_client" in captured
-    assert captured["http_client"] is custom_http_client
+    # Verify the custom http_client was used as-is
+    assert created_http_client(backend) is custom_http_client
 
 
 def test_default_timeout_configuration(tmpdir, hosts, hide_credentials):
@@ -741,12 +731,9 @@ def test_default_timeout_configuration(tmpdir, hosts, hide_credentials):
         fp.write("access_key = test\n")
         fp.write("secret_key = test\n")
 
-    with capture_minio_kwargs() as captured:
-        audbackend.backend.Minio(host, "repository")
+    backend = audbackend.backend.Minio(host, "repository")
 
-    # Verify an http_client was created
-    assert "http_client" in captured
-    http_client = captured["http_client"]
+    http_client = created_http_client(backend)
     assert isinstance(http_client, urllib3.PoolManager)
 
     # Verify the default timeout values
@@ -788,17 +775,15 @@ def test_default_ca_certificates(tmpdir, hosts, hide_credentials):
         fp.write("access_key = test\n")
         fp.write("secret_key = test\n")
 
-    with capture_minio_kwargs() as captured:
-        audbackend.backend.Minio(host, "repository")
+    backend = audbackend.backend.Minio(host, "repository")
 
-    # Verify an http_client was created
-    assert "http_client" in captured
-    http_client = captured["http_client"]
+    http_client = created_http_client(backend)
     assert isinstance(http_client, urllib3.PoolManager)
 
     # Verify certificate verification is enforced
     # against the certifi CA bundle
-    assert http_client.connection_pool_kw.get("cert_reqs") == ssl.CERT_REQUIRED
+    # minio.Minio uses the string form "CERT_REQUIRED"
+    assert http_client.connection_pool_kw.get("cert_reqs") == "CERT_REQUIRED"
     assert http_client.connection_pool_kw.get("ca_certs") == certifi.where()
 
 
@@ -830,11 +815,11 @@ def test_ssl_cert_file_override(tmpdir, hosts, hide_credentials):
         fp.write("access_key = test\n")
         fp.write("secret_key = test\n")
 
-    with capture_minio_kwargs() as captured:
-        audbackend.backend.Minio(host, "repository")
+    backend = audbackend.backend.Minio(host, "repository")
 
-    http_client = captured["http_client"]
-    assert http_client.connection_pool_kw.get("cert_reqs") == ssl.CERT_REQUIRED
+    http_client = created_http_client(backend)
+    # minio.Minio uses the string form "CERT_REQUIRED"
+    assert http_client.connection_pool_kw.get("cert_reqs") == "CERT_REQUIRED"
     assert http_client.connection_pool_kw.get("ca_certs") == ca_bundle
 
 
@@ -857,12 +842,9 @@ def test_default_retries_and_pool_size(tmpdir, hosts, hide_credentials):
         fp.write("access_key = test\n")
         fp.write("secret_key = test\n")
 
-    with capture_minio_kwargs() as captured:
-        audbackend.backend.Minio(host, "repository")
+    backend = audbackend.backend.Minio(host, "repository")
 
-    # Verify an http_client was created
-    assert "http_client" in captured
-    http_client = captured["http_client"]
+    http_client = created_http_client(backend)
     assert isinstance(http_client, urllib3.PoolManager)
 
     # Verify connection pool size matches minio.Minio default
@@ -900,11 +882,10 @@ def test_custom_timeout_from_config(tmpdir, hosts, hide_credentials):
         fp.write("connect_timeout = 30.0\n")
         fp.write("read_timeout = 120.0\n")
 
-    with capture_minio_kwargs() as captured:
-        audbackend.backend.Minio(host, "repository")
+    backend = audbackend.backend.Minio(host, "repository")
 
     # Verify the custom timeout values from config
-    http_client = captured["http_client"]
+    http_client = created_http_client(backend)
     timeout = http_client.connection_pool_kw.get("timeout")
     assert timeout.connect_timeout == 30.0
     assert timeout.read_timeout == 120.0
@@ -934,11 +915,10 @@ def test_none_read_timeout_from_config(tmpdir, hosts, hide_credentials):
         fp.write("connect_timeout = 15.0\n")
         fp.write("read_timeout = None\n")
 
-    with capture_minio_kwargs() as captured:
-        audbackend.backend.Minio(host, "repository")
+    backend = audbackend.backend.Minio(host, "repository")
 
     # Verify read_timeout is None
-    http_client = captured["http_client"]
+    http_client = created_http_client(backend)
     timeout = http_client.connection_pool_kw.get("timeout")
     assert timeout.connect_timeout == 15.0
     assert timeout.read_timeout is None
@@ -968,18 +948,17 @@ def test_invalid_timeout_warning(tmpdir, hosts, hide_credentials):
         fp.write("connect_timeout = invalid\n")
         fp.write("read_timeout = sixty\n")
 
-    with capture_minio_kwargs() as captured:
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            audbackend.backend.Minio(host, "repository")
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        backend = audbackend.backend.Minio(host, "repository")
 
-            # Verify warnings were emitted
-            assert len(w) == 2
-            assert "Invalid connect_timeout value 'invalid'" in str(w[0].message)
-            assert "Invalid read_timeout value 'sixty'" in str(w[1].message)
+        # Verify warnings were emitted
+        assert len(w) == 2
+        assert "Invalid connect_timeout value 'invalid'" in str(w[0].message)
+        assert "Invalid read_timeout value 'sixty'" in str(w[1].message)
 
     # Verify default timeout values were used
-    http_client = captured["http_client"]
+    http_client = created_http_client(backend)
     timeout = http_client.connection_pool_kw.get("timeout")
     assert timeout.connect_timeout == 10.0  # default
     assert timeout.read_timeout is None  # default
