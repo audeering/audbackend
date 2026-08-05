@@ -26,7 +26,7 @@ jobs:
       MINIO_CONFIG_FILE: ${{ github.workspace }}/.github/minio-test.cfg
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Start MinIO
       run: |
@@ -49,12 +49,12 @@ jobs:
         exit 1
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v7
       with:
         python-version: ${{ matrix.python-version }}
 
     - name: Install uv
-      uses: astral-sh/setup-uv@3259c6206f993105e3a61b142c2d97bf4b9ef83d
+      uses: astral-sh/setup-uv@v9.0.0
 
     - name: Sync Python environment
       run: uv sync
@@ -72,10 +72,10 @@ jobs:
         uv run pytest --cov-config=.coveragerc.${{ runner.os }}
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v7
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        file: ./coverage.xml
+        files: ./coverage.xml
       if: matrix.python-version != '3.14'
 
   build-other-os:
@@ -98,7 +98,7 @@ jobs:
       MINIO_CONFIG_FILE: ${{ github.workspace }}/.github/minio-test.cfg
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
 
     - name: Start MinIO (macOS)
       if: runner.os == 'macOS'
@@ -148,12 +148,12 @@ jobs:
         exit 1
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v7
       with:
         python-version: ${{ matrix.python-version }}
 
     - name: Install uv
-      uses: astral-sh/setup-uv@3259c6206f993105e3a61b142c2d97bf4b9ef83d
+      uses: astral-sh/setup-uv@v9.0.0
 
     - name: Sync Python environment
       run: uv sync
