@@ -92,14 +92,50 @@ jobs:
         os: [ windows-latest, macOS-latest ]
         python-version: [ '3.12' ]
 
-    # No self-hosted MinIO here: GitHub Actions service containers
-    # (Docker) only work on Linux runners. Minio backend tests are
-    # skipped on these OSes rather than depending on play.min.io.
+    # Docker is not pre-installed on GitHub's Windows/macOS runners,
+    # so instead of a container these jobs run the native MinIO server
+    # binary -- same pinned release as the Linux job's Docker image.
     env:
-      AUDBACKEND_SKIP_MINIO_TESTS: '1'
+      AUDBACKEND_TEST_MINIO_HOST: localhost:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_CONFIG_FILE: ${{ github.workspace }}/.github/minio-test.cfg
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Start MinIO (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        curl -sL -o minio-server https://dl.min.io/server/minio/release/darwin-arm64/archive/minio.RELEASE.2025-09-07T16-13-09Z
+        chmod +x minio-server
+        mkdir -p "$RUNNER_TEMP/minio-data"
+        MINIO_ROOT_USER=minioadmin MINIO_ROOT_PASSWORD=minioadmin \
+          nohup ./minio-server server "$RUNNER_TEMP/minio-data" --address :9000 > minio.log 2>&1 &
+
+    - name: Start MinIO (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        Invoke-WebRequest -Uri "https://dl.min.io/server/minio/release/windows-amd64/archive/minio.RELEASE.2025-09-07T16-13-09Z" -OutFile minio-server.exe
+        $env:MINIO_ROOT_USER = "minioadmin"
+        $env:MINIO_ROOT_PASSWORD = "minioadmin"
+        New-Item -ItemType Directory -Force -Path "$env:RUNNER_TEMP\minio-data" | Out-Null
+        Start-Process -FilePath .\minio-server.exe -ArgumentList "server", "$env:RUNNER_TEMP\minio-data", "--address", ":9000" -RedirectStandardOutput minio.log -RedirectStandardError minio-err.log
+
+    - name: Wait for MinIO
+      shell: bash
+      run: |
+        for i in $(seq 1 60); do
+          if curl -sf http://localhost:9000/minio/health/live; then
+            echo "MinIO is up"
+            exit 0
+          fi
+          sleep 1
+        done
+        echo "MinIO did not become healthy in time"
+        cat minio.log minio-err.log 2>/dev/null || true
+        exit 1
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5

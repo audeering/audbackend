@@ -316,13 +316,7 @@ class Base:
         """
         signature = inspect.signature(cls)
         if "authentication" in signature.parameters:
-            # Only exercised by the minio backend, whose tests are
-            # skipped on Windows/macOS CI (no self-hosted MinIO there,
-            # see AUDBACKEND_SKIP_MINIO_TESTS), not an actual OS-specific
-            # code path.
-            backend = cls(
-                host, repository, authentication=authentication
-            )  # pragma: no Windows cover  pragma: no macOS cover
+            backend = cls(host, repository, authentication=authentication)
         else:
             backend = cls(host, repository)
         utils.call_function_on_backend(backend._create)
@@ -405,13 +399,7 @@ class Base:
         """
         signature = inspect.signature(cls)
         if "authentication" in signature.parameters:
-            # Only exercised by the minio backend, whose tests are
-            # skipped on Windows/macOS CI (no self-hosted MinIO there,
-            # see AUDBACKEND_SKIP_MINIO_TESTS), not an actual OS-specific
-            # code path.
-            backend = cls(
-                host, repository, authentication=authentication
-            )  # pragma: no Windows cover  pragma: no macOS cover
+            backend = cls(host, repository, authentication=authentication)
         else:
             backend = cls(host, repository)
         utils.call_function_on_backend(backend._delete)
