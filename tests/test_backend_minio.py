@@ -291,19 +291,41 @@ def test_errors(host, repository, authentication):
         backend.open()
 
 
-def test_secure_config_string_false(tmpdir, hosts, hide_credentials):
-    r"""Test that ``secure = False`` in the config file is honored.
+@pytest.mark.parametrize(
+    "secure_value, expected_is_https",
+    [
+        ("False", False),
+        ("false", False),
+        ("0", False),
+        ("no", False),
+        ("off", False),
+        ("", False),
+        ("True", True),
+        ("true", True),
+        ("1", True),
+        ("yes", True),
+        ("on", True),
+    ],
+)
+def test_secure_config_string_values(
+    tmpdir, hosts, hide_credentials, secure_value, expected_is_https
+):
+    r"""Test that string-valued ``secure`` settings in the config file are honored.
 
     ``configparser`` returns config values as strings,
     so a naive ``config.get("secure", True)``
-    would receive the string ``"False"``,
+    would receive e.g. the string ``"False"``,
     which is truthy in Python
     and would incorrectly enable HTTPS.
+    Verifies the parsing logic correctly maps
+    common string representations to booleans.
 
     Args:
         tmpdir: tmpdir fixture
         hosts: hosts fixture
         hide_credentials: hide_credentials fixture
+        secure_value: string value written to the config
+        expected_is_https: expected boolean outcome for ``secure_value``
 
     """
     host = hosts["minio"]
@@ -314,10 +336,10 @@ def test_secure_config_string_false(tmpdir, hosts, hide_credentials):
         fp.write(f"[{host}]\n")
         fp.write("access_key = user\n")
         fp.write("secret_key = pass\n")
-        fp.write("secure = False\n")
+        fp.write(f"secure = {secure_value}\n")
 
     backend = audbackend.backend.Minio(host, "repository")
-    assert backend._client._base_url.is_https is False
+    assert backend._client._base_url.is_https is expected_is_https
 
 
 def test_get_config(tmpdir, hosts, hide_credentials):
