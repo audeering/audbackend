@@ -1,3 +1,10 @@
+[run]
+# The minio backend tests only run where a MinIO server is available.
+# GitHub Actions service containers (Docker) are Linux-only, so this
+# OS doesn't exercise audbackend/core/backend/minio.py in CI.
+omit =
+    audbackend/core/backend/minio.py
+
 [report]
 exclude_lines =
     pragma: no cover

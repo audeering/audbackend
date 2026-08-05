@@ -15,12 +15,22 @@ import audbackend
 from singlefolder import SingleFolder
 
 
-# Backend-interface combinations to use in all tests
-backend_interface_combinations = [
-    (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
-    (audbackend.backend.Minio, audbackend.interface.Unversioned),
-    (SingleFolder, audbackend.interface.Unversioned),
-]
+# Backend-interface combinations to use in all tests.
+# Minio is excluded where no MinIO server is available on this runner
+# (see ``pytest.SKIP_MINIO`` in conftest.py).
+backend_interface_combinations = (
+    [
+        (audbackend.backend.FileSystem, audbackend.interface.Unversioned),
+    ]
+    + (
+        []
+        if pytest.SKIP_MINIO
+        else [(audbackend.backend.Minio, audbackend.interface.Unversioned)]
+    )
+    + [
+        (SingleFolder, audbackend.interface.Unversioned),
+    ]
+)
 
 
 @pytest.fixture(scope="function", autouse=False)

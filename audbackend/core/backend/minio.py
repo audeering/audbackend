@@ -57,13 +57,17 @@ class Minio(Base):
     .. _minio.Minio: https://min.io/docs/minio/linux/developers/python/API.html
 
     Examples:
+        The network calls below are not run as part of the test suite
+        (``# doctest: +SKIP``), since they depend on the public
+        play.min.io playground being reachable, which CI cannot rely on.
+
         >>> host = "play.min.io"  # playground provided by https://min.io
         >>> auth = ("Q3AM3UQ867SPQQA43P2F", "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
         >>> repository = "my-data" + audeer.uid()
-        >>> Minio.create(host, repository, authentication=auth)
+        >>> Minio.create(host, repository, authentication=auth)  # doctest: +SKIP
         >>> file = audeer.touch("src.txt")
         >>> backend = Minio(host, repository, authentication=auth)
-        >>> try:
+        >>> try:  # doctest: +SKIP
         ...     with backend:
         ...         backend.put_file(file, "/sub/file.txt")
         ...         backend.ls()
@@ -90,6 +94,11 @@ class Minio(Base):
         config = self.get_config(host)
         if secure is None:
             secure = config.get("secure", True)
+            if isinstance(secure, str):
+                # ``configparser`` returns config file values as strings,
+                # e.g. ``"False"``, which is truthy in Python
+                # and would otherwise silently enable HTTPS.
+                secure = secure.strip().lower() not in ("false", "0", "no", "off", "")
 
         # Configure HTTP timeouts to prevent hanging connections.
         # Users can override the whole client by passing their own

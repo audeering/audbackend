@@ -13,6 +13,12 @@ import audbackend
 from audbackend.core.backend.minio import _host_env_suffix
 
 
+pytestmark = pytest.mark.skipif(
+    pytest.SKIP_MINIO,
+    reason="No MinIO server available on this runner",
+)
+
+
 def created_http_client(backend):
     """urllib3 client created by a Minio backend.
 
@@ -283,6 +289,35 @@ def test_errors(host, repository, authentication):
     backend = audbackend.backend.Minio(host, repository, authentication=authentication)
     with pytest.raises(audbackend.BackendError):
         backend.open()
+
+
+def test_secure_config_string_false(tmpdir, hosts, hide_credentials):
+    r"""Test that ``secure = False`` in the config file is honored.
+
+    ``configparser`` returns config values as strings,
+    so a naive ``config.get("secure", True)``
+    would receive the string ``"False"``,
+    which is truthy in Python
+    and would incorrectly enable HTTPS.
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture
+
+    """
+    host = hosts["minio"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["MINIO_CONFIG_FILE"] = config_path
+
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("access_key = user\n")
+        fp.write("secret_key = pass\n")
+        fp.write("secure = False\n")
+
+    backend = audbackend.backend.Minio(host, "repository")
+    assert backend._client._base_url.is_https is False
 
 
 def test_get_config(tmpdir, hosts, hide_credentials):

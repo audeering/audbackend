@@ -9,26 +9,50 @@ on:
 jobs:
   build:
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest, macOS-latest ]
-        python-version: [ '3.12' ]
+        python-version: [ '3.10', '3.11', '3.12', '3.13', '3.14' ]
         include:
-          - os: ubuntu-latest
-            python-version: '3.10'
-          - os: ubuntu-latest
-            python-version: '3.11'
-          - os: ubuntu-latest
-            python-version: '3.13'
-          - os: ubuntu-latest
-            python-version: '3.14'
-          - os: ubuntu-latest
-            python-version: '3.14'
+          - python-version: '3.14'
             minio: '7.2.18'
+
+    # Self-hosted MinIO instead of the public play.min.io playground,
+    # which has no uptime guarantee and has caused multi-hour CI hangs.
+    # Started as a plain `docker run` step below rather than a GitHub
+    # Actions `services:` container: `services:` has no way to pass a
+    # command, and this image has no default CMD, so it needs `server
+    # /data` passed explicitly. `services:` (Docker in general) is also
+    # only supported on Linux runners, so Windows/macOS (build-other-os
+    # below) skip the minio tests instead.
+    env:
+      AUDBACKEND_TEST_MINIO_HOST: localhost:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_CONFIG_FILE: ${{ github.workspace }}/.github/minio-test.cfg
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Start MinIO
+      run: |
+        docker run -d --name minio -p 9000:9000 \
+          -e MINIO_ROOT_USER=minioadmin \
+          -e MINIO_ROOT_PASSWORD=minioadmin \
+          minio/minio:RELEASE.2025-09-07T16-13-09Z server /data --console-address ":9001"
+
+    - name: Wait for MinIO
+      run: |
+        for i in $(seq 1 30); do
+          if curl -sf http://localhost:9000/minio/health/live; then
+            echo "MinIO is up"
+            exit 0
+          fi
+          sleep 1
+        done
+        echo "MinIO did not become healthy in time"
+        docker logs minio
+        exit 1
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
@@ -47,7 +71,7 @@ jobs:
 
     - name: Test file-system only package
       run: |
-        uv run --no-default-groups --group test-filesystem --isolated pytest --cov-fail-under=0 tests/test_minimal_install.py tests/test_backend_filesystem.py 
+        uv run --no-default-groups --group test-filesystem --isolated pytest --cov-fail-under=0 tests/test_minimal_install.py tests/test_backend_filesystem.py
 
     - name: Test with pytest
       run: |
@@ -58,4 +82,40 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: ./coverage.xml
-      if: ${{ (matrix.os == 'ubuntu-latest') && (matrix.python-version != '3.14') }}
+      if: matrix.python-version != '3.14'
+
+  build-other-os:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ windows-latest, macOS-latest ]
+        python-version: [ '3.12' ]
+
+    # No self-hosted MinIO here: GitHub Actions service containers
+    # (Docker) only work on Linux runners. Minio backend tests are
+    # skipped on these OSes rather than depending on play.min.io.
+    env:
+      AUDBACKEND_SKIP_MINIO_TESTS: '1'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@3259c6206f993105e3a61b142c2d97bf4b9ef83d
+
+    - name: Sync Python environment
+      run: uv sync
+
+    - name: Test file-system only package
+      run: |
+        uv run --no-default-groups --group test-filesystem --isolated pytest --cov-fail-under=0 tests/test_minimal_install.py tests/test_backend_filesystem.py
+
+    - name: Test with pytest
+      run: |
+        uv run pytest --cov-config=.coveragerc.${{ runner.os }}

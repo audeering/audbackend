@@ -14,10 +14,21 @@ import audbackend
 # unittest-<session-uid>-<repository-uid>
 pytest.UID = audeer.uid()[:8]
 
-# Define static hosts
+# Define static hosts.
+#
+# ``AUDBACKEND_TEST_MINIO_HOST`` lets CI point the minio backend tests
+# at a self-hosted MinIO instance (e.g. a GitHub Actions service
+# container) instead of the public play.min.io playground, which has
+# no uptime guarantee. Defaults to play.min.io for local development,
+# where standing up a MinIO server isn't expected.
 pytest.HOSTS = {
-    "minio": "play.min.io",
+    "minio": os.environ.get("AUDBACKEND_TEST_MINIO_HOST", "play.min.io"),
 }
+
+# Skip minio backend tests entirely where no MinIO server is available.
+# GitHub Actions service containers (Docker) only work on Linux runners,
+# so Windows/macOS CI jobs set this rather than depending on play.min.io.
+pytest.SKIP_MINIO = os.environ.get("AUDBACKEND_SKIP_MINIO_TESTS") == "1"
 
 
 @pytest.fixture(scope="package", autouse=True)
