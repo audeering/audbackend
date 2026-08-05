@@ -95,8 +95,11 @@ jobs:
     # Docker is not pre-installed on GitHub's Windows/macOS runners,
     # so instead of a container these jobs run the native MinIO server
     # binary -- same pinned release as the Linux job's Docker image.
+    # 127.0.0.1 is used instead of localhost throughout: on Windows,
+    # localhost can resolve to IPv6 ::1 while the server listens on
+    # IPv4 only, making every connection attempt fail.
     env:
-      AUDBACKEND_TEST_MINIO_HOST: localhost:9000
+      AUDBACKEND_TEST_MINIO_HOST: 127.0.0.1:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
       MINIO_CONFIG_FILE: ${{ github.workspace }}/.github/minio-test.cfg
@@ -111,7 +114,7 @@ jobs:
         chmod +x minio-server
         mkdir -p "$RUNNER_TEMP/minio-data"
         MINIO_ROOT_USER=minioadmin MINIO_ROOT_PASSWORD=minioadmin \
-          nohup ./minio-server server "$RUNNER_TEMP/minio-data" --address :9000 > minio.log 2>&1 &
+          nohup ./minio-server server "$RUNNER_TEMP/minio-data" --address 127.0.0.1:9000 > minio.log 2>&1 &
 
     - name: Start MinIO (Windows)
       if: runner.os == 'Windows'
@@ -121,19 +124,24 @@ jobs:
         $env:MINIO_ROOT_USER = "minioadmin"
         $env:MINIO_ROOT_PASSWORD = "minioadmin"
         New-Item -ItemType Directory -Force -Path "$env:RUNNER_TEMP\minio-data" | Out-Null
-        Start-Process -FilePath .\minio-server.exe -ArgumentList "server", "$env:RUNNER_TEMP\minio-data", "--address", ":9000" -RedirectStandardOutput minio.log -RedirectStandardError minio-err.log
+        Start-Process -FilePath .\minio-server.exe -ArgumentList "server", "$env:RUNNER_TEMP\minio-data", "--address", "127.0.0.1:9000" -RedirectStandardOutput minio.log -RedirectStandardError minio-err.log
 
     - name: Wait for MinIO
       shell: bash
       run: |
         for i in $(seq 1 60); do
-          if curl -sf http://localhost:9000/minio/health/live; then
+          if curl -sf http://127.0.0.1:9000/minio/health/live; then
             echo "MinIO is up"
             exit 0
           fi
           sleep 1
         done
         echo "MinIO did not become healthy in time"
+        echo "--- last connection attempt, verbose ---"
+        curl -v --max-time 10 http://127.0.0.1:9000/minio/health/live || true
+        echo "--- listening sockets on port 9000 ---"
+        netstat -an | grep 9000 || true
+        echo "--- server log ---"
         cat minio.log minio-err.log 2>/dev/null || true
         exit 1
 
