@@ -124,7 +124,17 @@ jobs:
         $env:MINIO_ROOT_USER = "minioadmin"
         $env:MINIO_ROOT_PASSWORD = "minioadmin"
         New-Item -ItemType Directory -Force -Path "$env:RUNNER_TEMP\minio-data" | Out-Null
-        Start-Process -FilePath .\minio-server.exe -ArgumentList "server", "$env:RUNNER_TEMP\minio-data", "--address", "127.0.0.1:9000" -RedirectStandardOutput minio.log -RedirectStandardError minio-err.log
+        # Launch via a wrapper pwsh in its own (hidden) console. Using
+        # Start-Process with -RedirectStandardOutput directly makes the
+        # server inherit this step's console, and Windows terminates
+        # console-attached processes when the step's console closes --
+        # the server died at the step boundary. The wrapper's own
+        # console keeps it alive across steps; the log redirect happens
+        # inside the wrapper.
+        Start-Process -WindowStyle Hidden -FilePath pwsh -ArgumentList @(
+          '-NoProfile', '-Command',
+          "./minio-server.exe server `"$env:RUNNER_TEMP\minio-data`" --address 127.0.0.1:9000 *> minio.log"
+        )
 
     - name: Wait for MinIO
       shell: bash
@@ -141,6 +151,8 @@ jobs:
         curl -v --max-time 10 http://127.0.0.1:9000/minio/health/live || true
         echo "--- listening sockets on port 9000 ---"
         netstat -an | grep 9000 || true
+        echo "--- minio processes still alive ---"
+        tasklist 2>/dev/null | grep -i minio || ps aux | grep -i [m]inio || true
         echo "--- server log ---"
         cat minio.log minio-err.log 2>/dev/null || true
         exit 1
