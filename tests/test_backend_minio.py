@@ -299,6 +299,9 @@ def test_errors(host, repository, authentication):
         ("1", True),
         ("yes", True),
         ("on", True),
+        # An unrecognized value keeps the secure default,
+        # so a typo cannot silently downgrade the connection to HTTP.
+        ("typo", True),
     ],
 )
 def test_secure_config_string_values(
