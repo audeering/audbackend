@@ -12,19 +12,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ '3.10', '3.11', '3.12', '3.13', '3.14' ]
+        python-version: [ '3.10', '3.11', '3.12', '3.13' ]
         include:
+          - python-version: '3.14'
           - python-version: '3.14'
             minio: '7.2.18'
 
-    # Self-hosted MinIO instead of the public play.min.io playground,
-    # which has no uptime guarantee and has caused multi-hour CI hangs.
-    # Started as a plain `docker run` step below rather than a GitHub
-    # Actions `services:` container: `services:` has no way to pass a
-    # command, and this image has no default CMD, so it needs `server
-    # /data` passed explicitly. `services:` (Docker in general) is also
-    # only supported on Linux runners, so Windows/macOS (build-other-os
-    # below) skip the minio tests instead.
+    # Self-hosted MinIO instead of the public play.min.io playground.
     env:
       AUDBACKEND_TEST_MINIO_HOST: localhost:9000
       MINIO_ACCESS_KEY: minioadmin
@@ -93,8 +87,7 @@ jobs:
         python-version: [ '3.12' ]
 
     # Docker is not pre-installed on GitHub's Windows/macOS runners,
-    # so instead of a container these jobs run the native MinIO server
-    # binary -- same pinned release as the Linux job's Docker image.
+    # so we run the native MinIO server binary.
     # 127.0.0.1 is used instead of localhost throughout: on Windows,
     # localhost can resolve to IPv6 ::1 while the server listens on
     # IPv4 only, making every connection attempt fail.
@@ -124,13 +117,10 @@ jobs:
         $env:MINIO_ROOT_USER = "minioadmin"
         $env:MINIO_ROOT_PASSWORD = "minioadmin"
         New-Item -ItemType Directory -Force -Path "$env:RUNNER_TEMP\minio-data" | Out-Null
-        # Launch via a wrapper pwsh in its own (hidden) console. Using
-        # Start-Process with -RedirectStandardOutput directly makes the
-        # server inherit this step's console, and Windows terminates
-        # console-attached processes when the step's console closes --
-        # the server died at the step boundary. The wrapper's own
-        # console keeps it alive across steps; the log redirect happens
-        # inside the wrapper.
+        # Launch via pwsh in its own console.
+        # Using Start-Process with -RedirectStandardOutput
+        # makes the server inherit the console,
+        # and terminates console-attached processes at console closure.
         Start-Process -WindowStyle Hidden -FilePath pwsh -ArgumentList @(
           '-NoProfile', '-Command',
           "./minio-server.exe server `"$env:RUNNER_TEMP\minio-data`" --address 127.0.0.1:9000 *> minio.log"

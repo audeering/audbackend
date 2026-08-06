@@ -13,12 +13,6 @@ import audbackend
 from audbackend.core.backend.minio import _host_env_suffix
 
 
-pytestmark = pytest.mark.skipif(
-    pytest.SKIP_MINIO,
-    reason="No MinIO server available on this runner",
-)
-
-
 def created_http_client(backend):
     """urllib3 client created by a Minio backend.
 

@@ -57,10 +57,6 @@ class Minio(Base):
     .. _minio.Minio: https://min.io/docs/minio/linux/developers/python/API.html
 
     Examples:
-        The network calls below are not run as part of the test suite
-        (``# doctest: +SKIP``), since they depend on the public
-        play.min.io playground being reachable, which CI cannot rely on.
-
         >>> host = "play.min.io"  # playground provided by https://min.io
         >>> auth = ("Q3AM3UQ867SPQQA43P2F", "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
         >>> repository = "my-data" + audeer.uid()
