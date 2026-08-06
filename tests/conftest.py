@@ -14,9 +14,11 @@ import audbackend
 # unittest-<session-uid>-<repository-uid>
 pytest.UID = audeer.uid()[:8]
 
-# Define static hosts
+# Use play.min.io when running tests locally,
+# and point to ``AUDBACKEND_TEST_MINIO_HOST`` in CI
+# (a self-hosted MinIO instance in GitHub Actions).
 pytest.HOSTS = {
-    "minio": "play.min.io",
+    "minio": os.environ.get("AUDBACKEND_TEST_MINIO_HOST", "play.min.io"),
 }
 
 

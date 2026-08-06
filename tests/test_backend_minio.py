@@ -285,6 +285,60 @@ def test_errors(host, repository, authentication):
         backend.open()
 
 
+@pytest.mark.parametrize(
+    "secure_value, expected_is_https",
+    [
+        ("False", False),
+        ("false", False),
+        ("0", False),
+        ("no", False),
+        ("off", False),
+        ("", False),
+        ("True", True),
+        ("true", True),
+        ("1", True),
+        ("yes", True),
+        ("on", True),
+        # An unrecognized value keeps the secure default,
+        # so a typo cannot silently downgrade the connection to HTTP.
+        ("typo", True),
+    ],
+)
+def test_secure_config_string_values(
+    tmpdir, hosts, hide_credentials, secure_value, expected_is_https
+):
+    r"""Test that string-valued ``secure`` settings in the config file are honored.
+
+    ``configparser`` returns config values as strings,
+    so a naive ``config.get("secure", True)``
+    would receive e.g. the string ``"False"``,
+    which is truthy in Python
+    and would incorrectly enable HTTPS.
+    Verifies the parsing logic correctly maps
+    common string representations to booleans.
+
+    Args:
+        tmpdir: tmpdir fixture
+        hosts: hosts fixture
+        hide_credentials: hide_credentials fixture
+        secure_value: string value written to the config
+        expected_is_https: expected boolean outcome for ``secure_value``
+
+    """
+    host = hosts["minio"]
+    config_path = audeer.path(tmpdir, "config.cfg")
+    os.environ["MINIO_CONFIG_FILE"] = config_path
+
+    with open(config_path, "w") as fp:
+        fp.write(f"[{host}]\n")
+        fp.write("access_key = user\n")
+        fp.write("secret_key = pass\n")
+        fp.write(f"secure = {secure_value}\n")
+
+    backend = audbackend.backend.Minio(host, "repository")
+    assert backend._client._base_url.is_https is expected_is_https
+
+
 def test_get_config(tmpdir, hosts, hide_credentials):
     r"""Test parsing of configuration.
 

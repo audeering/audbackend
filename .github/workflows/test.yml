@@ -9,26 +9,44 @@ on:
 jobs:
   build:
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest, macOS-latest ]
-        python-version: [ '3.12' ]
+        python-version: [ '3.10', '3.11', '3.12', '3.13' ]
         include:
-          - os: ubuntu-latest
-            python-version: '3.10'
-          - os: ubuntu-latest
-            python-version: '3.11'
-          - os: ubuntu-latest
-            python-version: '3.13'
-          - os: ubuntu-latest
-            python-version: '3.14'
-          - os: ubuntu-latest
-            python-version: '3.14'
+          - python-version: '3.14'
+          - python-version: '3.14'
             minio: '7.2.18'
+
+    # Self-hosted MinIO instead of the public play.min.io playground.
+    env:
+      AUDBACKEND_TEST_MINIO_HOST: localhost:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_CONFIG_FILE: ${{ github.workspace }}/.github/minio-test.cfg
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Start MinIO
+      run: |
+        docker run -d --name minio -p 9000:9000 \
+          -e MINIO_ROOT_USER=minioadmin \
+          -e MINIO_ROOT_PASSWORD=minioadmin \
+          minio/minio:RELEASE.2025-09-07T16-13-09Z server /data --console-address ":9001"
+
+    - name: Wait for MinIO
+      run: |
+        for i in $(seq 1 60); do
+          if curl -sf http://localhost:9000/minio/health/live; then
+            echo "MinIO is up"
+            exit 0
+          fi
+          sleep 1
+        done
+        echo "MinIO did not become healthy in time"
+        docker logs minio
+        exit 1
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
@@ -47,7 +65,7 @@ jobs:
 
     - name: Test file-system only package
       run: |
-        uv run --no-default-groups --group test-filesystem --isolated pytest --cov-fail-under=0 tests/test_minimal_install.py tests/test_backend_filesystem.py 
+        uv run --no-default-groups --group test-filesystem --isolated pytest --cov-fail-under=0 tests/test_minimal_install.py tests/test_backend_filesystem.py
 
     - name: Test with pytest
       run: |
@@ -58,4 +76,92 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: ./coverage.xml
-      if: ${{ (matrix.os == 'ubuntu-latest') && (matrix.python-version != '3.14') }}
+      if: matrix.python-version != '3.14'
+
+  build-other-os:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ windows-latest, macOS-latest ]
+        python-version: [ '3.12' ]
+
+    # Docker is not pre-installed on GitHub's Windows/macOS runners,
+    # so we run the native MinIO server binary.
+    # 127.0.0.1 is used instead of localhost throughout: on Windows,
+    # localhost can resolve to IPv6 ::1 while the server listens on
+    # IPv4 only, making every connection attempt fail.
+    env:
+      AUDBACKEND_TEST_MINIO_HOST: 127.0.0.1:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_CONFIG_FILE: ${{ github.workspace }}/.github/minio-test.cfg
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Start MinIO (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        curl -sL -o minio-server https://dl.min.io/server/minio/release/darwin-arm64/archive/minio.RELEASE.2025-09-07T16-13-09Z
+        chmod +x minio-server
+        mkdir -p "$RUNNER_TEMP/minio-data"
+        MINIO_ROOT_USER=minioadmin MINIO_ROOT_PASSWORD=minioadmin \
+          nohup ./minio-server server "$RUNNER_TEMP/minio-data" --address 127.0.0.1:9000 > minio.log 2>&1 &
+
+    - name: Start MinIO (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        Invoke-WebRequest -Uri "https://dl.min.io/server/minio/release/windows-amd64/archive/minio.RELEASE.2025-09-07T16-13-09Z" -OutFile minio-server.exe
+        $env:MINIO_ROOT_USER = "minioadmin"
+        $env:MINIO_ROOT_PASSWORD = "minioadmin"
+        New-Item -ItemType Directory -Force -Path "$env:RUNNER_TEMP\minio-data" | Out-Null
+        # Launch via pwsh in its own console.
+        # Using Start-Process with -RedirectStandardOutput
+        # makes the server inherit the console,
+        # and terminates console-attached processes at console closure.
+        Start-Process -WindowStyle Hidden -FilePath pwsh -ArgumentList @(
+          '-NoProfile', '-Command',
+          "./minio-server.exe server `"$env:RUNNER_TEMP\minio-data`" --address 127.0.0.1:9000 *> minio.log"
+        )
+
+    - name: Wait for MinIO
+      shell: bash
+      run: |
+        for i in $(seq 1 60); do
+          if curl -sf http://127.0.0.1:9000/minio/health/live; then
+            echo "MinIO is up"
+            exit 0
+          fi
+          sleep 1
+        done
+        echo "MinIO did not become healthy in time"
+        echo "--- last connection attempt, verbose ---"
+        curl -v --max-time 10 http://127.0.0.1:9000/minio/health/live || true
+        echo "--- listening sockets on port 9000 ---"
+        netstat -an | grep 9000 || true
+        echo "--- minio processes still alive ---"
+        tasklist 2>/dev/null | grep -i minio || ps aux | grep -i [m]inio || true
+        echo "--- server log ---"
+        cat minio.log minio-err.log 2>/dev/null || true
+        exit 1
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@3259c6206f993105e3a61b142c2d97bf4b9ef83d
+
+    - name: Sync Python environment
+      run: uv sync
+
+    - name: Test file-system only package
+      run: |
+        uv run --no-default-groups --group test-filesystem --isolated pytest --cov-fail-under=0 tests/test_minimal_install.py tests/test_backend_filesystem.py
+
+    - name: Test with pytest
+      run: |
+        uv run pytest --cov-config=.coveragerc.${{ runner.os }}
