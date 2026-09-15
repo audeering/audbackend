@@ -23,14 +23,13 @@ classifiers = [
     'Operating System :: OS Independent',
     'Programming Language :: Python',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
     'Programming Language :: Python :: 3.13',
     'Programming Language :: Python :: 3.14',
     'Topic :: Scientific/Engineering',
 ]
-requires-python = '>=3.10'
+requires-python = '>=3.11'
 dependencies = [
     'audeer >=2.3.1',
     'pywin32; sys_platform == "win32"',
@@ -68,7 +67,6 @@ dev = [
     'sphinx-autodoc-typehints',
     'sphinx-copybutton',
     'sybil',
-    'toml',
 ]
 test-filesystem = [
     'audformat',
