@@ -57,8 +57,8 @@ class Minio(Base):
     .. _minio.Minio: https://min.io/docs/minio/linux/developers/python/API.html
 
     Examples:
-        >>> host = "play.min.io"  # playground provided by https://min.io
-        >>> auth = ("Q3AM3UQ867SPQQA43P2F", "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG")
+        >>> host = "localhost:9000"  # a local MinIO server
+        >>> auth = ("minioadmin", "minioadmin")
         >>> repository = "my-data" + audeer.uid()
         >>> Minio.create(host, repository, authentication=auth)  # doctest: +SKIP
         >>> file = audeer.touch("src.txt")
@@ -71,7 +71,7 @@ class Minio(Base):
         ...     Minio.delete(host, repository, authentication=auth)
         ['/sub/file.txt']
 
-    """  # noqa: E501
+    """
 
     def __init__(
         self,
@@ -150,7 +150,7 @@ class Minio(Base):
         where ``<HOST>`` is the uppercased hostname
         with every non-alphanumeric character
         replaced by an underscore,
-        e.g. ``play.min.io`` becomes ``PLAY_MIN_IO``.
+        e.g. ``localhost:9000`` becomes ``LOCALHOST_9000``.
         If those are not set,
         the function falls back
         to the two environment variables
@@ -204,17 +204,17 @@ class Minio(Base):
 
         .. code-block:: ini
 
-            [play.min.io]
-            access_key = "Q3AM3UQ867SPQQA43P2F"
-            secret_key = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
+            [localhost:9000]
+            access_key = "minioadmin"
+            secret_key = "minioadmin"
 
         Optional timeout settings can also be configured:
 
         .. code-block:: ini
 
-            [play.min.io]
-            access_key = "Q3AM3UQ867SPQQA43P2F"
-            secret_key = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
+            [localhost:9000]
+            access_key = "minioadmin"
+            secret_key = "minioadmin"
             connect_timeout = 10.0
             read_timeout = 60.0
 
@@ -645,7 +645,7 @@ def _host_env_suffix(host: str) -> str:
     Uppercases the hostname
     and replaces every non-alphanumeric character
     with an underscore,
-    e.g. ``play.min.io`` becomes ``PLAY_MIN_IO``.
+    e.g. ``localhost:9000`` becomes ``LOCALHOST_9000``.
 
     Args:
         host: hostname

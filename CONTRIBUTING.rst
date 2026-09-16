@@ -92,15 +92,28 @@ It is also possible to automatically check if all links are still valid::
 Running the Tests
 -----------------
 
-You can run tests with pytest_::
+Some of the tests need a MinIO server.
+MinIO has archived its community server
+and shut down its public playground at play.min.io,
+so start the last community release on your own machine::
+
+    docker run -d --name minio -p 9000:9000 \
+      -e MINIO_ROOT_USER=minioadmin \
+      -e MINIO_ROOT_PASSWORD=minioadmin \
+      quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z \
+      server /data
+
+The test fixtures default to that server
+and to its ``minioadmin`` credentials,
+so no further configuration is needed.
+
+You can then run tests with pytest_::
 
     uv run pytest
 
-Some of the tests need access
-to the public MinIO server
-at https://play.min.io,
-for which credentials are provided
-automatically by the test fixtures.
+To use a different server,
+point ``AUDBACKEND_TEST_MINIO_HOST`` at it,
+and set ``MINIO_ACCESS_KEY`` and ``MINIO_SECRET_KEY``.
 
 .. _pytest: https://pytest.org
 

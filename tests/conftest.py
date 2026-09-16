@@ -9,34 +9,44 @@ import audformat
 import audbackend
 
 
+# Config file marking a local MinIO server as plain HTTP.
+# Shared with CI, so both run against the same settings.
+MINIO_CONFIG_FILE = audeer.path(
+    os.path.dirname(__file__),
+    "..",
+    ".github",
+    "minio-test.cfg",
+)
+
 # UID for test session
 # Repositories on the host will be named
 # unittest-<session-uid>-<repository-uid>
 pytest.UID = audeer.uid()[:8]
 
-# Use play.min.io when running tests locally,
-# and point to ``AUDBACKEND_TEST_MINIO_HOST`` in CI
-# (a self-hosted MinIO instance in GitHub Actions).
+# MinIO shut down its public playground at play.min.io
+# when it archived the community server,
+# so tests run against a MinIO on your own machine,
+# see CONTRIBUTING.rst.
+# CI points ``AUDBACKEND_TEST_MINIO_HOST`` at its own instance.
 pytest.HOSTS = {
-    "minio": os.environ.get("AUDBACKEND_TEST_MINIO_HOST", "play.min.io"),
+    "minio": os.environ.get("AUDBACKEND_TEST_MINIO_HOST", "localhost:9000"),
 }
 
 
 @pytest.fixture(scope="package", autouse=True)
 def authentication():
     """Provide authentication tokens for supported backends."""
-    if pytest.HOSTS["minio"] == "play.min.io":
-        defaults = {
-            key: os.environ.get(key, None)
-            for key in ["MINIO_ACCESS_KEY", "MINIO_SECRET_KEY"]
-        }
-        # MinIO credentials for the public read/write server
-        # at play.min.io, see
-        # https://min.io/docs/minio/linux/developers/python/minio-py.html
-        os.environ["MINIO_ACCESS_KEY"] = "Q3AM3UQ867SPQQA43P2F"
-        os.environ["MINIO_SECRET_KEY"] = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
-    else:
-        defaults = {}
+    keys = ["MINIO_ACCESS_KEY", "MINIO_SECRET_KEY", "MINIO_CONFIG_FILE"]
+    defaults = {key: os.environ.get(key, None) for key in keys}
+
+    # Defaults of a local MinIO server, see CONTRIBUTING.rst.
+    # Nothing already set is overwritten,
+    # so CI and anyone running their own server keep their settings.
+    os.environ.setdefault("MINIO_ACCESS_KEY", "minioadmin")
+    os.environ.setdefault("MINIO_SECRET_KEY", "minioadmin")
+    # A local server speaks plain HTTP,
+    # which the backend can only learn from a config file.
+    os.environ.setdefault("MINIO_CONFIG_FILE", MINIO_CONFIG_FILE)
 
     yield
 
