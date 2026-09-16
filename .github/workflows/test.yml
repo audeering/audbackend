@@ -6,6 +6,20 @@ on:
   pull_request:
     branches: [ main, dev ]
 
+# The MinIO community server is archived:
+# https://github.com/minio/minio is read-only,
+# the Docker Hub `minio/minio` repository is deleted,
+# and dl.min.io answers "410 Gone" for every community release and hotfix.
+# RELEASE.2025-09-07T16-13-09Z is the last version we can run.
+# The two surviving copies of that release are the quay.io image
+# and the binaries attached to the GitHub release,
+# which is where the jobs below now get it from.
+env:
+  MINIO_RELEASE: RELEASE.2025-09-07T16-13-09Z
+  MINIO_IMAGE_DIGEST: sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
+  MINIO_SHA256_DARWIN_ARM64: 7c3b3039b76e55a1b80935848ed83998d5e8d317374f87851f46a019ff5c0aa4
+  MINIO_SHA256_WINDOWS_AMD64: af709e6ba68488404e85acdd22a3030d0f5e56a108d4b27d744f18ceb50861b4
+
 jobs:
   build:
 
@@ -33,7 +47,7 @@ jobs:
         docker run -d --name minio -p 9000:9000 \
           -e MINIO_ROOT_USER=minioadmin \
           -e MINIO_ROOT_PASSWORD=minioadmin \
-          minio/minio:RELEASE.2025-09-07T16-13-09Z server /data --console-address ":9001"
+          quay.io/minio/minio:"${MINIO_RELEASE}@${MINIO_IMAGE_DIGEST}" server /data --console-address ":9001"
 
     - name: Wait for MinIO
       run: |
@@ -105,7 +119,12 @@ jobs:
     - name: Start MinIO (macOS)
       if: runner.os == 'macOS'
       run: |
-        curl -sL -o minio-server https://dl.min.io/server/minio/release/darwin-arm64/archive/minio.RELEASE.2025-09-07T16-13-09Z
+        # -f so a dead URL fails here loudly,
+        # instead of writing the error page to minio-server
+        # and timing out 60 s later in "Wait for MinIO".
+        curl -fsSL -o minio-server "https://github.com/minio/minio/releases/download/${MINIO_RELEASE}/minio.darwin-arm64.${MINIO_RELEASE}"
+        # macOS has shasum, not sha256sum.
+        echo "${MINIO_SHA256_DARWIN_ARM64}  minio-server" | shasum -a 256 -c -
         chmod +x minio-server
         mkdir -p "$RUNNER_TEMP/minio-data"
         MINIO_ROOT_USER=minioadmin MINIO_ROOT_PASSWORD=minioadmin \
@@ -115,7 +134,13 @@ jobs:
       if: runner.os == 'Windows'
       shell: pwsh
       run: |
-        Invoke-WebRequest -Uri "https://dl.min.io/server/minio/release/windows-amd64/archive/minio.RELEASE.2025-09-07T16-13-09Z" -OutFile minio-server.exe
+        Invoke-WebRequest -OutFile minio-server.exe -Uri "https://github.com/minio/minio/releases/download/${env:MINIO_RELEASE}/minio.windows-amd64.${env:MINIO_RELEASE}.exe"
+        # Get-FileHash returns upper case; -ne compares case-insensitively,
+        # so do not "fix" this to -cne.
+        $hash = (Get-FileHash -Algorithm SHA256 minio-server.exe).Hash
+        if ($hash -ne "${env:MINIO_SHA256_WINDOWS_AMD64}") {
+          throw "minio-server.exe checksum mismatch: got $hash"
+        }
         $env:MINIO_ROOT_USER = "minioadmin"
         $env:MINIO_ROOT_PASSWORD = "minioadmin"
         New-Item -ItemType Directory -Force -Path "$env:RUNNER_TEMP\minio-data" | Out-Null
