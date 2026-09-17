@@ -58,7 +58,12 @@ def authentication():
     # ``get_authentication()`` prefers the environment over the config file,
     # so setting them unconditionally would shadow
     # the credentials of a user provided server.
-    config = audbackend.backend.Minio.get_config(pytest.HOSTS["minio"])
+    # The file-system only install ships no MinIO backend,
+    # and then has no credentials to resolve either.
+    if hasattr(audbackend.backend, "Minio"):
+        config = audbackend.backend.Minio.get_config(pytest.HOSTS["minio"])
+    else:
+        config = {}
     if "access_key" not in config:
         os.environ.setdefault("MINIO_ACCESS_KEY", "minioadmin")
     if "secret_key" not in config:
