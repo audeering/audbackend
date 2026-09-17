@@ -15,8 +15,10 @@ services:
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
-    # Lets `docker compose up --wait` block
-    # until the server actually answers.
+    # Makes `docker compose ps` report when the server actually answers.
+    # Not used to block on startup:
+    # `up --wait` is Compose v2 only,
+    # and podman hands off to Compose v1 on some systems.
     healthcheck:
       test: ["CMD", "mc", "ready", "local"]
       interval: 2s

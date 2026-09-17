@@ -97,11 +97,13 @@ MinIO has archived its community server
 and shut down its public playground at play.min.io,
 so start the last community release on your own machine::
 
-    docker compose up -d --wait
+    docker compose up -d
 
-It listens on ``127.0.0.1:9000``,
-and ``--wait`` returns
-once the server answers.
+Docker Compose and ``podman-compose``
+both read the provided :file:`compose.yaml`.
+The server listens on ``127.0.0.1:9000``
+and needs a moment to come up;
+``docker compose ps`` reports it as healthy.
 The test fixtures default to that address
 and to its ``minioadmin`` credentials,
 so no further configuration is needed.
