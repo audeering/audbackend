@@ -26,10 +26,15 @@ pytest.UID = audeer.uid()[:8]
 # MinIO shut down its public playground at play.min.io
 # when it archived the community server,
 # so tests run against a MinIO on your own machine,
-# see CONTRIBUTING.rst.
+# started by compose.yaml, see CONTRIBUTING.rst.
 # CI points ``AUDBACKEND_TEST_MINIO_HOST`` at its own instance.
+#
+# 127.0.0.1 rather than localhost:
+# compose publishes the port on the IPv4 loopback only,
+# while localhost resolves to IPv6 ``::1`` first on some systems,
+# which makes every connection attempt fail.
 pytest.HOSTS = {
-    "minio": os.environ.get("AUDBACKEND_TEST_MINIO_HOST", "localhost:9000"),
+    "minio": os.environ.get("AUDBACKEND_TEST_MINIO_HOST", "127.0.0.1:9000"),
 }
 
 

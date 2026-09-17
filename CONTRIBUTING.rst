@@ -97,13 +97,12 @@ MinIO has archived its community server
 and shut down its public playground at play.min.io,
 so start the last community release on your own machine::
 
-    docker run -d --name minio -p 9000:9000 \
-      -e MINIO_ROOT_USER=minioadmin \
-      -e MINIO_ROOT_PASSWORD=minioadmin \
-      quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z \
-      server /data
+    docker compose up -d --wait
 
-The test fixtures default to that server
+It listens on ``127.0.0.1:9000``,
+and ``--wait`` returns
+once the server answers.
+The test fixtures default to that address
 and to its ``minioadmin`` credentials,
 so no further configuration is needed.
 
@@ -111,9 +110,24 @@ You can then run tests with pytest_::
 
     uv run pytest
 
+When you are done,
+stop and remove the server again::
+
+    docker compose down
+
 To use a different server,
-point ``AUDBACKEND_TEST_MINIO_HOST`` at it,
+point ``AUDBACKEND_TEST_MINIO_HOST`` at it
 and set ``MINIO_ACCESS_KEY`` and ``MINIO_SECRET_KEY``.
+A server without TLS needs a config file as well,
+as ``secure`` can only be set there,
+see :meth:`audbackend.backend.Minio.get_config`::
+
+    export MINIO_CONFIG_FILE=~/my-minio.cfg
+
+.. code-block:: ini
+
+    [my-server:9000]
+    secure = False
 
 .. _pytest: https://pytest.org
 
