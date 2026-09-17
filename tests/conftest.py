@@ -9,34 +9,65 @@ import audformat
 import audbackend
 
 
+# Config file marking a local MinIO server as plain HTTP.
+# Shared with CI, so both run against the same settings.
+MINIO_CONFIG_FILE = audeer.path(
+    os.path.dirname(__file__),
+    "..",
+    ".github",
+    "minio-test.cfg",
+)
+
 # UID for test session
 # Repositories on the host will be named
 # unittest-<session-uid>-<repository-uid>
 pytest.UID = audeer.uid()[:8]
 
-# Use play.min.io when running tests locally,
-# and point to ``AUDBACKEND_TEST_MINIO_HOST`` in CI
-# (a self-hosted MinIO instance in GitHub Actions).
+# MinIO shut down its public playground at play.min.io
+# when it archived the community server,
+# so tests run against a MinIO on your own machine,
+# started by compose.yaml, see CONTRIBUTING.rst.
+# CI points ``AUDBACKEND_TEST_MINIO_HOST`` at its own instance.
+#
+# 127.0.0.1 rather than localhost:
+# compose publishes the port on the IPv4 loopback only,
+# while localhost resolves to IPv6 ``::1`` first on some systems,
+# which makes every connection attempt fail.
 pytest.HOSTS = {
-    "minio": os.environ.get("AUDBACKEND_TEST_MINIO_HOST", "play.min.io"),
+    "minio": os.environ.get("AUDBACKEND_TEST_MINIO_HOST", "127.0.0.1:9000"),
 }
 
 
 @pytest.fixture(scope="package", autouse=True)
 def authentication():
     """Provide authentication tokens for supported backends."""
-    if pytest.HOSTS["minio"] == "play.min.io":
-        defaults = {
-            key: os.environ.get(key, None)
-            for key in ["MINIO_ACCESS_KEY", "MINIO_SECRET_KEY"]
-        }
-        # MinIO credentials for the public read/write server
-        # at play.min.io, see
-        # https://min.io/docs/minio/linux/developers/python/minio-py.html
-        os.environ["MINIO_ACCESS_KEY"] = "Q3AM3UQ867SPQQA43P2F"
-        os.environ["MINIO_SECRET_KEY"] = "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG"
+    keys = ["MINIO_ACCESS_KEY", "MINIO_SECRET_KEY", "MINIO_CONFIG_FILE"]
+    defaults = {key: os.environ.get(key, None) for key in keys}
+
+    # Defaults of a local MinIO server, see CONTRIBUTING.rst.
+    # Nothing already set is overwritten,
+    # so CI and anyone running their own server keep their settings.
+    #
+    # A local server speaks plain HTTP,
+    # which the backend can only learn from a config file.
+    # This has to come first,
+    # as ``get_config()`` reads ``MINIO_CONFIG_FILE``.
+    os.environ.setdefault("MINIO_CONFIG_FILE", MINIO_CONFIG_FILE)
+
+    # Only fill in credentials the config file does not provide:
+    # ``get_authentication()`` prefers the environment over the config file,
+    # so setting them unconditionally would shadow
+    # the credentials of a user provided server.
+    # The file-system only install ships no MinIO backend,
+    # and then has no credentials to resolve either.
+    if hasattr(audbackend.backend, "Minio"):
+        config = audbackend.backend.Minio.get_config(pytest.HOSTS["minio"])
     else:
-        defaults = {}
+        config = {}
+    if "access_key" not in config:
+        os.environ.setdefault("MINIO_ACCESS_KEY", "minioadmin")
+    if "secret_key" not in config:
+        os.environ.setdefault("MINIO_SECRET_KEY", "minioadmin")
 
     yield
 

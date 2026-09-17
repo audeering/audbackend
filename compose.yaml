@@ -1,0 +1,26 @@
+# MinIO server for running the tests locally, see CONTRIBUTING.rst.
+#
+# MinIO archived its community server and shut down its public playground,
+# so this pins the last community release,
+# the same one CI runs, see .github/workflows/test.yml.
+services:
+  minio:
+    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+    command: server /data
+    # Bound to loopback on purpose:
+    # the credentials below are the well known MinIO defaults,
+    # so the server must not be reachable from the network.
+    ports:
+      - "127.0.0.1:9000:9000"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    # Makes `docker compose ps` report when the server actually answers.
+    # Not used to block on startup:
+    # `up --wait` is Compose v2 only,
+    # and podman hands off to Compose v1 on some systems.
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
