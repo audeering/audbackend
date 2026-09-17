@@ -47,11 +47,22 @@ def authentication():
     # Defaults of a local MinIO server, see CONTRIBUTING.rst.
     # Nothing already set is overwritten,
     # so CI and anyone running their own server keep their settings.
-    os.environ.setdefault("MINIO_ACCESS_KEY", "minioadmin")
-    os.environ.setdefault("MINIO_SECRET_KEY", "minioadmin")
+    #
     # A local server speaks plain HTTP,
     # which the backend can only learn from a config file.
+    # This has to come first,
+    # as ``get_config()`` reads ``MINIO_CONFIG_FILE``.
     os.environ.setdefault("MINIO_CONFIG_FILE", MINIO_CONFIG_FILE)
+
+    # Only fill in credentials the config file does not provide:
+    # ``get_authentication()`` prefers the environment over the config file,
+    # so setting them unconditionally would shadow
+    # the credentials of a user provided server.
+    config = audbackend.backend.Minio.get_config(pytest.HOSTS["minio"])
+    if "access_key" not in config:
+        os.environ.setdefault("MINIO_ACCESS_KEY", "minioadmin")
+    if "secret_key" not in config:
+        os.environ.setdefault("MINIO_SECRET_KEY", "minioadmin")
 
     yield
 
