@@ -12,6 +12,7 @@ class BadFileSystem(audbackend.backend.FileSystem):
         src_path: str,
         dst_path: str,
         *,
+        owner: str = None,
         validate: bool = False,
         verbose: bool = False,
     ):
@@ -22,6 +23,7 @@ class BadFileSystem(audbackend.backend.FileSystem):
             src_path,
             dst_path,
             checksum,
+            owner,
             verbose,
         )
 

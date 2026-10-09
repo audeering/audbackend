@@ -357,6 +357,7 @@ a file to our backend.
             src_path: str,
             dst_path: str,
             checksum: str,
+            owner: str,
             verbose: bool,
     ):
         with self._db as db:
@@ -366,7 +367,8 @@ a file to our backend.
                 INSERT INTO data (path, checksum, content, date, owner)
                 VALUES (?, ?, ?, ?, ?)
             """
-            owner = getpass.getuser()
+            if not owner:
+                owner = getpass.getuser()
             date = datetime.datetime.today().strftime("%Y-%m-%d")
             data = (dst_path, checksum, content, date, owner)
             db.execute(query, data)

@@ -1315,6 +1315,7 @@ class Base:
         src_path: str,
         dst_path: str,
         checksum: str,
+        owner: str,
         verbose: bool,
     ):  # pragma: no cover
         r"""Put file to backend."""
@@ -1325,6 +1326,7 @@ class Base:
         src_path: str,
         dst_path: str,
         *,
+        owner: str = None,
         validate: bool = False,
         verbose: bool = False,
     ):
@@ -1345,6 +1347,13 @@ class Base:
         Args:
             src_path: path to local file
             dst_path: path to file on backend
+            owner: owner to store with the file.
+                Only backends that track ownership
+                as custom metadata
+                (e.g. :class:`audbackend.backend.Minio`)
+                make use of this.
+                If ``None``,
+                the current user is stored as owner
             validate: verify file was successfully
                 put on the backend
             verbose: show debug messages
@@ -1378,6 +1387,7 @@ class Base:
                 src_path,
                 dst_path,
                 checksum,
+                owner,
                 verbose,
             )
 
