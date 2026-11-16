@@ -64,7 +64,6 @@ def test_open_file_read_error(tmpdir, interface):
     interface.put_file(src_path, "/file.bin")
 
     with interface.open_file("/file.bin") as f:
-        assert f.raw.name.endswith("file.bin")
         # Replace the file descriptor of the opened file
         # by a write-only one,
         # so that reading raises an OSError

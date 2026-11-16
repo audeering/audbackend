@@ -1194,7 +1194,6 @@ def test_open_file(tmpdir, interface):
     client.get_object = counting_get_object
     try:
         with interface.open_file("/file.bin") as f:
-            assert f.raw.name == "file.bin"
             assert f.raw._raw.size == len(content)
 
             # Only requested parts are downloaded

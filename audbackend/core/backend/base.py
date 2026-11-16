@@ -1562,11 +1562,6 @@ class _BackendFile(io.RawIOBase):
         self._raw = raw
         self._pos = 0
 
-    @property
-    def name(self) -> str:
-        r"""Name of wrapped file object."""
-        return self._raw.name
-
     def close(self):  # noqa: D102
         if not self.closed:
             try:
