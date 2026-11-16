@@ -674,9 +674,11 @@ class _RangeFile(io.RawIOBase):
         self._etag = stat.etag
 
     def readable(self) -> bool:  # noqa: D102
+        self._check_not_closed()
         return True
 
     def seekable(self) -> bool:  # noqa: D102
+        self._check_not_closed()
         return True
 
     def tell(self) -> int:  # noqa: D102

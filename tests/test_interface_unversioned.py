@@ -849,6 +849,10 @@ def test_open_file(tmpdir, interface):
         f.seek(0)
         assert f.read() == content
     assert f.closed
+    with pytest.raises(ValueError, match="closed file"):
+        f.readable()
+    with pytest.raises(ValueError, match="closed file"):
+        f.seekable()
 
     # Errors
     error_backend = (

@@ -1256,6 +1256,10 @@ def test_open_file(tmpdir, interface):
             raw.seek(-1)
         raw.close()
         with pytest.raises(ValueError, match="closed file"):
+            raw.readable()
+        with pytest.raises(ValueError, match="closed file"):
+            raw.seekable()
+        with pytest.raises(ValueError, match="closed file"):
             raw.tell()
         with pytest.raises(ValueError, match="closed file"):
             raw.seek(0)
