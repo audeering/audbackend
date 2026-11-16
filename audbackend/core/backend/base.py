@@ -1565,7 +1565,10 @@ class _BackendFile(io.RawIOBase):
     def close(self):  # noqa: D102
         if not self.closed:
             try:
-                self._raw.close()
+                # No retries,
+                # as a failed close might mark the file as closed,
+                # so that a second call would hide the error
+                utils.call_function_on_backend(self._raw.close, retries=1)
             finally:
                 super().close()
 

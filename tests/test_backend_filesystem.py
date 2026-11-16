@@ -86,6 +86,28 @@ def test_open_file_read_error(tmpdir, interface):
 
 @pytest.mark.parametrize(
     "interface",
+    [(audbackend.backend.FileSystem, audbackend.interface.Unversioned)],
+    indirect=True,
+)
+def test_open_file_close_error(tmpdir, interface):
+    """Test errors during closing are raised as BackendError."""
+    src_path = audeer.path(tmpdir, "file.bin")
+    with open(src_path, "wb") as fp:
+        fp.write(b"content")
+    interface.put_file(src_path, "/file.bin")
+
+    f = interface.open_file("/file.bin")
+    # Close the file descriptor behind the back of the file object,
+    # so that closing the file object raises an OSError
+    os.close(f.raw._raw.fileno())
+    with pytest.raises(audbackend.BackendError) as ex:
+        f.close()
+    assert isinstance(ex.value.exception, OSError)
+    assert f.closed
+
+
+@pytest.mark.parametrize(
+    "interface",
     [(audbackend.backend.FileSystem, audbackend.interface.Maven)],
     indirect=True,
 )
