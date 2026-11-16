@@ -2,10 +2,12 @@ from collections.abc import Iterator
 import configparser
 import errno
 import getpass
+import io
 import mimetypes
 import os
 import re
 import tempfile
+from typing import BinaryIO
 import warnings
 
 import minio
@@ -14,6 +16,7 @@ import urllib3
 import audeer
 
 from audbackend.core import utils
+from audbackend.core.backend.base import STREAM_CHUNK_SIZE
 from audbackend.core.backend.base import Base
 
 
@@ -536,6 +539,19 @@ class Minio(Base):
         if not self._client.bucket_exists(bucket_name=self.repository):
             utils.raise_file_not_found_error(self.repository)
 
+    def _open_file(
+        self,
+        path: str,
+    ) -> BinaryIO:
+        r"""Open file on backend for reading.
+
+        Only the requested parts of the file
+        are downloaded using range requests.
+
+        """
+        raw = _RangeFile(self._client, self.repository, self.path(path))
+        return io.BufferedReader(raw, buffer_size=STREAM_CHUNK_SIZE)
+
     def _owner(
         self,
         path: str,
@@ -622,6 +638,100 @@ class Minio(Base):
             object_name=path,
         ).size
         return size
+
+
+class _RangeFile(io.RawIOBase):
+    r"""Read-only, seekable file object for an object on MinIO.
+
+    The position is handled locally,
+    every read results in a range request
+    for the requested bytes.
+
+    Args:
+        client: MinIO client
+        bucket: bucket name
+        path: object name
+
+    """
+
+    def __init__(
+        self,
+        client: minio.Minio,
+        bucket: str,
+        path: str,
+    ):
+        super().__init__()
+        self._client = client
+        self._bucket = bucket
+        self._pos = 0
+        self.name = path
+        r"""Object name."""
+        self.size = client.stat_object(bucket_name=bucket, object_name=path).size
+        r"""Size of object in bytes."""
+
+    def readable(self) -> bool:  # noqa: D102
+        return True
+
+    def seekable(self) -> bool:  # noqa: D102
+        return True
+
+    def tell(self) -> int:  # noqa: D102
+        self._check_not_closed()
+        return self._pos
+
+    def seek(self, offset: int, whence: int = io.SEEK_SET) -> int:  # noqa: D102
+        self._check_not_closed()
+        if whence == io.SEEK_SET:
+            pos = offset
+        elif whence == io.SEEK_CUR:
+            pos = self._pos + offset
+        elif whence == io.SEEK_END:
+            pos = self.size + offset
+        else:
+            raise ValueError(f"invalid whence ({whence}, should be 0, 1 or 2)")
+        if pos < 0:
+            raise ValueError(f"negative seek position {pos}")
+        self._pos = pos
+        return self._pos
+
+    def readinto(self, buffer) -> int:  # noqa: D102
+        self._check_not_closed()
+        data = self._read(len(buffer))
+        n = len(data)
+        memoryview(buffer).cast("B")[:n] = data
+        return n
+
+    def readall(self) -> bytes:  # noqa: D102
+        # Request the remaining bytes at once,
+        # instead of the default implementation
+        # that would send a request for every 8 KB
+        self._check_not_closed()
+        return self._read(self.size - self._pos)
+
+    def _check_not_closed(self):
+        if self.closed:
+            raise ValueError("I/O operation on closed file.")
+
+    def _read(self, size: int) -> bytes:
+        size = min(size, self.size - self._pos)
+        if size <= 0:
+            return b""
+        data = utils.call_function_on_backend(self._get_range, self._pos, size)
+        self._pos += len(data)
+        return data
+
+    def _get_range(self, offset: int, length: int) -> bytes:
+        response = self._client.get_object(
+            bucket_name=self._bucket,
+            object_name=self.name,
+            offset=offset,
+            length=length,
+        )
+        try:
+            return response.read()
+        finally:
+            response.close()
+            response.release_conn()
 
 
 def _metadata(checksum: str):

@@ -1164,3 +1164,100 @@ def test_ls_dirs(tmpdir, interface):
         suppress_backend_errors=True,
     )
     assert dirs == []
+
+
+@pytest.mark.parametrize(
+    "interface",
+    [(audbackend.backend.Minio, audbackend.interface.Unversioned)],
+    indirect=True,
+)
+def test_open_file(tmpdir, interface):
+    """Test file object returned by Minio.open_file()."""
+    content = bytes(range(256)) * 1000
+    src_path = audeer.path(tmpdir, "file.bin")
+    with open(src_path, "wb") as fp:
+        fp.write(content)
+    interface.put_file(src_path, "/file.bin")
+    empty_path = audeer.touch(audeer.path(tmpdir, "empty.bin"))
+    interface.put_file(empty_path, "/empty.bin")
+
+    # Count range requests sent to the server
+    client = interface.backend._client
+    requests = []
+    get_object = client.get_object
+
+    def counting_get_object(*args, **kwargs):
+        requests.append((kwargs["offset"], kwargs["length"]))
+        return get_object(*args, **kwargs)
+
+    client.get_object = counting_get_object
+    try:
+        with interface.open_file("/file.bin") as f:
+            assert f.raw.name == "file.bin"
+            assert f.raw.size == len(content)
+
+            # Only requested parts are downloaded
+            f.seek(-100, os.SEEK_END)
+            assert f.read(100) == content[-100:]
+            assert sum(length for _, length in requests) <= 100
+            requests.clear()
+
+            # Small reads are buffered
+            f.seek(1000)
+            assert f.read(10) == content[1000:1010]
+            assert f.read(10) == content[1010:1020]
+            assert len(requests) == 1
+            requests.clear()
+
+            # Read the rest with a single request
+            f.seek(2000)
+            assert f.read() == content[2000:]
+            assert len(requests) == 1
+            requests.clear()
+
+            # Reading at the end sends no request
+            assert f.read() == b""
+            assert f.read(1) == b""
+            f.seek(len(content) + 10)
+            assert f.read(1) == b""
+            assert requests == []
+
+        with interface.open_file("/empty.bin") as f:
+            assert f.read() == b""
+            assert requests == []
+    finally:
+        client.get_object = get_object
+
+    # Raw file object
+    # (keep a reference to the buffered reader,
+    # otherwise its garbage collection closes the raw object)
+    f = interface.open_file("/file.bin")
+    raw = f.raw
+    assert raw.readable()
+    assert raw.seekable()
+    assert raw.seek(10) == 10
+    assert raw.seek(5, os.SEEK_CUR) == 15
+    assert raw.tell() == 15
+    assert raw.seek(-6, os.SEEK_END) == len(content) - 6
+    buffer = bytearray(10)
+    assert raw.readinto(buffer) == 6
+    assert bytes(buffer[:6]) == content[-6:]
+    with pytest.raises(ValueError, match="invalid whence"):
+        raw.seek(0, 3)
+    with pytest.raises(ValueError, match="negative seek position"):
+        raw.seek(-1)
+    raw.close()
+    with pytest.raises(ValueError, match="closed file"):
+        raw.tell()
+    with pytest.raises(ValueError, match="closed file"):
+        raw.seek(0)
+    with pytest.raises(ValueError, match="closed file"):
+        raw.readinto(buffer)
+    with pytest.raises(ValueError, match="closed file"):
+        raw.readall()
+
+    # Errors during reading are raised as BackendError
+    with interface.open_file("/file.bin") as f:
+        interface.remove_file("/file.bin")
+        with pytest.raises(audbackend.BackendError):
+            f.read()

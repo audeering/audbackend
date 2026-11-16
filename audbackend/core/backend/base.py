@@ -7,6 +7,7 @@ import inspect
 import os
 import shutil
 import tempfile
+from typing import BinaryIO
 import zipfile
 
 from stream_unzip import TruncatedDataError
@@ -1180,6 +1181,65 @@ class Base:
         if not self.opened:
             utils.call_function_on_backend(self._open)
             self.opened = True
+
+    def _open_file(
+        self,
+        path: str,
+    ) -> BinaryIO:  # pragma: no cover
+        r"""Open file on backend for reading.
+
+        Should return a read-only, seekable binary file object
+        and raise an error if ``path`` does not exist.
+
+        """
+        raise NotImplementedError()
+
+    def open_file(
+        self,
+        path: str,
+    ) -> BinaryIO:
+        r"""Open file on backend for reading.
+
+        Returns a read-only, seekable binary file object.
+        In contrast to :meth:`audbackend.backend.Base.get_file`,
+        the file is not downloaded,
+        but only the parts that are read
+        are requested from the backend.
+        This is useful if only a small part of a large file is needed,
+        e.g. the footer of a PARQUET file.
+
+        The file object should be closed after usage,
+        best by using it in a with_ statement.
+
+        Note that
+        :meth:`audbackend.backend.Base.open`
+        opens the connection to the backend
+        and not a file.
+
+        Args:
+            path: path to file on backend
+
+        Returns:
+            read-only binary file object
+
+        Raises:
+            BackendError: if an error is raised on the backend,
+                e.g. ``path`` does not exist
+            ValueError: if ``path`` does not start with ``'/'``,
+                ends on ``'/'``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
+
+        .. _with: https://docs.python.org/3/reference/compound_stmts.html#with
+
+        """
+        if not self.opened:
+            raise RuntimeError(backend_not_opened_error)
+        path = utils.check_path(path)
+        return utils.call_function_on_backend(
+            self._open_file,
+            path,
+        )
 
     def _owner(
         self,
