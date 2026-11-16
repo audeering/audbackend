@@ -1195,7 +1195,7 @@ def test_open_file(tmpdir, interface):
     try:
         with interface.open_file("/file.bin") as f:
             assert f.raw.name == "file.bin"
-            assert f.raw.size == len(content)
+            assert f.raw._raw.size == len(content)
 
             # Only requested parts are downloaded
             f.seek(-100, os.SEEK_END)
@@ -1229,38 +1229,41 @@ def test_open_file(tmpdir, interface):
     finally:
         client.get_object = get_object
 
-    # Raw file object
+    # Raw file objects:
+    # the wrapper raising BackendError
+    # and the MinIO range file wrapped by it
     # (keep a reference to the buffered reader,
-    # otherwise its garbage collection closes the raw object)
-    f = interface.open_file("/file.bin")
-    raw = f.raw
-    assert raw.readable()
-    assert raw.seekable()
-    assert raw.seek(10) == 10
-    assert raw.seek(5, os.SEEK_CUR) == 15
-    assert raw.tell() == 15
-    assert raw.seek(-6, os.SEEK_END) == len(content) - 6
-    buffer = bytearray(10)
-    assert raw.readinto(buffer) == 6
-    assert bytes(buffer[:6]) == content[-6:]
-    # Buffer with multi-byte elements
-    raw.seek(0)
-    buffer = array.array("i", [0] * 4)
-    assert raw.readinto(buffer) == buffer.itemsize * 4
-    assert buffer.tobytes() == content[: buffer.itemsize * 4]
-    with pytest.raises(ValueError, match="invalid whence"):
-        raw.seek(0, 3)
-    with pytest.raises(ValueError, match="negative seek position"):
-        raw.seek(-1)
-    raw.close()
-    with pytest.raises(ValueError, match="closed file"):
-        raw.tell()
-    with pytest.raises(ValueError, match="closed file"):
+    # otherwise its garbage collection closes the raw objects)
+    for wrapped in [False, True]:
+        f = interface.open_file("/file.bin")
+        raw = f.raw._raw if wrapped else f.raw
+        assert raw.readable()
+        assert raw.seekable()
+        assert raw.seek(10) == 10
+        assert raw.seek(5, os.SEEK_CUR) == 15
+        assert raw.tell() == 15
+        assert raw.seek(-6, os.SEEK_END) == len(content) - 6
+        buffer = bytearray(10)
+        assert raw.readinto(buffer) == 6
+        assert bytes(buffer[:6]) == content[-6:]
+        # Buffer with multi-byte elements
         raw.seek(0)
-    with pytest.raises(ValueError, match="closed file"):
-        raw.readinto(buffer)
-    with pytest.raises(ValueError, match="closed file"):
-        raw.readall()
+        buffer = array.array("i", [0] * 4)
+        assert raw.readinto(buffer) == buffer.itemsize * 4
+        assert buffer.tobytes() == content[: buffer.itemsize * 4]
+        with pytest.raises(ValueError, match="invalid whence"):
+            raw.seek(0, 3)
+        with pytest.raises(ValueError, match="negative seek position"):
+            raw.seek(-1)
+        raw.close()
+        with pytest.raises(ValueError, match="closed file"):
+            raw.tell()
+        with pytest.raises(ValueError, match="closed file"):
+            raw.seek(0)
+        with pytest.raises(ValueError, match="closed file"):
+            raw.readinto(buffer)
+        with pytest.raises(ValueError, match="closed file"):
+            raw.readall()
 
     # Reading fails if the object was replaced after opening
     with interface.open_file("/file.bin") as f:

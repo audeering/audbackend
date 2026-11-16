@@ -16,7 +16,6 @@ import urllib3
 import audeer
 
 from audbackend.core import utils
-from audbackend.core.backend.base import STREAM_CHUNK_SIZE
 from audbackend.core.backend.base import Base
 
 
@@ -549,8 +548,7 @@ class Minio(Base):
         are downloaded using range requests.
 
         """
-        raw = _RangeFile(self._client, self.repository, self.path(path))
-        return io.BufferedReader(raw, buffer_size=STREAM_CHUNK_SIZE)
+        return _RangeFile(self._client, self.repository, self.path(path))
 
     def _owner(
         self,
@@ -725,7 +723,7 @@ class _RangeFile(io.RawIOBase):
         size = min(size, self.size - self._pos)
         if size <= 0:
             return b""
-        data = utils.call_function_on_backend(self._get_range, self._pos, size)
+        data = self._get_range(self._pos, size)
         self._pos += len(data)
         return data
 

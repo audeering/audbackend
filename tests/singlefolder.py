@@ -139,7 +139,7 @@ class SingleFolder(audbackend.backend.Base):
         path: str,
     ) -> BinaryIO:
         with self.Map(self._path, self._lock) as m:
-            return open(m[path][0], "rb")
+            return open(m[path][0], "rb", buffering=0)
 
     def _ls(
         self,

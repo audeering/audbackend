@@ -206,7 +206,7 @@ class FileSystem(Base):
     ) -> BinaryIO:
         r"""Open file on backend for reading."""
         path = self._expand(path)
-        return open(path, "rb")
+        return open(path, "rb", buffering=0)
 
     def _owner(
         self,
