@@ -1211,6 +1211,13 @@ class Base:
         The file object should be closed after usage,
         best by using it in a with_ statement.
 
+        Errors raised while reading from the returned file object
+        depend on the backend,
+        e.g. :class:`audbackend.BackendError`
+        for :class:`audbackend.backend.Minio`
+        and :class:`OSError`
+        for :class:`audbackend.backend.FileSystem`.
+
         Note that
         :meth:`audbackend.backend.Base.open`
         opens the connection to the backend

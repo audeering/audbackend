@@ -646,6 +646,10 @@ class _RangeFile(io.RawIOBase):
     The position is handled locally,
     every read results in a range request
     for the requested bytes.
+    The ETag of the object is pinned when opening,
+    so that reads fail
+    if the object is replaced in the meantime,
+    instead of mixing data of different objects.
 
     Args:
         client: MinIO client
@@ -666,8 +670,10 @@ class _RangeFile(io.RawIOBase):
         self._pos = 0
         self.name = path
         r"""Object name."""
-        self.size = client.stat_object(bucket_name=bucket, object_name=path).size
+        stat = client.stat_object(bucket_name=bucket, object_name=path)
+        self.size = stat.size
         r"""Size of object in bytes."""
+        self._etag = stat.etag
 
     def readable(self) -> bool:  # noqa: D102
         return True
@@ -696,9 +702,12 @@ class _RangeFile(io.RawIOBase):
 
     def readinto(self, buffer) -> int:  # noqa: D102
         self._check_not_closed()
-        data = self._read(len(buffer))
+        # Cast to bytes,
+        # as the buffer might have multi-byte elements
+        view = memoryview(buffer).cast("B")
+        data = self._read(view.nbytes)
         n = len(data)
-        memoryview(buffer).cast("B")[:n] = data
+        view[:n] = data
         return n
 
     def readall(self) -> bytes:  # noqa: D102
@@ -726,6 +735,7 @@ class _RangeFile(io.RawIOBase):
             object_name=self.name,
             offset=offset,
             length=length,
+            request_headers={"If-Match": f'"{self._etag}"'},
         )
         try:
             return response.read()

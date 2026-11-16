@@ -1,3 +1,4 @@
+import array
 import filecmp
 import os
 from unittest import mock
@@ -1242,6 +1243,11 @@ def test_open_file(tmpdir, interface):
     buffer = bytearray(10)
     assert raw.readinto(buffer) == 6
     assert bytes(buffer[:6]) == content[-6:]
+    # Buffer with multi-byte elements
+    raw.seek(0)
+    buffer = array.array("i", [0] * 4)
+    assert raw.readinto(buffer) == buffer.itemsize * 4
+    assert buffer.tobytes() == content[: buffer.itemsize * 4]
     with pytest.raises(ValueError, match="invalid whence"):
         raw.seek(0, 3)
     with pytest.raises(ValueError, match="negative seek position"):
@@ -1255,6 +1261,17 @@ def test_open_file(tmpdir, interface):
         raw.readinto(buffer)
     with pytest.raises(ValueError, match="closed file"):
         raw.readall()
+
+    # Reading fails if the object was replaced after opening
+    with interface.open_file("/file.bin") as f:
+        assert f.read(10) == content[:10]
+        with open(src_path, "wb") as fp:
+            fp.write(content[::-1])
+        interface.put_file(src_path, "/file.bin")
+        # seek outside of the already buffered data
+        f.seek(-10, os.SEEK_END)
+        with pytest.raises(audbackend.BackendError):
+            f.read(10)
 
     # Errors during reading are raised as BackendError
     with interface.open_file("/file.bin") as f:
