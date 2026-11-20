@@ -7,6 +7,14 @@ The format is based on `Keep a Changelog`_,
 and this project adheres to `Semantic Versioning`_.
 
 
+Version 3.1.0 (2026-11-20)
+--------------------------
+
+* Added: ``open_file()`` for partial reading of files
+* Added: support for Python 3.15
+* Removed: support for Python 3.10
+
+
 Version 3.0.2 (2026-07-20)
 --------------------------
 
