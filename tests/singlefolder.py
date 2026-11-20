@@ -4,6 +4,7 @@ import os
 import pickle
 import shutil
 import threading
+from typing import BinaryIO
 
 import audeer
 
@@ -132,6 +133,13 @@ class SingleFolder(audbackend.backend.Base):
         with open(src_file, "rb") as f:
             while data := f.read(chunk_size):
                 yield data
+
+    def _open_file(
+        self,
+        path: str,
+    ) -> BinaryIO:
+        with self.Map(self._path, self._lock) as m:
+            return open(m[path][0], "rb", buffering=0)
 
     def _ls(
         self,

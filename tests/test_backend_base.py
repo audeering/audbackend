@@ -120,6 +120,8 @@ def test_errors(tmpdir, backend):
     with pytest.raises(RuntimeError, match=error_msg):
         backend.move_file(src_path, dst_path)
     with pytest.raises(RuntimeError, match=error_msg):
+        backend.open_file(path)
+    with pytest.raises(RuntimeError, match=error_msg):
         backend.owner(path)
     with pytest.raises(RuntimeError, match=error_msg):
         backend.put_archive(src_root, dst_path)

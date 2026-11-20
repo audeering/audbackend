@@ -1230,3 +1230,36 @@ def test_validate(tmpdir):
         validate=True,
     )
     assert os.path.exists(dst_root)
+
+
+@pytest.mark.parametrize(
+    "interface",
+    backend_interface_combinations
+    + [
+        (audbackend.backend.Minio, audbackend.interface.Versioned),
+        (audbackend.backend.FileSystem, audbackend.interface.Maven),
+        (audbackend.backend.Minio, audbackend.interface.Maven),
+    ],
+    indirect=True,
+)
+def test_open_file(tmpdir, interface):
+    for version in ["1.0.0", "2.0.0"]:
+        src_path = audeer.path(tmpdir, "file.txt")
+        with open(src_path, "w") as fp:
+            fp.write(f"content-{version}")
+        interface.put_file(src_path, "/sub/file.txt", version)
+
+    for version in ["1.0.0", "2.0.0"]:
+        with interface.open_file("/sub/file.txt", version) as f:
+            assert f.read() == f"content-{version}".encode()
+            f.seek(-5, os.SEEK_END)
+            assert f.read() == version.encode()
+
+    error_backend = (
+        "An exception was raised by the backend, "
+        "please see stack trace for further information."
+    )
+    with pytest.raises(audbackend.BackendError, match=error_backend):
+        interface.open_file("/sub/file.txt", "3.0.0")
+    with pytest.raises(ValueError, match="does not match"):
+        interface.open_file("/sub/file.txt", "?")

@@ -817,3 +817,51 @@ def test_validate(tmpdir):
     assert not os.path.exists(dst_root)
     interface.get_archive("/remote.zip", dst_root, validate=True)
     assert os.path.exists(dst_root)
+
+
+@pytest.mark.parametrize(
+    "interface",
+    backend_interface_combinations,
+    indirect=True,
+)
+def test_open_file(tmpdir, interface):
+    content = os.urandom(200_000)
+    src_path = audeer.path(tmpdir, "file.bin")
+    with open(src_path, "wb") as fp:
+        fp.write(content)
+    interface.put_file(src_path, "/sub/file.bin")
+
+    with interface.open_file("/sub/file.bin") as f:
+        assert f.readable()
+        assert f.seekable()
+        assert f.tell() == 0
+        assert f.read(10) == content[:10]
+        assert f.tell() == 10
+        # Read from the end, like the footer of a parquet file
+        assert f.seek(-8, os.SEEK_END) == len(content) - 8
+        assert f.read() == content[-8:]
+        assert f.read(10) == b""
+        # Relative seek
+        f.seek(1000)
+        assert f.seek(500, os.SEEK_CUR) == 1500
+        assert f.read(100_000) == content[1500:101_500]
+        # Read everything
+        f.seek(0)
+        assert f.read() == content
+    assert f.closed
+    with pytest.raises(ValueError, match="closed file"):
+        f.readable()
+    with pytest.raises(ValueError, match="closed file"):
+        f.seekable()
+
+    # Errors
+    error_backend = (
+        "An exception was raised by the backend, "
+        "please see stack trace for further information."
+    )
+    with pytest.raises(audbackend.BackendError, match=error_backend):
+        interface.open_file("/missing.bin")
+    with pytest.raises(ValueError, match="must start with '/'"):
+        interface.open_file("sub/file.bin")
+    with pytest.raises(ValueError, match="must not end on '/'"):
+        interface.open_file("/sub/")

@@ -4,9 +4,11 @@ import errno
 import fnmatch
 import hashlib
 import inspect
+import io
 import os
 import shutil
 import tempfile
+from typing import BinaryIO
 import zipfile
 
 from stream_unzip import TruncatedDataError
@@ -1181,6 +1183,75 @@ class Base:
             utils.call_function_on_backend(self._open)
             self.opened = True
 
+    def _open_file(
+        self,
+        path: str,
+    ) -> BinaryIO:  # pragma: no cover
+        r"""Open file on backend for reading.
+
+        Should return a read-only, seekable,
+        unbuffered binary file object,
+        e.g. an instance of :class:`io.RawIOBase`,
+        and raise an error if ``path`` does not exist.
+        Buffering
+        and the conversion of errors to :class:`audbackend.BackendError`
+        are handled by :meth:`audbackend.backend.Base.open_file`.
+
+        """
+        raise NotImplementedError()
+
+    def open_file(
+        self,
+        path: str,
+    ) -> BinaryIO:
+        r"""Open file on backend for reading.
+
+        Returns a read-only, seekable binary file object.
+        In contrast to :meth:`audbackend.backend.Base.get_file`,
+        the file is not downloaded,
+        but only the parts that are read
+        are requested from the backend.
+        This is useful if only a small part of a large file is needed,
+        e.g. the footer of a PARQUET file.
+
+        The file object should be closed after usage,
+        best by using it in a with_ statement.
+
+        Errors raised on the backend
+        while reading from the returned file object
+        are raised as :class:`audbackend.BackendError`.
+
+        Note that
+        :meth:`audbackend.backend.Base.open`
+        opens the connection to the backend
+        and not a file.
+
+        Args:
+            path: path to file on backend
+
+        Returns:
+            read-only binary file object
+
+        Raises:
+            BackendError: if an error is raised on the backend,
+                e.g. ``path`` does not exist
+            ValueError: if ``path`` does not start with ``'/'``,
+                ends on ``'/'``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
+
+        .. _with: https://docs.python.org/3/reference/compound_stmts.html#with
+
+        """
+        if not self.opened:
+            raise RuntimeError(backend_not_opened_error)
+        path = utils.check_path(path)
+        raw = utils.call_function_on_backend(
+            self._open_file,
+            path,
+        )
+        return io.BufferedReader(_BackendFile(raw), buffer_size=STREAM_CHUNK_SIZE)
+
     def _owner(
         self,
         path: str,
@@ -1461,3 +1532,97 @@ class Base:
         basename = path.split(self.sep)[-1]
 
         return root, basename
+
+
+class _BackendFile(io.RawIOBase):
+    r"""Read-only, seekable raw file object wrapping a backend file object.
+
+    Errors raised by the wrapped file object
+    are retried
+    and raised as :class:`audbackend.BackendError`.
+    The position is tracked locally
+    and restored on the wrapped file object
+    before every read,
+    so that a retried read
+    starts at the correct position.
+    Invalid seek arguments
+    raise :class:`ValueError`
+    without contacting the backend.
+
+    Args:
+        raw: file object returned by ``_open_file()`` of a backend
+
+    """
+
+    def __init__(
+        self,
+        raw: BinaryIO,
+    ):
+        super().__init__()
+        self._raw = raw
+        self._pos = 0
+
+    def close(self):  # noqa: D102
+        if not self.closed:
+            try:
+                # No retries,
+                # as a failed close might mark the file as closed,
+                # so that a second call would hide the error
+                utils.call_function_on_backend(self._raw.close, retries=1)
+            finally:
+                super().close()
+
+    def readable(self) -> bool:  # noqa: D102
+        self._check_not_closed()
+        return True
+
+    def seekable(self) -> bool:  # noqa: D102
+        self._check_not_closed()
+        return True
+
+    def tell(self) -> int:  # noqa: D102
+        self._check_not_closed()
+        return self._pos
+
+    def seek(self, offset: int, whence: int = io.SEEK_SET) -> int:  # noqa: D102
+        self._check_not_closed()
+        if whence == io.SEEK_SET:
+            pos = offset
+        elif whence == io.SEEK_CUR:
+            pos = self._pos + offset
+        elif whence == io.SEEK_END:
+            size = utils.call_function_on_backend(self._raw.seek, 0, io.SEEK_END)
+            pos = size + offset
+        else:
+            raise ValueError(f"invalid whence ({whence}, should be 0, 1 or 2)")
+        if pos < 0:
+            raise ValueError(f"negative seek position {pos}")
+        self._pos = pos
+        return self._pos
+
+    def readinto(self, buffer) -> int:  # noqa: D102
+        self._check_not_closed()
+        n = utils.call_function_on_backend(self._readinto, buffer)
+        self._pos += n
+        return n
+
+    def readall(self) -> bytes:  # noqa: D102
+        # Delegate to the wrapped file object,
+        # as its implementation might be more efficient,
+        # e.g. a single request instead of one per chunk
+        self._check_not_closed()
+        data = utils.call_function_on_backend(self._readall)
+        self._pos += len(data)
+        return data
+
+    def _check_not_closed(self):
+        if self.closed:
+            raise ValueError("I/O operation on closed file.")
+
+    def _readall(self) -> bytes:
+        self._raw.seek(self._pos)
+        return self._raw.read()
+
+    def _readinto(self, buffer) -> int:
+        self._raw.seek(self._pos)
+        return self._raw.readinto(buffer) or 0

@@ -3,6 +3,7 @@ import datetime
 import errno
 import os
 import shutil
+from typing import BinaryIO
 
 import audeer
 
@@ -198,6 +199,14 @@ class FileSystem(Base):
         r"""Open connection to backend."""
         if not os.path.exists(self._root):
             utils.raise_file_not_found_error(self._root)
+
+    def _open_file(
+        self,
+        path: str,
+    ) -> BinaryIO:
+        r"""Open file on backend for reading."""
+        path = self._expand(path)
+        return open(path, "rb", buffering=0)
 
     def _owner(
         self,

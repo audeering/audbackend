@@ -167,6 +167,7 @@ we need to implement the following private methods:
 * ``_get_file()``
 * ``_ls()``
 * ``_open()``
+* ``_open_file()``
 * ``_owner()``
 * ``_put_file()``
 * ``_remove_file()``
@@ -518,6 +519,40 @@ Which we then use to download the file.
 
 >>> interface.get_file("/file.txt", audeer.path("local.txt"), "1.0.0")
 '...local.txt'
+
+To read a file
+without downloading it,
+we implement a method
+that returns a seekable binary file object.
+For simplicity,
+we load the whole content
+into memory.
+A real backend
+should request only
+the bytes that are actually read.
+
+.. code-block:: python
+
+    import io
+
+
+    @add_method(SQLite)
+    def _open_file(
+            self,
+            path: str,
+    ) -> io.BytesIO:
+        with self._db as db:
+            query = """
+                SELECT content
+                FROM data
+                WHERE path=?
+            """
+            content = db.execute(query, [path]).fetchone()[0]
+        return io.BytesIO(content)
+
+>>> with interface.open_file("/file.txt", "1.0.0") as f:
+...     f.read()
+b''
 
 To inspect the files
 on our backend

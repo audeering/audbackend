@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 import os  # noqa: F401
+from typing import BinaryIO
 
 from audbackend.core.interface.base import Base
 
@@ -503,6 +504,55 @@ class Unversioned(Base):
             validate=validate,
             verbose=verbose,
         )
+
+    def open_file(
+        self,
+        path: str,
+    ) -> BinaryIO:
+        r"""Open file on backend for reading.
+
+        Returns a read-only, seekable binary file object.
+        In contrast to :meth:`get_file`,
+        the file is not downloaded,
+        but only the parts that are read
+        are requested from the backend.
+        This is useful if only a small part of a large file is needed,
+        e.g. the footer of a PARQUET file.
+
+        The file object should be closed after usage,
+        best by using it in a with_ statement.
+
+        Args:
+            path: path to file on backend
+
+        Returns:
+            read-only binary file object
+
+        Raises:
+            BackendError: if an error is raised on the backend,
+                e.g. ``path`` does not exist
+            ValueError: if ``path`` does not start with ``'/'``,
+                ends on ``'/'``,
+                or does not match ``'[A-Za-z0-9/._-]+'``
+            RuntimeError: if backend was not opened
+
+        ..
+            >>> interface = Unversioned(filesystem)
+            >>> file = audeer.path("src.txt")
+            >>> with open(file, "w") as fp:
+            ...     _ = fp.write("abcdefghij")
+
+        Examples:
+            >>> interface.put_file(file, "/file.txt")
+            >>> with interface.open_file("/file.txt") as f:
+            ...     _ = f.seek(5)
+            ...     f.read(3)
+            b'fgh'
+
+        .. _with: https://docs.python.org/3/reference/compound_stmts.html#with
+
+        """
+        return self.backend.open_file(path)
 
     def owner(
         self,
