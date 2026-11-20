@@ -50,6 +50,10 @@ move\_file\(\)
 --------------
 .. automethod:: Unversioned.move_file
     
+open\_file\(\)
+--------------
+.. automethod:: Unversioned.open_file
+    
 owner\(\)
 ---------
 .. automethod:: Unversioned.owner

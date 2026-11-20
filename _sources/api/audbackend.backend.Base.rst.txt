@@ -70,6 +70,10 @@ open\(\)
 --------
 .. automethod:: Base.open
     
+open\_file\(\)
+--------------
+.. automethod:: Base.open_file
+    
 opened
 ------
 .. autoattribute:: Base.opened

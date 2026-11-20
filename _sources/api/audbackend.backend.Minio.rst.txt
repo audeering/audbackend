@@ -78,6 +78,10 @@ open\(\)
 --------
 .. automethod:: Minio.open
     
+open\_file\(\)
+--------------
+.. automethod:: Minio.open_file
+    
 opened
 ------
 .. autoattribute:: Minio.opened

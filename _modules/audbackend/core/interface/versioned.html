@@ -28,6 +28,7 @@
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/audeering.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/sphinx_autodoc_typehints.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -63,7 +64,7 @@
             
             
               <div class="version">
-                3.0.2
+                3.1.0
               </div>
             
           
@@ -145,6 +146,7 @@
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">fnmatch</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">BinaryIO</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">audeer</span>
 
@@ -157,7 +159,7 @@
 <div class="viewcode-block" id="Versioned">
 <a class="viewcode-back" href="../../../../api/audbackend.interface.Versioned.html#audbackend.interface.Versioned">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Versioned</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Interface for versioned file access.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Interface for versioned file access.</span>
 
 <span class="sd">    Use this interface if you care about versioning.</span>
 <span class="sd">    For each file on the backend path one or more versions may exist.</span>
@@ -170,21 +172,21 @@
 <span class="sd">        &gt;&gt;&gt; import audeer</span>
 
 <span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; host = audeer.mkdir(&quot;host&quot;)</span>
-<span class="sd">        &gt;&gt;&gt; audbackend.backend.FileSystem.create(host, &quot;repo&quot;)</span>
-<span class="sd">        &gt;&gt;&gt; backend = audbackend.backend.FileSystem(host, &quot;repo&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; host = audeer.mkdir("host")</span>
+<span class="sd">        &gt;&gt;&gt; audbackend.backend.FileSystem.create(host, "repo")</span>
+<span class="sd">        &gt;&gt;&gt; backend = audbackend.backend.FileSystem(host, "repo")</span>
 <span class="sd">        &gt;&gt;&gt; backend.open()</span>
 <span class="sd">        &gt;&gt;&gt; interface = Versioned(backend)</span>
-<span class="sd">        &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
-<span class="sd">        &gt;&gt;&gt; interface.put_archive(&quot;.&quot;, &quot;/sub/archive.zip&quot;, &quot;1.0.0&quot;, files=[file])</span>
-<span class="sd">        &gt;&gt;&gt; for version in [&quot;1.0.0&quot;, &quot;2.0.0&quot;]:</span>
-<span class="sd">        ...     interface.put_file(file, &quot;/file.txt&quot;, version)</span>
+<span class="sd">        &gt;&gt;&gt; file = "src.txt"</span>
+<span class="sd">        &gt;&gt;&gt; interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])</span>
+<span class="sd">        &gt;&gt;&gt; for version in ["1.0.0", "2.0.0"]:</span>
+<span class="sd">        ...     interface.put_file(file, "/file.txt", version)</span>
 <span class="sd">        &gt;&gt;&gt; interface.ls()</span>
-<span class="sd">        [(&#39;/file.txt&#39;, &#39;1.0.0&#39;), (&#39;/file.txt&#39;, &#39;2.0.0&#39;), (&#39;/sub/archive.zip&#39;, &#39;1.0.0&#39;)]</span>
-<span class="sd">        &gt;&gt;&gt; interface.get_file(&quot;/file.txt&quot;, &quot;dst.txt&quot;, &quot;2.0.0&quot;)</span>
-<span class="sd">        &#39;...dst.txt&#39;</span>
+<span class="sd">        [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]</span>
+<span class="sd">        &gt;&gt;&gt; interface.get_file("/file.txt", "dst.txt", "2.0.0")</span>
+<span class="sd">        '...dst.txt'</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -199,7 +201,7 @@
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;MD5 checksum for file on backend.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""MD5 checksum for file on backend.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            path: path to file on backend</span>
@@ -211,26 +213,26 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            BackendError: if an error is raised on the backend,</span>
 <span class="sd">                e.g. ``path`` does not exist</span>
-<span class="sd">            ValueError: if ``path`` does not start with ``&#39;/&#39;``,</span>
-<span class="sd">                ends on ``&#39;/&#39;``,</span>
-<span class="sd">                or does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            ValueError: if ``path`` does not start with ``'/'``,</span>
+<span class="sd">                ends on ``'/'``,</span>
+<span class="sd">                or does not match ``'[A-Za-z0-9/._-]+'``</span>
 <span class="sd">            ValueError: if ``version`` is empty or</span>
-<span class="sd">                does not match ``&#39;[A-Za-z0-9._-]+&#39;``</span>
+<span class="sd">                does not match ``'[A-Za-z0-9._-]+'``</span>
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
 <span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
+<span class="sd">            &gt;&gt;&gt; file = "src.txt"</span>
 <span class="sd">            &gt;&gt;&gt; import audeer</span>
 <span class="sd">            &gt;&gt;&gt; audeer.md5(file)</span>
-<span class="sd">            &#39;d41d8cd98f00b204e9800998ecf8427e&#39;</span>
-<span class="sd">            &gt;&gt;&gt; interface.put_file(file, &quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; interface.checksum(&quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
-<span class="sd">            &#39;d41d8cd98f00b204e9800998ecf8427e&#39;</span>
+<span class="sd">            'd41d8cd98f00b204e9800998ecf8427e'</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_file(file, "/file.txt", "1.0.0")</span>
+<span class="sd">            &gt;&gt;&gt; interface.checksum("/file.txt", "1.0.0")</span>
+<span class="sd">            'd41d8cd98f00b204e9800998ecf8427e'</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">path_with_version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_with_version</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">checksum</span><span class="p">(</span><span class="n">path_with_version</span><span class="p">)</span></div>
 
@@ -247,7 +249,7 @@
         <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Copy file on backend.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Copy file on backend.</span>
 
 <span class="sd">        If ``version`` is ``None``</span>
 <span class="sd">        all versions of ``src_path``</span>
@@ -279,26 +281,26 @@
 <span class="sd">            BackendError: if an error is raised on the backend</span>
 <span class="sd">            InterruptedError: if validation fails</span>
 <span class="sd">            ValueError: if ``src_path`` or ``dst_path``</span>
-<span class="sd">                does not start with ``&#39;/&#39;``,</span>
-<span class="sd">                ends on ``&#39;/&#39;``,</span>
-<span class="sd">                or does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">                does not start with ``'/'``,</span>
+<span class="sd">                ends on ``'/'``,</span>
+<span class="sd">                or does not match ``'[A-Za-z0-9/._-]+'``</span>
 <span class="sd">            ValueError: if ``version`` is empty or</span>
-<span class="sd">                does not match ``&#39;[A-Za-z0-9._-]+&#39;``</span>
+<span class="sd">                does not match ``'[A-Za-z0-9._-]+'``</span>
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
 <span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
-<span class="sd">            &gt;&gt;&gt; interface.put_file(file, &quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; interface.exists(&quot;/copy.txt&quot;, &quot;1.0.0&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; file = "src.txt"</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_file(file, "/file.txt", "1.0.0")</span>
+<span class="sd">            &gt;&gt;&gt; interface.exists("/copy.txt", "1.0.0")</span>
 <span class="sd">            False</span>
-<span class="sd">            &gt;&gt;&gt; interface.copy_file(&quot;/file.txt&quot;, &quot;/copy.txt&quot;, version=&quot;1.0.0&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; interface.exists(&quot;/copy.txt&quot;, &quot;1.0.0&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; interface.copy_file("/file.txt", "/copy.txt", version="1.0.0")</span>
+<span class="sd">            &gt;&gt;&gt; interface.exists("/copy.txt", "1.0.0")</span>
 <span class="sd">            True</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">versions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">versions</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -323,7 +325,7 @@
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Last modification date of file on backend.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Last modification date of file on backend.</span>
 
 <span class="sd">        If the date cannot be determined,</span>
 <span class="sd">        an empty string is returned.</span>
@@ -333,16 +335,16 @@
 <span class="sd">            version: version string</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            date in format ``&#39;yyyy-mm-dd&#39;``</span>
+<span class="sd">            date in format ``'yyyy-mm-dd'``</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            BackendError: if an error is raised on the backend,</span>
 <span class="sd">                e.g. ``path`` does not exist</span>
-<span class="sd">            ValueError: if ``path`` does not start with ``&#39;/&#39;``,</span>
-<span class="sd">                ends on ``&#39;/&#39;``,</span>
-<span class="sd">                or does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            ValueError: if ``path`` does not start with ``'/'``,</span>
+<span class="sd">                ends on ``'/'``,</span>
+<span class="sd">                or does not match ``'[A-Za-z0-9/._-]+'``</span>
 <span class="sd">            ValueError: if ``version`` is empty or</span>
-<span class="sd">                does not match ``&#39;[A-Za-z0-9._-]+&#39;``</span>
+<span class="sd">                does not match ``'[A-Za-z0-9._-]+'``</span>
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
@@ -350,12 +352,12 @@
 <span class="sd">            &gt;&gt;&gt; interface.date = mock_date</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
-<span class="sd">            &gt;&gt;&gt; interface.put_file(file, &quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; interface.date(&quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
-<span class="sd">            &#39;1991-02-20&#39;</span>
+<span class="sd">            &gt;&gt;&gt; file = "src.txt"</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_file(file, "/file.txt", "1.0.0")</span>
+<span class="sd">            &gt;&gt;&gt; interface.date("/file.txt", "1.0.0")</span>
+<span class="sd">            '1991-02-20'</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">path_with_version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_with_version</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">date</span><span class="p">(</span><span class="n">path_with_version</span><span class="p">)</span></div>
 
@@ -369,7 +371,7 @@
         <span class="o">*</span><span class="p">,</span>
         <span class="n">suppress_backend_errors</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Check if file exists on backend.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Check if file exists on backend.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            path: path to file on backend</span>
@@ -385,25 +387,25 @@
 <span class="sd">            BackendError: if ``suppress_backend_errors`` is ``False``</span>
 <span class="sd">                and an error is raised on the backend,</span>
 <span class="sd">                e.g. due to a connection timeout</span>
-<span class="sd">            ValueError: if ``path`` does not start with ``&#39;/&#39;``,</span>
-<span class="sd">                ends on ``&#39;/&#39;``,</span>
-<span class="sd">                or does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            ValueError: if ``path`` does not start with ``'/'``,</span>
+<span class="sd">                ends on ``'/'``,</span>
+<span class="sd">                or does not match ``'[A-Za-z0-9/._-]+'``</span>
 <span class="sd">            ValueError: if ``version`` is empty or</span>
-<span class="sd">                does not match ``&#39;[A-Za-z0-9._-]+&#39;``</span>
+<span class="sd">                does not match ``'[A-Za-z0-9._-]+'``</span>
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
 <span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
-<span class="sd">            &gt;&gt;&gt; interface.exists(&quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; file = "src.txt"</span>
+<span class="sd">            &gt;&gt;&gt; interface.exists("/file.txt", "1.0.0")</span>
 <span class="sd">            False</span>
-<span class="sd">            &gt;&gt;&gt; interface.put_file(file, &quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; interface.exists(&quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_file(file, "/file.txt", "1.0.0")</span>
+<span class="sd">            &gt;&gt;&gt; interface.exists("/file.txt", "1.0.0")</span>
 <span class="sd">            True</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">path_with_version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_with_version</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span>
             <span class="n">path_with_version</span><span class="p">,</span>
@@ -424,7 +426,7 @@
         <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get archive from backend and extract.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Get archive from backend and extract.</span>
 
 <span class="sd">        For ZIP archives,</span>
 <span class="sd">        streaming extraction is used</span>
@@ -474,24 +476,24 @@
 <span class="sd">                for ``dst_path``</span>
 <span class="sd">            RuntimeError: if extension of ``src_path`` is not supported</span>
 <span class="sd">                or ``src_path`` is a malformed archive</span>
-<span class="sd">            ValueError: if ``src_path`` does not start with ``&#39;/&#39;``,</span>
-<span class="sd">                ends on ``&#39;/&#39;``,</span>
-<span class="sd">                or does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            ValueError: if ``src_path`` does not start with ``'/'``,</span>
+<span class="sd">                ends on ``'/'``,</span>
+<span class="sd">                or does not match ``'[A-Za-z0-9/._-]+'``</span>
 <span class="sd">            ValueError: if ``version`` is empty or</span>
-<span class="sd">                does not match ``&#39;[A-Za-z0-9._-]+&#39;``</span>
+<span class="sd">                does not match ``'[A-Za-z0-9._-]+'``</span>
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
 <span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
-<span class="sd">            &gt;&gt;&gt; interface.put_archive(&quot;.&quot;, &quot;/sub/archive.zip&quot;, &quot;1.0.0&quot;, files=[file])</span>
+<span class="sd">            &gt;&gt;&gt; file = "src.txt"</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])</span>
 <span class="sd">            &gt;&gt;&gt; os.remove(file)</span>
-<span class="sd">            &gt;&gt;&gt; interface.get_archive(&quot;/sub/archive.zip&quot;, &quot;.&quot;, &quot;1.0.0&quot;)</span>
-<span class="sd">            [&#39;src.txt&#39;]</span>
+<span class="sd">            &gt;&gt;&gt; interface.get_archive("/sub/archive.zip", ".", "1.0.0")</span>
+<span class="sd">            ['src.txt']</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">src_path_with_version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_with_version</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">get_archive</span><span class="p">(</span>
             <span class="n">src_path_with_version</span><span class="p">,</span>
@@ -515,7 +517,7 @@
         <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get file from backend.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Get file from backend.</span>
 
 <span class="sd">        If the folder of</span>
 <span class="sd">        ``dst_path`` does not exist,</span>
@@ -554,23 +556,23 @@
 <span class="sd">            IsADirectoryError: if ``dst_path`` points to an existing folder</span>
 <span class="sd">            PermissionError: if the user lacks write permissions</span>
 <span class="sd">                for ``dst_path``</span>
-<span class="sd">            ValueError: if ``src_path`` does not start with ``&#39;/&#39;``,</span>
-<span class="sd">                ends on ``&#39;/&#39;``,</span>
-<span class="sd">                or does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            ValueError: if ``src_path`` does not start with ``'/'``,</span>
+<span class="sd">                ends on ``'/'``,</span>
+<span class="sd">                or does not match ``'[A-Za-z0-9/._-]+'``</span>
 <span class="sd">            ValueError: if ``version`` is empty or</span>
-<span class="sd">                does not match ``&#39;[A-Za-z0-9._-]+&#39;``</span>
+<span class="sd">                does not match ``'[A-Za-z0-9._-]+'``</span>
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
 <span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
-<span class="sd">            &gt;&gt;&gt; interface.put_file(file, &quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; interface.get_file(&quot;/file.txt&quot;, &quot;dst.txt&quot;, &quot;1.0.0&quot;)</span>
-<span class="sd">            &#39;...dst.txt&#39;</span>
+<span class="sd">            &gt;&gt;&gt; file = "src.txt"</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_file(file, "/file.txt", "1.0.0")</span>
+<span class="sd">            &gt;&gt;&gt; interface.get_file("/file.txt", "dst.txt", "1.0.0")</span>
+<span class="sd">            '...dst.txt'</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">src_path_with_version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_with_version</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span>
             <span class="n">src_path_with_version</span><span class="p">,</span>
@@ -587,7 +589,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Latest version of a file.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Latest version of a file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            path: path to file on backend</span>
@@ -598,22 +600,22 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            BackendError: if an error is raised on the backend,</span>
 <span class="sd">                e.g. ``path`` does not exist</span>
-<span class="sd">            ValueError: if ``path`` does not start with ``&#39;/&#39;``,</span>
-<span class="sd">                ends on ``&#39;/&#39;``,</span>
-<span class="sd">                or does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            ValueError: if ``path`` does not start with ``'/'``,</span>
+<span class="sd">                ends on ``'/'``,</span>
+<span class="sd">                or does not match ``'[A-Za-z0-9/._-]+'``</span>
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">         ..</span>
 <span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
-<span class="sd">            &gt;&gt;&gt; interface.put_file(file, &quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; interface.put_file(file, &quot;/file.txt&quot;, &quot;2.0.0&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; interface.latest_version(&quot;/file.txt&quot;)</span>
-<span class="sd">            &#39;2.0.0&#39;</span>
+<span class="sd">            &gt;&gt;&gt; file = "src.txt"</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_file(file, "/file.txt", "1.0.0")</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_file(file, "/file.txt", "2.0.0")</span>
+<span class="sd">            &gt;&gt;&gt; interface.latest_version("/file.txt")</span>
+<span class="sd">            '2.0.0'</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">vs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">versions</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">vs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
 
@@ -622,13 +624,13 @@
 <a class="viewcode-back" href="../../../../api/audbackend.interface.Versioned.html#audbackend.interface.Versioned.ls">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">ls</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"/"</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">latest_version</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">suppress_backend_errors</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;List files on backend.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""List files on backend.</span>
 
 <span class="sd">        Returns a sorted list of tuples</span>
 <span class="sd">        with path and version.</span>
@@ -641,13 +643,13 @@
 <span class="sd">        is provided,</span>
 <span class="sd">        all files that start with</span>
 <span class="sd">        the sub-path are returned.</span>
-<span class="sd">        When ``path`` is set to ``&#39;/&#39;``</span>
+<span class="sd">        When ``path`` is set to ``'/'``</span>
 <span class="sd">        a (possibly empty) list with</span>
 <span class="sd">        all files on the backend is returned.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            path: path or sub-path</span>
-<span class="sd">                (if it ends with ``&#39;/&#39;``)</span>
+<span class="sd">                (if it ends with ``'/'``)</span>
 <span class="sd">                on backend</span>
 <span class="sd">            latest_version: if multiple versions of a file exist,</span>
 <span class="sd">                only include the latest</span>
@@ -665,33 +667,33 @@
 <span class="sd">            BackendError: if ``suppress_backend_errors`` is ``False``</span>
 <span class="sd">                and an error is raised on the backend,</span>
 <span class="sd">                e.g. ``path`` does not exist</span>
-<span class="sd">            ValueError: if ``path`` does not start with ``&#39;/&#39;`` or</span>
-<span class="sd">                does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            ValueError: if ``path`` does not start with ``'/'`` or</span>
+<span class="sd">                does not match ``'[A-Za-z0-9/._-]+'``</span>
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
 <span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
-<span class="sd">            &gt;&gt;&gt; interface.put_file(file, &quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; interface.put_file(file, &quot;/file.txt&quot;, &quot;2.0.0&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; interface.put_archive(&quot;.&quot;, &quot;/sub/archive.zip&quot;, &quot;1.0.0&quot;, files=[file])</span>
+<span class="sd">            &gt;&gt;&gt; file = "src.txt"</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_file(file, "/file.txt", "1.0.0")</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_file(file, "/file.txt", "2.0.0")</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])</span>
 <span class="sd">            &gt;&gt;&gt; interface.ls()</span>
-<span class="sd">            [(&#39;/file.txt&#39;, &#39;1.0.0&#39;), (&#39;/file.txt&#39;, &#39;2.0.0&#39;), (&#39;/sub/archive.zip&#39;, &#39;1.0.0&#39;)]</span>
+<span class="sd">            [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]</span>
 <span class="sd">            &gt;&gt;&gt; interface.ls(latest_version=True)</span>
-<span class="sd">            [(&#39;/file.txt&#39;, &#39;2.0.0&#39;), (&#39;/sub/archive.zip&#39;, &#39;1.0.0&#39;)]</span>
-<span class="sd">            &gt;&gt;&gt; interface.ls(&quot;/file.txt&quot;)</span>
-<span class="sd">            [(&#39;/file.txt&#39;, &#39;1.0.0&#39;), (&#39;/file.txt&#39;, &#39;2.0.0&#39;)]</span>
-<span class="sd">            &gt;&gt;&gt; interface.ls(pattern=&quot;*.txt&quot;)</span>
-<span class="sd">            [(&#39;/file.txt&#39;, &#39;1.0.0&#39;), (&#39;/file.txt&#39;, &#39;2.0.0&#39;)]</span>
-<span class="sd">            &gt;&gt;&gt; interface.ls(pattern=&quot;archive.*&quot;)</span>
-<span class="sd">            [(&#39;/sub/archive.zip&#39;, &#39;1.0.0&#39;)]</span>
-<span class="sd">            &gt;&gt;&gt; interface.ls(&quot;/sub/&quot;)</span>
-<span class="sd">            [(&#39;/sub/archive.zip&#39;, &#39;1.0.0&#39;)]</span>
+<span class="sd">            [('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]</span>
+<span class="sd">            &gt;&gt;&gt; interface.ls("/file.txt")</span>
+<span class="sd">            [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0')]</span>
+<span class="sd">            &gt;&gt;&gt; interface.ls(pattern="*.txt")</span>
+<span class="sd">            [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0')]</span>
+<span class="sd">            &gt;&gt;&gt; interface.ls(pattern="archive.*")</span>
+<span class="sd">            [('/sub/archive.zip', '1.0.0')]</span>
+<span class="sd">            &gt;&gt;&gt; interface.ls("/sub/")</span>
+<span class="sd">            [('/sub/archive.zip', '1.0.0')]</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
-        <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>  <span class="c1"># find files under sub-path</span>
+<span class="sd">        """</span>  <span class="c1"># noqa: E501</span>
+        <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"/"</span><span class="p">):</span>  <span class="c1"># find files under sub-path</span>
             <span class="n">paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span>
                 <span class="n">path</span><span class="p">,</span>
                 <span class="n">suppress_backend_errors</span><span class="o">=</span><span class="n">suppress_backend_errors</span><span class="p">,</span>
@@ -705,12 +707,12 @@
                 <span class="n">suppress_backend_errors</span><span class="o">=</span><span class="n">suppress_backend_errors</span><span class="p">,</span>
             <span class="p">)</span>
 
-            <span class="c1"># filter for &#39;/root/version/file&#39;</span>
-            <span class="n">depth</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="c1"># filter for '/root/version/file'</span>
+            <span class="n">depth</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
             <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span>
                 <span class="n">p</span>
                 <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">depth</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="n">file</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span> <span class="o">==</span> <span class="n">depth</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">==</span> <span class="n">file</span><span class="p">)</span>
             <span class="p">]</span>
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">paths</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">suppress_backend_errors</span><span class="p">:</span>
@@ -744,16 +746,16 @@
         <span class="n">paths_and_versions</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">paths_and_versions</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">latest_version</span><span class="p">:</span>
-            <span class="c1"># d[path] = [&#39;1.0.0&#39;, &#39;2.0.0&#39;]</span>
+            <span class="c1"># d[path] = ['1.0.0', '2.0.0']</span>
             <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">paths_and_versions</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">p</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
                     <span class="n">d</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="n">d</span><span class="p">[</span><span class="n">p</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-            <span class="c1"># d[path] = &#39;2.0.0&#39;</span>
+            <span class="c1"># d[path] = '2.0.0'</span>
             <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">vs</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="n">d</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">sort_versions</span><span class="p">(</span><span class="n">vs</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="c1"># [(path, &#39;2.0.0&#39;)]</span>
+            <span class="c1"># [(path, '2.0.0')]</span>
             <span class="n">paths_and_versions</span> <span class="o">=</span> <span class="p">[(</span><span class="n">p</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
 
         <span class="k">return</span> <span class="n">paths_and_versions</span></div>
@@ -771,7 +773,7 @@
         <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Move file on backend.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Move file on backend.</span>
 
 <span class="sd">        If ``version`` is ``None``</span>
 <span class="sd">        all versions of ``src_path``</span>
@@ -807,28 +809,28 @@
 <span class="sd">            BackendError: if an error is raised on the backend</span>
 <span class="sd">            InterruptedError: if validation fails</span>
 <span class="sd">            ValueError: if ``src_path`` or ``dst_path``</span>
-<span class="sd">                does not start with ``&#39;/&#39;``,</span>
-<span class="sd">                ends on ``&#39;/&#39;``,</span>
-<span class="sd">                or does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">                does not start with ``'/'``,</span>
+<span class="sd">                ends on ``'/'``,</span>
+<span class="sd">                or does not match ``'[A-Za-z0-9/._-]+'``</span>
 <span class="sd">            ValueError: if ``version`` is empty or</span>
-<span class="sd">                does not match ``&#39;[A-Za-z0-9._-]+&#39;``</span>
+<span class="sd">                does not match ``'[A-Za-z0-9._-]+'``</span>
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
 <span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
-<span class="sd">            &gt;&gt;&gt; interface.put_file(file, &quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; interface.exists(&quot;/move.txt&quot;, &quot;1.0.0&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; file = "src.txt"</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_file(file, "/file.txt", "1.0.0")</span>
+<span class="sd">            &gt;&gt;&gt; interface.exists("/move.txt", "1.0.0")</span>
 <span class="sd">            False</span>
-<span class="sd">            &gt;&gt;&gt; interface.move_file(&quot;/file.txt&quot;, &quot;/move.txt&quot;, version=&quot;1.0.0&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; interface.exists(&quot;/move.txt&quot;, &quot;1.0.0&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; interface.move_file("/file.txt", "/move.txt", version="1.0.0")</span>
+<span class="sd">            &gt;&gt;&gt; interface.exists("/move.txt", "1.0.0")</span>
 <span class="sd">            True</span>
-<span class="sd">            &gt;&gt;&gt; interface.exists(&quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; interface.exists("/file.txt", "1.0.0")</span>
 <span class="sd">            False</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">versions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">versions</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -846,6 +848,63 @@
             <span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="Versioned.open_file">
+<a class="viewcode-back" href="../../../../api/audbackend.interface.Versioned.html#audbackend.interface.Versioned.open_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">open_file</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BinaryIO</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Open file on backend for reading.</span>
+
+<span class="sd">        Returns a read-only, seekable binary file object.</span>
+<span class="sd">        In contrast to :meth:`get_file`,</span>
+<span class="sd">        the file is not downloaded,</span>
+<span class="sd">        but only the parts that are read</span>
+<span class="sd">        are requested from the backend.</span>
+<span class="sd">        This is useful if only a small part of a large file is needed,</span>
+<span class="sd">        e.g. the footer of a PARQUET file.</span>
+
+<span class="sd">        The file object should be closed after usage,</span>
+<span class="sd">        best by using it in a with_ statement.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: path to file on backend</span>
+<span class="sd">            version: version string</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            read-only binary file object</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            BackendError: if an error is raised on the backend,</span>
+<span class="sd">                e.g. ``path`` does not exist</span>
+<span class="sd">            ValueError: if ``path`` does not start with ``'/'``,</span>
+<span class="sd">                ends on ``'/'``,</span>
+<span class="sd">                or does not match ``'[A-Za-z0-9/._-]+'``</span>
+<span class="sd">            ValueError: if ``version`` is empty or</span>
+<span class="sd">                does not match ``'[A-Za-z0-9._-]+'``</span>
+<span class="sd">            RuntimeError: if backend was not opened</span>
+
+<span class="sd">        ..</span>
+<span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
+<span class="sd">            &gt;&gt;&gt; file = audeer.path("src.txt")</span>
+<span class="sd">            &gt;&gt;&gt; with open(file, "w") as fp:</span>
+<span class="sd">            ...     _ = fp.write("abcdefghij")</span>
+
+<span class="sd">        Examples:</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_file(file, "/file.txt", "1.0.0")</span>
+<span class="sd">            &gt;&gt;&gt; with interface.open_file("/file.txt", "1.0.0") as f:</span>
+<span class="sd">            ...     _ = f.seek(5)</span>
+<span class="sd">            ...     f.read(3)</span>
+<span class="sd">            b'fgh'</span>
+
+<span class="sd">        .. _with: https://docs.python.org/3/reference/compound_stmts.html#with</span>
+
+<span class="sd">        """</span>
+        <span class="n">path_with_version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_with_version</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">path_with_version</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="Versioned.owner">
 <a class="viewcode-back" href="../../../../api/audbackend.interface.Versioned.html#audbackend.interface.Versioned.owner">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">owner</span><span class="p">(</span>
@@ -853,7 +912,7 @@
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Owner of file on backend.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Owner of file on backend.</span>
 
 <span class="sd">        If the owner of the file</span>
 <span class="sd">        cannot be determined,</span>
@@ -869,11 +928,11 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            BackendError: if an error is raised on the backend,</span>
 <span class="sd">                e.g. ``path`` does not exist</span>
-<span class="sd">            ValueError: if ``path`` does not start with ``&#39;/&#39;``,</span>
-<span class="sd">                ends on ``&#39;/&#39;``,</span>
-<span class="sd">                or does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            ValueError: if ``path`` does not start with ``'/'``,</span>
+<span class="sd">                ends on ``'/'``,</span>
+<span class="sd">                or does not match ``'[A-Za-z0-9/._-]+'``</span>
 <span class="sd">            ValueError: if ``version`` is empty or</span>
-<span class="sd">                does not match ``&#39;[A-Za-z0-9._-]+&#39;``</span>
+<span class="sd">                does not match ``'[A-Za-z0-9._-]+'``</span>
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
@@ -881,12 +940,12 @@
 <span class="sd">            &gt;&gt;&gt; interface.owner = mock_owner</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
-<span class="sd">            &gt;&gt;&gt; interface.put_file(file, &quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; interface.owner(&quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
-<span class="sd">            &#39;doctest&#39;</span>
+<span class="sd">            &gt;&gt;&gt; file = "src.txt"</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_file(file, "/file.txt", "1.0.0")</span>
+<span class="sd">            &gt;&gt;&gt; interface.owner("/file.txt", "1.0.0")</span>
+<span class="sd">            'doctest'</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">path_with_version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_with_version</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">owner</span><span class="p">(</span><span class="n">path_with_version</span><span class="p">)</span></div>
 
@@ -904,7 +963,7 @@
         <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Create archive and put on backend.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Create archive and put on backend.</span>
 
 <span class="sd">        The archive type is derived from the extension of ``dst_path``.</span>
 <span class="sd">        See :func:`audeer.create_archive` for supported extensions.</span>
@@ -947,25 +1006,25 @@
 <span class="sd">            RuntimeError: if ``dst_path`` does not end with</span>
 <span class="sd">                ``zip`` or ``tar.gz``</span>
 <span class="sd">                or a file in ``files`` is not below ``root``</span>
-<span class="sd">            ValueError: if ``dst_path`` does not start with ``&#39;/&#39;``,</span>
-<span class="sd">                ends on ``&#39;/&#39;``,</span>
-<span class="sd">                or does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            ValueError: if ``dst_path`` does not start with ``'/'``,</span>
+<span class="sd">                ends on ``'/'``,</span>
+<span class="sd">                or does not match ``'[A-Za-z0-9/._-]+'``</span>
 <span class="sd">            ValueError: if ``version`` is empty or</span>
-<span class="sd">                does not match ``&#39;[A-Za-z0-9._-]+&#39;``</span>
+<span class="sd">                does not match ``'[A-Za-z0-9._-]+'``</span>
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
 <span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
-<span class="sd">            &gt;&gt;&gt; interface.exists(&quot;/sub/archive.tar.gz&quot;, &quot;1.0.0&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; file = "src.txt"</span>
+<span class="sd">            &gt;&gt;&gt; interface.exists("/sub/archive.tar.gz", "1.0.0")</span>
 <span class="sd">            False</span>
-<span class="sd">            &gt;&gt;&gt; interface.put_archive(&quot;.&quot;, &quot;/sub/archive.tar.gz&quot;, &quot;1.0.0&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; interface.exists(&quot;/sub/archive.tar.gz&quot;, &quot;1.0.0&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_archive(".", "/sub/archive.tar.gz", "1.0.0")</span>
+<span class="sd">            &gt;&gt;&gt; interface.exists("/sub/archive.tar.gz", "1.0.0")</span>
 <span class="sd">            True</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">dst_path_with_version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_with_version</span><span class="p">(</span><span class="n">dst_path</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">put_archive</span><span class="p">(</span>
             <span class="n">src_root</span><span class="p">,</span>
@@ -988,7 +1047,7 @@
         <span class="n">validate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Put file on backend.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Put file on backend.</span>
 
 <span class="sd">        The operation is silently skipped,</span>
 <span class="sd">        if a file with the same checksum</span>
@@ -1018,25 +1077,25 @@
 <span class="sd">            FileNotFoundError: if ``src_path`` does not exist</span>
 <span class="sd">            InterruptedError: if validation fails</span>
 <span class="sd">            IsADirectoryError: if ``src_path`` is a folder</span>
-<span class="sd">            ValueError: if ``dst_path`` does not start with ``&#39;/&#39;``,</span>
-<span class="sd">                ends on ``&#39;/&#39;``,</span>
-<span class="sd">                or does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            ValueError: if ``dst_path`` does not start with ``'/'``,</span>
+<span class="sd">                ends on ``'/'``,</span>
+<span class="sd">                or does not match ``'[A-Za-z0-9/._-]+'``</span>
 <span class="sd">            ValueError: if ``version`` is empty or</span>
-<span class="sd">                does not match ``&#39;[A-Za-z0-9._-]+&#39;``</span>
+<span class="sd">                does not match ``'[A-Za-z0-9._-]+'``</span>
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
 <span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
-<span class="sd">            &gt;&gt;&gt; interface.exists(&quot;/file.txt&quot;, &quot;3.0.0&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; file = "src.txt"</span>
+<span class="sd">            &gt;&gt;&gt; interface.exists("/file.txt", "3.0.0")</span>
 <span class="sd">            False</span>
-<span class="sd">            &gt;&gt;&gt; interface.put_file(file, &quot;/file.txt&quot;, &quot;3.0.0&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; interface.exists(&quot;/file.txt&quot;, &quot;3.0.0&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_file(file, "/file.txt", "3.0.0")</span>
+<span class="sd">            &gt;&gt;&gt; interface.exists("/file.txt", "3.0.0")</span>
 <span class="sd">            True</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">dst_path_with_version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_with_version</span><span class="p">(</span><span class="n">dst_path</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">put_file</span><span class="p">(</span>
             <span class="n">src_path</span><span class="p">,</span>
@@ -1053,7 +1112,7 @@
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Remove file from backend.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Remove file from backend.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            path: path to file on backend</span>
@@ -1062,26 +1121,26 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            BackendError: if an error is raised on the backend,</span>
 <span class="sd">                e.g. ``path`` does not exist</span>
-<span class="sd">            ValueError: if ``path`` does not start with ``&#39;/&#39;``,</span>
-<span class="sd">                ends on ``&#39;/&#39;``,</span>
-<span class="sd">                or does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            ValueError: if ``path`` does not start with ``'/'``,</span>
+<span class="sd">                ends on ``'/'``,</span>
+<span class="sd">                or does not match ``'[A-Za-z0-9/._-]+'``</span>
 <span class="sd">            ValueError: if ``version`` is empty or</span>
-<span class="sd">                does not match ``&#39;[A-Za-z0-9._-]+&#39;``</span>
+<span class="sd">                does not match ``'[A-Za-z0-9._-]+'``</span>
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
 <span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
-<span class="sd">            &gt;&gt;&gt; interface.put_file(file, &quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; interface.exists(&quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; file = "src.txt"</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_file(file, "/file.txt", "1.0.0")</span>
+<span class="sd">            &gt;&gt;&gt; interface.exists("/file.txt", "1.0.0")</span>
 <span class="sd">            True</span>
-<span class="sd">            &gt;&gt;&gt; interface.remove_file(&quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; interface.exists(&quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; interface.remove_file("/file.txt", "1.0.0")</span>
+<span class="sd">            &gt;&gt;&gt; interface.exists("/file.txt", "1.0.0")</span>
 <span class="sd">            False</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">path_with_version</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_with_version</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">remove_file</span><span class="p">(</span><span class="n">path_with_version</span><span class="p">)</span></div>
 
@@ -1094,7 +1153,7 @@
         <span class="o">*</span><span class="p">,</span>
         <span class="n">suppress_backend_errors</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Versions of a file.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Versions of a file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            path: path to file on backend</span>
@@ -1109,22 +1168,22 @@
 <span class="sd">            BackendError: if ``suppress_backend_errors`` is ``False``</span>
 <span class="sd">                and an error is raised on the backend,</span>
 <span class="sd">                e.g. ``path`` does not exist</span>
-<span class="sd">            ValueError: if ``path`` does not start with ``&#39;/&#39;``,</span>
-<span class="sd">                ends on ``&#39;/&#39;``,</span>
-<span class="sd">                or does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            ValueError: if ``path`` does not start with ``'/'``,</span>
+<span class="sd">                ends on ``'/'``,</span>
+<span class="sd">                or does not match ``'[A-Za-z0-9/._-]+'``</span>
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
 <span class="sd">            &gt;&gt;&gt; interface = Versioned(filesystem)</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
-<span class="sd">            &gt;&gt;&gt; interface.put_file(file, &quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; interface.put_file(file, &quot;/file.txt&quot;, &quot;2.0.0&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; interface.versions(&quot;/file.txt&quot;)</span>
-<span class="sd">            [&#39;1.0.0&#39;, &#39;2.0.0&#39;]</span>
+<span class="sd">            &gt;&gt;&gt; file = "src.txt"</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_file(file, "/file.txt", "1.0.0")</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_file(file, "/file.txt", "2.0.0")</span>
+<span class="sd">            &gt;&gt;&gt; interface.versions("/file.txt")</span>
+<span class="sd">            ['1.0.0', '2.0.0']</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">utils</span><span class="o">.</span><span class="n">check_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
         <span class="n">root</span><span class="p">,</span> <span class="n">file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
@@ -1153,13 +1212,13 @@
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Convert to versioned path.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Convert to versioned path.</span>
 
 <span class="sd">        &lt;root&gt;/&lt;base&gt;&lt;ext&gt;</span>
 <span class="sd">        -&gt;</span>
 <span class="sd">        &lt;root&gt;/&lt;version&gt;/&lt;base&gt;&lt;ext&gt;</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">version</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_version</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
         <span class="n">root</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
@@ -1181,7 +1240,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/07/20 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/11/20 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>

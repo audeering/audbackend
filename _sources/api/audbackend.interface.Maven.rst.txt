@@ -54,6 +54,10 @@ move\_file\(\)
 --------------
 .. automethod:: Maven.move_file
     
+open\_file\(\)
+--------------
+.. automethod:: Maven.open_file
+    
 owner\(\)
 ---------
 .. automethod:: Maven.owner

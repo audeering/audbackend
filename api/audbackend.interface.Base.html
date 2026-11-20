@@ -29,6 +29,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/audeering.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx_autodoc_typehints.css" type="text/css" />
   <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -66,7 +67,7 @@
             
             
               <div class="version">
-                3.0.2
+                3.1.0
               </div>
             
           
@@ -192,7 +193,7 @@ create a new interface.</p>
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">backend</span>
-<span class="go">audbackend.backend.FileSystem(&#39;host&#39;, &#39;repo&#39;)</span>
+<span class="go">audbackend.backend.FileSystem('host', 'repo')</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -207,7 +208,7 @@ create a new interface.</p>
 <p>Returns: host path</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">host</span>
-<span class="go">&#39;host&#39;</span>
+<span class="go">'host'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -222,29 +223,29 @@ create a new interface.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>path</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – first part of path</p></li>
+<li><p><strong>path</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – first part of path</p></li>
 <li><p><strong>*paths</strong> – additional parts of path</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>path joined by <code class="xref py py-attr docutils literal notranslate"><span class="pre">Backend.sep</span></code></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">path</span></code> contains invalid character
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">path</span></code> contains invalid character
     or does not start with <code class="docutils literal notranslate"><span class="pre">'/'</span></code>,
     or if joined path contains invalid character</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;file.txt&quot;</span><span class="p">)</span>
-<span class="go">&#39;/file.txt&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;/sub&quot;</span><span class="p">,</span> <span class="s2">&quot;file.txt&quot;</span><span class="p">)</span>
-<span class="go">&#39;/sub/file.txt&#39;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;//sub//&quot;</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;/file.txt&quot;</span><span class="p">)</span>
-<span class="go">&#39;/sub/file.txt&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">"/"</span><span class="p">,</span> <span class="s2">"file.txt"</span><span class="p">)</span>
+<span class="go">'/file.txt'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">"/sub"</span><span class="p">,</span> <span class="s2">"file.txt"</span><span class="p">)</span>
+<span class="go">'/sub/file.txt'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">"//sub//"</span><span class="p">,</span> <span class="s2">"/"</span><span class="p">,</span> <span class="s2">""</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">"/file.txt"</span><span class="p">)</span>
+<span class="go">'/sub/file.txt'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -263,7 +264,7 @@ create a new interface.</p>
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">repository</span>
-<span class="go">&#39;repo&#39;</span>
+<span class="go">'repo'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -282,7 +283,7 @@ create a new interface.</p>
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">sep</span>
-<span class="go">&#39;/&#39;</span>
+<span class="go">'/'</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -296,28 +297,28 @@ create a new interface.</p>
 <dd><p>Split path on backend into sub-path and basename.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>path</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – path containing <code class="xref py py-attr docutils literal notranslate"><span class="pre">Backend.sep</span></code> as separator</p>
+<dd class="field-odd"><p><strong>path</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – path containing <code class="xref py py-attr docutils literal notranslate"><span class="pre">Backend.sep</span></code> as separator</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>tuple containing (root, basename)</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">path</span></code> does not start with <code class="docutils literal notranslate"><span class="pre">'/'</span></code> or
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – if <code class="docutils literal notranslate"><span class="pre">path</span></code> does not start with <code class="docutils literal notranslate"><span class="pre">'/'</span></code> or
     does not match <code class="docutils literal notranslate"><span class="pre">'[A-Za-z0-9/._-]+'</span></code></p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
-<span class="go">(&#39;/&#39;, &#39;&#39;)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">)</span>
-<span class="go">(&#39;/&#39;, &#39;file.txt&#39;)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/sub/&quot;</span><span class="p">)</span>
-<span class="go">(&#39;/sub/&#39;, &#39;&#39;)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/sub//file.txt&quot;</span><span class="p">)</span>
-<span class="go">(&#39;/sub/&#39;, &#39;file.txt&#39;)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span>
+<span class="go">('/', '')</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"/file.txt"</span><span class="p">)</span>
+<span class="go">('/', 'file.txt')</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"/sub/"</span><span class="p">)</span>
+<span class="go">('/sub/', '')</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"/sub//file.txt"</span><span class="p">)</span>
+<span class="go">('/sub/', 'file.txt')</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -348,7 +349,7 @@ create a new interface.</p>
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/07/20 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/11/20 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>

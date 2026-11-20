@@ -29,6 +29,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/audeering.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx_autodoc_typehints.css" type="text/css" />
   <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -66,7 +67,7 @@
             
             
               <div class="version">
-                3.0.2
+                3.1.0
               </div>
             
           
@@ -157,26 +158,26 @@
 <dd><p>Wrapper for any error raised on the backend.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>exception</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></span>) – exception raised by backend</p>
+<dd class="field-odd"><p><strong>exception</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#Exception" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></span>) – exception raised by backend</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">host</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">host</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s2">"host"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">"repo"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">"repo"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="n">interface</span> <span class="o">=</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">Unversioned</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="n">interface</span><span class="o">.</span><span class="n">checksum</span><span class="p">(</span><span class="s2">&quot;/does/not/exist&quot;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">interface</span><span class="o">.</span><span class="n">checksum</span><span class="p">(</span><span class="s2">"/does/not/exist"</span><span class="p">)</span>
 <span class="gp">... </span><span class="k">except</span> <span class="n">BackendError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="n">ex</span><span class="o">.</span><span class="n">exception</span>
-<span class="go">FileNotFoundError(2, &#39;No such file or directory&#39;)</span>
+<span class="go">FileNotFoundError(2, 'No such file or directory')</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="n">interface</span> <span class="o">=</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">Versioned</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="n">interface</span><span class="o">.</span><span class="n">checksum</span><span class="p">(</span><span class="s2">&quot;/does/not/exist&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">interface</span><span class="o">.</span><span class="n">checksum</span><span class="p">(</span><span class="s2">"/does/not/exist"</span><span class="p">,</span> <span class="s2">"1.0.0"</span><span class="p">)</span>
 <span class="gp">... </span><span class="k">except</span> <span class="n">BackendError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="n">ex</span><span class="o">.</span><span class="n">exception</span>
-<span class="go">FileNotFoundError(2, &#39;No such file or directory&#39;)</span>
+<span class="go">FileNotFoundError(2, 'No such file or directory')</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -206,7 +207,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/07/20 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/11/20 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>

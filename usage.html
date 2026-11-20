@@ -29,6 +29,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/audeering.css" type="text/css" />
+  <link rel="stylesheet" href="_static/sphinx_autodoc_typehints.css" type="text/css" />
   <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -66,7 +67,7 @@
             
             
               <div class="version">
-                3.0.2
+                3.1.0
               </div>
             
           
@@ -169,8 +170,8 @@ we need to create a repository first.
 We select the <a class="reference internal" href="api/audbackend.backend.FileSystem.html#audbackend.backend.FileSystem" title="audbackend.backend.FileSystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">audbackend.backend.FileSystem</span></code></a> backend.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">audbackend</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">audeer</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">host</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">host</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s2">"host"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">"repo"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Once we have an existing repository,
@@ -182,7 +183,7 @@ and <code class="docutils literal notranslate"><span class="pre">backend.close()
 If you are unsure
 whether your backend requires this step,
 just do it always.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">"repo"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -204,49 +205,49 @@ Note,
 it is important to provide an absolute path
 from the root of the repository
 by starting it with <code class="docutils literal notranslate"><span class="pre">/</span></code>.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">file</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">touch</span><span class="p">(</span><span class="s2">&quot;file.txt&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">put_file</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;/file.txt&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">file</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">touch</span><span class="p">(</span><span class="s2">"file.txt"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">put_file</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">"/file.txt"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>We check if the file exists in the repository.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">"/file.txt"</span><span class="p">)</span>
 <span class="go">True</span>
 </pre></div>
 </div>
 <p>And access its meta information,
 like its checksum.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">checksum</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">)</span>
-<span class="go">&#39;d41d8cd98f00b204e9800998ecf8427e&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">checksum</span><span class="p">(</span><span class="s2">"/file.txt"</span><span class="p">)</span>
+<span class="go">'d41d8cd98f00b204e9800998ecf8427e'</span>
 </pre></div>
 </div>
 <p>Its creation date.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">date</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">)</span>
-<span class="go">&#39;1991-02-20&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">date</span><span class="p">(</span><span class="s2">"/file.txt"</span><span class="p">)</span>
+<span class="go">'1991-02-20'</span>
 </pre></div>
 </div>
 <p>Or the owner who uploaded the file.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">owner</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">)</span>
-<span class="go">&#39;doctest&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">owner</span><span class="p">(</span><span class="s2">"/file.txt"</span><span class="p">)</span>
+<span class="go">'doctest'</span>
 </pre></div>
 </div>
 <p>We create a copy of the file
 and verify it exists.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">copy_file</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;/copy/file.txt&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;/copy/file.txt&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">copy_file</span><span class="p">(</span><span class="s2">"/file.txt"</span><span class="p">,</span> <span class="s2">"/copy/file.txt"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">"/copy/file.txt"</span><span class="p">)</span>
 <span class="go">True</span>
 </pre></div>
 </div>
 <p>We move it to a new location.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">move_file</span><span class="p">(</span><span class="s2">&quot;/copy/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;/move/file.txt&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;/copy/file.txt&quot;</span><span class="p">),</span> <span class="n">interface</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;/move/file.txt&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">move_file</span><span class="p">(</span><span class="s2">"/copy/file.txt"</span><span class="p">,</span> <span class="s2">"/move/file.txt"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">"/copy/file.txt"</span><span class="p">),</span> <span class="n">interface</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">"/move/file.txt"</span><span class="p">)</span>
 <span class="go">(False, True)</span>
 </pre></div>
 </div>
 <p>We download the file
 and store it as <code class="docutils literal notranslate"><span class="pre">local.txt</span></code>.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">file</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="s2">&quot;local.txt&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
-<span class="go">&#39;...local.txt&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">file</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="s2">"local.txt"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span><span class="s2">"/file.txt"</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+<span class="go">'...local.txt'</span>
 </pre></div>
 </div>
 <p>It is possible to upload
@@ -258,24 +259,24 @@ stored under <code class="docutils literal notranslate"><span class="pre">folder
 and store them as <code class="docutils literal notranslate"><span class="pre">folder.zip</span></code>
 under the sub-path <code class="docutils literal notranslate"><span class="pre">/archives/</span></code>
 in the repository.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">folder</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s2">&quot;./folder&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">touch</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="s2">&quot;file1.txt&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">touch</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="s2">&quot;file2.txt&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">put_archive</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="s2">&quot;/archives/folder.zip&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">folder</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s2">"./folder"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">touch</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="s2">"file1.txt"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">touch</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="s2">"file2.txt"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">put_archive</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="s2">"/archives/folder.zip"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>When we download an archive
 it is automatically extracted,
 when using <a class="reference internal" href="api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.get_archive" title="audbackend.interface.Unversioned.get_archive"><code class="xref py py-meth docutils literal notranslate"><span class="pre">audbackend.interface.Unversioned.get_archive()</span></code></a>
 instead of <a class="reference internal" href="api/audbackend.interface.Unversioned.html#audbackend.interface.Unversioned.get_file" title="audbackend.interface.Unversioned.get_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">audbackend.interface.Unversioned.get_file()</span></code></a>.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">get_archive</span><span class="p">(</span><span class="s2">&quot;/archives/folder.zip&quot;</span><span class="p">,</span> <span class="s2">&quot;downloaded_folder&quot;</span><span class="p">)</span>
-<span class="go">[&#39;file1.txt&#39;, &#39;file2.txt&#39;]</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">get_archive</span><span class="p">(</span><span class="s2">"/archives/folder.zip"</span><span class="p">,</span> <span class="s2">"downloaded_folder"</span><span class="p">)</span>
+<span class="go">['file1.txt', 'file2.txt']</span>
 </pre></div>
 </div>
 <p>We can list all files
 in the repository.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
-<span class="go">[&#39;/archives/folder.zip&#39;, &#39;/file.txt&#39;, &#39;/move/file.txt&#39;]</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span>
+<span class="go">['/archives/folder.zip', '/file.txt', '/move/file.txt']</span>
 </pre></div>
 </div>
 <p>If we provide
@@ -284,15 +285,15 @@ a sub-path
 a list with files that
 start with the sub-path
 is returned.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">&quot;/archives/&quot;</span><span class="p">)</span>
-<span class="go">[&#39;/archives/folder.zip&#39;]</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">"/archives/"</span><span class="p">)</span>
+<span class="go">['/archives/folder.zip']</span>
 </pre></div>
 </div>
 <p>We can remove files.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">remove_file</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">remove_file</span><span class="p">(</span><span class="s2">&quot;/archives/folder.zip&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
-<span class="go">[&#39;/move/file.txt&#39;]</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">remove_file</span><span class="p">(</span><span class="s2">"/file.txt"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">remove_file</span><span class="p">(</span><span class="s2">"/archives/folder.zip"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span>
+<span class="go">['/move/file.txt']</span>
 </pre></div>
 </div>
 <p>Finally,
@@ -302,7 +303,7 @@ we close the connection to the backend.</p>
 </div>
 <p>And delete the whole repository
 with all its content.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">"repo"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Now,
@@ -315,7 +316,7 @@ as it depends on the implementation).</p>
 <span class="gp">... </span>    <span class="n">backend</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
 <span class="gp">... </span><span class="k">except</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">BackendError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ex</span><span class="o">.</span><span class="n">exception</span><span class="p">))</span>
-<span class="go">[Errno 2] No such file or directory: ...&#39;</span>
+<span class="go">[Errno 2] No such file or directory: ...'</span>
 </pre></div>
 </div>
 </section>
@@ -326,66 +327,66 @@ on the <a class="reference internal" href="api/audbackend.backend.FileSystem.htm
 This time we access it
 with the <a class="reference internal" href="api/audbackend.interface.Versioned.html#audbackend.interface.Versioned" title="audbackend.interface.Versioned"><code class="xref py py-class docutils literal notranslate"><span class="pre">audbackend.interface.Versioned</span></code></a> interface
 (which is also used by default).</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">"repo"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">"repo"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">Versioned</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>We then upload a file
 and assign version <code class="docutils literal notranslate"><span class="pre">&quot;1.0.0&quot;</span></code> to it.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">file</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="s2">&quot;file.txt&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Content v1.0.0&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">put_file</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">file</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="s2">"file.txt"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">"Content v1.0.0"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">put_file</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">"/file.txt"</span><span class="p">,</span> <span class="s2">"1.0.0"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Now we change the file for version <code class="docutils literal notranslate"><span class="pre">&quot;2.0.0&quot;</span></code>.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
-<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Content v2.0.0&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">put_file</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;2.0.0&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">"Content v2.0.0"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">put_file</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">"/file.txt"</span><span class="p">,</span> <span class="s2">"2.0.0"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>If we inspect the content of the repository
 it will return a list of tuples
 containing file name and version.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
-<span class="go">[(&#39;/file.txt&#39;, &#39;1.0.0&#39;), (&#39;/file.txt&#39;, &#39;2.0.0&#39;)]</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span>
+<span class="go">[('/file.txt', '1.0.0'), ('/file.txt', '2.0.0')]</span>
 </pre></div>
 </div>
 <p>We can also inspect the available versions
 for a file.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">versions</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">)</span>
-<span class="go">[&#39;1.0.0&#39;, &#39;2.0.0&#39;]</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">versions</span><span class="p">(</span><span class="s2">"/file.txt"</span><span class="p">)</span>
+<span class="go">['1.0.0', '2.0.0']</span>
 </pre></div>
 </div>
 <p>Or request its latest version.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">latest_version</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">)</span>
-<span class="go">&#39;2.0.0&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">latest_version</span><span class="p">(</span><span class="s2">"/file.txt"</span><span class="p">)</span>
+<span class="go">'2.0.0'</span>
 </pre></div>
 </div>
 <p>We can copy a specific version of a file.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">copy_file</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;/copy/file.txt&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">&quot;/copy/&quot;</span><span class="p">)</span>
-<span class="go">[(&#39;/copy/file.txt&#39;, &#39;1.0.0&#39;)]</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">copy_file</span><span class="p">(</span><span class="s2">"/file.txt"</span><span class="p">,</span> <span class="s2">"/copy/file.txt"</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">"1.0.0"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">"/copy/"</span><span class="p">)</span>
+<span class="go">[('/copy/file.txt', '1.0.0')]</span>
 </pre></div>
 </div>
 <p>Or all versions.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">copy_file</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;/copy/file.txt&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">&quot;/copy/&quot;</span><span class="p">)</span>
-<span class="go">[(&#39;/copy/file.txt&#39;, &#39;1.0.0&#39;), (&#39;/copy/file.txt&#39;, &#39;2.0.0&#39;)]</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">copy_file</span><span class="p">(</span><span class="s2">"/file.txt"</span><span class="p">,</span> <span class="s2">"/copy/file.txt"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">"/copy/"</span><span class="p">)</span>
+<span class="go">[('/copy/file.txt', '1.0.0'), ('/copy/file.txt', '2.0.0')]</span>
 </pre></div>
 </div>
 <p>We move them to a new location.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">move_file</span><span class="p">(</span><span class="s2">&quot;/copy/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;/move/file.txt&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">&quot;/move/&quot;</span><span class="p">)</span>
-<span class="go">[(&#39;/move/file.txt&#39;, &#39;1.0.0&#39;), (&#39;/move/file.txt&#39;, &#39;2.0.0&#39;)]</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">move_file</span><span class="p">(</span><span class="s2">"/copy/file.txt"</span><span class="p">,</span> <span class="s2">"/move/file.txt"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">"/move/"</span><span class="p">)</span>
+<span class="go">[('/move/file.txt', '1.0.0'), ('/move/file.txt', '2.0.0')]</span>
 </pre></div>
 </div>
 <p>When downloading a file,
 we can select the desired version.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">path</span> <span class="o">=</span> <span class="n">interface</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="s2">&quot;local.txt&quot;</span><span class="p">),</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">path</span> <span class="o">=</span> <span class="n">interface</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span><span class="s2">"/file.txt"</span><span class="p">,</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="s2">"local.txt"</span><span class="p">),</span> <span class="s2">"1.0.0"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
 <span class="go">Content v1.0.0</span>
 </pre></div>
@@ -421,7 +422,7 @@ we close the connection to the repository.</p>
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/07/20 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/11/20 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>

@@ -54,6 +54,10 @@ move\_file\(\)
 --------------
 .. automethod:: Versioned.move_file
     
+open\_file\(\)
+--------------
+.. automethod:: Versioned.open_file
+    
 owner\(\)
 ---------
 .. automethod:: Versioned.owner

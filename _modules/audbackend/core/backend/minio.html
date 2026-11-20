@@ -28,6 +28,7 @@
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/audeering.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/sphinx_autodoc_typehints.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -63,7 +64,7 @@
             
             
               <div class="version">
-                3.0.2
+                3.1.0
               </div>
             
           
@@ -146,10 +147,12 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">configparser</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">errno</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">getpass</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">mimetypes</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">BinaryIO</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">minio</span>
@@ -164,7 +167,7 @@
 <div class="viewcode-block" id="Minio">
 <a class="viewcode-back" href="../../../../api/audbackend.backend.Minio.html#audbackend.backend.Minio">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Minio</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Backend for MinIO.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Backend for MinIO.</span>
 
 <span class="sd">    HTTP timeouts can be configured via the config file</span>
 <span class="sd">    (see :meth:`get_config`):</span>
@@ -203,21 +206,21 @@
 <span class="sd">    .. _minio.Minio: https://min.io/docs/minio/linux/developers/python/API.html</span>
 
 <span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; host = &quot;play.min.io&quot;  # playground provided by https://min.io</span>
-<span class="sd">        &gt;&gt;&gt; auth = (&quot;Q3AM3UQ867SPQQA43P2F&quot;, &quot;zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG&quot;)</span>
-<span class="sd">        &gt;&gt;&gt; repository = &quot;my-data&quot; + audeer.uid()</span>
-<span class="sd">        &gt;&gt;&gt; Minio.create(host, repository, authentication=auth)</span>
-<span class="sd">        &gt;&gt;&gt; file = audeer.touch(&quot;src.txt&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; host = "localhost:9000"  # a local MinIO server</span>
+<span class="sd">        &gt;&gt;&gt; auth = ("minioadmin", "minioadmin")</span>
+<span class="sd">        &gt;&gt;&gt; repository = "my-data" + audeer.uid()</span>
+<span class="sd">        &gt;&gt;&gt; Minio.create(host, repository, authentication=auth)  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; file = audeer.touch("src.txt")</span>
 <span class="sd">        &gt;&gt;&gt; backend = Minio(host, repository, authentication=auth)</span>
-<span class="sd">        &gt;&gt;&gt; try:</span>
+<span class="sd">        &gt;&gt;&gt; try:  # doctest: +SKIP</span>
 <span class="sd">        ...     with backend:</span>
-<span class="sd">        ...         backend.put_file(file, &quot;/sub/file.txt&quot;)</span>
+<span class="sd">        ...         backend.put_file(file, "/sub/file.txt")</span>
 <span class="sd">        ...         backend.ls()</span>
 <span class="sd">        ... finally:</span>
 <span class="sd">        ...     Minio.delete(host, repository, authentication=auth)</span>
-<span class="sd">        [&#39;/sub/file.txt&#39;]</span>
+<span class="sd">        ['/sub/file.txt']</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -235,14 +238,19 @@
 
         <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="n">host</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">secure</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">secure</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;secure&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="n">secure</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"secure"</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">secure</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="c1"># ``configparser`` returns config file values as strings,</span>
+                <span class="c1"># e.g. ``"False"``, which is truthy in Python</span>
+                <span class="c1"># and would otherwise silently enable HTTPS.</span>
+                <span class="n">secure</span> <span class="o">=</span> <span class="n">secure</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"false"</span><span class="p">,</span> <span class="s2">"0"</span><span class="p">,</span> <span class="s2">"no"</span><span class="p">,</span> <span class="s2">"off"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
 
         <span class="c1"># Configure HTTP timeouts to prevent hanging connections.</span>
         <span class="c1"># Users can override the whole client by passing their own</span>
         <span class="c1"># ``http_client`` in kwargs.</span>
         <span class="c1"># Timeouts can be tuned via backend config:</span>
-        <span class="c1">#   - &quot;connect_timeout&quot;: seconds for connection establishment (default: 10.0)</span>
-        <span class="c1">#   - &quot;read_timeout&quot;: seconds for read operations; None means no timeout</span>
+        <span class="c1">#   - "connect_timeout": seconds for connection establishment (default: 10.0)</span>
+        <span class="c1">#   - "read_timeout": seconds for read operations; None means no timeout</span>
         <span class="c1">#     (default: None)</span>
         <span class="c1">#</span>
         <span class="c1"># We keep all other defaults from Minio,</span>
@@ -250,16 +258,16 @@
         <span class="c1"># * CA error: https://github.com/audeering/audbackend/issues/301</span>
         <span class="c1"># * 503 error: https://github.com/audeering/audbackend/issues/304</span>
         <span class="c1">#</span>
-        <span class="n">create_default_client</span> <span class="o">=</span> <span class="s2">&quot;http_client&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span>
+        <span class="n">create_default_client</span> <span class="o">=</span> <span class="s2">"http_client"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span>
         <span class="k">if</span> <span class="n">create_default_client</span><span class="p">:</span>
             <span class="n">connect_timeout</span> <span class="o">=</span> <span class="n">_parse_timeout</span><span class="p">(</span>
-                <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;connect_timeout&quot;</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">),</span>
-                <span class="n">name</span><span class="o">=</span><span class="s2">&quot;connect_timeout&quot;</span><span class="p">,</span>
+                <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"connect_timeout"</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">),</span>
+                <span class="n">name</span><span class="o">=</span><span class="s2">"connect_timeout"</span><span class="p">,</span>
                 <span class="n">default</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">read_timeout</span> <span class="o">=</span> <span class="n">_parse_timeout</span><span class="p">(</span>
-                <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;read_timeout&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-                <span class="n">name</span><span class="o">=</span><span class="s2">&quot;read_timeout&quot;</span><span class="p">,</span>
+                <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"read_timeout"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="n">name</span><span class="o">=</span><span class="s2">"read_timeout"</span><span class="p">,</span>
                 <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">timeout</span> <span class="o">=</span> <span class="n">urllib3</span><span class="o">.</span><span class="n">Timeout</span><span class="p">(</span><span class="n">connect</span><span class="o">=</span><span class="n">connect_timeout</span><span class="p">,</span> <span class="n">read</span><span class="o">=</span><span class="n">read_timeout</span><span class="p">)</span>
@@ -274,13 +282,13 @@
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">create_default_client</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">_http</span><span class="o">.</span><span class="n">connection_pool_kw</span><span class="p">[</span><span class="s2">&quot;timeout&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">timeout</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">_http</span><span class="o">.</span><span class="n">connection_pool_kw</span><span class="p">[</span><span class="s2">"timeout"</span><span class="p">]</span> <span class="o">=</span> <span class="n">timeout</span>
 
 <div class="viewcode-block" id="Minio.get_authentication">
 <a class="viewcode-back" href="../../../../api/audbackend.backend.Minio.html#audbackend.backend.Minio.get_authentication">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_authentication</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Access and secret tokens for given host.</span>
+<span class="w">        </span><span class="sd">"""Access and secret tokens for given host.</span>
 
 <span class="sd">        Returns a authentication for MinIO server</span>
 <span class="sd">        as tuple.</span>
@@ -293,7 +301,7 @@
 <span class="sd">        where ``&lt;HOST&gt;`` is the uppercased hostname</span>
 <span class="sd">        with every non-alphanumeric character</span>
 <span class="sd">        replaced by an underscore,</span>
-<span class="sd">        e.g. ``play.min.io`` becomes ``PLAY_MIN_IO``.</span>
+<span class="sd">        e.g. ``localhost:9000`` becomes ``LOCALHOST_9000``.</span>
 <span class="sd">        If those are not set,</span>
 <span class="sd">        the function falls back</span>
 <span class="sd">        to the two environment variables</span>
@@ -314,16 +322,16 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            access token tuple</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">config</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="n">host</span><span class="p">)</span>
         <span class="n">suffix</span> <span class="o">=</span> <span class="n">_host_env_suffix</span><span class="p">(</span><span class="n">host</span><span class="p">)</span>
         <span class="n">access_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;MINIO_ACCESS_KEY_</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;MINIO_ACCESS_KEY&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;access_key&quot;</span><span class="p">)),</span>
+            <span class="sa">f</span><span class="s2">"MINIO_ACCESS_KEY_</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">"MINIO_ACCESS_KEY"</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"access_key"</span><span class="p">)),</span>
         <span class="p">)</span>
         <span class="n">secret_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;MINIO_SECRET_KEY_</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;MINIO_SECRET_KEY&quot;</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;secret_key&quot;</span><span class="p">)),</span>
+            <span class="sa">f</span><span class="s2">"MINIO_SECRET_KEY_</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">"MINIO_SECRET_KEY"</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"secret_key"</span><span class="p">)),</span>
         <span class="p">)</span>
 
         <span class="k">return</span> <span class="n">access_key</span><span class="p">,</span> <span class="n">secret_key</span></div>
@@ -333,7 +341,7 @@
 <a class="viewcode-back" href="../../../../api/audbackend.backend.Minio.html#audbackend.backend.Minio.get_config">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configuration of MinIO server.</span>
+<span class="w">        </span><span class="sd">"""Configuration of MinIO server.</span>
 
 <span class="sd">        The default path of the config file is</span>
 <span class="sd">        :file:`~/.config/audbackend/minio.cfg`.</span>
@@ -350,17 +358,17 @@
 
 <span class="sd">        .. code-block:: ini</span>
 
-<span class="sd">            [play.min.io]</span>
-<span class="sd">            access_key = &quot;Q3AM3UQ867SPQQA43P2F&quot;</span>
-<span class="sd">            secret_key = &quot;zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG&quot;</span>
+<span class="sd">            [localhost:9000]</span>
+<span class="sd">            access_key = "minioadmin"</span>
+<span class="sd">            secret_key = "minioadmin"</span>
 
 <span class="sd">        Optional timeout settings can also be configured:</span>
 
 <span class="sd">        .. code-block:: ini</span>
 
-<span class="sd">            [play.min.io]</span>
-<span class="sd">            access_key = &quot;Q3AM3UQ867SPQQA43P2F&quot;</span>
-<span class="sd">            secret_key = &quot;zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG&quot;</span>
+<span class="sd">            [localhost:9000]</span>
+<span class="sd">            access_key = "minioadmin"</span>
+<span class="sd">            secret_key = "minioadmin"</span>
 <span class="sd">            connect_timeout = 10.0</span>
 <span class="sd">            read_timeout = 60.0</span>
 
@@ -375,8 +383,8 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            config entries as dictionary</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">config_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;MINIO_CONFIG_FILE&quot;</span><span class="p">,</span> <span class="s2">&quot;~/.config/audbackend/minio.cfg&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="n">config_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">"MINIO_CONFIG_FILE"</span><span class="p">,</span> <span class="s2">"~/.config/audbackend/minio.cfg"</span><span class="p">)</span>
         <span class="n">config_file</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">config_file</span><span class="p">):</span>
@@ -397,13 +405,13 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Close connection to backend.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Close connection to backend.</span>
 
 <span class="sd">        This will only change the status of</span>
 <span class="sd">        :attr:`audbackend.backend.Minio.opened`</span>
 <span class="sd">        as Minio handles closing the session itself.</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">opened</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">opened</span> <span class="o">=</span> <span class="kc">False</span></div>
 
@@ -412,27 +420,27 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;MD5 checksum of file on backend.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""MD5 checksum of file on backend."""</span>
         <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">stat_object</span><span class="p">(</span>
             <span class="n">bucket_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">,</span>
             <span class="n">object_name</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
         <span class="p">)</span><span class="o">.</span><span class="n">metadata</span>
-        <span class="k">return</span> <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;x-amz-meta-checksum&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;x-amz-meta-checksum&quot;</span> <span class="ow">in</span> <span class="n">meta</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">meta</span><span class="p">[</span><span class="s2">"x-amz-meta-checksum"</span><span class="p">]</span> <span class="k">if</span> <span class="s2">"x-amz-meta-checksum"</span> <span class="ow">in</span> <span class="n">meta</span> <span class="k">else</span> <span class="s2">""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_collapse</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Convert to virtual path.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Convert to virtual path.</span>
 
 <span class="sd">        &lt;path&gt;</span>
 <span class="sd">        -&gt;</span>
 <span class="sd">        /&lt;path&gt;</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="k">return</span> <span class="n">path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"/</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span>
+        <span class="k">return</span> <span class="n">path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"/"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_copy_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -441,7 +449,7 @@
         <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Copy file on backend.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Copy file on backend."""</span>
         <span class="n">src_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
         <span class="n">dst_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span>
         <span class="n">checksum</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checksum</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
@@ -463,7 +471,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_create</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Create repository.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Create repository."""</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">bucket_exists</span><span class="p">(</span><span class="n">bucket_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">):</span>
             <span class="n">utils</span><span class="o">.</span><span class="n">raise_file_exists_error</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">make_bucket</span><span class="p">(</span><span class="n">bucket_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">)</span>
@@ -472,7 +480,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get last modification date of file on backend.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Get last modification date of file on backend."""</span>
         <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">date</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">stat_object</span><span class="p">(</span>
             <span class="n">bucket_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">,</span>
@@ -484,7 +492,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_delete</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Delete repository and all its content.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Delete repository and all its content."""</span>
         <span class="c1"># Delete all objects in bucket</span>
         <span class="n">objects</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">list_objects</span><span class="p">(</span><span class="n">bucket_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">objects</span><span class="p">:</span>
@@ -499,7 +507,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Check if file exists on backend.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Check if file exists on backend."""</span>
         <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">stat_object</span><span class="p">(</span>
@@ -517,7 +525,7 @@
         <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get file from backend.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Get file from backend."""</span>
         <span class="n">src_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
         <span class="n">src_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">stat_object</span><span class="p">(</span>
             <span class="n">bucket_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">,</span>
@@ -526,7 +534,7 @@
 
         <span class="c1"># Setup progress bar</span>
         <span class="n">desc</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">format_display_message</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Download </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">src_path</span><span class="p">))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"Download </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">src_path</span><span class="p">))</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
             <span class="n">pbar</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">pbar</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">progress_bar</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="n">src_size</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="n">desc</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="n">verbose</span><span class="p">)</span>
@@ -538,7 +546,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">_download_file</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">,</span> <span class="n">pbar</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># Multi-threaded download with pre-allocated file</span>
-                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dst_path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dst_path</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                     <span class="n">f</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="n">src_size</span><span class="p">)</span>
 
                 <span class="c1"># Create and run download tasks</span>
@@ -569,13 +577,13 @@
         <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download file or part of file.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Download file or part of file."""</span>
         <span class="n">chunk_size</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="mi">1024</span>  <span class="c1"># 4 KB</span>
 
         <span class="c1"># Get the data stream</span>
-        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="n">offset</span><span class="p">}</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"offset"</span><span class="p">:</span> <span class="n">offset</span><span class="p">}</span>
         <span class="k">if</span> <span class="n">length</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;length&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">length</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">"length"</span><span class="p">]</span> <span class="o">=</span> <span class="n">length</span>
         <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span>
             <span class="n">bucket_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">,</span>
             <span class="n">object_name</span><span class="o">=</span><span class="n">src_path</span><span class="p">,</span>
@@ -583,10 +591,10 @@
         <span class="p">)</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="c1"># When length is not None, we&#39;re in multi-worker mode</span>
+            <span class="c1"># When length is not None, we're in multi-worker mode</span>
             <span class="c1"># and the file is already pre-allocated, so use r+b for all workers.</span>
-            <span class="c1"># When length is None, we&#39;re in single-worker mode and use wb.</span>
-            <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;r+b&quot;</span> <span class="k">if</span> <span class="n">length</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">&quot;wb&quot;</span>
+            <span class="c1"># When length is None, we're in single-worker mode and use wb.</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="s2">"r+b"</span> <span class="k">if</span> <span class="n">length</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">"wb"</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dst_path</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">offset</span><span class="p">:</span>
                     <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
@@ -602,7 +610,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">src_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get file from backend as byte stream.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Get file from backend as byte stream."""</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">audbackend.core.backend.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">STREAM_CHUNK_SIZE</span>
 
         <span class="n">src_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
@@ -623,7 +631,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;List all files under sub-path.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""List all files under sub-path."""</span>
         <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">objects</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">list_objects</span><span class="p">(</span>
             <span class="n">bucket_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">,</span>
@@ -636,7 +644,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;List immediate subdirectory names under sub-path.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""List immediate subdirectory names under sub-path."""</span>
         <span class="n">prefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">objects</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">list_objects</span><span class="p">(</span>
@@ -648,7 +656,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">objects</span><span class="p">:</span>
             <span class="c1"># The root always exists,</span>
             <span class="c1"># so an empty repository has no subdirectories.</span>
-            <span class="k">if</span> <span class="n">path</span> <span class="o">==</span> <span class="s2">&quot;/&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">path</span> <span class="o">==</span> <span class="s2">"/"</span><span class="p">:</span>
                 <span class="k">return</span> <span class="p">[]</span>
             <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
                 <span class="n">errno</span><span class="o">.</span><span class="n">ENOENT</span><span class="p">,</span>
@@ -658,10 +666,10 @@
         <span class="n">dirs</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">objects</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">is_dir</span><span class="p">:</span>
-                <span class="c1"># obj.object_name ends with &quot;/&quot;,</span>
-                <span class="c1"># e.g. &quot;sub/1.0.0/&quot;</span>
-                <span class="c1"># We strip trailing &quot;/&quot; and take the last component</span>
-                <span class="n">name</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">object_name</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="c1"># obj.object_name ends with "/",</span>
+                <span class="c1"># e.g. "sub/1.0.0/"</span>
+                <span class="c1"># We strip trailing "/" and take the last component</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">object_name</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
                 <span class="n">dirs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">dirs</span>
 
@@ -672,25 +680,37 @@
         <span class="n">num_workers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Move file on backend.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Move file on backend."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_copy_file</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="n">dst_path</span><span class="p">,</span> <span class="n">num_workers</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_remove_file</span><span class="p">(</span><span class="n">src_path</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_open</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Open connection to backend.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Open connection to backend."""</span>
         <span class="c1"># At the moment, session management is handled automatically.</span>
         <span class="c1"># If we want to manage this ourselves,</span>
         <span class="c1"># we need to use the `http_client` argument of `minio.Minio`</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">bucket_exists</span><span class="p">(</span><span class="n">bucket_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">):</span>
             <span class="n">utils</span><span class="o">.</span><span class="n">raise_file_not_found_error</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">)</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_open_file</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BinaryIO</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Open file on backend for reading.</span>
+
+<span class="sd">        Only the requested parts of the file</span>
+<span class="sd">        are downloaded using range requests.</span>
+
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">_RangeFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_owner</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get owner of file on backend.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Get owner of file on backend."""</span>
         <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="c1"># NOTE:</span>
         <span class="c1"># we use a custom metadata entry to track the owner</span>
@@ -699,7 +719,7 @@
             <span class="n">bucket_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">,</span>
             <span class="n">object_name</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
         <span class="p">)</span><span class="o">.</span><span class="n">metadata</span>
-        <span class="k">return</span> <span class="n">meta</span><span class="p">[</span><span class="s2">&quot;x-amz-meta-owner&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;x-amz-meta-owner&quot;</span> <span class="ow">in</span> <span class="n">meta</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">meta</span><span class="p">[</span><span class="s2">"x-amz-meta-owner"</span><span class="p">]</span> <span class="k">if</span> <span class="s2">"x-amz-meta-owner"</span> <span class="ow">in</span> <span class="n">meta</span> <span class="k">else</span> <span class="s2">""</span>
 
 <div class="viewcode-block" id="Minio.path">
 <a class="viewcode-back" href="../../../../api/audbackend.backend.Minio.html#audbackend.backend.Minio.path">[docs]</a>
@@ -707,7 +727,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Convert to backend path.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Convert to backend path.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            path: path on backend</span>
@@ -715,8 +735,8 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            path</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="p">,</span> <span class="s2">"/"</span><span class="p">)</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_put_file</span><span class="p">(</span>
@@ -726,16 +746,16 @@
         <span class="n">checksum</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Put file to backend.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Put file to backend."""</span>
         <span class="n">dst_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">dst_path</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
             <span class="n">desc</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">format_display_message</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Deploy </span><span class="si">{</span><span class="n">src_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">"Deploy </span><span class="si">{</span><span class="n">src_path</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
                 <span class="n">pbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">desc</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">desc</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">"</span><span class="se">\r</span><span class="s2">"</span><span class="p">)</span>
 
-        <span class="n">content_type</span> <span class="o">=</span> <span class="n">mimetypes</span><span class="o">.</span><span class="n">guess_type</span><span class="p">(</span><span class="n">src_path</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="s2">&quot;application/octet-stream&quot;</span>
+        <span class="n">content_type</span> <span class="o">=</span> <span class="n">mimetypes</span><span class="o">.</span><span class="n">guess_type</span><span class="p">(</span><span class="n">src_path</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="s2">"application/octet-stream"</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">fput_object</span><span class="p">(</span>
             <span class="n">bucket_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">,</span>
             <span class="n">object_name</span><span class="o">=</span><span class="n">dst_path</span><span class="p">,</span>
@@ -746,13 +766,13 @@
 
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
             <span class="c1"># Clear progress line</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">audeer</span><span class="o">.</span><span class="n">format_display_message</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">pbar</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">audeer</span><span class="o">.</span><span class="n">format_display_message</span><span class="p">(</span><span class="s2">" "</span><span class="p">,</span> <span class="n">pbar</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s2">"</span><span class="se">\r</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_remove_file</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Remove file from backend.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Remove file from backend."""</span>
         <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="c1"># Enforce error if path does not exist</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">stat_object</span><span class="p">(</span>
@@ -768,7 +788,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get size of file on backend.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Get size of file on backend."""</span>
         <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">stat_object</span><span class="p">(</span>
             <span class="n">bucket_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="p">,</span>
@@ -778,28 +798,134 @@
 
 
 
+<span class="k">class</span><span class="w"> </span><span class="nc">_RangeFile</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">RawIOBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Read-only, seekable file object for an object on MinIO.</span>
+
+<span class="sd">    The position is handled locally,</span>
+<span class="sd">    every read results in a range request</span>
+<span class="sd">    for the requested bytes.</span>
+<span class="sd">    The ETag of the object is pinned when opening,</span>
+<span class="sd">    so that reads fail</span>
+<span class="sd">    if the object is replaced in the meantime,</span>
+<span class="sd">    instead of mixing data of different objects.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        client: MinIO client</span>
+<span class="sd">        bucket: bucket name</span>
+<span class="sd">        path: object name</span>
+
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">client</span><span class="p">:</span> <span class="n">minio</span><span class="o">.</span><span class="n">Minio</span><span class="p">,</span>
+        <span class="n">bucket</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client</span> <span class="o">=</span> <span class="n">client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bucket</span> <span class="o">=</span> <span class="n">bucket</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">path</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Object name."""</span>
+        <span class="n">stat</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">stat_object</span><span class="p">(</span><span class="n">bucket_name</span><span class="o">=</span><span class="n">bucket</span><span class="p">,</span> <span class="n">object_name</span><span class="o">=</span><span class="n">path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">stat</span><span class="o">.</span><span class="n">size</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Size of object in bytes."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_etag</span> <span class="o">=</span> <span class="n">stat</span><span class="o">.</span><span class="n">etag</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">readable</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>  <span class="c1"># noqa: D102</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_not_closed</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">seekable</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>  <span class="c1"># noqa: D102</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_not_closed</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">tell</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>  <span class="c1"># noqa: D102</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_not_closed</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">seek</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">whence</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">SEEK_SET</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>  <span class="c1"># noqa: D102</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_not_closed</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">whence</span> <span class="o">==</span> <span class="n">io</span><span class="o">.</span><span class="n">SEEK_SET</span><span class="p">:</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">offset</span>
+        <span class="k">elif</span> <span class="n">whence</span> <span class="o">==</span> <span class="n">io</span><span class="o">.</span><span class="n">SEEK_CUR</span><span class="p">:</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">+</span> <span class="n">offset</span>
+        <span class="k">elif</span> <span class="n">whence</span> <span class="o">==</span> <span class="n">io</span><span class="o">.</span><span class="n">SEEK_END</span><span class="p">:</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="n">offset</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"invalid whence (</span><span class="si">{</span><span class="n">whence</span><span class="si">}</span><span class="s2">, should be 0, 1 or 2)"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">pos</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"negative seek position </span><span class="si">{</span><span class="n">pos</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="n">pos</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">readinto</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>  <span class="c1"># noqa: D102</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_not_closed</span><span class="p">()</span>
+        <span class="c1"># Cast to bytes,</span>
+        <span class="c1"># as the buffer might have multi-byte elements</span>
+        <span class="n">view</span> <span class="o">=</span> <span class="nb">memoryview</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="s2">"B"</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read</span><span class="p">(</span><span class="n">view</span><span class="o">.</span><span class="n">nbytes</span><span class="p">)</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">view</span><span class="p">[:</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">return</span> <span class="n">n</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">readall</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>  <span class="c1"># noqa: D102</span>
+        <span class="c1"># Request the remaining bytes at once,</span>
+        <span class="c1"># instead of the default implementation</span>
+        <span class="c1"># that would send a request for every 8 KB</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_not_closed</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_not_closed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">closed</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"I/O operation on closed file."</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">size</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">b</span><span class="s2">""</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client</span><span class="o">.</span><span class="n">get_object</span><span class="p">(</span>
+            <span class="n">bucket_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_bucket</span><span class="p">,</span>
+            <span class="n">object_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+            <span class="n">length</span><span class="o">=</span><span class="n">length</span><span class="p">,</span>
+            <span class="n">request_headers</span><span class="o">=</span><span class="p">{</span><span class="s2">"If-Match"</span><span class="p">:</span> <span class="sa">f</span><span class="s1">'"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_etag</span><span class="si">}</span><span class="s1">"'</span><span class="p">},</span>
+        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">response</span><span class="o">.</span><span class="n">release_conn</span><span class="p">()</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_metadata</span><span class="p">(</span><span class="n">checksum</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Dictionary with owner entry.</span>
+<span class="w">    </span><span class="sd">"""Dictionary with owner entry.</span>
 
 <span class="sd">    When uploaded as metadata to MinIO,</span>
-<span class="sd">    it can be accessed under ``stat_object(...).metadata[&quot;x-amz-meta-owner&quot;]``.</span>
+<span class="sd">    it can be accessed under ``stat_object(...).metadata["x-amz-meta-owner"]``.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        checksum: checksum to be stored in metadata</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;checksum&quot;</span><span class="p">:</span> <span class="n">checksum</span><span class="p">,</span>
-        <span class="s2">&quot;owner&quot;</span><span class="p">:</span> <span class="n">getpass</span><span class="o">.</span><span class="n">getuser</span><span class="p">(),</span>
+        <span class="s2">"checksum"</span><span class="p">:</span> <span class="n">checksum</span><span class="p">,</span>
+        <span class="s2">"owner"</span><span class="p">:</span> <span class="n">getpass</span><span class="o">.</span><span class="n">getuser</span><span class="p">(),</span>
     <span class="p">}</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_host_env_suffix</span><span class="p">(</span><span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Environment variable suffix for a host.</span>
+<span class="w">    </span><span class="sd">"""Environment variable suffix for a host.</span>
 
 <span class="sd">    Uppercases the hostname</span>
 <span class="sd">    and replaces every non-alphanumeric character</span>
 <span class="sd">    with an underscore,</span>
-<span class="sd">    e.g. ``play.min.io`` becomes ``PLAY_MIN_IO``.</span>
+<span class="sd">    e.g. ``localhost:9000`` becomes ``LOCALHOST_9000``.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        host: hostname</span>
@@ -807,8 +933,8 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        environment variable suffix</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[^A-Za-z0-9]&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="n">host</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">"[^A-Za-z0-9]"</span><span class="p">,</span> <span class="s2">"_"</span><span class="p">,</span> <span class="n">host</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_parse_timeout</span><span class="p">(</span>
@@ -817,9 +943,9 @@
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">default</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parse a timeout value from config.</span>
+<span class="w">    </span><span class="sd">"""Parse a timeout value from config.</span>
 
-<span class="sd">    Converts string values to float, handling &quot;None&quot; as Python None.</span>
+<span class="sd">    Converts string values to float, handling "None" as Python None.</span>
 <span class="sd">    If parsing fails, logs a warning and returns the default value.</span>
 
 <span class="sd">    Args:</span>
@@ -830,19 +956,19 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        parsed timeout value or default</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"none"</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Invalid </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> value &#39;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&#39; in config, using default: </span><span class="si">{</span><span class="n">default</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"Invalid </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> value '</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">' in config, using default: </span><span class="si">{</span><span class="n">default</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
             <span class="ne">UserWarning</span><span class="p">,</span>
             <span class="n">stacklevel</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
         <span class="p">)</span>
@@ -862,7 +988,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/07/20 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/11/20 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>

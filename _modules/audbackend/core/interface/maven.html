@@ -28,6 +28,7 @@
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/audeering.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/sphinx_autodoc_typehints.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" />
@@ -63,7 +64,7 @@
             
             
               <div class="version">
-                3.0.2
+                3.1.0
               </div>
             
           
@@ -158,7 +159,7 @@
 <div class="viewcode-block" id="Maven">
 <a class="viewcode-back" href="../../../../api/audbackend.interface.Maven.html#audbackend.interface.Maven">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Maven</span><span class="p">(</span><span class="n">Versioned</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Interface for Maven style versioned file access.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Interface for Maven style versioned file access.</span>
 
 <span class="sd">    Use this interface,</span>
 <span class="sd">    if you want to version files</span>
@@ -167,45 +168,45 @@
 <span class="sd">    one or more versions may exist.</span>
 
 <span class="sd">    Files are stored under</span>
-<span class="sd">    ``&quot;.../&lt;name-wo-ext&gt;/&lt;version&gt;/&lt;name-wo-ext&gt;-&lt;version&gt;.&lt;ext&gt;&quot;``.</span>
+<span class="sd">    ``".../&lt;name-wo-ext&gt;/&lt;version&gt;/&lt;name-wo-ext&gt;-&lt;version&gt;.&lt;ext&gt;"``.</span>
 <span class="sd">    By default,</span>
 <span class="sd">    the extension</span>
 <span class="sd">    ``&lt;ext&gt;``</span>
 <span class="sd">    is set to the string after the last dot.</span>
 <span class="sd">    I.e.,</span>
 <span class="sd">    the backend path</span>
-<span class="sd">    ``&quot;.../file.tar.gz&quot;``</span>
+<span class="sd">    ``".../file.tar.gz"``</span>
 <span class="sd">    will translate into</span>
-<span class="sd">    ``&quot;.../file.tar/1.0.0/file.tar-1.0.0.gz&quot;``.</span>
+<span class="sd">    ``".../file.tar/1.0.0/file.tar-1.0.0.gz"``.</span>
 <span class="sd">    However,</span>
 <span class="sd">    by passing a list with custom extensions</span>
 <span class="sd">    it is possible to overwrite</span>
 <span class="sd">    the default behavior</span>
 <span class="sd">    for certain extensions.</span>
 <span class="sd">    E.g.,</span>
-<span class="sd">    with ``extensions=[&quot;tar.gz&quot;]``</span>
+<span class="sd">    with ``extensions=["tar.gz"]``</span>
 <span class="sd">    it is ensured that</span>
-<span class="sd">    ``&quot;tar.gz&quot;``</span>
+<span class="sd">    ``"tar.gz"``</span>
 <span class="sd">    will be recognized as an extension</span>
 <span class="sd">    and the backend path</span>
-<span class="sd">    ``&quot;.../file.tar.gz&quot;``</span>
+<span class="sd">    ``".../file.tar.gz"``</span>
 <span class="sd">    will then translate into</span>
-<span class="sd">    ``&quot;.../file/1.0.0/file-1.0.0.tar.gz&quot;``.</span>
+<span class="sd">    ``".../file/1.0.0/file-1.0.0.tar.gz"``.</span>
 <span class="sd">    If ``regex`` is set to ``True``,</span>
 <span class="sd">    the extensions are treated as regular expressions.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        backend: file storage backend</span>
 <span class="sd">        extensions: list of file extensions to support</span>
-<span class="sd">            including a ``&quot;.&quot;``.</span>
-<span class="sd">            Per default only the part after the last ``&quot;.&quot;``,</span>
+<span class="sd">            including a ``"."``.</span>
+<span class="sd">            Per default only the part after the last ``"."``,</span>
 <span class="sd">            is considered as a file extension</span>
 <span class="sd">        regex: if ``True``,</span>
 <span class="sd">            ``extensions`` entries</span>
 <span class="sd">            are treated as regular expressions.</span>
-<span class="sd">            E.g. ``&quot;\d+.tar.gz&quot;`` will match</span>
-<span class="sd">            ``&quot;1.tar.gz&quot;``,</span>
-<span class="sd">            ``&quot;2.tar.gz&quot;``,</span>
+<span class="sd">            E.g. ``"\d+.tar.gz"`` will match</span>
+<span class="sd">            ``"1.tar.gz"``,</span>
+<span class="sd">            ``"2.tar.gz"``,</span>
 <span class="sd">            ...</span>
 <span class="sd">            as extensions</span>
 
@@ -214,21 +215,21 @@
 <span class="sd">        &gt;&gt;&gt; import audeer</span>
 
 <span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; host = audeer.mkdir(&quot;host&quot;)</span>
-<span class="sd">        &gt;&gt;&gt; audbackend.backend.FileSystem.create(host, &quot;repo&quot;)</span>
-<span class="sd">        &gt;&gt;&gt; backend = audbackend.backend.FileSystem(host, &quot;repo&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; host = audeer.mkdir("host")</span>
+<span class="sd">        &gt;&gt;&gt; audbackend.backend.FileSystem.create(host, "repo")</span>
+<span class="sd">        &gt;&gt;&gt; backend = audbackend.backend.FileSystem(host, "repo")</span>
 <span class="sd">        &gt;&gt;&gt; backend.open()</span>
 <span class="sd">        &gt;&gt;&gt; interface = Maven(backend)</span>
-<span class="sd">        &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
-<span class="sd">        &gt;&gt;&gt; interface.put_archive(&quot;.&quot;, &quot;/sub/archive.zip&quot;, &quot;1.0.0&quot;, files=[file])</span>
-<span class="sd">        &gt;&gt;&gt; for version in [&quot;1.0.0&quot;, &quot;2.0.0&quot;]:</span>
-<span class="sd">        ...     interface.put_file(file, &quot;/file.txt&quot;, version)</span>
+<span class="sd">        &gt;&gt;&gt; file = "src.txt"</span>
+<span class="sd">        &gt;&gt;&gt; interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])</span>
+<span class="sd">        &gt;&gt;&gt; for version in ["1.0.0", "2.0.0"]:</span>
+<span class="sd">        ...     interface.put_file(file, "/file.txt", version)</span>
 <span class="sd">        &gt;&gt;&gt; interface.ls()</span>
-<span class="sd">        [(&#39;/file.txt&#39;, &#39;1.0.0&#39;), (&#39;/file.txt&#39;, &#39;2.0.0&#39;), (&#39;/sub/archive.zip&#39;, &#39;1.0.0&#39;)]</span>
-<span class="sd">        &gt;&gt;&gt; interface.get_file(&quot;/file.txt&quot;, &quot;dst.txt&quot;, &quot;2.0.0&quot;)</span>
-<span class="sd">        &#39;...dst.txt&#39;</span>
+<span class="sd">        [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]</span>
+<span class="sd">        &gt;&gt;&gt; interface.get_file("/file.txt", "dst.txt", "2.0.0")</span>
+<span class="sd">        '...dst.txt'</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+<span class="sd">    """</span>  <span class="c1"># noqa: E501</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -245,13 +246,13 @@
 <a class="viewcode-back" href="../../../../api/audbackend.interface.Maven.html#audbackend.interface.Maven.ls">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">ls</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"/"</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">latest_version</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">suppress_backend_errors</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;List files on backend.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""List files on backend.</span>
 
 <span class="sd">        Returns a sorted list of tuples</span>
 <span class="sd">        with path and version.</span>
@@ -264,13 +265,13 @@
 <span class="sd">        is provided,</span>
 <span class="sd">        all files that start with</span>
 <span class="sd">        the sub-path are returned.</span>
-<span class="sd">        When ``path`` is set to ``&#39;/&#39;``</span>
+<span class="sd">        When ``path`` is set to ``'/'``</span>
 <span class="sd">        a (possibly empty) list with</span>
 <span class="sd">        all files on the backend is returned.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            path: path or sub-path</span>
-<span class="sd">                (if it ends with ``&#39;/&#39;``)</span>
+<span class="sd">                (if it ends with ``'/'``)</span>
 <span class="sd">                on backend</span>
 <span class="sd">            latest_version: if multiple versions of a file exist,</span>
 <span class="sd">                only include the latest</span>
@@ -288,33 +289,33 @@
 <span class="sd">            BackendError: if ``suppress_backend_errors`` is ``False``</span>
 <span class="sd">                and an error is raised on the backend,</span>
 <span class="sd">                e.g. ``path`` does not exist</span>
-<span class="sd">            ValueError: if ``path`` does not start with ``&#39;/&#39;`` or</span>
-<span class="sd">                does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            ValueError: if ``path`` does not start with ``'/'`` or</span>
+<span class="sd">                does not match ``'[A-Za-z0-9/._-]+'``</span>
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
 <span class="sd">            &gt;&gt;&gt; interface = Maven(filesystem)</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
-<span class="sd">            &gt;&gt;&gt; interface.put_archive(&quot;.&quot;, &quot;/sub/archive.zip&quot;, &quot;1.0.0&quot;, files=[file])</span>
-<span class="sd">            &gt;&gt;&gt; for version in [&quot;1.0.0&quot;, &quot;2.0.0&quot;]:</span>
-<span class="sd">            ...     interface.put_file(file, &quot;/file.txt&quot;, version)</span>
+<span class="sd">            &gt;&gt;&gt; file = "src.txt"</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_archive(".", "/sub/archive.zip", "1.0.0", files=[file])</span>
+<span class="sd">            &gt;&gt;&gt; for version in ["1.0.0", "2.0.0"]:</span>
+<span class="sd">            ...     interface.put_file(file, "/file.txt", version)</span>
 <span class="sd">            &gt;&gt;&gt; interface.ls()</span>
-<span class="sd">            [(&#39;/file.txt&#39;, &#39;1.0.0&#39;), (&#39;/file.txt&#39;, &#39;2.0.0&#39;), (&#39;/sub/archive.zip&#39;, &#39;1.0.0&#39;)]</span>
+<span class="sd">            [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]</span>
 <span class="sd">            &gt;&gt;&gt; interface.ls(latest_version=True)</span>
-<span class="sd">            [(&#39;/file.txt&#39;, &#39;2.0.0&#39;), (&#39;/sub/archive.zip&#39;, &#39;1.0.0&#39;)]</span>
-<span class="sd">            &gt;&gt;&gt; interface.ls(&quot;/file.txt&quot;)</span>
-<span class="sd">            [(&#39;/file.txt&#39;, &#39;1.0.0&#39;), (&#39;/file.txt&#39;, &#39;2.0.0&#39;)]</span>
-<span class="sd">            &gt;&gt;&gt; interface.ls(pattern=&quot;*.txt&quot;)</span>
-<span class="sd">            [(&#39;/file.txt&#39;, &#39;1.0.0&#39;), (&#39;/file.txt&#39;, &#39;2.0.0&#39;)]</span>
-<span class="sd">            &gt;&gt;&gt; interface.ls(pattern=&quot;archive.*&quot;)</span>
-<span class="sd">            [(&#39;/sub/archive.zip&#39;, &#39;1.0.0&#39;)]</span>
-<span class="sd">            &gt;&gt;&gt; interface.ls(&quot;/sub/&quot;)</span>
-<span class="sd">            [(&#39;/sub/archive.zip&#39;, &#39;1.0.0&#39;)]</span>
+<span class="sd">            [('/file.txt', '2.0.0'), ('/sub/archive.zip', '1.0.0')]</span>
+<span class="sd">            &gt;&gt;&gt; interface.ls("/file.txt")</span>
+<span class="sd">            [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0')]</span>
+<span class="sd">            &gt;&gt;&gt; interface.ls(pattern="*.txt")</span>
+<span class="sd">            [('/file.txt', '1.0.0'), ('/file.txt', '2.0.0')]</span>
+<span class="sd">            &gt;&gt;&gt; interface.ls(pattern="archive.*")</span>
+<span class="sd">            [('/sub/archive.zip', '1.0.0')]</span>
+<span class="sd">            &gt;&gt;&gt; interface.ls("/sub/")</span>
+<span class="sd">            [('/sub/archive.zip', '1.0.0')]</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
-        <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">):</span>  <span class="c1"># find files under sub-path</span>
+<span class="sd">        """</span>  <span class="c1"># noqa: E501</span>
+        <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"/"</span><span class="p">):</span>  <span class="c1"># find files under sub-path</span>
             <span class="n">paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span>
                 <span class="n">path</span><span class="p">,</span>
                 <span class="n">suppress_backend_errors</span><span class="o">=</span><span class="n">suppress_backend_errors</span><span class="p">,</span>
@@ -322,7 +323,7 @@
             <span class="c1"># Files are also stored as sub-folder,</span>
             <span class="c1"># e.g. `.../&lt;name&gt;/&lt;version&gt;/&lt;name&gt;-&lt;version&gt;&lt;ext&gt;`,</span>
             <span class="c1"># so we need to skip those</span>
-            <span class="n">sub_paths</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">))</span> <span class="o">-</span> <span class="mi">2</span>
+            <span class="n">sub_paths</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"/"</span><span class="p">))</span> <span class="o">-</span> <span class="mi">2</span>
             <span class="k">if</span> <span class="n">sub_paths</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span>
                     <span class="n">path</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="o">+</span> <span class="n">sub_paths</span>
@@ -341,13 +342,13 @@
                 <span class="n">suppress_backend_errors</span><span class="o">=</span><span class="n">suppress_backend_errors</span><span class="p">,</span>
             <span class="p">)</span>
 
-            <span class="c1"># filter for &#39;&lt;root&gt;/&lt;name&gt;/&lt;version&gt;/&lt;name&gt;-x.x.x&lt;ext&gt;&#39;</span>
-            <span class="n">depth</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span>
-            <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">rf</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">-\d+\.\d+.\d+</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="c1"># filter for '&lt;root&gt;/&lt;name&gt;/&lt;version&gt;/&lt;name&gt;-x.x.x&lt;ext&gt;'</span>
+            <span class="n">depth</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span>
+            <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">rf</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">-\d+\.\d+.\d+</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span>
                 <span class="n">p</span>
                 <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">depth</span> <span class="ow">and</span> <span class="n">match</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">p</span><span class="p">)))</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span> <span class="o">==</span> <span class="n">depth</span> <span class="ow">and</span> <span class="n">match</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">p</span><span class="p">)))</span>
             <span class="p">]</span>
 
             <span class="k">if</span> <span class="ow">not</span> <span class="n">paths</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">suppress_backend_errors</span><span class="p">:</span>
@@ -365,7 +366,7 @@
         <span class="n">paths_and_versions</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
             <span class="c1"># Split into</span>
-            <span class="c1"># [&quot;&quot;, ..., &lt;name&gt;, &lt;version&gt;, &lt;name&gt;-&lt;version&gt;&lt;ext&gt;]</span>
+            <span class="c1"># ["", ..., &lt;name&gt;, &lt;version&gt;, &lt;name&gt;-&lt;version&gt;&lt;ext&gt;]</span>
             <span class="n">tokens</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="p">)</span>
             <span class="n">version</span> <span class="o">=</span> <span class="n">tokens</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
 
@@ -375,7 +376,7 @@
                 <span class="n">name_version_ext</span> <span class="o">=</span> <span class="n">tokens</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
                 <span class="n">ext</span> <span class="o">=</span> <span class="n">name_version_ext</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">version</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]</span>
-                <span class="n">file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}{</span><span class="n">ext</span><span class="si">}</span><span class="s2">"</span>
 
                 <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sep</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
 
@@ -385,16 +386,16 @@
         <span class="n">paths_and_versions</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">paths_and_versions</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">latest_version</span><span class="p">:</span>
-            <span class="c1"># d[path] = [&#39;1.0.0&#39;, &#39;2.0.0&#39;]</span>
+            <span class="c1"># d[path] = ['1.0.0', '2.0.0']</span>
             <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">paths_and_versions</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">p</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
                     <span class="n">d</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="n">d</span><span class="p">[</span><span class="n">p</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-            <span class="c1"># d[path] = &#39;2.0.0&#39;</span>
+            <span class="c1"># d[path] = '2.0.0'</span>
             <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">vs</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="n">d</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">sort_versions</span><span class="p">(</span><span class="n">vs</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="c1"># [(path, &#39;2.0.0&#39;)]</span>
+            <span class="c1"># [(path, '2.0.0')]</span>
             <span class="n">paths_and_versions</span> <span class="o">=</span> <span class="p">[(</span><span class="n">p</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
 
         <span class="k">return</span> <span class="n">paths_and_versions</span></div>
@@ -408,7 +409,7 @@
         <span class="o">*</span><span class="p">,</span>
         <span class="n">suppress_backend_errors</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Versions of a file.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Versions of a file.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            path: path to file on backend</span>
@@ -423,22 +424,22 @@
 <span class="sd">            BackendError: if ``suppress_backend_errors`` is ``False``</span>
 <span class="sd">                and an error is raised on the backend,</span>
 <span class="sd">                e.g. ``path`` does not exist</span>
-<span class="sd">            ValueError: if ``path`` does not start with ``&#39;/&#39;``,</span>
-<span class="sd">                ends on ``&#39;/&#39;``,</span>
-<span class="sd">                or does not match ``&#39;[A-Za-z0-9/._-]+&#39;``</span>
+<span class="sd">            ValueError: if ``path`` does not start with ``'/'``,</span>
+<span class="sd">                ends on ``'/'``,</span>
+<span class="sd">                or does not match ``'[A-Za-z0-9/._-]+'``</span>
 <span class="sd">            RuntimeError: if backend was not opened</span>
 
 <span class="sd">        ..</span>
 <span class="sd">            &gt;&gt;&gt; interface = Maven(filesystem)</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; file = &quot;src.txt&quot;</span>
-<span class="sd">            &gt;&gt;&gt; interface.put_file(file, &quot;/file.txt&quot;, &quot;1.0.0&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; interface.put_file(file, &quot;/file.txt&quot;, &quot;2.0.0&quot;)</span>
-<span class="sd">            &gt;&gt;&gt; interface.versions(&quot;/file.txt&quot;)</span>
-<span class="sd">            [&#39;1.0.0&#39;, &#39;2.0.0&#39;]</span>
+<span class="sd">            &gt;&gt;&gt; file = "src.txt"</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_file(file, "/file.txt", "1.0.0")</span>
+<span class="sd">            &gt;&gt;&gt; interface.put_file(file, "/file.txt", "2.0.0")</span>
+<span class="sd">            &gt;&gt;&gt; interface.versions("/file.txt")</span>
+<span class="sd">            ['1.0.0', '2.0.0']</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
         <span class="n">root</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
@@ -446,7 +447,7 @@
 
         <span class="c1"># Maven stores files as /&lt;root&gt;/&lt;base&gt;/&lt;version&gt;/&lt;base&gt;-&lt;version&gt;&lt;ext&gt;</span>
         <span class="c1"># so version folders are under /&lt;root&gt;/&lt;base&gt;/</span>
-        <span class="n">base_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">base</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+        <span class="n">base_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">base</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"/"</span>
 
         <span class="n">dirs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">ls_dirs</span><span class="p">(</span>
             <span class="n">base_dir</span><span class="p">,</span>
@@ -455,7 +456,7 @@
 
         <span class="n">vs</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dirs</span><span class="p">:</span>
-            <span class="n">versioned_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">base</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">d</span><span class="si">}{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">versioned_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">base</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">d</span><span class="si">}{</span><span class="n">ext</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">versioned_file</span><span class="p">):</span>
                 <span class="n">vs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
 
@@ -472,27 +473,27 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Split name into basename and extension.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Split name into basename and extension."""</span>
         <span class="n">ext</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">for</span> <span class="n">custom_ext</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">extensions</span><span class="p">:</span>
             <span class="c1"># check for custom extension</span>
             <span class="c1"># ensure basename is not empty</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">regex</span><span class="p">:</span>
-                <span class="n">pattern</span> <span class="o">=</span> <span class="sa">rf</span><span class="s2">&quot;\.(</span><span class="si">{</span><span class="n">custom_ext</span><span class="si">}</span><span class="s2">)$&quot;</span>
+                <span class="n">pattern</span> <span class="o">=</span> <span class="sa">rf</span><span class="s2">"\.(</span><span class="si">{</span><span class="n">custom_ext</span><span class="si">}</span><span class="s2">)$"</span>
                 <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">name</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
                 <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
                     <span class="n">ext</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">name</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;.</span><span class="si">{</span><span class="n">custom_ext</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">):</span>
+            <span class="k">elif</span> <span class="n">name</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="sa">f</span><span class="s2">".</span><span class="si">{</span><span class="n">custom_ext</span><span class="si">}</span><span class="s2">"</span><span class="p">):</span>
                 <span class="n">ext</span> <span class="o">=</span> <span class="n">custom_ext</span>
         <span class="k">if</span> <span class="n">ext</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># if no custom extension is found</span>
             <span class="c1"># use last string after dot</span>
             <span class="n">ext</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">file_extension</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 
-        <span class="n">base</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">replace_file_extension</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="n">ext</span><span class="p">)</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">replace_file_extension</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s2">""</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="n">ext</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">ext</span><span class="p">:</span>
-            <span class="n">ext</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;.</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">ext</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">".</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">"</span>
 
         <span class="k">return</span> <span class="n">base</span><span class="p">,</span> <span class="n">ext</span>
 
@@ -501,17 +502,17 @@
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Convert to versioned path.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Convert to versioned path.</span>
 
 <span class="sd">        &lt;root&gt;/&lt;base&gt;&lt;ext&gt;</span>
 <span class="sd">        -&gt;</span>
 <span class="sd">        &lt;root&gt;/&lt;base&gt;/&lt;version&gt;/&lt;base&gt;-&lt;version&gt;&lt;ext&gt;</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">version</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">check_version</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
         <span class="n">root</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">base</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_ext</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">base</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">version</span><span class="si">}{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">base</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">version</span><span class="si">}{</span><span class="n">ext</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">path</span></div>
 
 </pre></div>
@@ -529,7 +530,7 @@
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/07/20 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/11/20 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>

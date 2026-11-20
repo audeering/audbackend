@@ -70,6 +70,10 @@ open\(\)
 --------
 .. automethod:: FileSystem.open
     
+open\_file\(\)
+--------------
+.. automethod:: FileSystem.open_file
+    
 opened
 ------
 .. autoattribute:: FileSystem.opened

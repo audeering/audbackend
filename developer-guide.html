@@ -29,6 +29,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/audeering.css" type="text/css" />
+  <link rel="stylesheet" href="_static/sphinx_autodoc_typehints.css" type="text/css" />
   <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -66,7 +67,7 @@
             
             
               <div class="version">
-                3.0.2
+                3.1.0
               </div>
             
           
@@ -196,29 +197,29 @@ helper class.</p>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">UserDB</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;User database.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""User database.</span>
 
 <span class="sd">    Temporarily get user database</span>
 <span class="sd">    and write changes back to the backend.</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">Base</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">backend</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">remote_file</span> <span class="o">=</span> <span class="s2">&quot;/.db.pkl&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">local_file</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="s2">&quot;.db.pkl&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remote_file</span> <span class="o">=</span> <span class="s2">"/.db.pkl"</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">local_file</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="s2">".db.pkl"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_file</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_file</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">local_file</span><span class="p">):</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">local_file</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">local_file</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_map</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_map</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_map</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">local_file</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">local_file</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
             <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_map</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">pickle</span><span class="o">.</span><span class="n">HIGHEST_PROTOCOL</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">put_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">local_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_file</span><span class="p">)</span>
         <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">local_file</span><span class="p">)</span>
@@ -229,44 +230,44 @@ we implement the interface.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">UserContent</span><span class="p">(</span><span class="n">audbackend</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">Base</span><span class="p">):</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">add_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Add user to database.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Add user to database."""</span>
         <span class="k">with</span> <span class="n">UserDB</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="p">)</span> <span class="k">as</span> <span class="nb">map</span><span class="p">:</span>
             <span class="nb">map</span><span class="p">[</span><span class="n">username</span><span class="p">]</span> <span class="o">=</span> <span class="n">password</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">upload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Upload user file.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""Upload user file."""</span>
         <span class="k">with</span> <span class="n">UserDB</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="p">)</span> <span class="k">as</span> <span class="nb">map</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">username</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">map</span> <span class="ow">or</span> <span class="nb">map</span><span class="p">[</span><span class="n">username</span><span class="p">]</span> <span class="o">!=</span> <span class="n">password</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;User does not exist or wrong password.&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">put_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"User does not exist or wrong password."</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">put_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"/</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">ls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;List files of user.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">"""List files of user."""</span>
         <span class="k">with</span> <span class="n">UserDB</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="p">)</span> <span class="k">as</span> <span class="nb">map</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">username</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">map</span><span class="p">:</span>
                 <span class="k">return</span> <span class="p">[]</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="sa">f</span><span class="s2">"/</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">/"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Let’s create a repository
 with our custom interface,
 and upload a file:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">audeer</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">host</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">host</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s2">"host"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">"repo"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">"repo"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">UserContent</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">add_user</span><span class="p">(</span><span class="s2">&quot;audeering&quot;</span><span class="p">,</span> <span class="s2">&quot;pa$$word&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">file</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">touch</span><span class="p">(</span><span class="s2">&quot;local.txt&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="s2">&quot;audeering&quot;</span><span class="p">,</span> <span class="s2">&quot;pa$$word&quot;</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">&quot;audeering&quot;</span><span class="p">)</span>
-<span class="go">[&#39;/audeering/local.txt&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">add_user</span><span class="p">(</span><span class="s2">"audeering"</span><span class="p">,</span> <span class="s2">"pa$$word"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">file</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">touch</span><span class="p">(</span><span class="s2">"local.txt"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="s2">"audeering"</span><span class="p">,</span> <span class="s2">"pa$$word"</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">"audeering"</span><span class="p">)</span>
+<span class="go">['/audeering/local.txt']</span>
 </pre></div>
 </div>
 <p>At the end we clean up and delete our repo.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">audbackend</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">FileSystem</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">"repo"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -296,6 +297,7 @@ we need to implement the following private methods:</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">_get_file()</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">_ls()</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">_open()</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_open_file()</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">_owner()</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">_put_file()</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">_remove_file()</span></code></p></li>
@@ -322,7 +324,7 @@ namely <code class="docutils literal notranslate"><span class="pre">&quot;&lt;ho
             <span class="n">repository</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">repository</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">repository</span><span class="p">,</span> <span class="s2">&quot;db&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">repository</span><span class="p">,</span> <span class="s2">"db"</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="o">=</span> <span class="kc">None</span>
 </pre></div>
 </div>
@@ -391,7 +393,7 @@ stored on our backend:</p>
         <span class="p">)</span>
     <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="p">))</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="o">=</span> <span class="n">sl</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="p">)</span>
-    <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="s2">"""</span>
 <span class="s2">        CREATE TABLE data (</span>
 <span class="s2">            path TEXT NOT NULL,</span>
 <span class="s2">            checksum TEXT NOT NULL,</span>
@@ -400,13 +402,13 @@ stored on our backend:</p>
 <span class="s2">            owner TEXT NOT NULL,</span>
 <span class="s2">            PRIMARY KEY (path)</span>
 <span class="s2">        );</span>
-<span class="s2">    &quot;&quot;&quot;</span>
+<span class="s2">    """</span>
     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
         <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Now we create a repository.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">SQLite</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">SQLite</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">"repo"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Before we can access the repository
@@ -431,7 +433,7 @@ it is not found).</p>
 and access the repository we created.
 We then wrap the object
 with the <a class="reference internal" href="api/audbackend.interface.Versioned.html#audbackend.interface.Versioned" title="audbackend.interface.Versioned"><code class="xref py py-class docutils literal notranslate"><span class="pre">audbackend.interface.Versioned</span></code></a> interface.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="n">SQLite</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span> <span class="o">=</span> <span class="n">SQLite</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">"repo"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">backend</span><span class="o">.</span><span class="n">open</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span> <span class="o">=</span> <span class="n">audbackend</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">Versioned</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
 </pre></div>
@@ -445,18 +447,18 @@ if a file exists.</p>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">            SELECT EXISTS (</span>
 <span class="s2">                SELECT 1</span>
 <span class="s2">                    FROM data</span>
-<span class="s2">                    WHERE path=&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="s2">                    WHERE path="</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span>
 <span class="s2">            );</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">        """</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
     <span class="k">return</span> <span class="n">result</span>
 </pre></div>
 </div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">"/file.txt"</span><span class="p">,</span> <span class="s2">"1.0.0"</span><span class="p">)</span>
 <span class="go">False</span>
 </pre></div>
 </div>
@@ -475,22 +477,22 @@ a file to our backend.</p>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">src_path</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
             <span class="n">content</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">"""</span>
 <span class="s2">            INSERT INTO data (path, checksum, content, date, owner)</span>
 <span class="s2">            VALUES (?, ?, ?, ?, ?)</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">        """</span>
         <span class="n">owner</span> <span class="o">=</span> <span class="n">getpass</span><span class="o">.</span><span class="n">getuser</span><span class="p">()</span>
-        <span class="n">date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">today</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">today</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="n">dst_path</span><span class="p">,</span> <span class="n">checksum</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="n">owner</span><span class="p">)</span>
         <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Let’s put a file on the backend.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">file</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">touch</span><span class="p">(</span><span class="s2">&quot;file.txt&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">put_file</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">file</span> <span class="o">=</span> <span class="n">audeer</span><span class="o">.</span><span class="n">touch</span><span class="p">(</span><span class="s2">"file.txt"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">put_file</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s2">"/file.txt"</span><span class="p">,</span> <span class="s2">"1.0.0"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">"/file.txt"</span><span class="p">,</span> <span class="s2">"1.0.0"</span><span class="p">)</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -502,11 +504,11 @@ to access its meta information.</p>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">            SELECT checksum</span>
 <span class="s2">            FROM data</span>
-<span class="s2">            WHERE path=&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">            WHERE path="</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span>
+<span class="s2">        """</span>
         <span class="n">checksum</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">checksum</span>
 </pre></div>
@@ -517,11 +519,11 @@ to access its meta information.</p>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">            SELECT date</span>
 <span class="s2">            FROM data</span>
-<span class="s2">            WHERE path=&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">            WHERE path="</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span>
+<span class="s2">        """</span>
         <span class="n">date</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">date</span>
 </pre></div>
@@ -532,11 +534,11 @@ to access its meta information.</p>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">            SELECT owner</span>
 <span class="s2">            FROM data</span>
-<span class="s2">            WHERE path=&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">            WHERE path="</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span>
+<span class="s2">        """</span>
         <span class="n">owner</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">owner</span>
 </pre></div>
@@ -556,23 +558,23 @@ we provide a more efficient implementation.</p>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">            SELECT *</span>
 <span class="s2">            FROM data</span>
-<span class="s2">            WHERE path=&quot;</span><span class="si">{</span><span class="n">src_path</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">            WHERE path="</span><span class="si">{</span><span class="n">src_path</span><span class="si">}</span><span class="s2">"</span>
+<span class="s2">        """</span>
         <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">checksum</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">owner</span><span class="p">)</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
-        <span class="n">date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">today</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">today</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">"%Y-%m-</span><span class="si">%d</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">"""</span>
 <span class="s2">            INSERT INTO data (path, checksum, content, date, owner)</span>
 <span class="s2">            VALUES (?, ?, ?, ?, ?)</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">        """</span>
         <span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="n">dst_path</span><span class="p">,</span> <span class="n">checksum</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="n">owner</span><span class="p">)</span>
         <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">copy_file</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;/copy/file.txt&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;/copy/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">copy_file</span><span class="p">(</span><span class="s2">"/file.txt"</span><span class="p">,</span> <span class="s2">"/copy/file.txt"</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">"1.0.0"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">"/copy/file.txt"</span><span class="p">,</span> <span class="s2">"1.0.0"</span><span class="p">)</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -587,16 +589,16 @@ but it is more efficient if we provide one.</p>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">            UPDATE data</span>
-<span class="s2">            SET path=&quot;</span><span class="si">{</span><span class="n">dst_path</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="s2">            WHERE path=&quot;</span><span class="si">{</span><span class="n">src_path</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">            SET path="</span><span class="si">{</span><span class="n">dst_path</span><span class="si">}</span><span class="s2">"</span>
+<span class="s2">            WHERE path="</span><span class="si">{</span><span class="n">src_path</span><span class="si">}</span><span class="s2">"</span>
+<span class="s2">        """</span>
         <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">move_file</span><span class="p">(</span><span class="s2">&quot;/copy/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;/move/file.txt&quot;</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;/move/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">move_file</span><span class="p">(</span><span class="s2">"/copy/file.txt"</span><span class="p">,</span> <span class="s2">"/move/file.txt"</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">"1.0.0"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">"/move/file.txt"</span><span class="p">,</span> <span class="s2">"1.0.0"</span><span class="p">)</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -612,19 +614,52 @@ from the backend.</p>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">            SELECT content</span>
 <span class="s2">            FROM data</span>
-<span class="s2">            WHERE path=&quot;</span><span class="si">{</span><span class="n">src_path</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">            WHERE path="</span><span class="si">{</span><span class="n">src_path</span><span class="si">}</span><span class="s2">"</span>
+<span class="s2">        """</span>
         <span class="n">content</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dst_path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dst_path</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
             <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Which we then use to download the file.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="s2">&quot;local.txt&quot;</span><span class="p">),</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
-<span class="go">&#39;...local.txt&#39;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">get_file</span><span class="p">(</span><span class="s2">"/file.txt"</span><span class="p">,</span> <span class="n">audeer</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="s2">"local.txt"</span><span class="p">),</span> <span class="s2">"1.0.0"</span><span class="p">)</span>
+<span class="go">'...local.txt'</span>
+</pre></div>
+</div>
+<p>To read a file
+without downloading it,
+we implement a method
+that returns a seekable binary file object.
+For simplicity,
+we load the whole content
+into memory.
+A real backend
+should request only
+the bytes that are actually read.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+
+
+<span class="nd">@add_method</span><span class="p">(</span><span class="n">SQLite</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_open_file</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">:</span>
+    <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">"""</span>
+<span class="s2">            SELECT content</span>
+<span class="s2">            FROM data</span>
+<span class="s2">            WHERE path=?</span>
+<span class="s2">        """</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">path</span><span class="p">])</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">interface</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"/file.txt"</span><span class="p">,</span> <span class="s2">"1.0.0"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="go">b''</span>
 </pre></div>
 </div>
 <p>To inspect the files
@@ -639,12 +674,12 @@ we provide a listing method.</p>
     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
 
         <span class="c1"># list all files and versions under sub-path</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">            SELECT path</span>
 <span class="s2">            FROM data</span>
 <span class="s2">            WHERE path</span>
-<span class="s2">            LIKE ? || &quot;%&quot;</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">            LIKE ? || "%"</span>
+<span class="s2">        """</span>
         <span class="n">ls</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">path</span><span class="p">])</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
         <span class="n">ls</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">ls</span><span class="p">]</span>
 
@@ -652,10 +687,10 @@ we provide a listing method.</p>
 </pre></div>
 </div>
 <p>Let’s test it.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
-<span class="go">[(&#39;/file.txt&#39;, &#39;1.0.0&#39;), (&#39;/move/file.txt&#39;, &#39;1.0.0&#39;)]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">)</span>
-<span class="go">[(&#39;/file.txt&#39;, &#39;1.0.0&#39;)]</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span>
+<span class="go">[('/file.txt', '1.0.0'), ('/move/file.txt', '1.0.0')]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">"/file.txt"</span><span class="p">)</span>
+<span class="go">[('/file.txt', '1.0.0')]</span>
 </pre></div>
 </div>
 <p>To delete a file
@@ -667,17 +702,17 @@ requires another method.</p>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
-        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"""</span>
 <span class="s2">            DELETE</span>
 <span class="s2">            FROM data</span>
-<span class="s2">            WHERE path=&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="s2">        &quot;&quot;&quot;</span>
+<span class="s2">            WHERE path="</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span>
+<span class="s2">        """</span>
         <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">remove_file</span><span class="p">(</span><span class="s2">&quot;/file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
-<span class="go">[(&#39;/move/file.txt&#39;, &#39;1.0.0&#39;)]</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">remove_file</span><span class="p">(</span><span class="s2">"/file.txt"</span><span class="p">,</span> <span class="s2">"1.0.0"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">interface</span><span class="o">.</span><span class="n">ls</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span>
+<span class="go">[('/move/file.txt', '1.0.0')]</span>
 </pre></div>
 </div>
 <p>We add a method to close the connection
@@ -712,7 +747,7 @@ if the database does not exist).</p>
     <span class="n">os</span><span class="o">.</span><span class="n">rmdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">SQLite</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;repo&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">SQLite</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">"repo"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>And that’s it,
@@ -744,7 +779,7 @@ we have a fully functional backend.</p>
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/07/20 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/11/20 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>

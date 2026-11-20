@@ -29,6 +29,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/audeering.css" type="text/css" />
+  <link rel="stylesheet" href="_static/sphinx_autodoc_typehints.css" type="text/css" />
   <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -66,7 +67,7 @@
             
             
               <div class="version">
-                3.0.2
+                3.1.0
               </div>
             
           
@@ -219,15 +220,43 @@ in the directory <code class="file docutils literal notranslate"><span class="pr
 </section>
 <section id="running-the-tests">
 <h2>Running the Tests<a class="headerlink" href="#running-the-tests" title="Link to this heading">¶</a></h2>
-<p>You can run tests with <a class="reference external" href="https://pytest.org">pytest</a>:</p>
+<p>Some of the tests need a MinIO server.
+MinIO has archived its community server
+and shut down its public playground at play.min.io,
+so start the last community release on your own machine:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">compose</span> <span class="n">up</span> <span class="o">-</span><span class="n">d</span>
+</pre></div>
+</div>
+<p>Docker Compose and <code class="docutils literal notranslate"><span class="pre">podman-compose</span></code>
+both read the provided <code class="file docutils literal notranslate"><span class="pre">compose.yaml</span></code>.
+The server listens on <code class="docutils literal notranslate"><span class="pre">127.0.0.1:9000</span></code>
+and needs a moment to come up;
+<code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">compose</span> <span class="pre">ps</span></code> reports it as healthy.
+The test fixtures default to that address
+and to its <code class="docutils literal notranslate"><span class="pre">minioadmin</span></code> credentials,
+so no further configuration is needed.</p>
+<p>You can then run tests with <a class="reference external" href="https://pytest.org">pytest</a>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">uv</span> <span class="n">run</span> <span class="n">pytest</span>
 </pre></div>
 </div>
-<p>Some of the tests need access
-to the public MinIO server
-at <a class="reference external" href="https://play.min.io">https://play.min.io</a>,
-for which credentials are provided
-automatically by the test fixtures.</p>
+<p>When you are done,
+stop and remove the server again:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">compose</span> <span class="n">down</span>
+</pre></div>
+</div>
+<p>To use a different server,
+point <code class="docutils literal notranslate"><span class="pre">AUDBACKEND_TEST_MINIO_HOST</span></code> at it
+and set <code class="docutils literal notranslate"><span class="pre">MINIO_ACCESS_KEY</span></code> and <code class="docutils literal notranslate"><span class="pre">MINIO_SECRET_KEY</span></code>.
+A server without TLS needs a config file as well,
+as <code class="docutils literal notranslate"><span class="pre">secure</span></code> can only be set there,
+see <a class="reference internal" href="api/audbackend.backend.Minio.html#audbackend.backend.Minio.get_config" title="audbackend.backend.Minio.get_config"><code class="xref py py-meth docutils literal notranslate"><span class="pre">audbackend.backend.Minio.get_config()</span></code></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">MINIO_CONFIG_FILE</span><span class="o">=~/</span><span class="n">my</span><span class="o">-</span><span class="n">minio</span><span class="o">.</span><span class="n">cfg</span>
+</pre></div>
+</div>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[my-server:9000]</span>
+<span class="na">secure</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
 </section>
 <section id="creating-a-new-release">
 <h2>Creating a New Release<a class="headerlink" href="#creating-a-new-release" title="Link to this heading">¶</a></h2>
@@ -264,7 +293,7 @@ automatically by the test fixtures.</p>
         
         
         
-          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/07/20 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
+          Built with <a href="https://www.sphinx-doc.org">Sphinx</a> on 2026/11/20 using the <a href="https://github.com/audeering/sphinx-audeering-theme/">audEERING theme</a>
         
     </p>
   </div>
