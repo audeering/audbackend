@@ -49,7 +49,9 @@ jobs:
         # -f so a dead URL fails here loudly,
         # instead of writing the error page to minio-server
         # and timing out 60 s later in "Wait for MinIO".
-        curl -fsSL --retry 5 --retry-all-errors -o minio-server "https://github.com/minio/minio/releases/download/${MINIO_RELEASE}/minio.linux-amd64.${MINIO_RELEASE}"
+        # --speed-limit/--speed-time abort an attempt
+        # that stalls below 100 KB/s for 30 s, so it is retried.
+        curl -fsSL --retry 5 --retry-all-errors --speed-limit 102400 --speed-time 30 -o minio-server "https://github.com/minio/minio/releases/download/${MINIO_RELEASE}/minio.linux-amd64.${MINIO_RELEASE}"
         echo "${MINIO_SHA256_LINUX_AMD64}  minio-server" | sha256sum -c -
         chmod +x minio-server
         mkdir -p "$RUNNER_TEMP/minio-data"
@@ -130,7 +132,9 @@ jobs:
         # -f so a dead URL fails here loudly,
         # instead of writing the error page to minio-server
         # and timing out 60 s later in "Wait for MinIO".
-        curl -fsSL --retry 5 --retry-all-errors -o minio-server "https://github.com/minio/minio/releases/download/${MINIO_RELEASE}/minio.darwin-arm64.${MINIO_RELEASE}"
+        # --speed-limit/--speed-time abort an attempt
+        # that stalls below 100 KB/s for 30 s, so it is retried.
+        curl -fsSL --retry 5 --retry-all-errors --speed-limit 102400 --speed-time 30 -o minio-server "https://github.com/minio/minio/releases/download/${MINIO_RELEASE}/minio.darwin-arm64.${MINIO_RELEASE}"
         # macOS has shasum, not sha256sum.
         echo "${MINIO_SHA256_DARWIN_ARM64}  minio-server" | shasum -a 256 -c -
         chmod +x minio-server
@@ -143,7 +147,12 @@ jobs:
       shell: pwsh
       timeout-minutes: 10
       run: |
-        Invoke-WebRequest -MaximumRetryCount 5 -RetryIntervalSec 5 -OutFile minio-server.exe -Uri "https://github.com/minio/minio/releases/download/${env:MINIO_RELEASE}/minio.windows-amd64.${env:MINIO_RELEASE}.exe"
+        # curl.exe rather than Invoke-WebRequest,
+        # whose -MaximumRetryCount retries HTTP error responses only,
+        # not dropped connections; same flags as the other two jobs.
+        curl.exe -fsSL --retry 5 --retry-all-errors --speed-limit 102400 --speed-time 30 -o minio-server.exe "https://github.com/minio/minio/releases/download/${env:MINIO_RELEASE}/minio.windows-amd64.${env:MINIO_RELEASE}.exe"
+        # A failing native command does not stop a pwsh step by itself.
+        if ($LASTEXITCODE -ne 0) { throw "MinIO download failed, curl exit code $LASTEXITCODE" }
         # Get-FileHash returns upper case; -ne compares case-insensitively,
         # so do not "fix" this to -cne.
         $hash = (Get-FileHash -Algorithm SHA256 minio-server.exe).Hash
